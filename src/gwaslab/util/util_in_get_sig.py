@@ -9,6 +9,7 @@ from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_chr_to_NC
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from gwaslab.io.io_gtf import gtf_to_protein_coding
 from gwaslab.io.io_gtf import gtf_to_all_gene
 from gwaslab.io.io_gtf import read_gtf
@@ -21,6 +22,7 @@ from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.extension.gwascatalog import GWASCatalogClient
 import gwaslab as gl
 from gwaslab.util.util_in_fill_data import fill_p
+from gwaslab.util.util_in_get_density import _get_signal_density2
 from gwaslab.qc.qc_decorator import with_logging
 @with_logging(
         start_to_msg="extract lead variants",
@@ -371,20 +373,14 @@ class SimpleGenome:
     
     def _normalize_contig(self, contig):
         """Normalize chromosome/contig name for matching."""
-        contig_str = str(contig)
-        # Preserve NC format (used by RefSeq)
-        if contig_str.startswith("NC_"):
-            return contig_str
-        # Handle common chromosome name variations
-        if contig_str == "23":
-            return "X"
-        elif contig_str == "24":
-            return "Y"
-        elif contig_str == "25":
-            return "MT"
-        elif contig_str.startswith("chr"):
-            return contig_str[3:]
-        return contig_str
+        # Use ChromosomeMapper for normalization
+        # Normalize to string format (preserves NC format, converts numeric to string)
+        # Default to human species if not specified
+        mapper = ChromosomeMapper(species="homo sapiens", verbose=False)
+        # Detect format and convert to string
+        mapper.detect_sumstats_format(pd.Series([contig]))
+        normalized = mapper.to_string(contig)
+        return str(normalized)
     
     def gene_names_at_locus(self, contig, position):
         """
@@ -962,6 +958,14 @@ def _get_novel(insumstats_or_dataframe,
         Window size (kb) for lead variant identification
     windowsizekb_for_novel : int, default=1000
         Distance threshold (kb) to define novelty
+
+    Returns
+    -------
+    pandas.DataFrame or tuple
+        If only_novel=False and output_known=False: DataFrame with all variants and NOVEL column
+        If only_novel=True and output_known=False: DataFrame with only novel variants
+        If output_known=True: tuple of (variants DataFrame, known variants DataFrame)
+        The returned DataFrame includes a "NOVEL" column indicating novelty status.
 
     Notes
     -----

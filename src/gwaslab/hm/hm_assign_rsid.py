@@ -27,8 +27,9 @@ import subprocess
 import shutil
 import os
 import tempfile
-from gwaslab.io.io_vcf import auto_check_vcf_chr_dict, is_vcf_file
+from gwaslab.io.io_vcf import is_vcf_file
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 @with_logging(
     start_to_msg="assign rsID from reference",
@@ -51,7 +52,7 @@ def _assign_rsid(
     ea: str = "EA",
     nea: str = "NEA",
     overwrite: str = "empty",
-    chr_dict: dict | None = None,
+    mapper: ChromosomeMapper | None = None,
     log: "Log" = Log(),
     verbose: bool = True,
 ):
@@ -84,8 +85,10 @@ def _assign_rsid(
     overwrite : str, optional
         Overwrite mode: "all", "invalid", or "empty". Determines which existing rsID values to overwrite.
         Default is "empty".
-    chr_dict : dict or None, optional
-        Dictionary mapping sumstats chromosome names to reference chromosome names.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper with automatic format detection.
     log : gwaslab.g_Log.Log, optional
         Log object for recording progress. Default is a new Log instance.
     verbose : bool, optional
@@ -120,11 +123,24 @@ def _assign_rsid(
     if isinstance(sumstats, pd.DataFrame):
         # Called with DataFrame
         is_dataframe = True
+        sumstats_obj = None
     else:
         # Called with Sumstats object
         sumstats_obj = sumstats
         sumstats = sumstats_obj.data
         is_dataframe = False
+
+    # Get mapper from Sumstats object if available, otherwise create one
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chrom])
 
     # Ensure rsID exists
     if rsid not in sumstats.columns:
@@ -239,10 +255,13 @@ def _assign_rsid(
             columns={chrom: "CHR", pos: "POS"}
         )
         
+        # Auto-detect reference format from VCF file
+        mapper.detect_reference_format(path_to_use)
+        
         lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
             vcf_path=path_to_use,
             sumstats=variants_needing_rsid,
-            chr_dict=chr_dict,
+            mapper=mapper,
             assign_cols=["rsID"],  # ensures the lookup carries ID/rsID usable by assigner
             out_lookup=lookup_path,
             threads=threads,
@@ -310,7 +329,7 @@ def _annotate_sumstats(
     tsv_path: str | None = None,
     lookup_path: str | None = None,
     assign_cols=("rsID",),
-    chr_dict=None,
+    mapper: ChromosomeMapper | None = None,
     threads=6,
     chrom="CHR",
     pos="POS",
@@ -340,8 +359,10 @@ def _annotate_sumstats(
         Lookup table file (tsv or tsv.gz).
     assign_cols : tuple[str]
         Columns to assign (e.g., ("rsID","AF")).
-    chr_dict : dict, optional
-        Map sumstats CHR → VCF CHR naming.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper with automatic format detection.
     threads : int
         bcftools threads.
     chrom, pos, ea, nea : str
@@ -474,10 +495,13 @@ def _annotate_sumstats(
                 columns={chrom: "CHR", pos: "POS"}
             )
         
+        # Auto-detect reference format from VCF file
+        mapper.detect_reference_format(path_to_use)
+        
         lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
             vcf_path   = path_to_use,
             sumstats   = variants_needing_annotation,
-            chr_dict   = chr_dict,
+            mapper     = mapper,
             assign_cols= assign_cols,
             out_lookup = lookup_path,
             threads    = threads,
@@ -551,8 +575,18 @@ def _extract_lookup_table_from_vcf_bcf_old(
         log.write(" -Empty lookup table created: {}...".format(out_lookup), verbose=verbose)
         return out_lookup, rm_out_lookup
 
+    # Note: This is a deprecated function. Use _extract_lookup_table_from_vcf_bcf instead.
+    # Keeping chr_dict for backward compatibility but it's deprecated.
     if chr_dict is None:
-        chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
+        # Create mapper and detect format
+        mapper = ChromosomeMapper(log=log, verbose=verbose)
+        if not sumstats.empty and "CHR" in sumstats.columns:
+            mapper.detect_sumstats_format(sumstats["CHR"])
+        mapper.detect_reference_format(vcf_path)
+        # Create chr_dict from mapper for backward compatibility
+        # This is a temporary bridge - should use mapper directly
+        from gwaslab.bd.bd_common_data import get_number_to_chr
+        chr_dict = get_number_to_chr(prefix="chr" if mapper._reference_prefix == "chr" else "")
         log.write(" -Auto-determined chr_dict: {}...".format(chr_dict), verbose=verbose)
 
     if assign_cols is None:
@@ -706,13 +740,20 @@ import subprocess, tempfile, os
 
 def _worker_bcf_lookup(args):
     (chr_val, df_chr, vcf_path, fmt, split_by_chr,
-     inv_chr_dict, info_tags, id_col, log, verbose) = args
+     mapper, info_tags, id_col, log, verbose) = args
 
     import tempfile, subprocess, os
     import pandas as pd
     from io import StringIO
+    import time
+    
+    worker_id = os.getpid()
+    start_time = time.time()
+    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] Starting, chr={chr_val}, {len(df_chr)} targets")
 
-    orig_chr = inv_chr_dict.get(chr_val, chr_val)
+    # Convert reference chromosome back to sumstats format for logging
+    orig_chr = mapper.reference_to_sumstats(chr_val, reference_file=vcf_path)
+    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] Converted chr {chr_val} -> {orig_chr}")
 
     # Create per-chr target list
     tmp_targets = tempfile.NamedTemporaryFile(
@@ -746,7 +787,11 @@ def _worker_bcf_lookup(args):
 
     
     # Run pipeline and capture text output
+    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] About to run bcftools command")
+    cmd_start = time.time()
     data = subprocess.check_output(cmd, shell=True, text=True)
+    cmd_elapsed = time.time() - cmd_start
+    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] bcftools completed in {cmd_elapsed:.2f}s, got {len(data)} chars")
     log.write(f" {orig_chr}", verbose=verbose, end="", show_time=False)
 
     # Convert to DataFrame
@@ -761,7 +806,9 @@ def _worker_bcf_lookup(args):
         os.remove(targets_path)
     except:
         pass
-
+    
+    total_elapsed = time.time() - start_time
+    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] Completed in {total_elapsed:.2f}s, returning {len(df_out)} rows")
     return df_out
 from multiprocessing import Pool
 
@@ -774,7 +821,7 @@ from multiprocessing import Pool
 def _extract_lookup_table_from_vcf_bcf(
     vcf_path,
     sumstats,
-    chr_dict=None,
+    mapper: ChromosomeMapper | None = None,
     assign_cols=None,
     out_lookup=None,
     verbose=True,
@@ -791,8 +838,16 @@ def _extract_lookup_table_from_vcf_bcf(
     if split_by_chr is None:
         split_by_chr = not is_indexed(vcf_path)
 
-    if chr_dict is None:
-        chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
+    # Get or create mapper
+    if mapper is None:
+        # Create default mapper
+        mapper = ChromosomeMapper(log=log, verbose=verbose)
+        # Auto-detect sumstats format
+        if not sumstats.empty and "CHR" in sumstats.columns:
+            mapper.detect_sumstats_format(sumstats["CHR"])
+    
+    # Auto-detect reference format from VCF file
+    mapper.detect_reference_format(vcf_path)
 
     if assign_cols is None:
         assign_cols = []
@@ -802,10 +857,10 @@ def _extract_lookup_table_from_vcf_bcf(
         out_lookup = tmp.name
         tmp.close()
 
-    inv_chr_dict = {v: k for k, v in chr_dict.items()}
-
+    # Convert sumstats chromosomes to reference format
     targets = sumstats[["CHR","POS"]].copy()
-    targets["CHR"] = targets["CHR"].map(chr_dict)
+    log.write(" -Converting chromosome notation to reference notation...", verbose=verbose)
+    targets["CHR"] = mapper.sumstats_to_reference_series(targets["CHR"], reference_file=vcf_path)
     targets = targets.dropna().drop_duplicates()
     # Group by chromosome and sort by chromosome to ensure consistent processing order
     # Note: Sorting chromosomes may affect the order in which bcftools processes records,
@@ -821,7 +876,7 @@ def _extract_lookup_table_from_vcf_bcf(
     tasks = []
     for chr_val, df_chr in chr_groups.items():
         tasks.append((chr_val, df_chr, vcf_path, fmt, split_by_chr,
-                      inv_chr_dict, info_tags, id_col, log, verbose))
+                      mapper, info_tags, id_col, log, verbose))
 
     log.write(f" -Running multiprocessing: {threads} workers, {len(tasks)} chromosomes",
               verbose=verbose)
@@ -835,9 +890,15 @@ def _extract_lookup_table_from_vcf_bcf(
         log.write(" -Calling: bcftools view -T <TARGETS> -Ou <VCF> | "
                   "bcftools query -f '<FMT>'", verbose=verbose)
 
+    import time
+    pool_start = time.time()
+    log.write(f"[DEBUG _extract_lookup_table_from_vcf_bcf] About to create Pool with {threads} workers for {len(tasks)} tasks", verbose=verbose)
     with Pool(threads) as pool:
+        log.write(f"[DEBUG _extract_lookup_table_from_vcf_bcf] Pool created, starting map operation", verbose=verbose)
         log.write(f" -Finished:",end="", verbose=verbose)
         dfs = pool.map(_worker_bcf_lookup, tasks)
+        pool_elapsed = time.time() - pool_start
+        log.write(f"[DEBUG _extract_lookup_table_from_vcf_bcf] Pool.map completed in {pool_elapsed:.2f} seconds, got {len(dfs)} results", verbose=verbose)
         log.write(f"", verbose=verbose, show_time=False)
 
     # Merge results - filter out empty DataFrames to avoid FutureWarning
@@ -849,7 +910,9 @@ def _extract_lookup_table_from_vcf_bcf(
         df = pd.DataFrame(columns=["CHR","POS","REF","ALT",id_col] + info_tags)
     
     if not df.empty:
-        df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
+        # Convert reference chromosomes back to sumstats format
+        log.write(" -Converting chromosome notation back to sumstats notation...", verbose=verbose)
+        df["CHR"] = mapper.reference_to_sumstats_series(df["CHR"], reference_file=vcf_path)
 
     if id_col == "rsID" and "ID" in df.columns:
         df.rename(columns={"ID":"rsID"}, inplace=True)

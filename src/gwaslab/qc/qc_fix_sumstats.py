@@ -904,7 +904,10 @@ def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="", remove=Fals
         # ========================================================================
         # Step 5: Assign extracted values back to sumstats
         # ========================================================================
-        sumstats.loc[is_chr_fixable.index, chrom] = chr_extracted[is_chr_fixable.index].astype("string")
+        # The regex extraction already provides normalized chromosome values (no chr prefix)
+        # Just convert to string type and assign directly
+        chr_extracted_series = chr_extracted[is_chr_fixable.index].astype("string")
+        sumstats.loc[is_chr_fixable.index, chrom] = chr_extracted_series
         
         # ========================================================================
         # Step 6: Convert sex chromosomes to numeric values

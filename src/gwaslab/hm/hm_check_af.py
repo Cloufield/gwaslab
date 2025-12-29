@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
-from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
 from .hm_assign_rsid import _annotate_sumstats
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 @with_logging(
     start_to_msg="check the difference between EAF (sumstats) and ALT frequency (reference VCF) using sweep mode",
@@ -18,7 +18,7 @@ def _check_af_with_annotation(
     vcf_path: str | None = None,
     tsv_path: str | None = None,
     assign_cols: tuple = ("AF",),
-    chr_dict: dict | None = None,
+    mapper=None,
     threads: int = 6,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
@@ -73,9 +73,10 @@ def _check_af_with_annotation(
     assign_cols : tuple or str, default=("AF",)
         Column names to extract from reference file during annotation. The first column 
         will be used as the reference AF for DAF calculation.
-    chr_dict : dict or None, optional
-        Dictionary for mapping chromosome names between sumstats and reference (e.g., 
-        {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper.
     threads : int, default=6
         Number of threads for parallel processing during annotation and lookup table generation.
     reuse_lookup : bool, default=True
@@ -126,7 +127,7 @@ def _check_af_with_annotation(
     -----
     - This function uses optimized bulk lookup methods for faster processing compared to 
       per-variant VCF queries.
-    - The function automatically handles chromosome name mapping if `chr_dict` is provided.
+    - The function automatically handles chromosome name mapping using ChromosomeMapper.
     - Lookup tables are cached as TSV files for faster subsequent runs when `reuse_lookup=True`.
     - The difference in allele frequency (DAF) is calculated as: DAF = EAF (sumstats) - ALT_AF (reference VCF)
     - **Important**: This DAF is NOT the derived allele frequency. It is simply the difference in 
@@ -168,15 +169,25 @@ def _check_af_with_annotation(
     if convert_to_bcf:
         strip_info = False
 
-    # Auto-detect chromosome dictionary if not provided
-    if chr_dict is None:
-        if vcf_path is not None:
-            chr_dict = auto_check_vcf_chr_dict(vcf_path, chr_dict, verbose, log)
-        elif path is not None:
-            # Check if path is a VCF/BCF file
-            from gwaslab.hm.hm_assign_rsid import is_vcf_file
-            if is_vcf_file(path):
-                chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available, otherwise create one
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chrom])
+
+    # Auto-detect reference format from VCF file
+    if vcf_path is not None:
+        mapper.detect_reference_format(vcf_path)
+    elif path is not None:
+        from gwaslab.hm.hm_assign_rsid import is_vcf_file
+        if is_vcf_file(path):
+            mapper.detect_reference_format(path)
 
     # First annotate with AF from reference
     annotated_sumstats = _annotate_sumstats(
@@ -185,7 +196,7 @@ def _check_af_with_annotation(
         vcf_path=vcf_path,
         tsv_path=tsv_path,
         assign_cols=assign_cols,
-        chr_dict=chr_dict,
+        mapper=mapper,
         threads=threads,
         chrom=chrom,
         pos=pos,
@@ -290,7 +301,7 @@ def _infer_af_with_annotation(
     vcf_path: str | None = None,
     tsv_path: str | None = None,
     assign_cols: tuple = ("AF",),
-    chr_dict: dict | None = None,
+    mapper: ChromosomeMapper | None = None,
     threads: int = 6,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
@@ -344,9 +355,10 @@ def _infer_af_with_annotation(
     assign_cols : tuple or str, default=("AF",)
         Column names to extract from reference file during annotation. The first column 
         will be used as the reference AF for EAF inference.
-    chr_dict : dict or None, optional
-        Dictionary for mapping chromosome names between sumstats and reference (e.g., 
-        {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper.
     threads : int, default=6
         Number of threads for parallel processing during annotation and lookup table generation.
     reuse_lookup : bool, default=True
@@ -392,7 +404,7 @@ def _infer_af_with_annotation(
     -----
     - This function uses optimized bulk lookup methods for faster processing compared to 
       per-variant VCF queries.
-    - The function automatically handles chromosome name mapping if `chr_dict` is provided.
+    - The function automatically handles chromosome name mapping using ChromosomeMapper.
     - Lookup tables are cached as TSV files for faster subsequent runs when `reuse_lookup=True`.
     - By default, only processes variants with valid harmonization status (STATUS digit 4 = 0) to 
       ensure alleles are standardized and normalized.
@@ -433,15 +445,25 @@ def _infer_af_with_annotation(
     if convert_to_bcf:
         strip_info = False
 
-    # Auto-detect chromosome dictionary if not provided
-    if chr_dict is None:
-        if vcf_path is not None:
-            chr_dict = auto_check_vcf_chr_dict(vcf_path, chr_dict, verbose, log)
-        elif path is not None:
-            # Check if path is a VCF/BCF file
-            from gwaslab.hm.hm_assign_rsid import is_vcf_file
-            if is_vcf_file(path):
-                chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available, otherwise create one
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chrom])
+
+    # Auto-detect reference format from VCF file
+    if vcf_path is not None:
+        mapper.detect_reference_format(vcf_path)
+    elif path is not None:
+        from gwaslab.hm.hm_assign_rsid import is_vcf_file
+        if is_vcf_file(path):
+            mapper.detect_reference_format(path)
 
     # Initialize EAF column if it doesn't exist
     if eaf not in sumstats.columns:
@@ -474,7 +496,7 @@ def _infer_af_with_annotation(
             vcf_path=vcf_path,
             tsv_path=tsv_path,
             assign_cols=assign_cols,
-            chr_dict=chr_dict,
+            mapper=mapper,
             threads=threads,
             chrom=chrom,
             pos=pos,
@@ -564,7 +586,7 @@ def _infer_af_with_maf_annotation(
     vcf_path: str | None = None,
     tsv_path: str | None = None,
     assign_cols: tuple = ("AF",),
-    chr_dict: dict | None = None,
+    mapper=None,
     threads: int = 6,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
@@ -622,9 +644,10 @@ def _infer_af_with_maf_annotation(
     assign_cols : tuple or str, default=("AF",)
         Column names to extract from reference file during annotation. The first column 
         will be used as the reference AF for EAF inference.
-    chr_dict : dict or None, optional
-        Dictionary for mapping chromosome names between sumstats and reference (e.g., 
-        {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper.
     threads : int, default=6
         Number of threads for parallel processing during annotation and lookup table generation.
     reuse_lookup : bool, default=True
@@ -675,7 +698,7 @@ def _infer_af_with_maf_annotation(
     -----
     - This function uses optimized bulk lookup methods for faster processing compared to 
       per-variant VCF queries.
-    - The function automatically handles chromosome name mapping if `chr_dict` is provided.
+    - The function automatically handles chromosome name mapping using ChromosomeMapper.
     - Lookup tables are cached as TSV files for faster subsequent runs when `reuse_lookup=True`.
     - By default, only processes variants with valid harmonization status (STATUS digit 4 = 0) to 
       ensure alleles are standardized and normalized.
@@ -718,15 +741,25 @@ def _infer_af_with_maf_annotation(
     if convert_to_bcf:
         strip_info = False
 
-    # Auto-detect chromosome dictionary if not provided
-    if chr_dict is None:
-        if vcf_path is not None:
-            chr_dict = auto_check_vcf_chr_dict(vcf_path, chr_dict, verbose, log)
-        elif path is not None:
-            # Check if path is a VCF/BCF file
-            from gwaslab.hm.hm_assign_rsid import is_vcf_file
-            if is_vcf_file(path):
-                chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available, otherwise create one
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chrom])
+
+    # Auto-detect reference format from VCF file
+    if vcf_path is not None:
+        mapper.detect_reference_format(vcf_path)
+    elif path is not None:
+        from gwaslab.hm.hm_assign_rsid import is_vcf_file
+        if is_vcf_file(path):
+            mapper.detect_reference_format(path)
 
     # Initialize EAF and ref_eaf columns if they don't exist
     if eaf not in sumstats.columns:
@@ -756,7 +789,7 @@ def _infer_af_with_maf_annotation(
             vcf_path=vcf_path,
             tsv_path=tsv_path,
             assign_cols=assign_cols,
-            chr_dict=chr_dict,
+            mapper=mapper,
             threads=threads,
             chrom=chrom,
             pos=pos,

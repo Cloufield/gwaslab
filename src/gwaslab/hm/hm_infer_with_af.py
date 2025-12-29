@@ -5,6 +5,7 @@ from gwaslab.info.g_vchange_status import vchange_status
 from gwaslab.info.g_vchange_status import ensure_status_int
 from .hm_assign_rsid import _annotate_sumstats
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 @with_logging(
     start_to_msg="annotate and infer strand orientation using allele frequencies",
@@ -18,7 +19,7 @@ def _infer_strand_with_annotation(
     vcf_path: str | None = None,
     tsv_path: str | None = None,
     assign_cols: tuple = ("AF",),
-    chr_dict: dict | None = None,
+    mapper: ChromosomeMapper | None = None,
     threads: int = 6,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
@@ -78,9 +79,10 @@ def _infer_strand_with_annotation(
     assign_cols : tuple or str, default=("AF",)
         Column names to extract from reference file during annotation. The first column 
         will be renamed to `raf` (default: "RAF") for use in strand inference.
-    chr_dict : dict or None, optional
-        Dictionary for mapping chromosome names between sumstats and reference (e.g., 
-        {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper with automatic format detection.
     threads : int, default=6
         Number of threads for parallel processing during annotation and lookup table generation.
     reuse_lookup : bool, default=True
@@ -143,7 +145,7 @@ def _infer_strand_with_annotation(
       per-variant VCF queries.
     - For palindromic SNPs, strand inference is only performed if MAF can be reliably 
       determined from EAF alone (EAF < maf_threshold OR EAF > 1 - maf_threshold).
-    - The function automatically handles chromosome name mapping if `chr_dict` is provided.
+    - The function automatically handles chromosome name mapping using ChromosomeMapper.
     - Lookup tables are cached as TSV files for faster subsequent runs when `reuse_lookup=True`.
     
     See Also
@@ -161,6 +163,18 @@ def _infer_strand_with_annotation(
         sumstats = sumstats_obj.data
         is_dataframe = False
 
+    # Get mapper from Sumstats object if available, otherwise create one
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chrom])
+
     # Normalize assign_cols to tuple/list
     if isinstance(assign_cols, str):
         assign_cols = tuple([assign_cols])
@@ -173,6 +187,14 @@ def _infer_strand_with_annotation(
     if convert_to_bcf:
         strip_info = False
 
+    # Auto-detect reference format from VCF file if needed
+    if vcf_path is not None:
+        mapper.detect_reference_format(vcf_path)
+    elif path is not None:
+        from gwaslab.hm.hm_assign_rsid import is_vcf_file
+        if is_vcf_file(path):
+            mapper.detect_reference_format(path)
+
     # First annotate with AF
     annotated_sumstats = _annotate_sumstats(
         sumstats=sumstats,
@@ -180,7 +202,7 @@ def _infer_strand_with_annotation(
         vcf_path=vcf_path,
         tsv_path=tsv_path,
         assign_cols=assign_cols,
-        chr_dict=chr_dict,
+        mapper=mapper,
         threads=threads,
         chrom=chrom,
         pos=pos,
@@ -238,7 +260,7 @@ def _infer_strand_with_annotation(
                     sumstats_obj.meta["gwaslab"]["references"]["ref_infer"], path)
             infer_strand_kwargs = {
                 'path': path, 'vcf_path': vcf_path, 'tsv_path': tsv_path, 'assign_cols': assign_cols,
-                'chr_dict': chr_dict, 'threads': threads, 'reuse_lookup': reuse_lookup,
+                'threads': threads, 'reuse_lookup': reuse_lookup,
                 'convert_to_bcf': convert_to_bcf, 'strip_info': strip_info,
                 'maf_threshold': maf_threshold, 'ref_maf_threshold': ref_maf_threshold,
                 'daf_tolerance': daf_tolerance

@@ -26,7 +26,7 @@ from gwaslab.info.g_vchange_status import vchange_status, set_status_digit, stat
 from gwaslab.info.g_version import _get_version
 from gwaslab.cache_manager import CacheManager, PALINDROMIC_INDEL, NON_PALINDROMIC
 from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
-from gwaslab.io.io_vcf import auto_check_vcf_chr_dict, check_vcf_chr_prefix, check_vcf_chr_NC
+from gwaslab.io.io_vcf import check_vcf_chr_prefix, check_vcf_chr_NC
 #rsidtochrpos
 #checkref
 #parallelizeassignrsid
@@ -879,7 +879,7 @@ def check_status(
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".check_ref()"
 )
-def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", chr_dict=get_chr_to_number(), remove=False, verbose=True, log=Log()):
+def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", mapper=None, remove=False, verbose=True, log=Log()):
     """
     Check if non-effect allele (NEA) is aligned with reference genome.
 
@@ -903,8 +903,10 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
         Column name for non-effect allele in sumstats.
     status : str, default="STATUS"
         Column name for status codes in sumstats.
-    chr_dict : dict, optional
-        Dictionary mapping chromosome names to standardized format.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper.
     remove : bool, default=False
         If True, remove variants not on the reference genome.
     verbose : bool, default=True
@@ -934,11 +936,32 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
     if isinstance(sumstats, pd.DataFrame):
         # Called with DataFrame
         is_dataframe = True
+        sumstats_obj = None
     else:
         # Called with Sumstats object
         sumstats_obj = sumstats
         sumstats = sumstats_obj.data
         is_dataframe = False
+    
+    # Get mapper from Sumstats object if available, otherwise create one
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            # Use the Sumstats object's mapper
+            mapper = sumstats_obj.mapper
+        else:
+            # Create default mapper (will auto-detect format when needed)
+            from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(
+                species=species,
+                build=build,
+                log=log,
+                verbose=verbose
+            )
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chrom])
     
     # Ensure STATUS is integer type before any operations
     sumstats = ensure_status_int(sumstats, status)
@@ -951,9 +974,6 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
     chromlist = get_chr_list(add_number=True)
     chromlist_set = set(chromlist)
     
-    # Cache chr_dict keys for faster lookup
-    chr_dict_keys = set(chr_dict.keys()) if chr_dict else set()
-    
     # Convert chroms_in_sumstats to set for O(1) lookup (compute set directly from unique)
     chroms_in_sumstats_set = set(sumstats[chrom].unique())  # load records from Fasta file only for the chromosomes present in the sumstats
     
@@ -963,8 +983,7 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
         ref_seq,
         chromlist_set,
         chroms_in_sumstats_set,
-        chr_dict,
-        chr_dict_keys,
+        mapper=mapper,
         pos_as_dict=True,
         log=log,
         verbose=verbose
@@ -1071,7 +1090,7 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
             from gwaslab.info.g_meta import _update_harmonize_step
             check_ref_kwargs = {
                 'ref_seq': ref_seq, 'chrom': chrom, 'pos': pos, 'ea': ea, 'nea': nea,
-                'status': status, 'chr_dict': chr_dict, 'remove': remove
+                'status': status, 'mapper': mapper, 'remove': remove
             }
             _update_harmonize_step(sumstats_obj, "check_ref", check_ref_kwargs, True)
         except:
@@ -1084,10 +1103,12 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
 #######################################################################################################################################
 
 #20220721
-def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=get_number_to_chr()):
+def chrposref_rsid(chr,end,ref,alt,vcf_reader,mapper=None):
     ## single record assignment
     start=end-1
-    if chr_dict is not None: chr=chr_dict[chr]
+    if mapper is not None:
+        # Convert sumstats chr to reference format for VCF lookup
+        chr = mapper.sumstats_to_reference(chr, reference_file=None)
     
     try:
         chr_seq = vcf_reader.fetch(chr,start,end)
@@ -1104,12 +1125,15 @@ def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=get_number_to_chr()):
                 return record.id
     return pd.NA
 
-def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",chr_dict=get_number_to_chr()):
+def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",mapper=None):
     ## single df assignment
     vcf_reader = VariantFile(path)
-    def rsid_helper(x,vcf_reader,chr_dict):
-         return chrposref_rsid(x.iloc[0],x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,chr_dict)
-    map_func=partial(rsid_helper,vcf_reader=vcf_reader,chr_dict=chr_dict)
+    # Auto-detect reference format from VCF file if mapper provided
+    if mapper is not None:
+        mapper.detect_reference_format(path)
+    def rsid_helper(x,vcf_reader,mapper):
+         return chrposref_rsid(x.iloc[0],x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,mapper)
+    map_func=partial(rsid_helper,vcf_reader=vcf_reader,mapper=mapper)
     rsID = sumstats.apply(map_func,axis=1)
     return rsID
 
@@ -1121,7 +1145,7 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
 )
 def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="rsID", chr="CHR", pos="POS", ref="NEA", alt="EA", status="STATUS",
                           threads=1, chunksize=5000000, ref_snpid="SNPID", ref_rsid="rsID",
-                          overwrite="empty", verbose=True, log=Log(), chr_dict=None):
+                          overwrite="empty", verbose=True, log=Log(), mapper=None):
     """
     Assign rsID to variants by matching with reference file.
 
@@ -1168,8 +1192,10 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
         If True, print progress messages.
     log : gwaslab.g_Log.Log, default=Log()
         Logging object for recording process information.
-    chr_dict : dict, optional
-        Dictionary for mapping chromosome names to standardized format.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper.
 
     Returns
     -------
@@ -1189,14 +1215,29 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
     if isinstance(sumstats, pd.DataFrame):
         # Called with DataFrame
         is_dataframe = True
+        sumstats_obj = None
     else:
         # Called with Sumstats object
         sumstats_obj = sumstats
         sumstats = sumstats_obj.data
         is_dataframe = False
+    
+    # Get mapper from Sumstats object if available
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chr in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chr])
 
     if ref_mode=="vcf":
-        chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
+        # Auto-detect reference format from VCF file
+        mapper.detect_reference_format(path)
         log.write(" -Assigning rsID based on CHR:POS and REF:ALT/ALT:REF...",verbose=verbose)
         ##############################################
         if rsid not in sumstats.columns:
@@ -1225,7 +1266,7 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
             #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
             df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
             with Pool(threads) as pool:
-                map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
+                map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,mapper=mapper) 
                 assigned_rsid = pd.concat(pool.map(map_func,df_split))
                 sumstats.loc[to_assign,rsid] = assigned_rsid.values
         gc.collect()
@@ -1306,13 +1347,15 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
 #################################################################################################################################################
 #single record assignment
 
-def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_threshold,status,chr_dict=get_number_to_chr()):
+def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_threshold,status,mapper=None):
     ### 0 : not palindromic
     ### 1 : palindromic +strand 
     ### 2 : palindromic -strand -> need to flip -> flipped
     ### 5 : palindromic -strand -> need to flip
     ### 8 : no ref data
-    if chr_dict is not None: chr=chr_dict[chr]
+    if mapper is not None:
+        # Convert sumstats chr to reference format for VCF lookup
+        chr = mapper.sumstats_to_reference(chr, reference_file=None)
     # Convert status to integer
     status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
     
@@ -1336,7 +1379,7 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
                 return set_status_digit(status_val, 7, 5)  # Set digit 7 to 5
     return set_status_digit(status_val, 7, 8)  # Set digit 7 to 8
 
-def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_maf_threshold=0.4,chr_dict=get_number_to_chr(),trust_cache=True,log=Log(),verbose=True):
+def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_maf_threshold=0.4,mapper=None,trust_cache=True,log=Log(),verbose=True):
     if not trust_cache:
         assert ref_infer is not None, "If trust_cache is False, ref_infer must be provided"
         log.warning("You are not trusting the cache, this will slow down the process. Please consider building a complete cache.")
@@ -1356,7 +1399,8 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
         start = pos - 1
         end = pos
         
-        if chr_dict is not None: chrom=chr_dict[chrom]
+        if mapper is not None:
+            chrom = mapper.sumstats_to_reference(chrom, reference_file=ref_infer if ref_infer else None)
         
         # Convert status to integer
         status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
@@ -1383,7 +1427,7 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
         else:
             if not trust_cache:
                 # If we don't trust the cache as a not complete cache, we should perform the check reading from the VCF file
-                new_status = check_strand_status(_chrom, start, end, ref, alt, eaf, vcf_reader, ref_alt_freq, ref_maf_threshold, status, chr_dict)
+                new_status = check_strand_status(_chrom, start, end, ref, alt, eaf, vcf_reader, ref_alt_freq, ref_maf_threshold, status, mapper)
         
         new_statuses.append(new_status)
         
@@ -1391,13 +1435,15 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
     return new_statuses
 
 
-def check_unkonwn_indel(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_threshold,status,chr_dict=get_number_to_chr(),daf_tolerance=0.2):
+def check_unkonwn_indel(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_threshold,status,mapper=None,daf_tolerance=0.2):
     ### input : unknown indel, both on genome (xx1[45]x)
     ### 3 no flip
     ### 4 unknown indel,fixed   (6->5)
     ### 6 flip
     
-    if chr_dict is not None: chr=chr_dict[chr]
+    if mapper is not None:
+        # Convert sumstats chr to reference format for VCF lookup
+        chr = mapper.sumstats_to_reference(chr, reference_file=None)
     # Convert status to integer
     status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
     
@@ -1420,7 +1466,7 @@ def check_unkonwn_indel(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
     return set_status_digit(status_val, 7, 8)
 
 
-def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_maf_threshold=None, chr_dict=get_number_to_chr(),daf_tolerance=0.2,trust_cache=True,log=Log(),verbose=True):
+def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_maf_threshold=None, mapper=None,daf_tolerance=0.2,trust_cache=True,log=Log(),verbose=True):
     if not trust_cache:
         assert ref_infer is not None, "If trust_cache is False, ref_infer must be provided"
         log.warning("You are not trusting the cache, this will slow down the process. Please consider building a complete cache.")
@@ -1438,7 +1484,8 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
         _chrom, pos, ref, alt, eaf, status = data[i]
         chrom = _chrom
         
-        if chr_dict is not None: chrom=chr_dict[chrom]
+        if mapper is not None:
+            chrom = mapper.sumstats_to_reference(chrom, reference_file=ref_infer if ref_infer else None)
         start = pos - 1
         end = pos
         
@@ -1476,7 +1523,7 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
         else:
             if not trust_cache:
                 # If we don't trust the cache as a not complete cache, we should perform the check reading from the VCF file
-                new_status = check_unkonwn_indel(_chrom, start, end, ref, alt, eaf, vcf_reader, ref_alt_freq, ref_maf_threshold,status, chr_dict, daf_tolerance)
+                new_status = check_unkonwn_indel(_chrom, start, end, ref, alt, eaf, vcf_reader, ref_alt_freq, ref_maf_threshold,status, mapper, daf_tolerance)
                 
         new_statuses.append(new_status)
         
@@ -1502,24 +1549,24 @@ def is_palindromic(sumstats,a1="EA",a2="NEA"):
 ##################################################################################################################################################
 #single df assignment
 
-def check_strand(sumstats,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
+def check_strand(sumstats,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",mapper=None,status="STATUS"):
     vcf_reader = VariantFile(ref_infer)
-    status_part = sumstats.apply(lambda x:check_strand_status(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,ref_maf_threshold,x.iloc[5],chr_dict),axis=1) 
+    status_part = sumstats.apply(lambda x:check_strand_status(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,ref_maf_threshold,x.iloc[5],mapper),axis=1) 
     return status_part
 
-def check_strand_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,chr_dict=get_number_to_chr(),trust_cache=True,log=Log(),verbose=True):
+def check_strand_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,mapper=None,trust_cache=True,log=Log(),verbose=True):
     assert cache is not None, "Cache must be provided"
-    status_part = check_strand_status_cache(sumstats,cache,ref_infer,ref_alt_freq,ref_maf_threshold,chr_dict,trust_cache,log,verbose)
+    status_part = check_strand_status_cache(sumstats,cache,ref_infer,ref_alt_freq,ref_maf_threshold,mapper,trust_cache,log,verbose)
     return status_part
 
-def check_indel(sumstats,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS",daf_tolerance=0.2):
+def check_indel(sumstats,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",mapper=None,status="STATUS",daf_tolerance=0.2):
     vcf_reader = VariantFile(ref_infer)
-    status_part = sumstats.apply(lambda x:check_unkonwn_indel(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,ref_maf_threshold,x.iloc[5],chr_dict,daf_tolerance),axis=1)
+    status_part = sumstats.apply(lambda x:check_unkonwn_indel(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,ref_maf_threshold,x.iloc[5],mapper,daf_tolerance),axis=1)
     return status_part
 
-def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,chr_dict=get_number_to_chr(),daf_tolerance=0.2,trust_cache=True,log=Log(),verbose=True):
+def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_threshold=None,mapper=None,daf_tolerance=0.2,trust_cache=True,log=Log(),verbose=True):
     assert cache is not None, "Cache must be provided"
-    status_part = check_unkonwn_indel_cache(sumstats,cache,ref_infer,ref_alt_freq,ref_maf_threshold,chr_dict,daf_tolerance,trust_cache,log,verbose)
+    status_part = check_unkonwn_indel_cache(sumstats,cache,ref_infer,ref_alt_freq,ref_maf_threshold,mapper,daf_tolerance,trust_cache,log,verbose)
     return status_part
 
 ##################################################################################################################################################
@@ -1532,7 +1579,7 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_thresho
 )
 def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.4,daf_tolerance=0.20,remove_snp="",mode="pi",threads=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
-                       chr_dict=None,cache_options={},verbose=True,log=Log()):
+                       mapper=None,cache_options={},verbose=True,log=Log()):
     """
     Args:
     cache_options : A dictionary with the following keys:
@@ -1557,7 +1604,21 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
         sumstats = sumstats_obj.data
         is_dataframe = False
 
-    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chr in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chr])
+    
+    # Auto-detect reference format from VCF file
+    mapper.detect_reference_format(ref_infer)
     
     # Setup cache variables
     cache_manager = cache_options.get("cache_manager", None)
@@ -1614,13 +1675,13 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
            
             if use_cache and cache_manager.cache_len > 0:
                 log.write("  -Using cache for strand inference",verbose=verbose)
-                status_inferred = cache_manager.apply_fn(check_strand_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, ref_maf_threshold=ref_maf_threshold, chr_dict=chr_dict, trust_cache=trust_cache, log=log, verbose=verbose)
+                status_inferred = cache_manager.apply_fn(check_strand_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, ref_maf_threshold=ref_maf_threshold, mapper=mapper, trust_cache=trust_cache, log=log, verbose=verbose)
                 sumstats.loc[unknow_palindromic_to_check,status] = status_inferred
             else:
                 #df_split = np.array_split(df_to_check, threads)
                 df_split = _df_split(df_to_check, threads)
                 with Pool(threads) as pool:
-                    map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict) 
+                    map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,mapper=mapper) 
                     status_inferred = pd.concat(pool.map(map_func,df_split))
                     sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
             log.write(" -Finished strand inference.",verbose=verbose)
@@ -1691,13 +1752,13 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
             
                 if use_cache and cache_manager.cache_len > 0:
                     log.write("  -Using cache for indel inference",verbose=verbose)
-                    status_inferred = cache_manager.apply_fn(check_indel_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold, chr_dict=chr_dict, daf_tolerance=daf_tolerance, trust_cache=trust_cache, log=log, verbose=verbose)
+                    status_inferred = cache_manager.apply_fn(check_indel_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold, mapper=mapper, daf_tolerance=daf_tolerance, trust_cache=trust_cache, log=log, verbose=verbose)
                     sumstats.loc[unknow_indel,status] = status_inferred
                 else:
                     #df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], threads)
                     df_split = _df_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], threads)
                     with Pool(threads) as pool:
-                        map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
+                        map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,mapper=mapper,daf_tolerance=daf_tolerance) 
                         status_inferred = pd.concat(pool.map(map_func,df_split))
                         sumstats.loc[unknow_indel,status] = status_inferred.values
                 log.write(" -Finished indistinguishable indel inference.",verbose=verbose)
@@ -1766,7 +1827,7 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", mapper=None, force=False, verbose=True, log=Log()):
     """
     Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
 
@@ -1827,9 +1888,10 @@ def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, m
     status : str, default="STATUS"
         Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
         (standardized and normalized), unless `force=True`.
-    chr_dict : dict, optional
-        Dictionary for mapping chromosome names between sumstats and reference VCF 
-        (e.g., {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper with automatic format detection.
     force : bool, default=False
         If True, check all variants regardless of STATUS codes. If False, only processes variants 
         with valid harmonization status (STATUS digit 4 = 0).
@@ -1877,10 +1939,28 @@ def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, m
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe
+        is_dataframe = True
+        sumstats_obj = None
     else:
-        sumstats = sumstats_or_dataframe.data
+        sumstats_obj = sumstats_or_dataframe
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
-    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chr in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chr])
+    
+    # Auto-detect reference format from VCF file
+    mapper.detect_reference_format(ref_infer)
 
     column_name = column_name + suffix
     
@@ -1903,7 +1983,7 @@ def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, m
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], threads)
         with Pool(threads) as pool:
             if (~sumstats[eaf].isna()).sum()>0:
-                map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
+                map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,mapper=mapper) 
                 result = pd.concat(pool.map(map_func,df_split))
                 # Cast to match original column dtype to avoid FutureWarning
                 if column_name in sumstats.columns:
@@ -1936,19 +2016,24 @@ def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, m
     
     return sumstats
 
-def checkaf(sumstats,ref_infer,ref_alt_freq=None,column_name="DAF",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
+def checkaf(sumstats,ref_infer,ref_alt_freq=None,column_name="DAF",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",mapper=None):
     #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
-    def afapply(x,vcf,alt_freq,chr_dict):
-            return check_daf(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,chr_dict)
-    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
+    # Auto-detect reference format from VCF file if mapper provided
+    if mapper is not None:
+        mapper.detect_reference_format(ref_infer)
+    def afapply(x,vcf,alt_freq,mapper):
+            return check_daf(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,mapper)
+    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,mapper=mapper)
     status_inferred = sumstats.apply(map_func,axis=1)
     sumstats[column_name] = status_inferred.values
     sumstats[column_name]=sumstats[column_name].astype("float") 
     return sumstats
 
-def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
-    if chr_dict is not None: chr=chr_dict[chr]
+def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,mapper=None):
+    if mapper is not None:
+        # Convert sumstats chr to reference format for VCF lookup
+        chr = mapper.sumstats_to_reference(chr, reference_file=None)
     chr_seq = vcf_reader.fetch(chr,start,end)
     
     for record in chr_seq:
@@ -1965,7 +2050,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", mapper=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
 
@@ -2010,9 +2095,10 @@ def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, t
     status : str, default="STATUS"
         Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
         (standardized and normalized), unless `force=True`.
-    chr_dict : dict, optional
-        Dictionary for mapping chromosome names between sumstats and reference VCF 
-        (e.g., {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper with automatic format detection.
     force : bool, default=False
         If True, infer EAF for all variants regardless of STATUS codes. If False, only processes 
         variants with valid harmonization status (STATUS digit 4 = 0).
@@ -2040,7 +2126,7 @@ def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, t
       - Number of variants still missing EAF (not found in reference or missing ref_alt_freq field)
     - The inferred EAF values are stored in the specified EAF column, overwriting existing values 
       where inference is successful.
-    - If the reference VCF uses different chromosome naming (e.g., "chr1" vs "1"), provide `chr_dict` 
+    - The function automatically handles chromosome name mapping using ChromosomeMapper. 
       for proper matching.
 
     See Also
@@ -2052,10 +2138,28 @@ def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, t
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe
+        is_dataframe = True
+        sumstats_obj = None
     else:
-        sumstats = sumstats_or_dataframe.data
+        sumstats_obj = sumstats_or_dataframe
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
-    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chr in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chr])
+    
+    # Auto-detect reference format from VCF file
+    mapper.detect_reference_format(ref_infer)
     
     if eaf not in sumstats.columns:
         sumstats[eaf]=np.nan
@@ -2077,7 +2181,7 @@ def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, t
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
         with Pool(threads) as pool:
-            map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+            map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,mapper=mapper) 
             result = pd.concat(pool.map(map_func,df_split))
             # Cast to match original column dtype to avoid FutureWarning
             original_dtype = sumstats[eaf].dtype
@@ -2101,19 +2205,24 @@ def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, t
     
     return sumstats
 
-def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
+def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",mapper=None):
     #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
-    def afapply(x,vcf,alt_freq,chr_dict):
-            return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,chr_dict)
-    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
+    # Auto-detect reference format from VCF file if mapper provided
+    if mapper is not None:
+        mapper.detect_reference_format(ref_infer)
+    def afapply(x,vcf,alt_freq,mapper):
+            return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,mapper)
+    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,mapper=mapper)
     status_inferred = sumstats.apply(map_func,axis=1)
     sumstats[eaf] = status_inferred.values
     sumstats[eaf]=sumstats[eaf].astype("float") 
     return sumstats
 
-def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
-    if chr_dict is not None: chr=chr_dict[chr]
+def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,mapper=None):
+    if mapper is not None:
+        # Convert sumstats chr to reference format for VCF lookup
+        chr = mapper.sumstats_to_reference(chr, reference_file=None)
     chr_seq = vcf_reader.fetch(chr,start,end)
     
     for record in chr_seq:
@@ -2134,7 +2243,7 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
     must_kwargs=["ref_alt_freq"]
 )
 def _parallele_infer_af_with_maf(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
-                            eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+                            eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", mapper=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency.
 
@@ -2169,8 +2278,10 @@ def _parallele_infer_af_with_maf(sumstats_or_dataframe, ref_infer, ref_alt_freq=
         Temporary column name for storing reference allele frequency.
     status : str, default="STATUS"
         Column name for status codes.
-    chr_dict : dict, optional
-        Dictionary for mapping chromosome names to standardized format.
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+        If not provided, creates a default mapper.
     force : bool, default=False
         If True, infer EAF for all variants regardless of status.
     verbose : bool, default=True
@@ -2198,10 +2309,28 @@ def _parallele_infer_af_with_maf(sumstats_or_dataframe, ref_infer, ref_alt_freq=
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe
+        is_dataframe = True
+        sumstats_obj = None
     else:
-        sumstats = sumstats_or_dataframe.data
+        sumstats_obj = sumstats_or_dataframe
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
-    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+    # Get mapper from Sumstats object if available
+    if mapper is None:
+        if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+            mapper = sumstats_obj.mapper
+        else:
+            from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
+            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
+            # Auto-detect sumstats format if data is available
+            if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chr in sumstats_obj.data.columns:
+                mapper.detect_sumstats_format(sumstats_obj.data[chr])
+    
+    # Auto-detect reference format from VCF file
+    mapper.detect_reference_format(ref_infer)
     
     if eaf not in sumstats.columns:
         sumstats[eaf]=np.nan
@@ -2231,7 +2360,7 @@ def _parallele_infer_af_with_maf(sumstats_or_dataframe, ref_infer, ref_alt_freq=
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
         with Pool(threads) as pool:
-            map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=ref_eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+            map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=ref_eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,mapper=mapper) 
             result = pd.concat(pool.map(map_func,df_split))
             # Cast to match original column dtype to avoid FutureWarning
             original_dtype = sumstats[ref_eaf].dtype
@@ -2271,19 +2400,24 @@ def _parallele_infer_af_with_maf(sumstats_or_dataframe, ref_infer, ref_alt_freq=
     
     return sumstats
 
-def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
+def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",mapper=None):
     #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
-    def afapply(x,vcf,alt_freq,chr_dict):
-            return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,chr_dict)
-    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
+    # Auto-detect reference format from VCF file if mapper provided
+    if mapper is not None:
+        mapper.detect_reference_format(ref_infer)
+    def afapply(x,vcf,alt_freq,mapper):
+            return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,mapper)
+    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,mapper=mapper)
     status_inferred = sumstats.apply(map_func,axis=1)
     sumstats[eaf] = status_inferred.values
     sumstats[eaf]=sumstats[eaf].astype("float") 
     return sumstats
 
-def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
-    if chr_dict is not None: chr=chr_dict[chr]
+def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,mapper=None):
+    if mapper is not None:
+        # Convert sumstats chr to reference format for VCF lookup
+        chr = mapper.sumstats_to_reference(chr, reference_file=None)
     chr_seq = vcf_reader.fetch(chr,start,end)
     
     for record in chr_seq:

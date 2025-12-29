@@ -3,6 +3,7 @@ from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_NC
 from gwaslab.bd.bd_common_data import _maketrans
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from pysam import VariantFile
 import re
 import numpy as np
@@ -66,7 +67,7 @@ def auto_check_vcf_chr_dict(
         log.write(" -Checking prefix for chromosomes in VCF/BCF files...", verbose=verbose)
         prefix = check_vcf_chr_prefix(vcf_path, log, verbose)
         if prefix is not None:
-            log.write(f" -Prefix for chromosomes: {prefix}")
+            log.write(f" -Prefix for chromosomes: {prefix}", verbose=verbose)
             vcf_chr_dict = get_number_to_chr(prefix=prefix)
         else:
             log.write(" -No prefix for chromosomes in the VCF/BCF files.", verbose=verbose)
@@ -105,10 +106,20 @@ def check_vcf_chr_prefix(
         Detected chromosome prefix (e.g., "chr", "Chr", "CHR") if found, otherwise None.
     """
     vcf_bcf = VariantFile(vcf_bcf_path)
-    for contig in vcf_bcf.header.contigs:
-        match = re.search(r'(chr|Chr|CHR)([0-9xXyYmM]+)', contig)
-        if match:
-            return match.group(1)
+    contigs_list = list(vcf_bcf.header.contigs)
+    
+    # Use ChromosomeMapper to detect format
+    if len(contigs_list) > 0:
+        contigs_series = pd.Series(contigs_list[:min(10, len(contigs_list))])
+        mapper = ChromosomeMapper(verbose=False)
+        detected_format = mapper.detect_format(contigs_series)
+        
+        if detected_format == "chr":
+            # Extract prefix from first matching contig
+            for contig in contigs_list:
+                match = re.search(r'(chr|Chr|CHR)([0-9xXyYmM]+)', contig, re.IGNORECASE)
+                if match:
+                    return match.group(1)
     return None
 
 def is_vcf_file(path: str) -> bool:
@@ -142,13 +153,24 @@ def check_vcf_chr_NC(
         Chromosome mapping dictionary for detected build (hg19/hg38) if found, otherwise None.
     """
     vcf_bcf = VariantFile(vcf_bcf_path)
-    for contig in vcf_bcf.header.contigs:
-        if contig in get_number_to_NC(build="19").values():
-            log.write("  -RefSeq ID detected (hg19) in VCF/BCF...", verbose=verbose)
-            return get_number_to_NC(build="19")
-        if contig in get_number_to_NC(build="38").values():
-            log.write("  -RefSeq ID detected (hg38) in VCF/BCF...", verbose=verbose)
-            return get_number_to_NC(build="38")
+    contigs_list = list(vcf_bcf.header.contigs)
+    
+    # Use ChromosomeMapper to detect format
+    if len(contigs_list) > 0:
+        contigs_series = pd.Series(contigs_list[:min(10, len(contigs_list))])
+        mapper = ChromosomeMapper(verbose=False)
+        detected_format = mapper.detect_format(contigs_series)
+        
+        if detected_format == "nc":
+            # Check which build matches
+            for build in ["19", "38"]:
+                nc_mapping = get_number_to_NC(build=build)
+                if nc_mapping:
+                    # Check if any contig matches this build's NC IDs
+                    nc_values = set(nc_mapping.values())
+                    if any(contig in nc_values for contig in contigs_list):
+                        log.write(f"  -RefSeq ID detected (hg{build}) in VCF/BCF...", verbose=verbose)
+                        return nc_mapping
     return None
 
 
@@ -160,7 +182,7 @@ def _get_ld_matrix_from_vcf(sumstats_or_dataframe,
                 pos="POS",
                 nea="NEA",
                 ea="EA", 
-                vcf_chr_dict=None,
+                mapper: ChromosomeMapper | None = None,
                 tabix=None,
                 export_path=None):
     """
@@ -184,8 +206,9 @@ def _get_ld_matrix_from_vcf(sumstats_or_dataframe,
         Non-effect allele column name
     ea : str
         Effect allele column name
-    vcf_chr_dict : dict
-        Chromosome dictionary for VCF
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided, creates a default mapper with automatic format detection.
     tabix : bool
         Whether to use tabix indexing
     export_path : str, optional
@@ -216,9 +239,17 @@ def _get_ld_matrix_from_vcf(sumstats_or_dataframe,
     if tabix is None:
         tabix = which("tabix")
         log.write(" -tabix will be used: {}".format(tabix),verbose=verbose)
-    vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
+    
+    # Get or create mapper
+    if mapper is None:
+        mapper = ChromosomeMapper(log=log, verbose=verbose)
+        # Auto-detect reference format from VCF file
+        mapper.detect_reference_format(vcf_path)
+    
+    # Convert region chromosome to reference format
+    region_chr_ref = mapper.sumstats_to_reference(region[0], reference_file=vcf_path)
     # load genotype data of the targeted region
-    region_str = vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2])
+    region_str = f"{region_chr_ref}:{region[1]}-{region[2]}"
     log.write(" -loading VCF region: {}".format(region_str), verbose=verbose)
     ref_genotype = read_vcf(vcf_path,region=region_str,tabix=tabix)
     if ref_genotype is None:

@@ -47,6 +47,36 @@
 
 ## Code Quality & Best Practices
 
+### Documentation
+- **Docstrings must follow NumPy style format**:
+  - Use NumPy-style docstring format for all functions and classes
+  - Include sections: Parameters, Returns, Notes (as needed)
+  - Provide clear descriptions of parameters, return values, and behavior
+  - Example format:
+    ```
+    """
+    Brief description of the function.
+    
+    More detailed description if needed.
+    
+    Parameters
+    ----------
+    param1 : type
+        Description of param1
+    param2 : type, optional
+        Description of param2
+    
+    Returns
+    -------
+    return_type
+        Description of return value
+    
+    Notes
+    -----
+    Additional notes or examples
+    """
+    ```
+
 ### Logging & Monitoring
 - Use `@with_logging` decorator for all QC/processing functions
 - Use `Log()` class for all logging operations (write, warning, log)

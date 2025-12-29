@@ -147,14 +147,47 @@ def with_logging_filter(start_to_msg,finished_msg):
                     pass
             
             # Extract sumstats DataFrame
-            # First try to get sumstats directly from arguments
-            sumstats = bound_kwargs.arguments.get('sumstats', None)
-            # If not found and we have a sumstats_obj, extract its data
+            # Try multiple possible parameter names
+            sumstats = None
+            for param_name in ['sumstats', 'sumstats_obj', 'sumstats_or_dataframe']:
+                if param_name in bound_kwargs.arguments:
+                    potential_sumstats = bound_kwargs.arguments[param_name]
+                    # Check if it's a DataFrame directly
+                    if isinstance(potential_sumstats, pd.DataFrame):
+                        sumstats = potential_sumstats
+                        break
+                    # Check if it's a Sumstats object (extract .data)
+                    elif sumstats_obj is None and potential_sumstats is not None:
+                        try:
+                            from gwaslab.g_Sumstats import Sumstats
+                            if isinstance(potential_sumstats, Sumstats):
+                                sumstats_obj = potential_sumstats
+                                sumstats = potential_sumstats.data
+                                break
+                        except:
+                            pass
+            
+            # If not found in named arguments, check first positional argument
+            if sumstats is None and args:
+                first_arg = args[0]
+                if isinstance(first_arg, pd.DataFrame):
+                    sumstats = first_arg
+                elif sumstats_obj is None:
+                    try:
+                        from gwaslab.g_Sumstats import Sumstats
+                        if isinstance(first_arg, Sumstats):
+                            sumstats_obj = first_arg
+                            sumstats = first_arg.data
+                    except:
+                        pass
+            
+            # If we have a sumstats_obj but no sumstats DataFrame yet, extract it
             if sumstats is None and sumstats_obj is not None:
                 try:
                     sumstats = sumstats_obj.data
                 except:
                     pass
+            
             # If still not found, default to empty DataFrame
             if sumstats is None:
                 sumstats = pd.DataFrame()
@@ -641,20 +674,14 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     """
     Infer genome build version using Hapmap3 SNPs.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object.
-    
-    Returns:
-    --------
-    tuple
-        (Updated summary statistics table, inferred build version)
 
-    Less used parameters:
-    -----------
-    change_status : bool, default=True
-        If True, updates status codes in the table
+
+    
+    Returns
+    -------
+    pandas.DataFrame
+        Updated summary statistics DataFrame with inferred build version.
+        If called with Sumstats object, also updates self.build and self.meta["gwaslab"]["genome_build"].
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -908,10 +935,12 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
-    if isinstance(sumstats_or_dataframe, pd.DataFrame):
-        sumstats = sumstats_or_dataframe
+    if isinstance(sumstats, pd.DataFrame):
+        # Already a DataFrame, use as is
+        pass
     else:
-        sumstats = sumstats_or_dataframe.data
+        # Assume it's a Sumstats object, extract .data
+        sumstats = sumstats.data
     
     log.write(" - Central positions: {}".format(chrpos), verbose=verbose)
     log.write(" - Flanking windowsize in kb: {}".format(windowsizekb), verbose=verbose)

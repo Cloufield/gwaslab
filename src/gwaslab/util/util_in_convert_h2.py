@@ -69,6 +69,46 @@ def _get_per_snp_r2(sumstats_or_dataframe,
            log=Log(),
            adjuested=False,
            verbose=True):
+    """
+    Calculate per-SNP heritability (R²) and optionally F-statistics.
+    
+    Parameters
+    ----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
+    beta : str, optional
+        Column name for effect size (beta coefficient). Default is "BETA".
+    af : str, optional
+        Column name for effect allele frequency. Default is "EAF".
+    n : str, optional
+        Column name for sample size. Default is "N".
+    mode : str, optional
+        Trait type: "q" for quantitative, "b" for binary. Default is "q".
+    se : str, optional
+        Column name for standard error (used when vary="se"). Default is "SE".
+    vary : float or str, optional
+        Variance of the phenotype Y. If "se", Var(Y) is estimated from SE, N, and MAF. Default is 1.
+    ncase : int, optional
+        Number of cases for binary traits. Default is None.
+    ncontrol : int, optional
+        Number of controls for binary traits. Default is None.
+    prevalence : float, optional
+        Disease prevalence for binary traits. Default is None.
+    k : int or str, optional
+        Number of parameters for F-statistic calculation. Use "all" to set k = number of SNPs. Default is 1.
+    adjuested : bool, optional
+        If True, calculate adjusted R². Default is False.
+    verbose : bool, optional
+        If True, write progress messages. Default is True.
+    
+    Returns
+    -------
+    pandas.DataFrame
+        Modified sumstats DataFrame with added columns:
+        - SNPR2: Per-SNP R² (proportion of variance explained)
+        - ADJUESTED_SNPR2: Adjusted R² (if adjuested=True)
+        - F: F-statistic for instrument strength (if N column exists)
+    """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):

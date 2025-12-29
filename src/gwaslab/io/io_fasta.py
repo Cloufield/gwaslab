@@ -7,9 +7,11 @@ Uses pysam FastxFile for fast FASTA reading (3-4x faster than previous implement
 
 import gzip
 import numpy as np
+import pandas as pd
 from typing import Iterator, TextIO, Union, Dict, Tuple, Optional
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import _maketrans
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 try:
     import pysam
@@ -345,8 +347,7 @@ def load_fasta_filtered(
     path: str,
     chromlist_set: set,
     chroms_in_sumstats_set: set,
-    chr_dict: dict,
-    chr_dict_keys: set,
+    mapper: Optional[ChromosomeMapper] = None,
     log: Log = Log(),
     verbose: bool = True
 ) -> Dict[str, FastaRecord]:
@@ -366,10 +367,9 @@ def load_fasta_filtered(
         Set of valid chromosome identifiers
     chroms_in_sumstats_set : set
         Set of chromosomes present in the summary statistics
-    chr_dict : dict
-        Dictionary mapping chromosome names to standardized format
-    chr_dict_keys : set
-        Set of keys in chr_dict for fast lookup
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided, creates a default mapper.
     log : gwaslab.g_Log.Log, default=Log()
         Logging object
     verbose : bool, default=True
@@ -380,6 +380,9 @@ def load_fasta_filtered(
     dict[str, FastaRecord]
         Dictionary mapping chromosome identifiers to FastaRecord objects
     """
+    # Create mapper if not provided
+    if mapper is None:
+        mapper = ChromosomeMapper(log=log, verbose=verbose)
     all_records_dict = {}
     
     if PYSAM_AVAILABLE:
@@ -390,13 +393,32 @@ def load_fasta_filtered(
                     sequence = entry.sequence
                     
                     # Filter during loading - avoid creating FastaRecord if not needed
-                    record_chr = title.strip("chrCHR").upper()
+                    record_chr = title.strip()
                     
-                    # Use cached set lookup
-                    if record_chr in chr_dict_keys:
-                        i = chr_dict[record_chr]
-                    else:
-                        i = record_chr
+                    # Use mapper to convert to numeric format
+                    try:
+                        if mapper._sumstats_format is None:
+                            mapper.detect_sumstats_format(pd.Series([record_chr]))
+                        i = mapper.to_numeric(record_chr)
+                        if isinstance(i, str):
+                            try:
+                                i = int(i)
+                            except ValueError:
+                                pass
+                    except (KeyError, ValueError, AttributeError):
+                        # Fallback: try stripping chr prefix
+                        record_chr_stripped = record_chr.strip("chrCHR").upper()
+                        try:
+                            if mapper._sumstats_format is None:
+                                mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                            i = mapper.to_numeric(record_chr_stripped)
+                            if isinstance(i, str):
+                                try:
+                                    i = int(i)
+                                except ValueError:
+                                    pass
+                        except (KeyError, ValueError, AttributeError):
+                            i = record_chr_stripped
                     
                     # Only create FastaRecord if it passes filters
                     if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -432,13 +454,32 @@ def load_fasta_filtered(
                 if title is not None:
                     sequence = "".join(lines).replace(" ", "").replace("\r", "")
                     # Filter during loading - avoid creating FastaRecord if not needed
-                    record_chr = title.strip("chrCHR").upper()
+                    record_chr = title.strip()
                     
-                    # Use cached set lookup
-                    if record_chr in chr_dict_keys:
-                        i = chr_dict[record_chr]
-                    else:
-                        i = record_chr
+                    # Use mapper to convert to numeric format
+                    try:
+                        if mapper._sumstats_format is None:
+                            mapper.detect_sumstats_format(pd.Series([record_chr]))
+                        i = mapper.to_numeric(record_chr)
+                        if isinstance(i, str):
+                            try:
+                                i = int(i)
+                            except ValueError:
+                                pass
+                    except (KeyError, ValueError, AttributeError):
+                        # Fallback: try stripping chr prefix
+                        record_chr_stripped = record_chr.strip("chrCHR").upper()
+                        try:
+                            if mapper._sumstats_format is None:
+                                mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                            i = mapper.to_numeric(record_chr_stripped)
+                            if isinstance(i, str):
+                                try:
+                                    i = int(i)
+                                except ValueError:
+                                    pass
+                        except (KeyError, ValueError, AttributeError):
+                            i = record_chr_stripped
                     
                     # Only create FastaRecord if it passes filters
                     if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -454,12 +495,32 @@ def load_fasta_filtered(
         # Process the last record
         if title is not None:
             sequence = "".join(lines).replace(" ", "").replace("\r", "")
-            record_chr = title.strip("chrCHR").upper()
+            record_chr = title.strip()
             
-            if record_chr in chr_dict_keys:
-                i = chr_dict[record_chr]
-            else:
-                i = record_chr
+            # Use mapper to convert to numeric format
+            try:
+                if mapper._sumstats_format is None:
+                    mapper.detect_sumstats_format(pd.Series([record_chr]))
+                i = mapper.to_numeric(record_chr)
+                if isinstance(i, str):
+                    try:
+                        i = int(i)
+                    except ValueError:
+                        pass
+            except (KeyError, ValueError, AttributeError):
+                # Fallback: try stripping chr prefix
+                record_chr_stripped = record_chr.strip("chrCHR").upper()
+                try:
+                    if mapper._sumstats_format is None:
+                        mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                    i = mapper.to_numeric(record_chr_stripped)
+                    if isinstance(i, str):
+                        try:
+                            i = int(i)
+                        except ValueError:
+                            pass
+                except (KeyError, ValueError, AttributeError):
+                    i = record_chr_stripped
             
             if (i in chromlist_set) and (i in chroms_in_sumstats_set):
                 log.write(record_chr, " ", end="", show_time=False, verbose=verbose)
@@ -595,8 +656,7 @@ def load_and_build_fasta_records(
     path: str,
     chromlist_set: set,
     chroms_in_sumstats_set: set,
-    chr_dict: dict,
-    chr_dict_keys: set,
+    mapper: Optional[ChromosomeMapper] = None,
     pos_as_dict: bool = True,
     log: Log = Log(),
     verbose: bool = True
@@ -616,10 +676,9 @@ def load_and_build_fasta_records(
         Set of valid chromosome identifiers
     chroms_in_sumstats_set : set
         Set of chromosomes present in the summary statistics
-    chr_dict : dict
-        Dictionary mapping chromosome names to standardized format
-    chr_dict_keys : set
-        Set of keys in chr_dict for fast lookup
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use for chromosome name conversion.
+        If not provided, creates a default mapper.
     pos_as_dict : bool, default=True
         If True, return starting_positions and records_len as dictionaries
     log : gwaslab.g_Log.Log, default=Log()
@@ -637,6 +696,14 @@ def load_and_build_fasta_records(
     """
     log.write("   -Loading and building numpy fasta records:", end="", verbose=verbose)
     
+    # Create mapper if not provided (for backward compatibility)
+    if mapper is None:
+        # Default mapper - will auto-detect format when needed
+        mapper = ChromosomeMapper(
+            log=log,
+            verbose=verbose
+        )
+    
     all_r = []
     records_len = []
     chrom_keys = []  # Track chromosome keys in order
@@ -649,14 +716,38 @@ def load_and_build_fasta_records(
                     title = entry.name
                     sequence = entry.sequence
                     
-                    # Filter during loading
-                    record_chr = title.strip("chrCHR").upper()
+                    # Get chromosome name from FASTA title (may be in various formats)
+                    # Try to extract chromosome identifier from title
+                    record_chr = title.strip()
                     
-                    # Use cached set lookup
-                    if record_chr in chr_dict_keys:
-                        i = chr_dict[record_chr]
-                    else:
-                        i = record_chr
+                    # Use mapper to convert to numeric format (sumstats format)
+                    try:
+                        # Detect format if not already detected
+                        if mapper._sumstats_format is None:
+                            mapper.detect_sumstats_format(pd.Series([record_chr]))
+                        i = mapper.to_numeric(record_chr)
+                        # Ensure it's numeric for comparison
+                        if isinstance(i, str):
+                            # Try to convert to numeric if it's a string number
+                            try:
+                                i = int(i)
+                            except ValueError:
+                                pass
+                    except (KeyError, ValueError, AttributeError):
+                        # Fallback: try stripping chr prefix and mapping
+                        record_chr_stripped = record_chr.strip("chrCHR").upper()
+                        try:
+                            if mapper._sumstats_format is None:
+                                mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                            i = mapper.to_numeric(record_chr_stripped)
+                            if isinstance(i, str):
+                                try:
+                                    i = int(i)
+                                except ValueError:
+                                    pass
+                        except (KeyError, ValueError, AttributeError):
+                            # Last resort: use as-is
+                            i = record_chr_stripped
                     
                     # Only process if it passes filters
                     if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -703,14 +794,33 @@ def load_and_build_fasta_records(
                     # Process the previous record before starting a new one
                     if title is not None:
                         sequence = "".join(lines).replace(" ", "").replace("\r", "")
-                        # Filter during loading
-                        record_chr = title.strip("chrCHR").upper()
+                        # Get chromosome name from FASTA title
+                        record_chr = title.strip()
                         
-                        # Use cached set lookup
-                        if record_chr in chr_dict_keys:
-                            i = chr_dict[record_chr]
-                        else:
-                            i = record_chr
+                        # Use mapper to convert to numeric format
+                        try:
+                            if mapper._sumstats_format is None:
+                                mapper.detect_sumstats_format(pd.Series([record_chr]))
+                            i = mapper.to_numeric(record_chr)
+                            if isinstance(i, str):
+                                try:
+                                    i = int(i)
+                                except ValueError:
+                                    pass
+                        except (KeyError, ValueError, AttributeError):
+                            # Fallback: try stripping chr prefix
+                            record_chr_stripped = record_chr.strip("chrCHR").upper()
+                            try:
+                                if mapper._sumstats_format is None:
+                                    mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                                i = mapper.to_numeric(record_chr_stripped)
+                                if isinstance(i, str):
+                                    try:
+                                        i = int(i)
+                                    except ValueError:
+                                        pass
+                            except (KeyError, ValueError, AttributeError):
+                                i = record_chr_stripped
                         
                         # Only process if it passes filters
                         if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -733,12 +843,32 @@ def load_and_build_fasta_records(
             # Process the last record
             if title is not None:
                 sequence = "".join(lines).replace(" ", "").replace("\r", "")
-                record_chr = title.strip("chrCHR").upper()
+                record_chr = title.strip()
                 
-                if record_chr in chr_dict_keys:
-                    i = chr_dict[record_chr]
-                else:
-                    i = record_chr
+                # Use mapper to convert to numeric format
+                try:
+                    if mapper._sumstats_format is None:
+                        mapper.detect_sumstats_format(pd.Series([record_chr]))
+                    i = mapper.to_numeric(record_chr)
+                    if isinstance(i, str):
+                        try:
+                            i = int(i)
+                        except ValueError:
+                            pass
+                except (KeyError, ValueError, AttributeError):
+                    # Fallback: try stripping chr prefix
+                    record_chr_stripped = record_chr.strip("chrCHR").upper()
+                    try:
+                        if mapper._sumstats_format is None:
+                            mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                        i = mapper.to_numeric(record_chr_stripped)
+                        if isinstance(i, str):
+                            try:
+                                i = int(i)
+                            except ValueError:
+                                pass
+                    except (KeyError, ValueError, AttributeError):
+                        i = record_chr_stripped
                 
                 if (i in chromlist_set) and (i in chroms_in_sumstats_set):
                     log.write(record_chr, " ", end="", show_time=False, verbose=verbose)

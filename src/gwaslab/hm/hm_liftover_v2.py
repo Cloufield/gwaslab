@@ -8,6 +8,8 @@ from gwaslab.info.g_Log import Log
 from gwaslab.info.g_vchange_status import status_match, ensure_status_int, vchange_status
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_common_data import get_chain
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+from typing import Optional
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_fix_sumstats import _fix_chr, _fix_pos
 
@@ -19,36 +21,37 @@ except ImportError:
     )
 
 
-def _normalize_chrom_name_vectorized(chrom_series: pd.Series) -> pd.Series:
+def _normalize_chrom_name_vectorized(chrom_series: pd.Series, mapper: Optional[ChromosomeMapper] = None) -> pd.Series:
     """
     Vectorized version of _normalize_chrom_name for processing pandas Series.
-    Much faster than using .apply() for large datasets.
+    Uses ChromosomeMapper for normalization.
     
     Parameters
     ----------
     chrom_series : pd.Series
         Series of chromosome names (can be strings, ints, or mixed)
+    mapper : ChromosomeMapper, optional
+        ChromosomeMapper instance to use. If None, creates a new one.
     
     Returns
     -------
     pd.Series
-        Series of normalized chromosome names
+        Series of normalized chromosome names (string format for X/Y/MT, numeric for autosomes)
     """
-    # Convert to string and strip whitespace
-    chrom_str = chrom_series.astype(str).str.strip()
-    
-    # Remove 'chr' prefix (case-insensitive) using vectorized string operations
-    # Check if starts with 'chr' (case-insensitive) and remove first 3 chars if so
-    has_chr_prefix = chrom_str.str.lower().str.startswith('chr')
-    if has_chr_prefix.any():
-        # Use mask-based assignment for better performance
-        chrom_str = chrom_str.where(~has_chr_prefix, chrom_str.str.slice(3))
-    
-    # Convert numeric special chromosomes to string format
-    # Use vectorized replace operations
-    chrom_str = chrom_str.replace({"23": "X", "24": "Y", "25": "M"})
-    
-    return chrom_str
+    # Use provided mapper or create a new one
+    if mapper is None:
+        mapper = ChromosomeMapper()
+    else:
+        # Use the provided mapper (it already has species/build info)
+        mapper = ChromosomeMapper(
+            species=mapper.species,
+            build=mapper.build,
+            log=mapper.log,
+            verbose=mapper.verbose
+        )
+    # Detect format and convert to string
+    mapper.detect_sumstats_format(chrom_series)
+    return mapper.to_string(chrom_series)
 
 
 # ----------------------------
@@ -106,43 +109,26 @@ def _liftover_variant(sumstats_obj,
     
     Parameters
     ----------
-    sumstats_obj : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame containing variant data
     chain_path : str, optional
         Path to UCSC chain file. If provided, from_build and to_build are optional.
     from_build : str, optional
         Source genome build (e.g., "19"). If None, uses sumstats_obj.build if available.
     to_build : str, optional
         Target genome build (e.g., "38"). Required if chain_path is not provided.
-    chrom : str, default="CHR"
-        Column name for chromosome
-    pos : str, default="POS"
-        Column name for position
-    status : str, default="STATUS"
-        Column name for status codes
-    out_chrom_col : str, default="CHR_LIFT"
-        Output column name for lifted chromosome
-    out_pos_col : str, default="POS_LIFT"
-        Output column name for lifted position
-    out_strand_col : str, default="STRAND_LIFT"
-        Output column name for strand information
-    one_based_input : bool, default=True
-        Whether input positions are 1-based
-    one_based_output : bool, default=True
-        Whether output positions should be 1-based
     remove : bool, default=True
         Whether to remove unmapped variants
-    filter_by_status : bool, default=True
-        Whether to filter variants by status code before liftover
     verbose : bool, default=True
         Whether to print progress messages
-    log : Log, default=Log()
-        Logging object
     
     Returns
     -------
     pd.DataFrame
-        DataFrame with lifted coordinates (or updated sumstats_obj.data if Sumstats object)
+        DataFrame with lifted coordinates (or updated sumstats_obj.data if Sumstats object).
+        The returned DataFrame contains:
+        - Updated CHR and POS columns with lifted coordinates (from the target build)
+        - Updated STATUS column with new status codes reflecting the liftover results
+        - Unmapped variants are either removed (if remove=True) or kept with NA values
+          for CHR and POS (if remove=False)
     
     Notes
     -----
@@ -254,10 +240,15 @@ def _liftover_variant(sumstats_obj,
     log.write(f" -Input positions are {'1-based' if one_based_input else '0-based'}", verbose=verbose)
     log.write(f" -Output positions will be {'1-based' if one_based_output else '0-based'}", verbose=verbose)
     
+    # Get mapper from Sumstats object if available
+    mapper = None
+    if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
+        mapper = sumstats_obj.mapper
+    
     # Store original chromosome values for comparison (normalized for matching)
     # This is needed to detect chromosome mismatches (variants mapped to different chromosomes)
     # Use vectorized normalization for better performance
-    original_chrom_normalized = _normalize_chrom_name_vectorized(sumstats[chrom])
+    original_chrom_normalized = _normalize_chrom_name_vectorized(sumstats[chrom], mapper=mapper)
     
     # Perform liftover using sumstats_liftover package
     sumstats = liftover_df(
@@ -286,7 +277,7 @@ def _liftover_variant(sumstats_obj,
         valid_mask = sumstats[out_chrom_col].notna() & (sumstats[out_chrom_col].astype(str) != '-1')
         lifted_chrom_normalized = pd.Series(index=sumstats.index, dtype=object)
         if valid_mask.any():
-            lifted_chrom_normalized.loc[valid_mask] = _normalize_chrom_name_vectorized(sumstats.loc[valid_mask, out_chrom_col])
+            lifted_chrom_normalized.loc[valid_mask] = _normalize_chrom_name_vectorized(sumstats.loc[valid_mask, out_chrom_col], mapper=mapper)
         
         # Mark variants with chromosome mismatches as unmapped
         # Compare normalized chromosome names (handles "1" vs "chr1", "X" vs "23", etc.)

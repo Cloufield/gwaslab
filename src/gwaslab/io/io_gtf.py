@@ -4,6 +4,7 @@ from os import path
 from os.path import exists
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_download import check_and_download
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 # GTF required columns
 REQUIRED_COLUMNS = [
@@ -108,42 +109,40 @@ def read_gtf(
             return pd.DataFrame(columns=usecols)
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
     
-    # Convert sex chromosomes to numeric in seqname column
-    # X -> 23, Y -> 24, MT -> 25, also handle chrX, chrY, chrMT, chrM formats
+    # Convert sex chromosomes to numeric in seqname column using ChromosomeMapper
+    # Convert Polars DataFrame to pandas for ChromosomeMapper, then back
+    df_pd_temp = df.select("seqname").to_pandas()
+    mapper = ChromosomeMapper()
+    mapper.detect_sumstats_format(df_pd_temp["seqname"])
+    df_pd_temp["seqname"] = mapper.to_numeric(df_pd_temp["seqname"])
+    # Update the Polars DataFrame
     df = df.with_columns(
-        pl.when(pl.col("seqname").is_in(["X", "chrX"]))
-        .then(pl.lit("23"))
-        .when(pl.col("seqname").is_in(["Y", "chrY"]))
-        .then(pl.lit("24"))
-        .when(pl.col("seqname").is_in(["MT", "chrMT", "M", "chrM"]))
-        .then(pl.lit("25"))
-        .otherwise(pl.col("seqname"))
-        .alias("seqname")
+        pl.Series("seqname", df_pd_temp["seqname"].astype(str))
     )
     
     # Early chromosome filtering for speed (before processing attributes)
     if chrom is not None:
-        # Convert chrom to string and handle X/Y/MT chromosomes
-        chrom_str = str(chrom)
-        if chrom_str == "23":
-            chrom_str = "X"
-        elif chrom_str == "24":
-            chrom_str = "Y"
-        elif chrom_str == "25":
-            chrom_str = "MT"
-        elif chrom_str in ["chrMT", "chrM", "M"]:
-            chrom_str = "MT"
+        # Use ChromosomeMapper to normalize chromosome identifier
+        # Convert to numeric format (which is what seqname column now contains)
+        mapper = ChromosomeMapper()
+        mapper.detect_sumstats_format(pd.Series([chrom]))
+        chrom_numeric = mapper.to_numeric(chrom)
+        chrom_numeric_str = str(chrom_numeric)
         
-        # Filter by chromosome - check both original format and converted format
-        # Note: After conversion above, X/Y/MT are already converted to 23/24/25 in seqname
-        chrom_values = [chrom_str, str(chrom)]
-        if chrom_str == "X":
-            chrom_values.extend(["23", "chrX"])
-        elif chrom_str == "Y":
-            chrom_values.extend(["24", "chrY"])
-        elif chrom_str == "MT":
-            # MT variants are converted to "25" above, so filter for "25"
-            chrom_values.extend(["25", "chrMT", "chrM", "M"])
+        # Also get string format for matching
+        chrom_str = str(mapper.to_string(chrom_numeric))
+        
+        # Build list of possible values to match
+        # After conversion above, seqname contains numeric values (23, 24, 25 for X, Y, MT)
+        chrom_values = [chrom_numeric_str, chrom_str, str(chrom)]
+        
+        # Add common variations
+        if chrom_str.upper() == "X":
+            chrom_values.extend(["23", "chrX", "X"])
+        elif chrom_str.upper() == "Y":
+            chrom_values.extend(["24", "chrY", "Y"])
+        elif chrom_str.upper() in ["MT", "M"]:
+            chrom_values.extend(["25", "chrMT", "chrM", "MT", "M"])
         
         df = df.filter(pl.col("seqname").is_in(chrom_values))
         if len(df) == 0:
@@ -364,8 +363,11 @@ def get_gtf(chrom, build="19", source="ensembl"):
                 ],
             )
     if source == "refseq":
-        from gwaslab.bd.bd_common_data import get_chr_to_NC
-        chrom_NC = get_chr_to_NC(build=build)[str(chrom)]
+        # Use ChromosomeMapper to convert chromosome to NCBI RefSeq ID format
+        mapper = ChromosomeMapper(species="homo sapiens", build=build)
+        mapper.detect_sumstats_format(pd.Series([chrom]))
+        chrom_NC = mapper.to_nc(chrom)
+        
         if build == "19":
             data_path = check_and_download("refseq_hg19_gtf")
             # Filter by chromosome early for speed
@@ -383,8 +385,10 @@ def get_gtf(chrom, build="19", source="ensembl"):
                     "gene_name",
                 ],
             )
-            # Convert seqname back to chromosome number
-            gtf["seqname"] = str(chrom)
+            # Convert seqname back to chromosome number using ChromosomeMapper
+            mapper_back = ChromosomeMapper(species="homo sapiens", build=build)
+            mapper_back.detect_sumstats_format(gtf["seqname"])
+            gtf["seqname"] = mapper_back.to_string(gtf["seqname"]).astype(str)
         if build == "38":
             data_path = check_and_download("refseq_hg38_gtf")
             # Filter by chromosome early for speed
@@ -402,8 +406,10 @@ def get_gtf(chrom, build="19", source="ensembl"):
                     "gene_name",
                 ],
             )
-            # Convert seqname back to chromosome number
-            gtf["seqname"] = str(chrom)
+            # Convert seqname back to chromosome number using ChromosomeMapper
+            mapper_back = ChromosomeMapper(species="homo sapiens", build=build)
+            mapper_back.detect_sumstats_format(gtf["seqname"])
+            gtf["seqname"] = mapper_back.to_string(gtf["seqname"]).astype(str)
     if gtf is None:
         gtf = pd.DataFrame(
             columns=[

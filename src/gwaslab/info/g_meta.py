@@ -198,6 +198,17 @@ def _update_harmonize_step(self, step_name, params, performed=True):
     _update_step_status(harm_status, step_name, now, performed, params)
 
 def _check_sumstats_qc_status(self):
+    """
+    Check the QC and harmonization status of the sumstats.
+    
+    Returns
+    -------
+    dict
+        Dictionary containing QC and harmonization status information with keys:
+        - "basic_check": Basic QC check status
+        - "harmonize": Harmonization status
+        - "qc_and_harmonization_status": Overall QC and harmonization status
+    """
     return {
         "basic_check": self.meta["gwaslab"].get("basic_check", {}),
         "harmonize": self.meta["gwaslab"].get("harmonize", {}),

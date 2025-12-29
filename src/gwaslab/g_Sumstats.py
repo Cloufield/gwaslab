@@ -98,6 +98,7 @@ from gwaslab.view.view_sumstats import _view_sumstats
 from gwaslab.view.view_report import generate_qc_report
 from gwaslab.util.util_ex_phewwas import _extract_associations
 from gwaslab.bd.bd_sex_chromosomes import Chromosomes
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 # ----- Utility: LDSC / PRS / LD -----
 from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
@@ -228,6 +229,8 @@ class Sumstats():
         self.log = Log()
         # Store reference to Sumstats object in log for shape tracking
         self.log._sumstats_obj = self
+        # Store verbose as attribute for use in other methods
+        self.verbose = verbose
         # print gwaslab version information
         _show_version(self.log, verbose=verbose)
 
@@ -314,6 +317,19 @@ class Sumstats():
         
         # Initialize Chromosomes instance based on species
         self.chromosomes = Chromosomes(species=species)
+        
+        # Initialize ChromosomeMapper instance
+        # Build is already set above via the setter, so use the processed build value
+        self.mapper = ChromosomeMapper(
+            species=species,
+            build=self._build,
+            log=self.log,
+            verbose=verbose
+        )
+        
+        # Auto-detect and build sumstats layer if data is available
+        self._update_mapper_from_data()
+        
         # initialize attributes for clumping and finmapping
         #self.to_finemapping_file_path = ""
         #self.to_finemapping_file  = pd.DataFrame()
@@ -343,6 +359,44 @@ class Sumstats():
         processed_build = _process_build(value, log=self.log, verbose=False, species=species)
         self._build = processed_build
         self.meta["gwaslab"]["genome_build"] = processed_build
+        
+        # Update mapper with new build if mapper exists
+        if hasattr(self, 'mapper'):
+            self.mapper.build = processed_build
+            self.mapper._build_nc_mappings()  # Rebuild NC mappings for new build
+    
+    def _update_mapper_from_data(self, chrom_col: str = "CHR"):
+        """
+        Auto-detect chromosome format from data and rebuild sumstats layer in mapper.
+        
+        This method should be called whenever the chromosome column is modified
+        (e.g., after fix_chr, after loading new data, etc.).
+        
+        Parameters
+        ----------
+        chrom_col : str, default="CHR"
+            Column name for chromosome data in self.data.
+        """
+        if not hasattr(self, 'data') or self.data.empty:
+            return
+        
+        if not hasattr(self, 'mapper'):
+            return
+        
+        if chrom_col not in self.data.columns:
+            return
+        
+        try:
+            # Detect format and build sumstats layer
+            self.mapper.detect_sumstats_format(self.data[chrom_col])
+            if self.verbose:
+                self.log.write(
+                    f" -Auto-detected sumstats chromosome format: {self.mapper._sumstats_format}",
+                    verbose=self.verbose
+                )
+        except Exception as e:
+            if self.verbose:
+                self.log.warning(f"Could not auto-detect chromosome format: {e}")
     
     # ============================================================================
     # Downstream Analysis Result Properties (backward compatibility)
@@ -572,6 +626,8 @@ class Sumstats():
         
         fix_chr_kwargs = remove_overlapping_kwargs(fix_chr_kwargs,{"log", "remove", "verbose"})
         self.data = _fix_chr(self,log=self.log,remove=remove,verbose=verbose,**fix_chr_kwargs)
+        # Auto-detect and rebuild mapper after chromosome column is modified
+        self._update_mapper_from_data()
         
         fix_pos_kwargs = remove_overlapping_kwargs(fix_pos_kwargs,{"log", "remove", "verbose"})
         self.data = _fix_pos(self,log=self.log,remove=remove,verbose=verbose,**fix_pos_kwargs)
@@ -836,6 +892,8 @@ class Sumstats():
     def fix_chr(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _fix_chr(self,log=self.log,**kwargs)
+        # Auto-detect and rebuild mapper after chromosome column is modified
+        self._update_mapper_from_data()
         return self
     @add_doc(_fix_pos)
     def fix_pos(self,**kwargs):
@@ -1309,6 +1367,15 @@ class Sumstats():
         return output
     
     def get_associations(self, **kwargs):
+        """
+        Extract GWAS Catalog associations for variants in sumstats.
+        
+        Returns
+        -------
+        pandas.DataFrame
+            Summary DataFrame containing GWAS Catalog associations for variants in sumstats.
+            The full associations are stored in self.associations.
+        """
         associations_full,associations_summary  = _extract_associations(self,**kwargs)
         self.associations = associations_full
         return associations_summary
