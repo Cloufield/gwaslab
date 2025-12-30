@@ -622,7 +622,7 @@ class TestChromosomeMapper(unittest.TestCase):
         
         # Test sex chromosomes
         self.assertEqual(mapper.to_nc(23), "NC_000023.11")  # X
-        self.assertEqual(mapper.to_nc(24), "NC_000024.1")   # Y
+        self.assertEqual(mapper.to_nc(24), "NC_000024.10")   # Y
         
         # Test mitochondrial
         self.assertEqual(mapper.to_nc(25), "NC_012920.1")   # MT
@@ -723,7 +723,7 @@ class TestChromosomeMapper(unittest.TestCase):
         nc_series = mapper.to_nc(numeric_series)
         expected = pd.Series([
             "NC_000001.11", "NC_000002.12", "NC_000022.11",
-            "NC_000023.11", "NC_000024.1", "NC_012920.1"
+            "NC_000023.11", "NC_000024.10", "NC_012920.1"
         ])
         pd.testing.assert_series_equal(nc_series, expected)
         
@@ -933,7 +933,7 @@ class TestChromosomeMapper(unittest.TestCase):
         self.assertEqual(nc_ids.iloc[0], "NC_000001.11")   # chr1
         self.assertEqual(nc_ids.iloc[21], "NC_000022.11")   # chr22
         self.assertEqual(nc_ids.iloc[22], "NC_000023.11")   # chrX
-        self.assertEqual(nc_ids.iloc[23], "NC_000024.1")    # chrY
+        self.assertEqual(nc_ids.iloc[23], "NC_000024.10")    # chrY
         self.assertEqual(nc_ids.iloc[24], "NC_012920.1")   # chrMT
 
 

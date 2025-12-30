@@ -1,3 +1,7 @@
+from typing import TYPE_CHECKING, Tuple, Optional, Dict, Any, Union
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 import copy
 import numpy as np
 import pandas as pd
@@ -268,7 +272,15 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["CHR","POS","EA","NEA"],
         start_function="estimate_h2_by_ldsc"
 )
-def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_kwargs=None, **raw_kwargs):
+def _estimate_h2_by_ldsc(
+    insumstats: Union['Sumstats', pd.DataFrame], 
+    log: Log, 
+    meta: Optional[Dict[str, Any]] = None,
+    verbose: bool = True, 
+    munge: bool = False, 
+    munge_kwargs: Optional[Dict[str, Any]] = None, 
+    **raw_kwargs: Any
+) -> Tuple[float, Optional[pd.DataFrame]]:
     """
     Estimate SNP heritability using LD score regression.
 
@@ -427,7 +439,14 @@ def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, 
         start_cols=["CHR","POS","EA","NEA"],
         start_function="estimate_rg_by_ldsc"
 )
-def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True, **raw_kwargs):
+def _estimate_rg_by_ldsc(
+    insumstats: Union['Sumstats', pd.DataFrame], 
+    other_traits: Union['Sumstats', pd.DataFrame], 
+    log: Log, 
+    meta: Optional[Dict[str, Any]] = None, 
+    verbose: bool = True, 
+    **raw_kwargs: Any
+) -> pd.DataFrame:
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
@@ -535,7 +554,12 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
         start_cols=["CHR","POS","EA","NEA"],
         start_function="estimate_h2_cts_by_ldsc"
 )
-def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
+def _estimate_h2_cts_by_ldsc(
+    insumstats: Union['Sumstats', pd.DataFrame], 
+    log: Log, 
+    verbose: bool = True, 
+    **raw_kwargs: Any
+) -> Tuple[Any, Any]:
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
@@ -576,11 +600,18 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
 
 
 
-def _munge_sumstats(sumstats, log, 
-                    info=0.9, maf=0.01, 
-                    n=None, nopalindromic=True,
-                    exclude_hla=True, exclude_sexchr=True,  
-                    verbose=True, **kwargs):
+def _munge_sumstats(
+    sumstats: pd.DataFrame, 
+    log: Log, 
+    info: float = 0.9, 
+    maf: float = 0.01, 
+    n: Optional[str] = None, 
+    nopalindromic: bool = True,
+    exclude_hla: bool = True, 
+    exclude_sexchr: bool = True,  
+    verbose: bool = True, 
+    **kwargs: Any
+) -> pd.DataFrame:
     """
     Munge (filter and harmonize) summary statistics following LDSC workflow.
     

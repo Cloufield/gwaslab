@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List
 import pickle
 import os
 import gc
@@ -5,7 +6,12 @@ from gwaslab.info.g_Log import Log
 import sys
 from gwaslab import g_Sumstats
 from gwaslab.info import g_Log
-def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
+import pandas as pd
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def dump_pickle(glsumstats: 'Sumstats', path: str = "~/mysumstats.pickle", overwrite: bool = False) -> None:
     glsumstats.log.write("Start to dump the Sumstats Object.")
     if overwrite==False and os.path.exists(path):
         glsumstats.log.write(" -File exists. Skipping. If you want to overwrite, please use overwrite=True.")
@@ -15,7 +21,7 @@ def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
             pickle.dump(glsumstats, file)
     glsumstats.log.write("Finished dumping.")
 
-def load_pickle(path):
+def load_pickle(path: str) -> 'Sumstats':
     if os.path.exists(path):
         try:
             with open(path, 'rb') as file:
@@ -35,7 +41,7 @@ def load_pickle(path):
     else:
         Log().write("File not exists : ", path)
 
-def load_data_from_pickle(path,usecols=None):
+def load_data_from_pickle(path: str, usecols: Optional[List[str]] = None) -> pd.DataFrame:
     data = load_pickle(path).data
     existing_cols = []
     if usecols is not None:
@@ -46,12 +52,12 @@ def load_data_from_pickle(path,usecols=None):
         gc.collect()
     return data
 
-def _offload(df,path,log):
+def _offload(df: pd.DataFrame, path: str, log: Log) -> None:
     with open(path, 'wb') as file:
         pickle.dump(df, file)
         log.write("Dumpping dataframe to : ", path)
 
-def _reload(path,log, delete_files=None):
+def _reload(path: str, log: Log, delete_files: Optional[List[str]] = None) -> pd.DataFrame:
     """
     Reload data from temporary pickle file.
     

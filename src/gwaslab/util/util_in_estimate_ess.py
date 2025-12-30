@@ -1,14 +1,23 @@
+from typing import TYPE_CHECKING, Union, Optional
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 @with_logging(
         start_to_msg="estimate effective sample size (N_EFF)",
         finished_msg="estimating effective sample size (N_EFF)"
 )
-def _get_ess(sumstats_or_dataframe, method="metal",log=Log(),verbose=True):
+def _get_ess(
+    sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    method: Union[str, float] = "metal",
+    log: Log = Log(),
+    verbose: bool = True
+) -> pd.DataFrame:
     """
     Estimate effective sample size (N_EFF) for GWAS summary statistics. Summary statistics DataFrame containing N_CASE and N_CONTROL columns.
     

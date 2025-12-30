@@ -1,7 +1,8 @@
+from typing import Union, List
 import pandas as pd
 import polars as pl
 
-def vchange_statusp(sumstats, matched_index, status, digit, before, after):
+def vchange_statusp(sumstats: pl.DataFrame, matched_index: pl.Expr, status: str, digit: int, before: List[str], after: List[str]) -> pl.DataFrame:
     dic={}
     for i in range(len(before)):
         dic[before[i]]=after[i]
@@ -24,7 +25,7 @@ def vchange_statusp(sumstats, matched_index, status, digit, before, after):
         )
     return sumstats
 
-def copy_statusp(sumstats, matched_index, from_status, to_status, digit):
+def copy_statusp(sumstats: pl.DataFrame, matched_index: pl.Expr, from_status: str, to_status: str, digit: int) -> pl.DataFrame:
     sumstats = sumstats.with_columns(pl.col(from_status).cast(pl.String).alias(from_status))
     sumstats = sumstats.with_columns(pl.col(to_status).cast(pl.String).alias(to_status))
     if digit>1:

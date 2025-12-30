@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Dict, Any, Union, Tuple, List
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -24,47 +25,51 @@ from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+    from matplotlib.figure import Figure
+    from matplotlib.axes import Axes
 
 def _gwheatmap(
-    insumstats,    
-    chrom="CHR",
-    pos="POS",
-    ref_chrom="REF_CHR",
-    ref_pos="REF_START",
-    p="P",
-    scaled=False,
-    sizes = (10,50),
-    alpha=0.5,
-    mlog10p="MLOG10P",
-    snpid="SNPID",
-    eaf=None,
-    group="CIS/TRANS",
-    ea="EA",
-    nea="NEA",
-    colors=None,
-    check = True,
-    chr_dict = None,
-    xchrpad = 0, 
-    ychrpad=0,
-    use_rank = False,
-    xtick_chr_dict=None, 
-    ytick_chr_dict=None, 
-    fontsize=10, 
-    add_b =False,
-    log=Log(),
-    fig_kwargs=None,
-    scatter_kwargs=None,
-    height_ratios=None,
-    hspace = 0.1,
-    font_family="Arial",
-    cis_windowsizekb=100,
-    verbose=True,
-    save=True,
-    save_kwargs=None,
-    grid_linewidth=1,
-    grid_linecolor="grey",
-    **mqq_kwargs
-):
+    insumstats: Union['Sumstats', pd.DataFrame],
+    chrom: str = "CHR",
+    pos: str = "POS",
+    ref_chrom: str = "REF_CHR",
+    ref_pos: str = "REF_START",
+    p: str = "P",
+    scaled: bool = False,
+    sizes: Tuple[int, int] = (10, 50),
+    alpha: float = 0.5,
+    mlog10p: str = "MLOG10P",
+    snpid: str = "SNPID",
+    eaf: Optional[str] = None,
+    group: str = "CIS/TRANS",
+    ea: str = "EA",
+    nea: str = "NEA",
+    colors: Optional[List[str]] = None,
+    check: bool = True,
+    chr_dict: Optional[Dict[str, int]] = None,
+    xchrpad: float = 0,
+    ychrpad: float = 0,
+    use_rank: bool = False,
+    xtick_chr_dict: Optional[Dict[int, str]] = None,
+    ytick_chr_dict: Optional[Dict[int, str]] = None,
+    fontsize: float = 10,
+    add_b: bool = False,
+    log: Log = Log(),
+    fig_kwargs: Optional[Dict[str, Any]] = None,
+    scatter_kwargs: Optional[Dict[str, Any]] = None,
+    height_ratios: Optional[List[float]] = None,
+    hspace: float = 0.1,
+    font_family: str = "Arial",
+    cis_windowsizekb: int = 100,
+    verbose: bool = True,
+    save: Union[bool, str] = True,
+    save_kwargs: Optional[Dict[str, Any]] = None,
+    grid_linewidth: float = 1,
+    grid_linecolor: str = "grey",
+    **mqq_kwargs: Any
+) -> Tuple['Figure', Log]:
     # Extract dataframe if Sumstats object is passed
     if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
         insumstats = insumstats.data
@@ -267,13 +272,29 @@ def _gwheatmap(
     return fig, log
 
 ################################################################################################################
-def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):
+def _process_xtick(
+    ax1: 'Axes',
+    chrom_df: pd.Series,
+    xtick_chr_dict: Dict[int, str],
+    fontsize: float,
+    font_family: str,
+    log: Log = Log(),
+    verbose: bool = True
+) -> 'Axes':
     log.write(" -Processing X ticks...",verbose=False)
     ax1.set_xticks(chrom_df.astype("float64"))
     ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)    
     return ax1
 
-def _process_ytick(ax1, chrom_df, ytick_chr_dict, fontsize, font_family, log=Log(),verbose=True):
+def _process_ytick(
+    ax1: 'Axes',
+    chrom_df: pd.Series,
+    ytick_chr_dict: Dict[int, str],
+    fontsize: float,
+    font_family: str,
+    log: Log = Log(),
+    verbose: bool = True
+) -> 'Axes':
     log.write(" -Processing Y ticks...",verbose=verbose)
     ax1.set_yticks(chrom_df.astype("float64"))
     ax1.set_yticklabels(chrom_df.index.astype("Int64").map(ytick_chr_dict),fontsize=fontsize,family=font_family)    

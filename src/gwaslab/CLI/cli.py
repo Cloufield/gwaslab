@@ -1,14 +1,15 @@
+from typing import Optional, Any
 import argparse
 import sys
 import gwaslab as gl
 
-def _load_sumstats(path, fmt, nrows):
+def _load_sumstats(path: str, fmt: str, nrows: Optional[int]) -> gl.Sumstats:
     return gl.Sumstats(path, fmt=fmt, nrows=nrows) if nrows is not None else gl.Sumstats(path, fmt=fmt)
 
-def _cmd_version(_args):
+def _cmd_version(_args: argparse.Namespace) -> None:
     gl.show_version()
 
-def _process_sumstats(args):
+def _process_sumstats(args: argparse.Namespace) -> gl.Sumstats:
     """Main processing function that handles QC, harmonization, and formatting"""
     # Load sumstats
     s = _load_sumstats(args.input, args.fmt, args.nrows)
@@ -94,7 +95,7 @@ def _process_sumstats(args):
     
     return s
 
-def main(argv=None):
+def main(argv: Optional[list] = None) -> None:
     if argv is None:
         argv = sys.argv[1:]
     

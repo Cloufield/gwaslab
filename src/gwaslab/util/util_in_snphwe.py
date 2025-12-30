@@ -1,8 +1,8 @@
-
+from typing import Union
 import numpy as np
 import pandas as pd
 
-def snphwe(obs_hets, obs_hom1, obs_hom2):
+def snphwe(obs_hets: int, obs_hom1: int, obs_hom2: int) -> float:
     """
     Calculate the exact Hardy-Weinberg Equilibrium (HWE) test p-value for SNP data.
     

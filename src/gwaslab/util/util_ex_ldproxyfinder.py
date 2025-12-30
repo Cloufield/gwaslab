@@ -6,6 +6,7 @@ import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import scipy as sp
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Union, Tuple
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
@@ -15,6 +16,9 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from adjustText import adjust_text
 from gwaslab.info.g_Log import Log
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
@@ -36,17 +40,18 @@ from gwaslab.qc.qc_normalize_args import _normalize_region
             #check if in outcome and exposure snp list
             #replace
 
-def _extract_with_ld_proxy( snplist=None,
-                            common_sumstats=None,
-                            sumstats1=None,
-                            vcf_path=None, 
-                            vcf_chr_dict=None,
-                            tabix=None,
-                            log=Log(), 
-                            verbose=True, 
-                            windowsizekb=100,
-                            ld_threshold=0.8
-                            ):
+def _extract_with_ld_proxy(
+    snplist: Optional[List[str]] = None,
+    common_sumstats: Optional[pd.DataFrame] = None,
+    sumstats1: Optional[pd.DataFrame] = None,
+    vcf_path: Optional[str] = None, 
+    vcf_chr_dict: Optional[Dict[str, str]] = None,
+    tabix: Optional[str] = None,
+    log: Log = Log(), 
+    verbose: bool = True, 
+    windowsizekb: int = 100,
+    ld_threshold: float = 0.8
+) -> pd.DataFrame:
     """
     Find LD proxies for SNPs in the list using a VCF reference.
 
@@ -167,7 +172,16 @@ def _extract_with_ld_proxy( snplist=None,
     return extracted_sumstats
 
 
-def _extract_vcf_proxies_not_in_sumstats(ref_genotype, vcf_proxies_df, chrom, snpid, ld_threshold, common_sumstats, log, verbose):
+def _extract_vcf_proxies_not_in_sumstats(
+    ref_genotype: Optional[Dict[str, Any]], 
+    vcf_proxies_df: pd.DataFrame, 
+    chrom: int, 
+    snpid: str, 
+    ld_threshold: float, 
+    common_sumstats: pd.DataFrame, 
+    log: Log, 
+    verbose: bool
+) -> pd.DataFrame:
     """
     Extract proxy variants from VCF that are not in common_sumstats.
     
@@ -247,17 +261,18 @@ def _extract_vcf_proxies_not_in_sumstats(ref_genotype, vcf_proxies_df, chrom, sn
         start_cols=["SNPID","CHR","POS","EA","NEA"],
         start_function="_extract_ld_proxy"
 )
-def _extract_ld_proxy(  snplist=None,
-                        common_sumstats=None,
-                        vcf_path=None, 
-                        vcf_chr_dict=None,
-                        tabix=None,
-                        log=Log(), 
-                        verbose=True, 
-                        windowsizekb=500,
-                        ld_threshold=0.8,
-                        include_all=False
-                            ):
+def _extract_ld_proxy(
+    snplist: Optional[List[str]] = None,
+    common_sumstats: Optional[Union['Sumstats', pd.DataFrame]] = None,
+    vcf_path: Optional[str] = None, 
+    vcf_chr_dict: Optional[Dict[str, str]] = None,
+    tabix: Optional[str] = None,
+    log: Log = Log(), 
+    verbose: bool = True, 
+    windowsizekb: int = 500,
+    ld_threshold: float = 0.8,
+    include_all: bool = False
+) -> pd.DataFrame:
     """
     Find LD proxies within the sumstats for SNPs in the list using a VCF reference.
 
@@ -430,15 +445,17 @@ def _extract_ld_proxy(  snplist=None,
         
 
 
-def _get_rsq(    row,
-                 sumstats,
-                 row_pos,
-                 vcf_path, 
-                 region,
-                 log, 
-                 verbose, 
-                 vcf_chr_dict,
-                 tabix):
+def _get_rsq(
+    row: pd.Series,
+    sumstats: pd.DataFrame,
+    row_pos: int,
+    vcf_path: str, 
+    region: Tuple[int, int, int],
+    log: Log, 
+    verbose: bool, 
+    vcf_chr_dict: Dict[str, str],
+    tabix: Optional[str]
+) -> pd.DataFrame:
         #load genotype data of the targeted region
         ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
         
@@ -508,17 +525,19 @@ def _get_rsq(    row,
         sumstats["RSQ"] = sumstats["RSQ"].astype("float")
         return sumstats
 
-def _check_if_in_sumstats2(row, sumstast):
+def _check_if_in_sumstats2(row: pd.Series, sumstast: pd.DataFrame) -> None:
     pass
 
-def _get_rsq_single(  row,
-                 row_pos,
-                 vcf_path, 
-                 region,
-                 log, 
-                 verbose, 
-                 vcf_chr_dict,
-                 tabix):
+def _get_rsq_single(
+    row: pd.Series,
+    row_pos: int,
+    vcf_path: str, 
+    region: Tuple[int, int, int],
+    log: Log, 
+    verbose: bool, 
+    vcf_chr_dict: Dict[str, str],
+    tabix: Optional[str]
+) -> Optional[pd.DataFrame]:
     #load genotype data of the targeted region
     ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
     

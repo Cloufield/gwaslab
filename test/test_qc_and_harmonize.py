@@ -607,7 +607,51 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             ("1:31000_G_C", 1, 31000, "C", "G", 0.3999996547, 0.1, 0.01, 1e-5),  # EAF just below threshold (0.4 - epsilon)
             ("1:32000_G_C", 1, 32000, "C", "G", 0.4, 0.1, 0.01, 1e-5),  # EAF exactly at threshold, VCF AF with precision issue
             
-            # Indels
+            # Indels - comprehensive test cases with edge cases
+            # Forward strand cases (EAF close to RAF, within daf_tolerance=0.20)
+            ("1:33000_A_AT", 1, 33000, "AT", "A", 0.1, 0.1, 0.01, 1e-5),  # EAF=0.1, RAF=0.1, diff=0.0 < 0.20 -> forward (status 3)
+            ("1:34000_A_AT", 1, 34000, "AT", "A", 0.15, 0.1, 0.01, 1e-5),  # EAF=0.15, RAF=0.1, diff=0.05 < 0.20 -> forward
+            ("1:35000_A_AT", 1, 35000, "AT", "A", 0.2, 0.1, 0.01, 1e-5),  # EAF=0.2, RAF=0.1, diff=0.1 < 0.20 -> forward
+            ("1:36000_A_AT", 1, 36000, "AT", "A", 0.29, 0.1, 0.01, 1e-5),  # EAF=0.29, RAF=0.1, diff=0.19 < 0.20 -> forward (at boundary)
+            ("1:37000_A_AT", 1, 37000, "AT", "A", 0.3, 0.1, 0.01, 1e-5),  # EAF=0.3, RAF=0.1, diff=0.2 = 0.20 -> NOT forward (strict <)
+            
+            # Reverse strand cases (EAF close to 1-RAF, within tolerance)
+            ("1:38000_A_AT", 1, 38000, "AT", "A", 0.9, 0.1, 0.01, 1e-5),  # EAF=0.9, RAF=0.1, |0.9-(1-0.1)|=0.0 < 0.20 -> reverse (status 6)
+            ("1:39000_A_AT", 1, 39000, "AT", "A", 0.85, 0.1, 0.01, 1e-5),  # EAF=0.85, RAF=0.1, |0.85-0.9|=0.05 < 0.20 -> reverse
+            ("1:40000_A_AT", 1, 40000, "AT", "A", 0.8, 0.1, 0.01, 1e-5),  # EAF=0.8, RAF=0.1, |0.8-0.9|=0.1 < 0.20 -> reverse
+            ("1:41000_A_AT", 1, 41000, "AT", "A", 0.71, 0.1, 0.01, 1e-5),  # EAF=0.71, RAF=0.1, |0.71-0.9|=0.19 < 0.20 -> reverse (at boundary)
+            ("1:42000_A_AT", 1, 42000, "AT", "A", 0.7, 0.1, 0.01, 1e-5),  # EAF=0.7, RAF=0.1, |0.7-0.9|=0.2 = 0.20 -> NOT reverse (strict <)
+            
+            # Ambiguous cases (both differences > tolerance)
+            ("1:43000_A_AT", 1, 43000, "AT", "A", 0.5, 0.1, 0.01, 1e-5),  # EAF=0.5, RAF=0.1, forward_diff=0.4, reverse_diff=0.4, both > 0.20 -> ambiguous (status 4)
+            ("1:44000_A_AT", 1, 44000, "AT", "A", 0.6, 0.1, 0.01, 1e-5),  # EAF=0.6, RAF=0.1, forward_diff=0.5, reverse_diff=0.3, both > 0.20 -> ambiguous
+            ("1:45000_A_AT", 1, 45000, "AT", "A", 0.4, 0.1, 0.01, 1e-5),  # EAF=0.4, RAF=0.1, forward_diff=0.3, reverse_diff=0.5, both > 0.20 -> ambiguous
+            
+            # Edge cases at tolerance boundary
+            ("1:46000_A_AT", 1, 46000, "AT", "A", 0.199, 0.1, 0.01, 1e-5),  # EAF=0.199, RAF=0.1, diff=0.099 < 0.20 -> forward
+            ("1:47000_A_AT", 1, 47000, "AT", "A", 0.201, 0.1, 0.01, 1e-5),  # EAF=0.201, RAF=0.1, diff=0.101 < 0.20 -> forward (still within)
+            ("1:48000_A_AT", 1, 48000, "AT", "A", 0.299, 0.1, 0.01, 1e-5),  # EAF=0.299, RAF=0.1, diff=0.199 < 0.20 -> forward (just below)
+            ("1:49000_A_AT", 1, 49000, "AT", "A", 0.301, 0.1, 0.01, 1e-5),  # EAF=0.301, RAF=0.1, diff=0.201 > 0.20 -> ambiguous
+            
+            # MAF threshold edge cases for indels
+            ("1:50000_A_AT", 1, 50000, "AT", "A", 0.1, 0.1, 0.01, 1e-5),  # EAF=0.1, RAF=0.41, MAF(RAF)=0.41 > ref_maf_threshold -> status 8
+            ("1:51000_A_AT", 1, 51000, "AT", "A", 0.41, 0.1, 0.01, 1e-5),  # EAF=0.41, RAF=0.1, MAF(EAF)=0.41 > maf_threshold -> status 8
+            ("1:52000_A_AT", 1, 52000, "AT", "A", 0.1, 0.1, 0.01, 1e-5),  # EAF=0.1, RAF=0.4, MAF(RAF)=0.4 = ref_maf_threshold -> should pass
+            
+            # Different indel types
+            ("1:53000_A_ATCG", 1, 53000, "ATCG", "A", 0.1, 0.1, 0.01, 1e-5),  # Multi-base insertion, forward
+            ("1:54000_ATCG_A", 1, 54000, "A", "ATCG", 0.9, 0.1, 0.01, 1e-5),  # Multi-base deletion, reverse
+            ("1:55000_AT_ATCG", 1, 55000, "ATCG", "AT", 0.1, 0.1, 0.01, 1e-5),  # Complex indel, forward
+            
+            # Forward takes precedence cases
+            ("1:56000_A_AT", 1, 56000, "AT", "A", 0.15, 0.1, 0.01, 1e-5),  # EAF=0.15, RAF=0.1, forward_diff=0.05 < 0.20, reverse_diff=0.75 > 0.20 -> forward (status 3)
+            ("1:57000_A_AT", 1, 57000, "AT", "A", 0.85, 0.1, 0.01, 1e-5),  # EAF=0.85, RAF=0.1, forward_diff=0.75 > 0.20, reverse_diff=0.05 < 0.20 -> reverse (status 6)
+            
+            # Cases where both are within tolerance (forward takes precedence)
+            ("1:58000_A_AT", 1, 58000, "AT", "A", 0.12, 0.1, 0.01, 1e-5),  # EAF=0.12, RAF=0.1, forward_diff=0.02 < 0.20, reverse_diff=0.78 > 0.20 -> forward
+            ("1:59000_A_AT", 1, 59000, "AT", "A", 0.11, 0.1, 0.01, 1e-5),  # EAF=0.11, RAF=0.1, forward_diff=0.01 < 0.20, reverse_diff=0.79 > 0.20 -> forward
+            
+            # Original simple indel cases (keep for backward compatibility)
             ("1:19000_A_AT", 1, 19000, "AT", "A", 0.1, 0.1, 0.01, 1e-5),
             ("1:20000_A_AT", 1, 20000, "AT", "A", 0.3, 0.1, 0.01, 1e-5),
             ("1:21000_A_AT", 1, 21000, "AT", "A", 0.4, 0.1, 0.01, 1e-5),
@@ -637,6 +681,10 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
         
         # Create sumstats
         df = pd.DataFrame(variants, columns=['SNPID', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P'])
+        # Convert EA and NEA to object dtype to avoid categorical dtype issues
+        # The harmonization process will convert them to categorical with proper categories
+        df['EA'] = df['EA'].astype('object')
+        df['NEA'] = df['NEA'].astype('object')
         sumstats_path = os.path.join(temp_dir, "simulated_sumstats.txt")
         df.to_csv(sumstats_path, sep='\t', index=False)
         
@@ -676,7 +724,67 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 else:
                     raf = eaf + 0.02 if eaf < 0.4 else ((1 - eaf) + 0.02 if eaf > 0.6 else eaf)
             else:
-                raf = eaf
+                # Indels: set RAF based on test case requirements
+                if pos == 33000:  # Forward: EAF=0.1, RAF=0.1
+                    raf = 0.1
+                elif pos == 34000:  # Forward: EAF=0.15, RAF=0.1
+                    raf = 0.1
+                elif pos == 35000:  # Forward: EAF=0.2, RAF=0.1
+                    raf = 0.1
+                elif pos == 36000:  # Forward at boundary: EAF=0.29, RAF=0.1
+                    raf = 0.1
+                elif pos == 37000:  # Not forward (at tolerance): EAF=0.3, RAF=0.1
+                    raf = 0.1
+                elif pos == 38000:  # Reverse: EAF=0.9, RAF=0.1
+                    raf = 0.1
+                elif pos == 39000:  # Reverse: EAF=0.85, RAF=0.1
+                    raf = 0.1
+                elif pos == 40000:  # Reverse: EAF=0.8, RAF=0.1
+                    raf = 0.1
+                elif pos == 41000:  # Reverse at boundary: EAF=0.71, RAF=0.1
+                    raf = 0.1
+                elif pos == 42000:  # Not reverse (at tolerance): EAF=0.7, RAF=0.1
+                    raf = 0.1
+                elif pos == 43000:  # Ambiguous: EAF=0.5, RAF=0.1
+                    raf = 0.1
+                elif pos == 44000:  # Ambiguous: EAF=0.6, RAF=0.1
+                    raf = 0.1
+                elif pos == 45000:  # Ambiguous: EAF=0.4, RAF=0.1
+                    raf = 0.1
+                elif pos == 46000:  # Forward: EAF=0.199, RAF=0.1
+                    raf = 0.1
+                elif pos == 47000:  # Forward: EAF=0.201, RAF=0.1
+                    raf = 0.1
+                elif pos == 48000:  # Forward just below: EAF=0.299, RAF=0.1
+                    raf = 0.1
+                elif pos == 49000:  # Ambiguous: EAF=0.301, RAF=0.1
+                    raf = 0.1
+                elif pos == 50000:  # MAF(RAF) > threshold: EAF=0.1, RAF=0.41
+                    raf = 0.41
+                elif pos == 51000:  # MAF(EAF) > threshold: EAF=0.41, RAF=0.1
+                    raf = 0.1
+                elif pos == 52000:  # MAF(RAF) at threshold: EAF=0.1, RAF=0.4
+                    raf = 0.4
+                elif pos == 53000:  # Multi-base insertion, forward: EAF=0.1, RAF=0.1
+                    raf = 0.1
+                elif pos == 54000:  # Multi-base deletion, reverse: EAF=0.9, RAF=0.1
+                    raf = 0.1
+                elif pos == 55000:  # Complex indel, forward: EAF=0.1, RAF=0.1
+                    raf = 0.1
+                elif pos == 56000:  # Forward precedence: EAF=0.15, RAF=0.1
+                    raf = 0.1
+                elif pos == 57000:  # Reverse: EAF=0.85, RAF=0.1
+                    raf = 0.1
+                elif pos == 58000:  # Forward precedence: EAF=0.12, RAF=0.1
+                    raf = 0.1
+                elif pos == 59000:  # Forward precedence: EAF=0.11, RAF=0.1
+                    raf = 0.1
+                elif pos in [19000, 20000, 21000, 22000]:  # Original simple cases
+                    # For original cases, use simple logic
+                    raf = eaf + 0.02 if eaf < 0.4 else ((1 - eaf) + 0.02 if eaf > 0.6 else eaf)
+                else:
+                    # Default for other indels
+                    raf = eaf
             
             raf = max(0.01, min(0.99, raf))
             vcf_variants.append((row['CHR'], pos, f"rs{pos}", ref, alt, raf))
@@ -686,7 +794,8 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
         
         with open(vcf_path, 'w') as f:
             f.write("##fileformat=VCFv4.3\n")
-            f.write("##contig=<ID=1,length=33000>\n")
+            max_pos = max(pos for _, pos, _, _, _, _ in vcf_variants) if vcf_variants else 60000
+            f.write(f"##contig=<ID=1,length={max_pos + 1000}>\n")
             f.write("##INFO=<ID=AF,Number=A,Type=Float,Description=\"Allele Frequency\">\n")
             f.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
             for chrom, pos, rsid, ref, alt, af in vcf_variants:

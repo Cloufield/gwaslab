@@ -2,6 +2,57 @@
 
 GWASLab provides reference-dependent harmonization functions.
 
+## Harmonization Workflow
+
+The harmonization process follows a sequential workflow to align and standardize summary statistics with reference data:
+
+```
+Load Sumstats
+     │
+     ▼
+Basic Check (optional)
+     │
+     ▼
+Check Reference Alignment
+     │
+     ├─→ NEA ≠ REF ─→ Flip Allele Stats ─┐
+     │                                    │
+     └─→ NEA == REF ──────────────────────┘
+                         │
+                         ▼
+                    Assign rsID
+                         │
+                         ▼
+                    Infer Strand
+                         │
+                         ├─→ Strand mismatch ─→ Flip Allele Stats ─┐
+                         │                                         │
+                         └─→ Strand correct ───────────────────────┘
+                                             │
+                                             ▼
+                                    Harmonized Sumstats
+```
+
+**Workflow Steps:**
+
+1. **Basic Check** (optional, `basic_check=True`): Fix IDs, chromosomes, positions, and alleles
+2. **Check Reference Alignment** (`check_ref()`): Verify NEA matches REF in reference genome
+3. **Flip Allele Stats** (if needed): Flip alleles and allele-specific statistics when NEA ≠ REF
+4. **Assign rsID** (`assign_rsid()`): Annotate variants with rsIDs from reference
+5. **Infer Strand** (`infer_strand()`): Determine strand orientation for palindromic SNPs and indels
+6. **Flip Allele Stats** (if needed): Flip again based on strand inference results
+
+!!! tip "All-in-One Function"
+    Use `.harmonize()` to run the complete workflow automatically:
+    ```python
+    mysumstats.harmonize(
+        ref_seq="reference.fasta",
+        ref_rsid_vcf="dbsnp.vcf.gz",
+        ref_infer="1kg.vcf.gz",
+        ref_alt_freq="AF"
+    )
+    ```
+
 ## Methods summary
 
 | Sumstats Methods       | Options                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Description                                                                                                                       |

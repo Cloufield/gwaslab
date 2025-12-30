@@ -1,4 +1,4 @@
-
+from typing import Union
 import pandas as pd
 import numpy as np
 from scipy.stats.distributions import chi2
@@ -10,10 +10,12 @@ import polars as pl
 
 ############################################################################################################################################################################
 
-def meta_analyze_polars(sumstats_multi,
-                       random_effects=False,
-                       nstudy=1, 
-                       log=Log()):
+def meta_analyze_polars(
+    sumstats_multi: pl.DataFrame,
+    random_effects: bool = False,
+    nstudy: int = 1,
+    log: Log = Log()
+) -> pl.DataFrame:
     """
     Perform meta-analysis using polars DataFrame.
     
@@ -245,11 +247,13 @@ def meta_analyze_polars(sumstats_multi,
     return sumstats_multi
 
 
-def meta_analyze_polars2(sumstats_multi,
-                        random_effects=False,
-                        nstudy=1,
-                        streaming=False,
-                        log=Log()):
+def meta_analyze_polars2(
+    sumstats_multi: Union[pl.DataFrame, pl.LazyFrame],
+    random_effects: bool = False,
+    nstudy: int = 1,
+    streaming: bool = False,
+    log: Log = Log()
+) -> Union[pl.DataFrame, pl.LazyFrame]:
     """
     Perform meta-analysis using polars LazyFrame (optimized for lazy evaluation).
     

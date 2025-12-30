@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Union, Dict, Any, Tuple, List
 import subprocess
 import os
 import gc
@@ -8,19 +9,24 @@ from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.io.io_plink import _process_plink_input_files, _load_bim_single, _load_pvar_single
 from gwaslab.extension import _checking_plink_version
 
-def _calculate_prs(sumstats_or_dataframe, 
-          bfile=None, 
-          vcf=None, 
-          study=None, 
-          out="./",
-          id_to_use=None,
-          threads=1, 
-          memory=None, 
-          overwrite=False,
-          mode=None,delete=True,
-          plink="plink",
-          plink2="plink2",
-          log=Log(),**kwargs):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _calculate_prs(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], 
+          bfile: Optional[str] = None, 
+          vcf: Optional[str] = None, 
+          study: Optional[str] = None, 
+          out: str = "./",
+          id_to_use: Optional[str] = None,
+          threads: int = 1, 
+          memory: Optional[int] = None, 
+          overwrite: bool = False,
+          mode: Optional[str] = None,
+          delete: bool = True,
+          plink: str = "plink",
+          plink2: str = "plink2",
+          log: Log = Log(),
+          **kwargs: Any) -> None:
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -83,7 +89,20 @@ def _calculate_prs(sumstats_or_dataframe,
 
 
 
-def _run_calculate_prs(study, chrom , model_path, bfile_prefix, threads, out, plink_log, log, memory,filetype, plink2,mode=None):
+def _run_calculate_prs(
+    study: str,
+    chrom: int,
+    model_path: str,
+    bfile_prefix: str,
+    threads: int,
+    out: str,
+    plink_log: str,
+    log: Log,
+    memory: Optional[int],
+    filetype: str,
+    plink2: str,
+    mode: Optional[str] = None
+) -> Tuple[str, str]:
     
     log.write(" -Start to calculate PRS for Chr {}...".format(chrom))
     _checking_plink_version(plink2=plink2, log=log)
@@ -124,7 +143,14 @@ def _run_calculate_prs(study, chrom , model_path, bfile_prefix, threads, out, pl
 
 
 
-def _match_snpid_with_bim(chrom, chr_sumstats, bfile_prefix,filetype, id_to_use=None, log=Log()):
+def _match_snpid_with_bim(
+    chrom: int,
+    chr_sumstats: pd.DataFrame,
+    bfile_prefix: str,
+    filetype: str,
+    id_to_use: Optional[str] = None,
+    log: Log = Log()
+) -> pd.DataFrame:
     
     #load bim 
     log.write("   -#variants in model for Chr {} : {}".format(chrom, len(chr_sumstats))) 
@@ -168,7 +194,7 @@ def _match_snpid_with_bim(chrom, chr_sumstats, bfile_prefix,filetype, id_to_use=
 
 
 
-def _combine_all_chr_prs(score_file_path_list):
+def _combine_all_chr_prs(score_file_path_list: List[str]) -> pd.DataFrame:
     combined_results = pd.DataFrame()
     for index, score_file_path in enumerate(score_file_path_list):
         score_file = pd.read_csv(score_file_path,sep="\t")

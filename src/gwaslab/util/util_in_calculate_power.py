@@ -1,3 +1,4 @@
+from typing import Optional, Union, Tuple
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
@@ -5,22 +6,22 @@ from gwaslab.info.g_Log import Log
 import scipy as sp
 
 def get_power(
-              mode="b",
-              genotype_rr=None ,
-              genotype_or=None ,
-              beta=0.3,
-              eaf=0.1,
-              n=10000,
-              ncase= 2000,
-              ncontrol= 15000,
-              prevalence= 0.15,
-              or_to_rr=False,
-              daf = 0.2,
-              sig_level= 5e-8,
-              vary=1,
-              log=Log(),
-              verbose=True
-             ):
+              mode: str = "b",
+              genotype_rr: Optional[float] = None,
+              genotype_or: Optional[float] = None,
+              beta: float = 0.3,
+              eaf: float = 0.1,
+              n: int = 10000,
+              ncase: int = 2000,
+              ncontrol: int = 15000,
+              prevalence: float = 0.15,
+              or_to_rr: bool = False,
+              daf: float = 0.2,
+              sig_level: float = 5e-8,
+              vary: float = 1,
+              log: Log = Log(),
+              verbose: bool = True
+             ) -> Union[float, np.ndarray]:
     """
     Calculate statistical power for genetic association studies.
     
@@ -160,17 +161,17 @@ def get_power(
     return power
 
 def get_beta(
-              mode="q",
-              eaf_range=(0.0001,0.5),
-              beta_range=(0.0001,10),
-              t=0,
-              n=None,
-              sig_level= 5e-8,
-              vary=1,
-              log=Log(),
-              verbose=True,
-              n_matrix=500
-             ):
+              mode: str = "q",
+              eaf_range: Tuple[float, float] = (0.0001, 0.5),
+              beta_range: Tuple[float, float] = (0.0001, 10),
+              t: float = 0,
+              n: Optional[int] = None,
+              sig_level: float = 5e-8,
+              vary: float = 1,
+              log: Log = Log(),
+              verbose: bool = True,
+              n_matrix: int = 500
+             ) -> pd.DataFrame:
     """
     Calculate effect size (beta) values that achieve a target statistical power.
     
@@ -245,19 +246,19 @@ def get_beta(
         return pd.DataFrame(eaf_beta)
 
 def get_beta_binary(
-              prevalence=None,
-              ncase=None,
-              ncontrol=None,
-              eaf_range=(0.0001,0.5),
-              beta_range=(0.0001,10),
-              t=0,
-              sig_level= 5e-8,
-              vary=1,
-              log=Log(),
-              verbose=True,
-              n_matrix=500,
-              or_to_rr=False
-             ):
+              prevalence: Optional[float] = None,
+              ncase: Optional[int] = None,
+              ncontrol: Optional[int] = None,
+              eaf_range: Tuple[float, float] = (0.0001, 0.5),
+              beta_range: Tuple[float, float] = (0.0001, 10),
+              t: float = 0,
+              sig_level: float = 5e-8,
+              vary: float = 1,
+              log: Log = Log(),
+              verbose: bool = True,
+              n_matrix: int = 500,
+              or_to_rr: bool = False
+             ) -> pd.DataFrame:
     """
     Calculate effect size (beta) values that achieve a target statistical power for binary traits.
     

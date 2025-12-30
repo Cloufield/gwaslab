@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import copy
 import gc
+from typing import TYPE_CHECKING, Optional, Dict, Any, List, Tuple, Union, Callable
+
+if TYPE_CHECKING:
+    from gwaslab.info.g_Log import Log
 
 from gwaslab.info.g_Log import Log
 from math import floor
@@ -60,14 +64,16 @@ from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload
 
 class SumstatsMulti( ):
-    def __init__(self, 
-                 sumstatsObjects, 
-                 group_name=None, 
-                 build="99",
-                 engine="pandas",
-                 merge_mode="outer",
-                 merge_by_id=False,
-                 verbose=True ):
+    def __init__(
+        self, 
+        sumstatsObjects: List[Union[Sumstats, Sumstatsp]], 
+        group_name: Optional[str] = None, 
+        build: str = "99",
+        engine: str = "pandas",
+        merge_mode: str = "outer",
+        merge_by_id: bool = False,
+        verbose: bool = True
+    ) -> None:
         
         for i,sumstatsObject in enumerate(sumstatsObjects):
             if not isinstance(sumstatsObject, Sumstats):
@@ -189,13 +195,15 @@ class SumstatsMulti( ):
                     self.log.write("Finished merging Sumstats #{} to main DataFrame.".format(i+1))
         
 
-    def _merge_two_sumstats(self, 
-                            sumstatsObject2, 
-                            verbose=True,
-                            merge_mode="outer",
-                            engine="pandas",
-                            merge_by_id=False,
-                            i=0):
+    def _merge_two_sumstats(
+        self, 
+        sumstatsObject2: Union[pd.DataFrame, Any], 
+        verbose: bool = True,
+        merge_mode: str = "outer",
+        engine: str = "pandas",
+        merge_by_id: bool = False,
+        i: int = 0
+    ) -> Union[pd.DataFrame, Any]:
 
         # _1 _2 
         # add suffix
@@ -257,14 +265,14 @@ class SumstatsMulti( ):
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log, suffixes=["_{}".format(j) for j in range(1,i+2)])
         return molded_sumstats
     
-    def _apply_viz_params(self, func, kwargs, key=None, mode=None):
+    def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
         params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
         return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
 
-    def update_meta(self,**kwargs):
+    def update_meta(self, **kwargs: Any) -> None:
         self.meta = _update_meta(self.meta, self.data, log = self.log, **kwargs)
 
-    def run_meta_analysis(self, **kwargs):
+    def run_meta_analysis(self, **kwargs: Any) -> Any:
         if self.engine == "polars":
             from gwaslab.util.util_in_meta_polars import meta_analyze_polars
             # Filter out verbose and log from kwargs as meta_analyze_polars doesn't accept them
@@ -273,21 +281,21 @@ class SumstatsMulti( ):
         else:
             return meta_analyze_multi(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
     
-    def run_hyprcoloc(self,**kwargs):
+    def run_hyprcoloc(self, **kwargs: Any) -> None:
         hyprcoloc_res_combined = _run_hyprcoloc(self.data,
                        nstudy = self.meta["gwaslab"]["number_of_studies"], 
                        study= self.meta["gwaslab"]["group_name"], 
                        traits=self.names, **kwargs)
         self.hyprcoloc = hyprcoloc_res_combined
 
-    def run_mtag(self,**kwargs):
+    def run_mtag(self, **kwargs: Any) -> None:
         _run_mtag(     self,
                        nstudy = self.meta["gwaslab"]["number_of_studies"], 
                        study= self.meta["gwaslab"]["group_name"], 
                        traits=self.names, 
                        **kwargs)
 
-    def get_lead(self, build=None, gls=False, **kwargs):
+    def get_lead(self, build: Optional[str] = None, gls: bool = False, **kwargs: Any) -> Union[pd.DataFrame, 'SumstatsMulti']:
         
         id_to_use = _get_id_column(self.data)
         
@@ -317,12 +325,12 @@ class SumstatsMulti( ):
         
         return output
     
-    def offload(self):
+    def offload(self) -> None:
         _offload(self.data, self.tmp_path, self.log)
         del self.data
         gc.collect()
 
-    def reload(self, delete_files=None):
+    def reload(self, delete_files: Optional[List[str]] = None) -> None:
         """
         Reload data from temporary pickle file.
         

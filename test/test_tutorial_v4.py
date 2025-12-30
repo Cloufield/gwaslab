@@ -61,7 +61,7 @@ class TestTutorialV4Workflow(unittest.TestCase):
     
     def _load_sumstats(self):
         """Helper method to load sumstats."""
-        return gl.Sumstats(
+        mysumstats = gl.Sumstats(
             self.sumstats_path,
             snpid="SNPID",
             chrom="CHR",
@@ -76,6 +76,10 @@ class TestTutorialV4Workflow(unittest.TestCase):
             sep="\t",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        if len(mysumstats.data) > 0:
+            mysumstats.data = mysumstats.data.iloc[::10].copy()
+        return mysumstats
     
     def test_01_load_sumstats(self):
         """Test loading sumstats from file."""

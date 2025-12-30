@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Union, Tuple
 import scipy.sparse as sparse
 import numpy as np
 import pandas as pd
@@ -5,9 +6,10 @@ import subprocess
 import os
 import re
 import gc
-import pandas as pd
-import numpy as np
 from gwaslab.info.g_Log import Log
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 from gwaslab.extension import _checking_plink_version
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.util.util_in_get_sig import _get_sig
@@ -24,28 +26,30 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["SNPID","CHR","POS","EA","NEA"],
         start_function="calculate_ld_matrix"
 )
-def _to_finemapping_using_ld(sumstats_or_dataframe, 
-                  study=None, 
-                  ld_map_path=None, 
-                  ld_path=None,
-                  ld_fmt = "npz",
-                  ld_if_square =  False,
-                  ld_if_add_T = False,
-                  ld_map_rename_dic = None,
-                  ld_map_kwargs = None,
-                  loci=None,
-                  out="./",
-                  windowsizekb=1000,
-                  threads=1, 
-                  mode="r",
-                  exclude_hla=False, 
-                  getlead_kwargs=None, 
-                  memory=None, 
-                  overwrite=False,
-                  log=Log(),
-                  suffixes=None,
-                  verbose=True,
-                  **kwargs):
+def _to_finemapping_using_ld(
+    sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    study: Optional[str] = None,
+    ld_map_path: Optional[str] = None,
+    ld_path: Optional[str] = None,
+    ld_fmt: str = "npz",
+    ld_if_square: bool = False,
+    ld_if_add_T: bool = False,
+    ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
+    ld_map_kwargs: Optional[Dict[str, Any]] = None,
+    loci: Optional[List[str]] = None,
+    out: str = "./",
+    windowsizekb: int = 1000,
+    threads: int = 1,
+    mode: str = "r",
+    exclude_hla: bool = False,
+    getlead_kwargs: Optional[Dict[str, Any]] = None,
+    memory: Optional[int] = None,
+    overwrite: bool = False,
+    log: Log = Log(),
+    suffixes: Optional[List[str]] = None,
+    verbose: bool = True,
+    **kwargs: Any
+) -> pd.DataFrame:
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -140,22 +144,24 @@ def _to_finemapping_using_ld(sumstats_or_dataframe,
 
 
 
-def process_ld(sumstats, 
-                ld_path, 
-                ld_map_path,
-                region,
-                region_ref, 
-                log, 
-                verbose, 
-                pos ,
-                nea,
-                ea, 
-                region_ld_threshold, 
-                ld_fmt = "npz",
-                ld_if_square =  False,
-                ld_if_add_T = False,
-                ld_map_rename_dic = None,
-                ld_map_kwargs = None):
+def process_ld(
+    sumstats: pd.DataFrame,
+    ld_path: str,
+    ld_map_path: str,
+    region: Tuple[int, int, int],
+    region_ref: List[Optional[str]],
+    log: Log,
+    verbose: bool,
+    pos: str,
+    nea: str,
+    ea: str,
+    region_ld_threshold: float,
+    ld_fmt: str = "npz",
+    ld_if_square: bool = False,
+    ld_if_add_T: bool = False,
+    ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
+    ld_map_kwargs: Optional[Dict[str, Any]] = None
+) -> pd.DataFrame:
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference ld matrix path : "+ ld_path, verbose=verbose)
 
@@ -328,12 +334,14 @@ def process_ld(sumstats,
 
 
 ####################################################################################################
-def _load_ld_matrix(path, 
-                    fmt="npz", 
-                    if_square=False, 
-                    if_add_T=False,
-                    log=Log(),
-                    verbose=True):
+def _load_ld_matrix(
+    path: str,
+    fmt: str = "npz",
+    if_square: bool = False,
+    if_add_T: bool = False,
+    log: Log = Log(),
+    verbose: bool = True
+) -> np.ndarray:
     
     if fmt == "npz":
         log.write("   -Loading LD matrix from npz file...",verbose=verbose)
@@ -350,14 +358,16 @@ def _load_ld_matrix(path,
         r_matrix = np.power(r_matrix,2)
     return r_matrix
     
-def _load_ld_map(path, 
-                 snpid="rsid", 
-                 chrom="chromosome", 
-                 pos="position", 
-                 ref="allele1", 
-                 alt="allele2",
-                 ld_map_rename_dic = None,
-                 **ld_map_kwargs):
+def _load_ld_map(
+    path: str,
+    snpid: str = "rsid",
+    chrom: str = "chromosome",
+    pos: str = "position",
+    ref: str = "allele1",
+    alt: str = "allele2",
+    ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
+    **ld_map_kwargs: Any
+) -> pd.DataFrame:
     
     if ld_map_rename_dic is not None:
         if type(ld_map_rename_dic) is dict:
@@ -393,7 +403,16 @@ def _load_ld_map(path,
     # "SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"
     return ld_map
 
-def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb, log, verbose):
+def _extract_variants(
+    merged_sumstats: pd.DataFrame,
+    r_matrix: np.ndarray,
+    out: str,
+    study: str,
+    row: pd.Series,
+    windowsizekb: int,
+    log: Log,
+    verbose: bool
+) -> str:
     
     avaiable_index = merged_sumstats["_INDEX_BIM"].values 
 
@@ -413,11 +432,13 @@ def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb, 
     #reduced_r_matrix.to_csv("{}.ld.gz".format(output_prefix),se="\t")
     return output_path
 
-def _merge_ld_map_with_sumstats(row, 
-                             locus_sumstats, 
-                             ld_map, 
-                             log=Log(),
-                             suffixes=None):
+def _merge_ld_map_with_sumstats(
+    row: pd.Series,
+    locus_sumstats: pd.DataFrame,
+    ld_map: pd.DataFrame,
+    log: Log = Log(),
+    suffixes: Optional[List[str]] = None
+) -> pd.DataFrame:
     '''
     align sumstats with bim
     '''
@@ -476,11 +497,12 @@ def _merge_ld_map_with_sumstats(row,
     return combined_df.loc[allele_match,output_columns]
 
 def _merge_ld_map_with_sumstats_for_regional(
-                             locus_sumstats, 
-                             ld_map, 
-                             log=Log(),
-                             suffixes=None,
-                             verbose=True):
+    locus_sumstats: pd.DataFrame,
+    ld_map: pd.DataFrame,
+    log: Log = Log(),
+    suffixes: Optional[List[str]] = None,
+    verbose: bool = True
+) -> pd.DataFrame:
     '''
     align sumstats with bim
     '''

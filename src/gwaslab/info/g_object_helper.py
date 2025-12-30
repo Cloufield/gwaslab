@@ -1,7 +1,8 @@
+from typing import Callable, Any
 import functools
 import matplotlib.pyplot as plt
 
-def add_doc(src):
+def add_doc(src: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def deco(func):
         src_doc = src.__doc__ or ""
         func_doc = func.__doc__ or ""
@@ -9,7 +10,7 @@ def add_doc(src):
         return func
     return deco
 
-def suppress_display(func):
+def suppress_display(func: Callable[..., Any]) -> Callable[..., Any]:
     @functools.wraps(func)
     def _wrapper(*args, **kwargs):
         result = func(*args, **kwargs)

@@ -1,3 +1,4 @@
+from typing import Optional, Dict, Any, Union, List, Tuple
 import gzip
 import os
 from os import path
@@ -40,7 +41,7 @@ This creates a cohesive reference management system where:
 #}
 ############################################################################################################
 
-def initiate_config(log=Log()):
+def initiate_config(log: Log = Log()) -> None:
     '''
     Create an empty configuration file for managing downloaded reference data records.
 
@@ -55,7 +56,7 @@ def initiate_config(log=Log()):
         json.dump(dict,f,indent=4) 
         log.write(" -Config file path:",config_path)
 
-def update_config(log=Log(), verbose=True, show_all=False):
+def update_config(log: Log = Log(), verbose: bool = True, show_all: bool = False) -> Dict[str, Any]:
     '''
     Update the configuration file or create a new one if missing.
 
@@ -112,7 +113,7 @@ def update_config(log=Log(), verbose=True, show_all=False):
     # also return the dics
     return filtered_dicts if not show_all else dicts["downloaded"]
 
-def set_default_directory(path):
+def set_default_directory(path: str) -> None:
     '''
     Set a temporary default directory for reference data downloads.
 
@@ -124,7 +125,7 @@ def set_default_directory(path):
     '''
     options.set_option("data_directory", path)
 
-def get_default_directory():
+def get_default_directory() -> str:
     '''
     Get the configured default directory for reference data storage.
 
@@ -136,9 +137,9 @@ def get_default_directory():
     return options.paths["data_directory"]
 
 ##################################################################################
-def check_available_ref(log=Log(), 
-                        show_all=False,
-                        verbose=True):
+def check_available_ref(log: Log = Log(), 
+                        show_all: bool = False,
+                        verbose: bool = True) -> Dict[str, Any]:
     '''
     Load and return the list of available reference files from configuration for downloading.
 
@@ -173,7 +174,7 @@ def check_available_ref(log=Log(),
     log.write("Finished checking available reference files...", verbose=verbose)
     return {}
 
-def update_available_ref(log=Log()):
+def update_available_ref(log: Log = Log()) -> None:
     '''
     Download and update the reference file dictionary from GitHub.
     '''
@@ -187,7 +188,7 @@ def update_available_ref(log=Log()):
 
 ##################################################################################
 
-def check_downloaded_ref(log=Log()):
+def check_downloaded_ref(log: Log = Log()) -> Dict[str, Any]:
     '''
     Verify and return records of local reference files that are already downloaded or manually added by user.
 
@@ -210,7 +211,7 @@ def check_downloaded_ref(log=Log()):
 
 ##################################################################################
 
-def get_path(name,log=Log(),verbose=True):
+def get_path(name: str, log: Log = Log(), verbose: bool = True) -> Union[str, bool]:
     '''
     Retrieve the local file path for a specified reference file using keywords. 
 
@@ -247,11 +248,13 @@ def get_path(name,log=Log(),verbose=True):
     return False
 
 ##################################################################################
-def download_ref(name,
-                directory=None,
-                local_filename=None,
-                overwrite=False,
-                log=Log()):
+def download_ref(
+    name: str,
+    directory: Optional[str] = None,
+    local_filename: Optional[str] = None,
+    overwrite: bool = False,
+    log: Log = Log()
+) -> None:
     '''
     Download a reference file based on its identifier from reference.json.
 
@@ -338,7 +341,7 @@ def download_ref(name,
 
 #### helper #############################################################################################
 
-def check_file_integrity(local_path, md5sum,log):
+def check_file_integrity(local_path: str, md5sum: str, log: Log) -> int:
     '''
     Calculate and verify the MD5 checksum of a file.
 
@@ -370,7 +373,7 @@ def check_file_integrity(local_path, md5sum,log):
         log.warning("-MD5 VERIFICATION FAILED!")
         return 0
 
-def remove_file(name,log=Log()):
+def remove_file(name: str, log: Log = Log()) -> None:
     '''
     Remove a reference file and its record from the configuration.
 
@@ -396,7 +399,7 @@ def remove_file(name,log=Log()):
             log.write("No records in config file. Please download first.")
 
 #### helper #############################################################################################
-def update_record(*keys, value, log=Log()):
+def update_record(*keys: str, value: Any, log: Log = Log()) -> None:
     """
     Update configuration with a value at a nested key path.
     Automatically creates intermediate levels if they do not exist.
@@ -464,15 +467,17 @@ def update_record(*keys, value, log=Log()):
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=4, ensure_ascii=False)
 
-def add_local_data(keyword, 
-                   local_path, 
-                   format= None,
-                   description= None,
-                   md5sum= None,
-                   suggested_use= None,
-                   tbi = None,
-                   csi= None,
-                   log=Log()):
+def add_local_data(
+    keyword: str,
+    local_path: str,
+    format: Optional[str] = None,
+    description: Optional[str] = None,
+    md5sum: Optional[str] = None,
+    suggested_use: Optional[str] = None,
+    tbi: Optional[str] = None,
+    csi: Optional[str] = None,
+    log: Log = Log()
+) -> bool:
     """
     Add or update local data file to configuration without downloading.
     
@@ -527,7 +532,7 @@ def add_local_data(keyword,
     log.write(f"Successfully registered local data '{keyword}' in configuration")
     return True
 
-def remove_local_record(keyword, log=Log()):
+def remove_local_record(keyword: str, log: Log = Log()) -> bool:
     """
     Remove a local data record from configuration without deleting the physical file.
     
@@ -638,7 +643,7 @@ def scan_downloaded_files(log=Log(), verbose=True):
     log.write("Completed scanning data directory", verbose=verbose)
     return True
 
-def _deep_merge(a, b):
+def _deep_merge(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
     """
     Recursively merge dictionary b into dictionary a.
 
@@ -667,7 +672,7 @@ def _deep_merge(a, b):
 
     return a
 
-def update_description(key, dicts, log=None):
+def update_description(key: str, dicts: Dict[str, Any], log: Optional[Log] = None) -> None:
     """
     Update configuration by deep-merging metadata into config["downloaded"][key].
 
@@ -704,7 +709,7 @@ def update_description(key, dicts, log=None):
     if log is not None:
         log.write(f"   -> Deep-merged into downloaded/{key}")
 
-def download_file(url, file_path=None):
+def download_file(url: str, file_path: Optional[str] = None) -> Optional[str]:
     '''
     Low-level file download utility with streaming support.
 
@@ -729,7 +734,11 @@ def download_file(url, file_path=None):
                 shutil.copyfileobj(r.raw, f)     
         return file_path
 
-def url_to_local_file_name(local_filename, url, from_dropbox):
+def url_to_local_file_name(
+    local_filename: Optional[str],
+    url: str,
+    from_dropbox: int
+) -> Tuple[str, int]:
     '''
     Convert URL to valid local filename, handling Dropbox special cases.
 
@@ -762,7 +771,7 @@ def url_to_local_file_name(local_filename, url, from_dropbox):
 
 ##########################################################################################################
 
-def check_and_download(name):
+def check_and_download(name: str) -> str:
     '''
     Ensure a reference file exists by downloading if necessary.
 
@@ -789,12 +798,12 @@ def check_and_download(name):
     data_path = get_path(name)
     return data_path
 
-def search_local(file_path):
+def search_local(file_path: str) -> bool:
     return path.exists(file_path)
 
 ##### format book ###################################################################################################
 
-def update_formatbook(log=Log()):
+def update_formatbook(log: Log = Log()) -> None:
     '''
     Download and update the formatbook dictionary from GitHub.
     '''
@@ -811,7 +820,7 @@ def update_formatbook(log=Log()):
     log.write("Available formats:",",".join(available_formats))
     log.write("Formatbook has been updated!")
 
-def list_formats(log=Log()):
+def list_formats(log: Log = Log()) -> List[str]:
     '''
     Display all available formats in the formatbook for GWASLab.
     '''
@@ -822,7 +831,7 @@ def list_formats(log=Log()):
     log.write("Available formats:",",".join(available_formats))    
     return available_formats
 
-def check_format(fmt,log=Log()):
+def check_format(fmt: str, log: Log = Log()) -> Dict[str, str]:
     '''
     Check the header conversion dictionary between a given format and GWASLab format.
 
@@ -830,6 +839,13 @@ def check_format(fmt,log=Log()):
     ----------
     fmt : str
         Format name to check
+    log : Log, optional
+        Logger instance
+    
+    Returns
+    -------
+    Dict[str, str]
+        Dictionary mapping format headers to GWASLab headers
     '''
     data_path = options.paths["formatbook"]
     book=json.load(open(data_path))

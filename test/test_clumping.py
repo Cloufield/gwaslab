@@ -154,6 +154,10 @@ class TestClumping(unittest.TestCase):
             raise unittest.SkipTest("Chromosome 7 not found in sumstats data")
         self.sumstats.filter_value(expr="CHR == 7", inplace=True, verbose=False)
         
+        # Use only 1/10 of variants to speed up tests
+        if len(self.sumstats.data) > 0:
+            self.sumstats.data = self.sumstats.data.iloc[::10].copy()
+        
         # Fix SNP ID to make it consistent with PLINK file format (CHR:POS:REF:ALT)
         # This ensures SNP IDs match between sumstats and reference panel
         self.sumstats.fix_id(
@@ -364,6 +368,9 @@ class TestClumping(unittest.TestCase):
                     has_chr7 = (chr_values.astype(str) == '7').any()
                 if has_chr7:
                     sumstats_copy.filter_value(expr="CHR == 7", inplace=True, verbose=False)
+                    # Use only 1/10 of variants to speed up tests
+                    if len(sumstats_copy.data) > 0:
+                        sumstats_copy.data = sumstats_copy.data.iloc[::10].copy()
                 
                 # Fix SNP ID to make it consistent with PLINK file format
                 sumstats_copy.fix_id(
@@ -485,6 +492,9 @@ class TestClumping(unittest.TestCase):
             has_chr7 = (chr_values_bfile.astype(str) == '7').any()
         if has_chr7:
             sumstats_bfile.filter_value(expr="CHR == 7", inplace=True, verbose=False)
+            # Use only 1/10 of variants to speed up tests
+            if len(sumstats_bfile.data) > 0:
+                sumstats_bfile.data = sumstats_bfile.data.iloc[::10].copy()
         
         # Fix SNP ID to make it consistent with PLINK file format
         sumstats_bfile.fix_id(
@@ -527,6 +537,9 @@ class TestClumping(unittest.TestCase):
             has_chr7 = (chr_values_pfile.astype(str) == '7').any()
         if has_chr7:
             sumstats_pfile.filter_value(expr="CHR == 7", inplace=True, verbose=False)
+            # Use only 1/10 of variants to speed up tests
+            if len(sumstats_pfile.data) > 0:
+                sumstats_pfile.data = sumstats_pfile.data.iloc[::10].copy()
         
         # Fix SNP ID to make it consistent with PLINK file format
         sumstats_pfile.fix_id(

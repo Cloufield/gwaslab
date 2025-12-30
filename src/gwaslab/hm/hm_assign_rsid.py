@@ -884,15 +884,9 @@ def _extract_lookup_table_from_vcf_bcf(
         log.write(" -Calling: bcftools view -T <TARGETS> -Ou <VCF> | "
                   "bcftools query -f '<FMT>'", verbose=verbose)
 
-    import time
-    pool_start = time.time()
-    log.write(f"[DEBUG _extract_lookup_table_from_vcf_bcf] About to create Pool with {threads} workers for {len(tasks)} tasks", verbose=verbose)
     with Pool(threads) as pool:
-        log.write(f"[DEBUG _extract_lookup_table_from_vcf_bcf] Pool created, starting map operation", verbose=verbose)
         log.write(f" -Finished:",end="", verbose=verbose)
         dfs = pool.map(_worker_bcf_lookup, tasks)
-        pool_elapsed = time.time() - pool_start
-        log.write(f"[DEBUG _extract_lookup_table_from_vcf_bcf] Pool.map completed in {pool_elapsed:.2f} seconds, got {len(dfs)} results", verbose=verbose)
         log.write(f"", verbose=verbose, show_time=False)
 
     # Merge results - filter out empty DataFrames to avoid FutureWarning

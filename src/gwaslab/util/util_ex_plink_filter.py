@@ -1,6 +1,7 @@
+from typing import Tuple, Any, List
 import pandas as pd
 
-def _run_plink_filter(filter_flag, out_prefix):
+def _run_plink_filter(filter_flag: str, out_prefix: str) -> None:
     '''
     run plink filter functions to generate bim and fam files
     
@@ -16,7 +17,7 @@ def _run_plink_filter(filter_flag, out_prefix):
     --out {}
     '''.format(filter_flag, out_prefix)
 
-def _plink2_filter_to_flag(tmpdir="./",**kwargs):
+def _plink2_filter_to_flag(tmpdir: str = "./", **kwargs: Any) -> Tuple[str, List[str]]:
     combined_flag=""
     temp_file_list=[]
     for flag_with_underbar,value in kwargs.items():
@@ -31,7 +32,7 @@ def _plink2_filter_to_flag(tmpdir="./",**kwargs):
         combined_flag += formated_flag
     return combined_flag,temp_file_list
 
-def _process_df_to_file(flag_with_underbar, df, tmpdir):
+def _process_df_to_file(flag_with_underbar: str, df: pd.DataFrame, tmpdir: str) -> Tuple[str, str]:
     temp_path ="{}/memory_address_{}.{}".format(tmpdir.rstrip("/"),
                                                 id(df),
                                                 flag_with_underbar.replace("_",""))

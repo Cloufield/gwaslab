@@ -1,15 +1,16 @@
+from typing import Optional, List, Dict, Any
 import pandas as pd
 import numpy as np
 import gc
 import os, psutil
 
 #20220306
-def usage():
+def usage() -> float:
     process = psutil.Process(os.getpid())
     return process.memory_info()[0] / float(2 ** 20)
 
 #flip direction
-def flip_direction(string):
+def flip_direction(string: str) -> str:
     flipped_string=""
     for char in string:
         if char=="?":flipped_string+="?"
@@ -17,17 +18,18 @@ def flip_direction(string):
         elif char=="-":flipped_string+="+"
     return flipped_string
 
-def rsID2chrpos(path,
-                rsid_col,
-                readargs={},
-                chr_to_anno=[],
-                ea=None,
-                nea=None,
-                eaf=None,
-                beta=None,
-                direction=None,
-                chrpos_path_12=["/home/heyunye/mydata/reference/snp/organisms/human_9606_b151_GRCh37p13/VCF/chr/dbsnp_b151_rsid_chrposrefalt_uniq_hg19_chr",".feather"]
-               ):
+def rsID2chrpos(
+    path: str,
+    rsid_col: str,
+    readargs: Dict[str, Any] = {},
+    chr_to_anno: List[int] = [],
+    ea: Optional[str] = None,
+    nea: Optional[str] = None,
+    eaf: Optional[str] = None,
+    beta: Optional[str] = None,
+    direction: Optional[str] = None,
+    chrpos_path_12: List[str] = ["/home/heyunye/mydata/reference/snp/organisms/human_9606_b151_GRCh37p13/VCF/chr/dbsnp_b151_rsid_chrposrefalt_uniq_hg19_chr",".feather"]
+) -> pd.DataFrame:
     
     print("Loading into memory :" + path)
     sumstats = pd.read_csv(path,"\s+",**readargs)

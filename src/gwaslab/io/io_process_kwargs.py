@@ -1,7 +1,8 @@
+from typing import Callable, Any, Dict, List, Optional, Iterable
 import copy
 import pandas as pd
 
-def _list_func_args(func):
+def _list_func_args(func: Callable[..., Any]) -> tuple:
     return func.__code__.co_varnames
 
 def _extract_kwargs(prefix:str, default:dict, kwargs:dict) -> dict:
@@ -33,14 +34,17 @@ def _extract_kwargs(prefix:str, default:dict, kwargs:dict) -> dict:
     merged_arg = _merge_and_sync_dic(extracted, default)
     return merged_arg
 
-def _merge_and_sync_dic(list_of_dics:list, default:dict) -> dict:
+def _merge_and_sync_dic(list_of_dics: List[Dict[str, Any]], default: Dict[str, Any]) -> Dict[str, Any]:
     temp = copy.copy(default)
     for dic in list_of_dics:
         if isinstance(dic, dict):
             temp.update(dic)
     return temp
 
-def _update_kwargs(args=None, default_args=None):
+def _update_kwargs(
+    args: Optional[Dict[str, Any]] = None,
+    default_args: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     
     if default_args is None:
         default_args={}
@@ -56,7 +60,7 @@ def _update_kwargs(args=None, default_args=None):
 
     
 
-def _update_arg(arg=None, default_arg=None):
+def _update_arg(arg: Optional[Any] = None, default_arg: Optional[Any] = None) -> Any:
     if arg is None:
         # if None, return default
         return default_arg
@@ -73,7 +77,7 @@ import inspect
 import inspect
 from functools import wraps
 
-def resolve_overlapping_kwargs(strategy="prefer_explicit", verbose=False):
+def resolve_overlapping_kwargs(strategy: str = "prefer_explicit", verbose: bool = False) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator factory for any function."""
     def decorator(func):
         @wraps(func)
@@ -99,7 +103,10 @@ def resolve_overlapping_kwargs(strategy="prefer_explicit", verbose=False):
         return wrapper
     return decorator
 
-def remove_overlapping_kwargs(kwargs_dict, protected_keys):
+def remove_overlapping_kwargs(
+    kwargs_dict: Dict[str, Any],
+    protected_keys: Iterable[str]
+) -> Dict[str, Any]:
     """
     Return a new dict with keys in `protected_keys` removed.
 
@@ -118,7 +125,7 @@ def remove_overlapping_kwargs(kwargs_dict, protected_keys):
     return {k: v for k, v in kwargs_dict.items() if k not in protected_keys}
 
 
-def normalize_series_inputs(keys=None):
+def normalize_series_inputs(keys: Optional[List[str]] = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):

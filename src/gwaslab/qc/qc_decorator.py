@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Union, Callable, Any
 import gc
 import pandas as pd
 from functools import partial
@@ -13,16 +14,19 @@ from gwaslab.qc.qc_check_datatype import check_datatype_for_cols
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_build import _process_build, check_species_compatibility
 
-def with_logging(start_to_msg, 
-                 finished_msg,
-                 start_function=None,
-                 start_cols = None,
-                 must_kwargs=None,
-                 show_shape=True,
-                 check_dtype=False,
-                 fix=True,
-                 required_species=None
-                 ):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def with_logging(start_to_msg: str, 
+                 finished_msg: str,
+                 start_function: Optional[str] = None,
+                 start_cols: Optional[List[str]] = None,
+                 must_kwargs: Optional[List[str]] = None,
+                 show_shape: bool = True,
+                 check_dtype: bool = False,
+                 fix: bool = True,
+                 required_species: Optional[Union[str, List[str]]] = None
+                 ) -> Callable:
     """
     Decorator to add standardized logging, argument checks, and optional dtype
     verification to QC/processing functions.
@@ -67,9 +71,9 @@ def with_logging(start_to_msg,
     if start_function is None:
         start_function = "this step"
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)  # This preserves the original function's metadata including __doc__
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             import inspect
             sig = inspect.signature(func)
             bound_kwargs = sig.bind(*args, **kwargs)
@@ -216,7 +220,13 @@ def with_logging(start_to_msg,
 
 ###############################################################################################################
 
-def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
+def check_col(
+    df_col_names: Any,
+    verbose: bool = True,
+    log: Log = Log(),
+    cols: Optional[List[Union[str, List[str]]]] = None,
+    function: Optional[str] = None
+) -> bool:
     """
     Verify presence of required columns prior to executing a processing step.
 
@@ -264,7 +274,13 @@ def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
     
     return True
 
-def check_arg(log, verbose, key, value, start_function):
+def check_arg(
+    log: Log,
+    verbose: bool,
+    key: str,
+    value: Any,
+    start_function: str
+) -> bool:
     if value is None:
         log.warning("{} requires non-None argument: {}".format(start_function, key), verbose=verbose)
         return False

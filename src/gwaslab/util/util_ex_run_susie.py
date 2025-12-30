@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Union
 import subprocess
 import os
 import gc
@@ -7,27 +8,31 @@ from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 from gwaslab.qc.qc_decorator import with_logging
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 @with_logging(
         start_to_msg="run finemapping using SuSieR from command line",
         finished_msg="running finemapping using SuSieR from command line",
         start_cols=["SNPID","CHR","POS"],
         start_function=".run_susie_rss()"
 )
-def _run_susie_rss(gls,
-                   filepath, 
-                   r="Rscript", 
-                   mode="bs",
-                   out=None,
-                   max_iter=100,
-                   min_abs_corr=0.5,
-                   refine="FALSE",
-                   L=10,
-                   fillldna=True, 
-                   n=None, 
-                   delete=False,  #if delete output file
-                   susie_kwargs="", 
-                   log=Log(),
-                   verbose=True):
+def _run_susie_rss(gls: 'Sumstats',
+                   filepath: Optional[str], 
+                   r: str = "Rscript", 
+                   mode: str = "bs",
+                   out: Optional[str] = None,
+                   max_iter: int = 100,
+                   min_abs_corr: float = 0.5,
+                   refine: str = "FALSE",
+                   L: int = 10,
+                   fillldna: bool = True, 
+                   n: Optional[Union[int, str]] = None, 
+                   delete: bool = False,  #if delete output file
+                   susie_kwargs: str = "", 
+                   log: Log = Log(),
+                   verbose: bool = True) -> pd.DataFrame:
     if filepath is None:
         log.write(" -File path is None.")
         log.write("Finished finemapping using SuSieR.")
@@ -155,7 +160,7 @@ dev.off()
     
     return locus_pip_cs
 
-def _get_cs_lead(pipcs):
+def _get_cs_lead(pipcs: pd.DataFrame) -> pd.DataFrame:
     leads = pipcs.loc[pipcs["CREDIBLE_SET_INDEX"]>0,:]
     leads = leads.sort_values(by="PIP",ascending=False).drop_duplicates(subset=["STUDY","LOCUS","CREDIBLE_SET_INDEX"])
     return leads

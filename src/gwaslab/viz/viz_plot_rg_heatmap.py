@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Union, Tuple, Callable
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,8 +10,12 @@ import scipy.stats as ss
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from matplotlib.axes import Axes
+
 #################################################################################################
-def convert_p_to_width(p,sig_level):
+def convert_p_to_width(p: float, sig_level: float) -> float:
     width_factor= -np.log10(sig_level)
     # if significant, full square
     if p<sig_level: 
@@ -19,7 +24,7 @@ def convert_p_to_width(p,sig_level):
         #scaled using mlog10(p)
         return max(-np.log10(p)/width_factor,0.1)
 
-def convert_rg_to_color(rg,cmap):
+def convert_rg_to_color(rg: float, cmap: Any) -> Any:
     #(1,1)
     if rg>1: rg=1
     if rg<-1: rg=-1

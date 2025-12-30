@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Tuple, Dict, Any, Union
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -9,46 +10,49 @@ from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
 from gwaslab.util.util_in_calculate_gc import _lambda_GC
 
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+
 # qq plot module for mqqplot
 from gwaslab.viz.viz_aux_save_figure import safefig
 @safefig
 def _plot_qq(
-    sumstats,
-    p_toplot_raw,
-    ax2,
-    maxticker,
-    marker_size,
-    gc,
-    cut,
-    cutfactor,
-    cut_log,
-    skip,
-    maxy,
-    ystep,
-    colors,
-    qq_line_color,
-    stratified,
-    eaf_raw,
-    maf_bins,
-    maf_bin_colors,
-    fontsize,
-    font_family,
-    qtitle,
-    qtitle_pad,
-    title_fontsize,
-    include_chrXYMT,
-    cut_line_color,
-    linewidth,
-    ytick3,
-    ylabels,
-    xlabels,
-    xlim,
-    ylabels_converted,
-    qq_scatter_kwargs,
-    expected_min_mlog10p,
-    verbose=True,
-    log=Log()
-):
+    sumstats: pd.DataFrame,
+    p_toplot_raw: pd.DataFrame,
+    ax2: 'Axes',
+    maxticker: int,
+    marker_size: Tuple[int, int],
+    gc: bool,
+    cut: Optional[float],
+    cutfactor: Optional[float],
+    cut_log: bool,
+    skip: float,
+    maxy: float,
+    ystep: float,
+    colors: List[str],
+    qq_line_color: str,
+    stratified: bool,
+    eaf_raw: pd.Series,
+    maf_bins: List[Tuple[float, float]],
+    maf_bin_colors: List[str],
+    fontsize: float,
+    font_family: str,
+    qtitle: Optional[str],
+    qtitle_pad: float,
+    title_fontsize: float,
+    include_chrXYMT: bool,
+    cut_line_color: str,
+    linewidth: float,
+    ytick3: Optional[List[float]],
+    ylabels: Optional[List[str]],
+    xlabels: Optional[List[float]],
+    xlim: Optional[Tuple[float, float]],
+    ylabels_converted: Optional[List[str]],
+    qq_scatter_kwargs: Dict[str, Any],
+    expected_min_mlog10p: float,
+    verbose: bool = True,
+    log: Log = Log()
+) -> 'Axes':
     """
     Generate a QQ plot to visualize the distribution of p-values from GWAS results.
     

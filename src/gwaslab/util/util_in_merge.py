@@ -1,13 +1,17 @@
+from typing import TYPE_CHECKING, Union, List, Dict, Set
 import pandas as pd
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 import re
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 @with_logging(
         start_to_msg="initialize gl.SumstatsSet",
         finished_msg="initializing gl.SumstatsSet"
 )
-def _extract_variant(variant_set, sumstats_dic, log=Log(), verbose=True):
+def _extract_variant(variant_set: Union[List[str], List[List[Union[int, float]]], Set[str]], sumstats_dic: Dict[str, 'Sumstats'], log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     
     combined = pd.DataFrame()
     for key, sumstats_gls in sumstats_dic.items():

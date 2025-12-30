@@ -1,4 +1,4 @@
-
+from typing import TYPE_CHECKING, List, Union, Optional, Tuple, Any, Dict
 import pandas as pd
 import numpy as np
 from scipy.stats.distributions import chi2
@@ -13,10 +13,10 @@ import gc
         start_to_msg="perform meta-analysis",
         finished_msg="meta-analysis successfully"
 )
-def meta_analyze(sumstats_list,
-                 random_effects=False, 
-                 match_allele=True, 
-                 log=Log()):
+def meta_analyze(sumstats_list: List[Union[str, pd.DataFrame, Sumstats]],
+                 random_effects: bool = False, 
+                 match_allele: bool = True, 
+                 log: Log = Log()) -> pd.DataFrame:
     
     ###########################################################################
     columns=["SNPID","CHR","POS","EA","NEA"]
@@ -178,7 +178,14 @@ def meta_analyze(sumstats_list,
     
     return results_df
      
-def process_sumstats(sumstats_path, results_df, index, extract_index=None, match_allele=True, log=Log()):
+def process_sumstats(
+    sumstats_path: Union[str, pd.DataFrame, Sumstats, Tuple[Union[str, pd.DataFrame], Dict[str, Any]]],
+    results_df: pd.DataFrame,
+    index: int,
+    extract_index: Optional[pd.Index] = None,
+    match_allele: bool = True,
+    log: Log = Log()
+) -> pd.DataFrame:
     
     if extract_index is None:
         extract_index = results_df.index
@@ -216,7 +223,10 @@ def process_sumstats(sumstats_path, results_df, index, extract_index=None, match
 
     return to_use_sumstats
 
-def get_sumstats(input_path,usekeys=None):
+def get_sumstats(
+    input_path: Union[str, pd.DataFrame, Sumstats, Tuple[Union[str, pd.DataFrame], Dict[str, Any]]],
+    usekeys: Optional[List[str]] = None
+) -> pd.DataFrame:
     if isinstance(input_path, tuple):
         path = input_path[0]
         path_kwargs = input_path[1]
@@ -245,11 +255,13 @@ def get_sumstats(input_path,usekeys=None):
         start_to_msg="perform meta-analysis",
         finished_msg="meta-analysis successfully"
 )
-def meta_analyze_multi(sumstats_multi,
-                       random_effects=False,
-                       nstudy=1, 
-                       match_allele=True, 
-                       log=Log()):
+def meta_analyze_multi(
+    sumstats_multi: pd.DataFrame,
+    random_effects: bool = False,
+    nstudy: int = 1,
+    match_allele: bool = True,
+    log: Log = Log()
+) -> Sumstats:
     ###########################################################################
     log.write(" -Initiating result DataFrame...")
     sumstats_multi["_INDEX"] = range(len(sumstats_multi))
@@ -368,7 +380,7 @@ def meta_analyze_multi(sumstats_multi,
     
     return results_df
 
-def _init_result_df(sumstats):
+def _init_result_df(sumstats: pd.DataFrame) -> pd.DataFrame:
 
     results_df = sumstats[["_INDEX","SNPID","CHR","POS","EA","NEA"]]
     results_df = results_df.drop_duplicates(subset="_INDEX").set_index("_INDEX")

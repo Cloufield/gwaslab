@@ -5,6 +5,7 @@ This module provides a decorator that adds standardized logging, argument valida
 column checking, and tool availability/version checking to downstream analysis functions.
 """
 
+from typing import TYPE_CHECKING, Optional, List, Tuple, Dict, Any, Callable, Union
 import gc
 import os
 import pandas as pd
@@ -13,6 +14,7 @@ import shutil
 import subprocess
 import numpy as np
 from functools import wraps
+import inspect
 
 from gwaslab.info.g_Log import Log
 from gwaslab.info.g_version import _get_version
@@ -20,6 +22,9 @@ from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_tool_availability
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 # Constants
 TOOL_CHECK_TIMEOUT = 5
@@ -30,14 +35,14 @@ SUPPORTED_SPECIAL_TOOLS = ["python", "r", "plink", "plink2", "tabix", "bcftools"
 # Main Decorator
 ###############################################################################################################
 
-def with_analysis_logging(start_to_msg, 
-                          finished_msg,
-                          start_function=None,
-                          start_cols=None,
-                          must_kwargs=None,
-                          show_shape=True,
-                          check_tools=None
-                          ):
+def with_analysis_logging(start_to_msg: str, 
+                          finished_msg: str,
+                          start_function: Optional[str] = None,
+                          start_cols: Optional[List[Union[str, Tuple[str, ...], List[str]]]] = None,
+                          must_kwargs: Optional[List[str]] = None,
+                          show_shape: bool = True,
+                          check_tools: Optional[List[str]] = None
+                          ) -> Callable:
     """
     Decorator to add standardized logging, argument checks, column validation,
     and tool availability checks to downstream analysis functions.
@@ -82,9 +87,9 @@ def with_analysis_logging(start_to_msg,
     check_tools = check_tools or []
     start_function = start_function or "this step"
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Setup: bind arguments and extract common parameters
             bound_kwargs = _setup_function_call(func, args, kwargs)
             log = bound_kwargs.arguments.get('log', Log())
@@ -129,16 +134,15 @@ def with_analysis_logging(start_to_msg,
 # Setup and Extraction Functions
 ###############################################################################################################
 
-def _setup_function_call(func, args, kwargs):
+def _setup_function_call(func: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> inspect.BoundArguments:
     """Bind function arguments and apply defaults."""
-    import inspect
     sig = inspect.signature(func)
     bound_kwargs = sig.bind(*args, **kwargs)
     bound_kwargs.apply_defaults()
     return bound_kwargs
 
 
-def _extract_sumstats(bound_kwargs):
+def _extract_sumstats(bound_kwargs: inspect.BoundArguments) -> Optional[pd.DataFrame]:
     """Extract sumstats DataFrame from bound arguments."""
     insumstats = bound_kwargs.arguments.get('insumstats', None)
     if insumstats is not None:
@@ -146,7 +150,7 @@ def _extract_sumstats(bound_kwargs):
     return bound_kwargs.arguments.get('sumstats', None)
 
 
-def _log_references(bound_kwargs, log, verbose):
+def _log_references(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> None:
     """Log thread and reference file information."""
     threads = bound_kwargs.arguments.get('threads', None)
     if threads is not None:
@@ -165,7 +169,7 @@ def _log_references(bound_kwargs, log, verbose):
         log.log_reference_path("TSV", ref_tsv, verbose=verbose)
 
 
-def _process_build_argument(bound_kwargs, log, verbose):
+def _process_build_argument(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> None:
     """Process and normalize build argument if present."""
     if "build" in bound_kwargs.arguments:
         bound_kwargs.arguments["build"] = _process_build(
@@ -178,7 +182,7 @@ def _process_build_argument(bound_kwargs, log, verbose):
         bound_kwargs.kwargs = bound_kwargs.kwargs
 
 
-def _find_sumstats_object(args, bound_kwargs, log):
+def _find_sumstats_object(args: Tuple[Any, ...], bound_kwargs: inspect.BoundArguments, log: Log) -> Optional['Sumstats']:
     """Find Sumstats object instance from various sources."""
     sumstats_obj = None
     try:
@@ -204,7 +208,7 @@ def _find_sumstats_object(args, bound_kwargs, log):
     return sumstats_obj
 
 
-def _get_sumstats_dataframe(sumstats_obj):
+def _get_sumstats_dataframe(sumstats_obj: 'Sumstats') -> Optional[pd.DataFrame]:
     """Extract DataFrame from Sumstats object."""
     try:
         return sumstats_obj.data
@@ -216,7 +220,7 @@ def _get_sumstats_dataframe(sumstats_obj):
 # Validation Functions
 ###############################################################################################################
 
-def _validate_required_kwargs(must_kwargs, bound_kwargs, log, verbose, start_function):
+def _validate_required_kwargs(must_kwargs: List[str], bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool, start_function: str) -> None:
     """Validate that all required keyword arguments are provided and non-empty."""
     is_valid = True
     for key in must_kwargs:
@@ -227,8 +231,10 @@ def _validate_required_kwargs(must_kwargs, bound_kwargs, log, verbose, start_fun
         raise ValueError(f"{must_kwargs} must be provided.")
 
 
-def _execute_with_validation(func, args, kwargs, sumstats, sumstats_obj, 
-                             start_cols, start_function, show_shape, log, verbose):
+def _execute_with_validation(func: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any], 
+                             sumstats: Optional[pd.DataFrame], sumstats_obj: Optional['Sumstats'], 
+                             start_cols: List[Union[str, Tuple[str, ...], List[str]]], 
+                             start_function: str, show_shape: bool, log: Log, verbose: bool) -> Any:
     """Execute function with column and shape validation."""
     initial_shape = None
     
@@ -276,7 +282,9 @@ def _execute_with_validation(func, args, kwargs, sumstats, sumstats_obj,
 # Column and Argument Checking Functions
 ###############################################################################################################
 
-def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
+def check_col(df_col_names: Any, verbose: bool = True, log: Log = Log(), 
+             cols: Optional[List[Union[str, Tuple[str, ...], List[str]]]] = None, 
+             function: Optional[str] = None) -> bool:
     """
     Verify presence of required columns prior to executing a processing step.
 
@@ -323,7 +331,7 @@ def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
     return True
 
 
-def check_arg(log, verbose, key, value, start_function):
+def check_arg(log: Log, verbose: bool, key: str, value: Any, start_function: str) -> bool:
     """Check if a required argument is valid (non-None and non-empty)."""
     if value is None:
         log.warning(
@@ -346,7 +354,7 @@ def check_arg(log, verbose, key, value, start_function):
 # Tool Checking Functions
 ###############################################################################################################
 
-def check_tools_availability(check_tools, bound_kwargs, log, verbose):
+def check_tools_availability(check_tools: List[str], bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Dict[str, Optional[str]]]:
     """
     Check availability and version of required tools for downstream analysis.
     
@@ -396,7 +404,7 @@ def check_tools_availability(check_tools, bound_kwargs, log, verbose):
     return results
 
 
-def _check_special_tool(tool_name, bound_kwargs, log, verbose):
+def _check_special_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
     """Check a special tool (python, r, plink, etc.) with custom logic."""
     tool_checkers = {
         "python": _check_python_tool,
@@ -416,7 +424,7 @@ def _check_special_tool(tool_name, bound_kwargs, log, verbose):
     return _check_generic_path_tool(tool_name, bound_kwargs, log, verbose)
 
 
-def _check_python_tool(bound_kwargs, log, verbose):
+def _check_python_tool(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
     """Check Python availability and version."""
     result = {"available": False, "path": None, "version": None}
     
@@ -441,7 +449,7 @@ def _check_python_tool(bound_kwargs, log, verbose):
     return result
 
 
-def _check_r_tool(bound_kwargs, log, verbose):
+def _check_r_tool(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
     """Check R availability and version."""
     result = {"available": False, "path": None, "version": None}
     
@@ -469,7 +477,7 @@ def _check_r_tool(bound_kwargs, log, verbose):
     return result
 
 
-def _check_r_package(package_name, bound_kwargs, log, verbose):
+def _check_r_package(package_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
     """
     Check if an R package is installed and get its version.
     
@@ -557,7 +565,7 @@ def _check_r_package(package_name, bound_kwargs, log, verbose):
     return result
 
 
-def _check_plink_tool(tool_name, bound_kwargs, log, verbose):
+def _check_plink_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
     """Check PLINK or PLINK2 availability and version."""
     result = {"available": False, "path": None, "version": None}
     
@@ -594,7 +602,7 @@ def _check_plink_tool(tool_name, bound_kwargs, log, verbose):
     return result
 
 
-def _check_generic_path_tool(tool_name, bound_kwargs, log, verbose):
+def _check_generic_path_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
     """Check a generic tool that may have a parameter or fall back to PATH."""
     result = {"available": False, "path": None, "version": None}
     
@@ -620,7 +628,7 @@ def _check_generic_path_tool(tool_name, bound_kwargs, log, verbose):
     return result
 
 
-def _check_generic_tools(tool_names, log, verbose):
+def _check_generic_tools(tool_names: List[str], log: Log, verbose: bool) -> Dict[str, Dict[str, Optional[str]]]:
     """Check generic tools using the existing batch checking function."""
     try:
         return _check_tool_availability(tools=tuple(tool_names), log=log, verbose=verbose)
@@ -633,7 +641,7 @@ def _check_generic_tools(tool_names, log, verbose):
         }
 
 
-def _get_tool_version(tool_path, log, verbose, tool_display_name, silent=False):
+def _get_tool_version(tool_path: str, log: Log, verbose: bool, tool_display_name: str, silent: bool = False) -> Optional[str]:
     """
     Get version information for a tool by running --version command.
     

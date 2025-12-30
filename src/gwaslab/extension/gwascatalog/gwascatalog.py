@@ -952,8 +952,6 @@ class GWASCatalogClient:
                             if (not chr_val or not pos_val) and val is not None and pd.notna(val):
                                 chr_val, pos_val = self._extract_chr_pos_from_locations(val)
                         except (TypeError, ValueError, AttributeError, IndexError) as e:
-                            if verbose:
-                                self.log.write(" -Debug: Error extracting from locations (type: {}, value: {}): {}".format(type(val), str(val)[:100], str(e)), verbose=verbose)
                             pass
                     
                     if not chr_val or not pos_val:

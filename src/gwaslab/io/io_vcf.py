@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Union, Optional, Tuple, List
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chr_to_number
@@ -14,6 +15,9 @@ from allel import read_vcf
 from allel import rogers_huff_r_between
 from gwaslab.info.g_Log import Log
 from shutil import which
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 # VCF/BCF file suffix definitions
 VCF_BCF_SUFFIXES = ('.vcf.gz', '.bcf', '.vcf')
@@ -177,17 +181,17 @@ def check_vcf_chr_NC(
     return None
 
 
-def _get_ld_matrix_from_vcf(sumstats_or_dataframe, 
-                vcf_path=None, 
-                region=None,
-                log=Log(), 
-                verbose=True, 
-                pos="POS",
-                nea="NEA",
-                ea="EA", 
-                mapper: ChromosomeMapper | None = None,
-                tabix=None,
-                export_path=None):
+def _get_ld_matrix_from_vcf(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], 
+                vcf_path: Optional[str] = None, 
+                region: Optional[Tuple[Union[int, str], int, int]] = None,
+                log: Log = Log(), 
+                verbose: bool = True, 
+                pos: str = "POS",
+                nea: str = "NEA",
+                ea: str = "EA", 
+                mapper: Optional[ChromosomeMapper] = None,
+                tabix: Optional[bool] = None,
+                export_path: Optional[str] = None) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray]:
     """
     Calculate full LD matrix from VCF file and return both the LD matrix and corresponding sumstats.
     

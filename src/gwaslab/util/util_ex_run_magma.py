@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional
 import subprocess
 import os
 import gc
@@ -6,21 +7,26 @@ import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_filter_value import _exclude_hla
 
-def _run_magma(gls, 
-                magma="magma",
-                study="Study1",
-                exclude_hla=True,
-                window="35,10",
-                id_to_use="rsID",
-                ref=None,
-                ncbi=None,
-                set_annot=None,
-                out=None,
-                delete=True, 
-                ncol="N",
-                build="19",
-                log=Log(), 
-                verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _run_magma(
+    gls: 'Sumstats',
+    magma: str = "magma",
+    study: str = "Study1",
+    exclude_hla: bool = True,
+    window: str = "35,10",
+    id_to_use: str = "rsID",
+    ref: Optional[str] = None,
+    ncbi: Optional[str] = None,
+    set_annot: Optional[str] = None,
+    out: Optional[str] = None,
+    delete: bool = True,
+    ncol: str = "N",
+    build: str = "19",
+    log: Log = Log(),
+    verbose: bool = True
+) -> None:
     
     log.write(" Start to run magma from command line:", verbose=verbose)
 

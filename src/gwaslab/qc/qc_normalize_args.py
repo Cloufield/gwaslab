@@ -1,10 +1,14 @@
+from typing import TYPE_CHECKING, Optional, Union, List, Tuple, Dict, Any
 import pandas as pd
 import re
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.io.io_process_kwargs import normalize_series_inputs
 
-def _parse_flanking(flanking_str):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _parse_flanking(flanking_str: str) -> int:
     '''
     Parse flanking value, supporting both base pairs and kilobases.
     If 'kb' suffix is present (case-insensitive), converts to base pairs.
@@ -30,7 +34,19 @@ def _parse_flanking(flanking_str):
         # Assume base pairs
         return int(float(flanking_str))
 
-def _normalize_region(region, chr_dict=None, sumstats=None, snpid="SNPID", rsid="rsID", chrom_col="CHR", pos_col="POS", ea="EA", nea="NEA", log=Log(), verbose=True):
+def _normalize_region(
+    region: Union[str, Tuple[Union[str, int], int, int], List[Union[str, int, float]]],
+    chr_dict: Optional[Dict[str, int]] = None,
+    sumstats: Optional[pd.DataFrame] = None,
+    snpid: str = "SNPID",
+    rsid: str = "rsID",
+    chrom_col: str = "CHR",
+    pos_col: str = "POS",
+    ea: str = "EA",
+    nea: str = "NEA",
+    log: Log = Log(),
+    verbose: bool = True
+) -> Optional[Tuple[int, int, int]]:
     '''
     Normalize a region input to a tuple (chr, start, end) with integer
     positions and standardized chromosome notation.
@@ -165,13 +181,13 @@ def _normalize_region(region, chr_dict=None, sumstats=None, snpid="SNPID", rsid=
 
 @normalize_series_inputs(keys=["highlight","pinpoint","anno_set"])
 def _normalize_group(
-    items, 
-    colors, 
-    item_name, 
-    log, 
-    verbose, 
-    is_chrpos_mode=False
-):
+    items: Union[str, List[str], List[List[str]]],
+    colors: Union[str, List[str]],
+    item_name: str,
+    log: Log,
+    verbose: bool,
+    is_chrpos_mode: bool = False
+) -> Tuple[List[Union[str, List[str]]], Union[str, List[str]]]:
     """
     Helper to normalize and log highlight/pinpoint groups.
     """

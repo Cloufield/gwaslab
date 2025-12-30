@@ -364,7 +364,8 @@ class Chromosomes:
         return chrom_list
 
 
-def get_sex_chromosomes(species="homo sapiens"):
+from typing import Optional
+def get_sex_chromosomes(species: str = "homo sapiens") -> 'Chromosomes':
     """
     Convenience function to get chromosome information for a species.
     

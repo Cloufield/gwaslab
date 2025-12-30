@@ -3,6 +3,11 @@ import os
 import gc
 import pandas as pd
 import numpy as np
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Tuple, Union
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.io.io_plink import _process_plink_input_files
@@ -16,27 +21,29 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["SNPID","CHR","POS","EA","NEA"],
         start_function="calculate_ld_matrix"
 )
-def _to_finemapping(gls, 
-                  study=None, 
-                  bfile=None, 
-                  vcf=None, 
-                  loci=None,
-                  loci_chrpos=None,
-                  out="./",
-                  plink="plink",
-                  plink2="plink2",
-                  windowsizekb=1000,
-                  threads=1, 
-                  mode="r",
-                  exclude_hla=False, 
-                  getlead_kwargs=None, 
-                  memory=None, 
-                  overwrite=False,
-                  log=Log(),
-                  suffixes=None,
-                  extra_plink_option="",
-                  verbose=True,
-                  **kwargs):
+def _to_finemapping(
+    gls: 'Sumstats', 
+    study: Optional[str] = None, 
+    bfile: Optional[str] = None, 
+    vcf: Optional[str] = None, 
+    loci: Optional[List[str]] = None,
+    loci_chrpos: Optional[List[Tuple[int, int]]] = None,
+    out: str = "./",
+    plink: str = "plink",
+    plink2: str = "plink2",
+    windowsizekb: int = 1000,
+    threads: int = 1, 
+    mode: str = "r",
+    exclude_hla: bool = False, 
+    getlead_kwargs: Optional[Dict[str, Any]] = None, 
+    memory: Optional[int] = None, 
+    overwrite: bool = False,
+    log: Log = Log(),
+    suffixes: Optional[List[str]] = None,
+    extra_plink_option: str = "",
+    verbose: bool = True,
+    **kwargs: Any
+) -> Tuple[str, pd.DataFrame, str]:
     
     ##start function with col checking##########################################################
     
@@ -171,7 +178,25 @@ def _to_finemapping(gls,
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, threads, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,ref_allele_path, extra_plink_option="",verbose=True):
+def _calculate_ld_r(
+    study: str, 
+    matched_sumstats_snpid: pd.Series, 
+    row: pd.Series, 
+    bfile_prefix: str, 
+    threads: int, 
+    windowsizekb: int,
+    out: str,
+    plink_log: str,
+    log: Log,
+    memory: Optional[int],
+    mode: str,
+    filetype: str,
+    plink: str,
+    plink2: str,
+    ref_allele_path: str, 
+    extra_plink_option: str = "",
+    verbose: bool = True
+) -> str:
     '''
     Calculate LD r matrix by calling PLINK; return file name and log
     '''
@@ -233,7 +258,13 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, threads, w
         gc.collect()
         return output_prefix+".ld.gz",plink_log
 
-def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=None):
+def _align_sumstats_with_bim(
+    row: pd.Series, 
+    locus_sumstats: pd.DataFrame, 
+    ref_bim: pd.DataFrame, 
+    log: Log = Log(),
+    suffixes: Optional[List[str]] = None
+) -> pd.DataFrame:
     '''
     align sumstats with bim
     '''
@@ -286,7 +317,15 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=No
     return combined_df.loc[allele_match,output_columns]
 
 
-def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log,suffixes=None):
+def _export_snplist_and_locus_sumstats(
+    matched_sumstats: pd.DataFrame, 
+    out: str, 
+    study: str, 
+    row: pd.Series, 
+    windowsizekb: int,
+    log: Log,
+    suffixes: Optional[List[str]] = None
+) -> Tuple[str, str]:
         if suffixes is None:
             suffixes=[""]
         matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
@@ -315,14 +354,24 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
         matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path+".gz", sep="\t",index=None)
         return matched_snp_list_path, matched_sumstats_path
 
-def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):
+def _check_snpid_order(
+    snplist_path: str, 
+    matched_sumstats_snpid: pd.Series, 
+    log: Log
+) -> None:
     snpid_list = pd.read_csv(snplist_path,dtype="string",header=None)[0]
     if list(matched_sumstats_snpid) == list(snpid_list):
         log.write(" -Sumstats SNPID order and LD matrix SNPID order are matched.")
     else:
         log.warning("Sumstats SNPID order and LD matrix SNPID order are not matched!")
 
-def _extract_variants_in_locus(sumstats, windowsizekb, locus, chrom = "CHR", pos="POS"):
+def _extract_variants_in_locus(
+    sumstats: pd.DataFrame, 
+    windowsizekb: int, 
+    locus: Tuple[int, int], 
+    chrom: str = "CHR", 
+    pos: str = "POS"
+) -> pd.DataFrame:
     
     is_in_locus = (sumstats["CHR"] == locus[0]) & (sumstats["POS"] >= locus[1] - windowsizekb*1000) & (sumstats["POS"] < locus[1] + windowsizekb*1000)
     ## extract snp list from sumstats

@@ -5,6 +5,7 @@ This module provides lazy versions of merge functions that work with Polars Lazy
 allowing merging of multiple sumstats files without materializing all data into memory.
 """
 
+from typing import Optional, List, Tuple, Union
 import polars as pl
 import numpy as np
 from gwaslab.info.g_Log import Log
@@ -14,14 +15,17 @@ from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import _fill_data
 
 
-def _merge_mold_with_sumstats_by_chrposp_lazy(mold, sumstats, 
-                                               stats_cols1=None, 
-                                               stats_cols2=None,
-                                               log=Log(),
-                                               suffixes=("_1", ""),
-                                               merge_mode="full",
-                                               merge_by_id=False,
-                                               verbose=True):
+def _merge_mold_with_sumstats_by_chrposp_lazy(
+    mold: pl.LazyFrame,
+    sumstats: pl.LazyFrame,
+    stats_cols1: Optional[List[str]] = None,
+    stats_cols2: Optional[List[str]] = None,
+    log: Log = Log(),
+    suffixes: Tuple[str, str] = ("_1", ""),
+    merge_mode: str = "full",
+    merge_by_id: bool = False,
+    verbose: bool = True
+) -> pl.LazyFrame:
     """
     Merge two sumstats lazily using CHR, POS, ASET (allele set).
     
@@ -192,7 +196,12 @@ def _merge_mold_with_sumstats_by_chrposp_lazy(mold, sumstats,
     return mold_sumstats
 
 
-def _align_with_moldp_lazy(sumstats, log=Log(), verbose=True, suffixes=("_1", "")):
+def _align_with_moldp_lazy(
+    sumstats: pl.LazyFrame,
+    log: Log = Log(),
+    verbose: bool = True,
+    suffixes: Tuple[str, str] = ("_1", "")
+) -> pl.LazyFrame:
     """
     Align alleles with mold (reference) lazily.
     
@@ -261,7 +270,12 @@ def _align_with_moldp_lazy(sumstats, log=Log(), verbose=True, suffixes=("_1", ""
     return sumstats
 
 
-def flipallelestatsp_lazy(sumstats, status="STATUS", verbose=True, log=Log()):
+def flipallelestatsp_lazy(
+    sumstats: pl.LazyFrame,
+    status: str = "STATUS",
+    verbose: bool = True,
+    log: Log = Log()
+) -> pl.LazyFrame:
     """
     Flip alleles based on STATUS lazily.
     
@@ -296,7 +310,12 @@ def flipallelestatsp_lazy(sumstats, status="STATUS", verbose=True, log=Log()):
     return sumstats
 
 
-def _fill_missing_columnsp_lazy(sumstats, columns, log=Log(), verbose=True):
+def _fill_missing_columnsp_lazy(
+    sumstats: pl.LazyFrame,
+    columns: List[str],
+    log: Log = Log(),
+    verbose: bool = True
+) -> pl.LazyFrame:
     """
     Fill missing columns lazily.
     
@@ -323,7 +342,13 @@ def _fill_missing_columnsp_lazy(sumstats, columns, log=Log(), verbose=True):
     return sumstats
 
 
-def _renaming_colsp_lazy(sumstats, columns, log=Log(), verbose=True, suffixes=("_1", "_2")):
+def _renaming_colsp_lazy(
+    sumstats: pl.LazyFrame,
+    columns: List[str],
+    log: Log = Log(),
+    verbose: bool = True,
+    suffixes: Tuple[str, str] = ("_1", "_2")
+) -> pl.LazyFrame:
     """
     Rename columns with suffix lazily.
     
@@ -359,8 +384,14 @@ def _renaming_colsp_lazy(sumstats, columns, log=Log(), verbose=True, suffixes=("
     return sumstats
 
 
-def _sort_pair_colsp_lazy(molded_sumstats, verbose=True, log=Log(), 
-                          order=None, stats_order=None, suffixes=("_1", "_2")):
+def _sort_pair_colsp_lazy(
+    molded_sumstats: pl.LazyFrame,
+    verbose: bool = True,
+    log: Log = Log(),
+    order: Optional[List[str]] = None,
+    stats_order: Optional[List[str]] = None,
+    suffixes: Tuple[str, str] = ("_1", "_2")
+) -> pl.LazyFrame:
     """
     Sort columns lazily.
     

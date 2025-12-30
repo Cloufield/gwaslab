@@ -1,36 +1,42 @@
-
 import subprocess
 import os
 import gc
 import pandas as pd
 import numpy as np
+from typing import TYPE_CHECKING, Optional, List, Tuple, Any, Union
+
+if TYPE_CHECKING:
+    from gwaslab.g_SumstatsPair import SumstatsPair
+
 from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
 
 
-def _run_two_sample_mr(sumstatspair_object,
-                       r,
-                       out="./",
-                       clump=False,
-                       f_check=10,
-                       exposure1="Trait1",
-                       outcome2="Trait2",
-                       n1=None,
-                       n2=None,
-                       binary1=False,
-                       cck1=None,
-                       cck2=None,
-                       ncase1=None,
-                       ncontrol1=None,
-                       prevalence1=None,
-                       binary2=False,
-                       ncase2=None,
-                       ncontrol2=None,
-                       prevalence2=None,
-                       methods=None,
-                       log=Log()):
+def _run_two_sample_mr(
+    sumstatspair_object: 'SumstatsPair',
+    r: str,
+    out: str = "./",
+    clump: bool = False,
+    f_check: float = 10,
+    exposure1: str = "Trait1",
+    outcome2: str = "Trait2",
+    n1: Optional[int] = None,
+    n2: Optional[int] = None,
+    binary1: bool = False,
+    cck1: Optional[Tuple[int, int, float]] = None,
+    cck2: Optional[Tuple[int, int, float]] = None,
+    ncase1: Optional[int] = None,
+    ncontrol1: Optional[int] = None,
+    prevalence1: Optional[float] = None,
+    binary2: bool = False,
+    ncase2: Optional[int] = None,
+    ncontrol2: Optional[int] = None,
+    prevalence2: Optional[float] = None,
+    methods: Optional[List[str]] = None,
+    log: Log = Log()
+) -> None:
 
     log.write(" Start to run MR using twosampleMR from command line:")
     if methods is None:
@@ -212,7 +218,7 @@ def _run_two_sample_mr(sumstatspair_object,
 
 
 
-def _sort_columns_to_load(sumstatspair):
+def _sort_columns_to_load(sumstatspair: pd.DataFrame) -> Tuple[List[str], List[str]]:
     cols_for_trait1=["SNPID","CHR","POS","EA","NEA","PHENO_1","N_1"]
     cols_for_trait2=["SNPID","CHR","POS","EA","NEA","PHENO_2","N_2"]
     for i in ["EAF","BETA","SE","P"]:
@@ -225,11 +231,16 @@ def _sort_columns_to_load(sumstatspair):
 
 
 
-def _cols_list_to_r_script(cols_for_trait1):
+def _cols_list_to_r_script(cols_for_trait1: List[str]) -> str:
     script = '"{}"'.format('","'.join(cols_for_trait1))
     return script
 
-def _make_script_for_calculating_r(exposure_or_outcome, ncase, ncontrol, prevalence):
+def _make_script_for_calculating_r(
+    exposure_or_outcome: str, 
+    ncase: int, 
+    ncontrol: int, 
+    prevalence: float
+) -> str:
         
         script = """
         harmonized_data$"r.{exposure_or_outcome}" <- get_r_from_lor(  harmonized_data$"beta.{exposure_or_outcome}",
@@ -249,7 +260,7 @@ def _make_script_for_calculating_r(exposure_or_outcome, ncase, ncontrol, prevale
         return script
 
 
-def _make_script_for_calculating_r_quant(exposure_or_outcome):
+def _make_script_for_calculating_r_quant(exposure_or_outcome: str) -> str:
         script = """
         harmonized_data$"r.{exposure_or_outcome}" <- get_r_from_bsen(  harmonized_data$"beta.{exposure_or_outcome}",
                                                         harmonized_data$"se.{exposure_or_outcome}",
@@ -261,7 +272,16 @@ def _make_script_for_calculating_r_quant(exposure_or_outcome):
         return script
 
 
-def _filter_by_f(sumstatspair, f_check, n1, binary1=None, ncase1=None, ncontrol1=None, prevalence1=None, log=Log() ):
+def _filter_by_f(
+    sumstatspair: pd.DataFrame, 
+    f_check: float, 
+    n1: Optional[int], 
+    binary1: Optional[bool] = None, 
+    ncase1: Optional[int] = None, 
+    ncontrol1: Optional[int] = None, 
+    prevalence1: Optional[float] = None, 
+    log: Log = Log()
+) -> pd.DataFrame:
 
     if binary1==True:
         sumstatspair = _get_per_snp_r2(sumstatspair,

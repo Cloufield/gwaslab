@@ -1,12 +1,16 @@
+from typing import TYPE_CHECKING, Dict, Any, Optional
 from gwaslab.info.g_version import gwaslab_info
 from datetime import datetime
 import numpy as np
 from gwaslab.util.util_in_filter_value import _infer_build
 from gwaslab.info.g_Log import Log
 import time
+import pandas as pd
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
-def _init_meta(object="Sumstats"):
+def _init_meta(object: str = "Sumstats") -> Dict[str, Any]:
     """
     Initialize the meta information of the Sumstats Object. 
     """
@@ -170,13 +174,13 @@ def _init_meta(object="Sumstats"):
         metadata |= metadata_multi
     return metadata.copy()
 
-def _append_meta_record(old, new):
+def _append_meta_record(old: str, new: str) -> str:
     if old == "Unknown" or old== "Unchecked":
         return new
     else:
         return "{}, {}".format(old, new)
 
-def _update_step_status(status_section, step_name, now, performed, params):
+def _update_step_status(status_section: Optional[Dict[str, Any]], step_name: str, now: str, performed: bool, params: Dict[str, Any]) -> None:
     if status_section is None:
         return
     step = status_section.get(step_name)
@@ -187,17 +191,17 @@ def _update_step_status(status_section, step_name, now, performed, params):
         step["last_executed"] = now
     step["parameters_used"] = params if params is not None else {}
 
-def _update_qc_step(self, step_name, params, performed=True):
+def _update_qc_step(self: 'Sumstats', step_name: str, params: Dict[str, Any], performed: bool = True) -> None:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     qc_status = self.meta["gwaslab"].get("qc_and_harmonization_status", {}).get("qc", {})
     _update_step_status(qc_status, step_name, now, performed, params)
 
-def _update_harmonize_step(self, step_name, params, performed=True):
+def _update_harmonize_step(self: 'Sumstats', step_name: str, params: Dict[str, Any], performed: bool = True) -> None:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     harm_status = self.meta["gwaslab"].get("qc_and_harmonization_status", {}).get("harmonize", {})
     _update_step_status(harm_status, step_name, now, performed, params)
 
-def _check_sumstats_qc_status(self):
+def _check_sumstats_qc_status(self: 'Sumstats') -> Dict[str, Any]:
     """
     Check the QC and harmonization status of the sumstats.
     
@@ -215,7 +219,7 @@ def _check_sumstats_qc_status(self):
         "qc_and_harmonization_status": self.meta["gwaslab"].get("qc_and_harmonization_status", {})
     }
 
-def _set_qc_status(self, args):
+def _set_qc_status(self: 'Sumstats', args: Dict[str, Any]) -> None:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     self.meta["gwaslab"]["basic_check"]["performed"] = True
     self.meta["gwaslab"]["basic_check"]["last_executed"] = now
@@ -235,7 +239,7 @@ def _set_qc_status(self, args):
         _update_step_status(qc_status, "sort_coord", now, True, {})
         _update_step_status(qc_status, "sort_column", now, True, {})
 
-def _set_harmonization_status(self, args):
+def _set_harmonization_status(self: 'Sumstats', args: Dict[str, Any]) -> None:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     self.meta["gwaslab"]["harmonize"]["performed"]= True
     self.meta["gwaslab"]["harmonize"]["last_executed"] = now
@@ -256,7 +260,7 @@ def _set_harmonization_status(self, args):
 
         _update_step_status(harm_status, "liftover", now, False, args_to_save.get("liftover_kwargs", {}))
 
-def _update_meta(meta, sumstats, object="Sumstats",log=Log(), verbose=True):  
+def _update_meta(meta: Dict[str, Any], sumstats: pd.DataFrame, object: str = "Sumstats", log: Log = Log(), verbose: bool = True) -> Dict[str, Any]:  
     """
     Update Sumstats Object meta info based on the statistics of the current sumstats.
     Including information on variants, samples.

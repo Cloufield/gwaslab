@@ -1,14 +1,24 @@
+from typing import TYPE_CHECKING, Union, Optional, Tuple, Any
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_filter_value import _get_flanking_by_chrpos
 from gwaslab.util.util_in_filter_value import _get_flanking_by_id
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 # Calculate PIP based on approximate Bayesian factor (ABF)
 # Wakefield, J. A bayesian measure of the probability of false discovery in genetic epidemiology studies. Am J Hum Genet 81, 208–227 (2007).
 
 
-def calc_abf(insumstats,w=0.2,log=Log(),verbose=True,**kwargs):
+def calc_abf(
+    insumstats: pd.DataFrame,
+    w: float = 0.2,
+    log: Log = Log(),
+    verbose: bool = True,
+    **kwargs: Any
+) -> pd.DataFrame:
 
 
 
@@ -30,7 +40,12 @@ def calc_abf(insumstats,w=0.2,log=Log(),verbose=True,**kwargs):
     
     return insumstats
 
-def calc_PIP(insumstats,log=Log(),verbose=True,**kwargs):
+def calc_PIP(
+    insumstats: pd.DataFrame,
+    log: Log = Log(),
+    verbose: bool = True,
+    **kwargs: Any
+) -> pd.DataFrame:
     # Calculate the logarithmic sum of each ABF to find the logarithm of total_abf
     log_total_abf = np.log(np.sum(np.exp(insumstats["log_ABF"] - np.max(insumstats["log_ABF"])))) + np.max(insumstats["log_ABF"])
     insumstats = insumstats.copy()
@@ -41,7 +56,14 @@ def calc_PIP(insumstats,log=Log(),verbose=True,**kwargs):
     insumstats.loc[:, "PIP"] = np.exp(insumstats['log_PIP'])
     return insumstats
 
-def _abf_finemapping(insumstats_or_dataframe,region=None,chrpos=None,snpid=None, log=Log(),**kwargs):
+def _abf_finemapping(
+    insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    region: Optional[Tuple[int, int, int]] = None,
+    chrpos: Optional[Tuple[int, int]] = None,
+    snpid: Optional[str] = None,
+    log: Log = Log(),
+    **kwargs: Any
+) -> pd.DataFrame:
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):
@@ -60,7 +82,12 @@ def _abf_finemapping(insumstats_or_dataframe,region=None,chrpos=None,snpid=None,
     region_data = calc_PIP(region_data,log=log,**kwargs)
     return region_data
 
-def _make_cs(insumstats,threshold=0.95,log=Log(),verbose=True):
+def _make_cs(
+    insumstats: pd.DataFrame,
+    threshold: float = 0.95,
+    log: Log = Log(),
+    verbose: bool = True
+) -> pd.DataFrame:
     insumstats = insumstats.sort_values(by="PIP",ascending=False)
     pip_sum = 0
     cs = pd.DataFrame()

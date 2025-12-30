@@ -1,3 +1,4 @@
+from typing import Optional, Union
 import requests
 import json
 import pandas as pd
@@ -7,7 +8,7 @@ from gwaslab.qc.qc_decorator import with_logging
 from datetime import datetime
 import os
 
-def find_efo_cache(efo, path):
+def find_efo_cache(efo: str, path: str) -> Union[str, bool]:
     for root, dirs, files in os.walk(path):
         for file in files:
             if efo in file:
@@ -18,13 +19,13 @@ def find_efo_cache(efo, path):
         start_to_msg="retrieve data from GWASCatalog",
         finished_msg="retrieving data from GWASCatalog"
 )
-def gwascatalog_trait(efo,
-                      source="NCBI",
-                      sig_level=5e-8,
-                      use_cache=True,
-                      cache_dir="./",
-                      verbose=True,
-                      log=Log()):
+def gwascatalog_trait(efo: str,
+                      source: str = "NCBI",
+                      sig_level: float = 5e-8,
+                      use_cache: bool = True,
+                      cache_dir: str = "./",
+                      verbose: bool = True,
+                      log: Log = Log()) -> pd.DataFrame:
     
     #https://www.ebi.ac.uk/gwas/rest/docs/api
     
@@ -184,7 +185,11 @@ def gwascatalog_trait(efo,
 
 
 ###### helper ##################################################################################################
-def check_request_status_code(request_code,verbose=True,log=Log()):
+def check_request_status_code(
+    request_code: int,
+    verbose: bool = True,
+    log: Log = Log()
+) -> bool:
     
     is_proceed=False
     

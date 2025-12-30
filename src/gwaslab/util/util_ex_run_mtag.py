@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List
 import subprocess
 import os
 import gc
@@ -6,22 +7,25 @@ import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_path_manager import _path
 
-def _run_mtag(       sumstats_multi, 
-                     python="python",
-                     mtag="",
-                     study="Group1",
-                     special_flags="",
-                     ld_ref_panel = None,
-                     traits=None,
-                     out_prefix=None,
-                     perfect_gencov = False, 
-                     equal_h2 = False, 
-                     no_overlap = False, 
-                     fdr=False,
-                     n_min=0,
-                     nstudy=2,
-                     log=Log(), 
-                     verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_SumstatsMulti import SumstatsMulti
+
+def _run_mtag(sumstats_multi: 'SumstatsMulti', 
+                     python: str = "python",
+                     mtag: str = "",
+                     study: str = "Group1",
+                     special_flags: str = "",
+                     ld_ref_panel: Optional[str] = None,
+                     traits: Optional[List[str]] = None,
+                     out_prefix: Optional[str] = None,
+                     perfect_gencov: bool = False, 
+                     equal_h2: bool = False, 
+                     no_overlap: bool = False, 
+                     fdr: bool = False,
+                     n_min: int = 0,
+                     nstudy: int = 2,
+                     log: Log = Log(), 
+                     verbose: bool = True) -> None:
     
     log.write("Start to run MTAG from command line:", verbose=verbose)
 

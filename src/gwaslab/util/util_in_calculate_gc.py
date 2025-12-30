@@ -1,9 +1,22 @@
+from typing import TYPE_CHECKING, Union, Optional
 import pandas as pd
 import numpy as np
 import scipy as sp
 from gwaslab.info.g_Log import Log
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 #20220312
-def _lambda_GC(insumstats_or_dataframe,include_chrXYMT=True, x=23 ,y=24, mt=25, mode=None,level=0.5,verbose=True,log=Log()):
+def _lambda_GC(insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+                include_chrXYMT: bool = True, 
+                x: Union[int, str] = 23,
+                y: Union[int, str] = 24, 
+                mt: Union[int, str] = 25, 
+                mode: Optional[str] = None,
+                level: float = 0.5,
+                verbose: bool = True,
+                log: Log = Log()) -> float:
     """
     Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
     

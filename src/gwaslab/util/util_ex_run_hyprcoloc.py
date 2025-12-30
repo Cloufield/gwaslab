@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Union
 import subprocess
 import os
 import gc
@@ -9,17 +10,22 @@ from gwaslab.extension import _check_susie_version
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 from gwaslab.util.util_in_get_sig import _get_sig
 
-def _run_hyprcoloc(  sumstats_multi, 
-                     r="Rscript",
-                     study="Group1",
-                     traits=None,
-                     types=None, 
-                     loci=None,
-                     nstudy=2,
-                     windowsizekb=1000,
-                     build="99",
-                     log=Log(), 
-                     verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_SumstatsMulti import SumstatsMulti
+
+def _run_hyprcoloc(
+    sumstats_multi: 'SumstatsMulti',
+    r: str = "Rscript",
+    study: str = "Group1",
+    traits: Optional[List[str]] = None,
+    types: Optional[List[str]] = None,
+    loci: Optional[List[str]] = None,
+    nstudy: int = 2,
+    windowsizekb: int = 1000,
+    build: str = "99",
+    log: Log = Log(),
+    verbose: bool = True
+) -> pd.DataFrame:
     
     log.write(" Start to run hyprcoloc from command line:", verbose=verbose)
     if traits is None:

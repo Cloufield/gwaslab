@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING, Optional, Dict, Any, Union
+import pandas as pd
+
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.g_Sumstats_polars import Sumstatsp
 from gwaslab.g_SumstatsT import SumstatsT
@@ -67,42 +70,50 @@ from gwaslab.view.view_report import generate_qc_report
 _viz_params = VizParamsManager()
 load_viz_config(_viz_params)
 
-def compare_effect(path1, path2, **kwargs):
+def compare_effect(path1: str, path2: str, **kwargs: Any) -> Any:
+    """Compare effect sizes between two sumstats files."""
     params = _viz_params.merge("compare_effect", kwargs)
     params = _viz_params.filter(_compare_effect, params, key="compare_effect", log=Log(), verbose=params.get("verbose", True))
     return _compare_effect(path1, path2, **params)
 
-def plot_forest(data, **kwargs):
+def plot_forest(data: Union[pd.DataFrame, Sumstats], **kwargs: Any) -> Any:
+    """Plot forest plot from sumstats data."""
     params = _viz_params.merge("plot_forest", kwargs)
     params = _viz_params.filter(_plot_forest, params, key="plot_forest", log=Log(), verbose=params.get("verbose", True))
     return _plot_forest(data, **params)
 
-def plot_miami2(path1=None, path2=None, merged_sumstats=None, **kwargs):
+def plot_miami2(path1: Optional[str] = None, path2: Optional[str] = None, merged_sumstats: Optional[Union[pd.DataFrame, Sumstats]] = None, **kwargs: Any) -> Any:
+    """Plot Miami plot (mirrored Manhattan plot) from sumstats."""
     params = _viz_params.merge("plot_miami2", kwargs)
     params = _viz_params.filter(_plot_miami2, params, key="plot_miami2", log=Log(), verbose=params.get("verbose", True))
     return _plot_miami2(path1=path1, path2=path2, merged_sumstats=merged_sumstats, **params)
 
-def plot_rg(ldscrg, **kwargs):
+def plot_rg(ldscrg: Union[str, pd.DataFrame], **kwargs: Any) -> Any:
+    """Plot genetic correlation heatmap from LDSC results."""
     params = _viz_params.merge("plot_rg", kwargs)
     params = _viz_params.filter(_plot_rg, params, key="plot_rg", log=Log(), verbose=params.get("verbose", True))
     return _plot_rg(ldscrg, **params)
 
-def plot_stacked_mqq(objects, **kwargs):
+def plot_stacked_mqq(objects: Any, **kwargs: Any) -> Any:
+    """Plot stacked Manhattan and QQ plots from multiple sumstats objects."""
     params = _viz_params.merge("plot_stacked_mqq", kwargs)
     params = _viz_params.filter(_plot_stacked_mqq, params, key="plot_stacked_mqq", log=Log(), verbose=params.get("verbose", True))
     return _plot_stacked_mqq(objects, **params)
 
-def plot_power(**kwargs):
+def plot_power(**kwargs: Any) -> Any:
+    """Plot power analysis (trumpet plot)."""
     params = _viz_params.merge("plot_power", kwargs)
     params = _viz_params.filter(_plot_power, params, key="plot_power", log=Log(), verbose=params.get("verbose", True))
     return _plot_power(**params)
 
-def plot_power_x(**kwargs):
+def plot_power_x(**kwargs: Any) -> Any:
+    """Plot power analysis with extended features."""
     params = _viz_params.merge("plot_power_x", kwargs)
     params = _viz_params.filter(_plot_power_x, params, key="plot_power_x", log=Log(), verbose=params.get("verbose", True))
     return _plot_power_x(**params)
 
-def scatter(df, x, y, **kwargs):
+def scatter(df: Union[pd.DataFrame, Sumstats], x: str, y: str, **kwargs: Any) -> Any:
+    """Create scatter plot comparing two columns from sumstats."""
     params = _viz_params.merge("plot_scatter", kwargs)
     params = _viz_params.filter(_scatter, params, key="plot_scatter", log=Log(), verbose=params.get("verbose", True))
     return _scatter(df=df, x=x, y=y, **params)

@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Union
 import subprocess
 import os
 import gc
@@ -9,33 +10,38 @@ from gwaslab.extension import _check_susie_version
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 from gwaslab.util.util_in_get_sig import _get_sig
 
-def _run_ccgwas(    sumstats_pair, 
-                    r="Rscript",
-                    group="Group1",
-                    studies=None,
-                    traits=None,
-                    meta=None,
-                    ldsc=None,
-                    ldsc_rg=None,
-                    nstudy=2,
-                    K_A1A0 = None , 
-                    K_A1A0_high = None , 
-                    K_A1A0_low = None ,  
-                    K_B1B0 = None , 
-                    K_B1B0_high = None , 
-                    K_B1B0_low = None , 
-                    h2l_A1A0 = None , 
-                    h2l_B1B0 = None , 
-                    rg_A1A0_B1B0 = None , 
-                    intercept_A1A0_B1B0 = None , 
-                    m = 1e4,
-                    N_A1 = None,
-                    N_B1 = None,
-                    N_A0 = None , 
-                    N_B0 = None , 
-                    N_overlap_A0B0 = 0,
-                    log=Log(), 
-                    verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_SumstatsPair import SumstatsPair
+
+def _run_ccgwas(
+    sumstats_pair: 'SumstatsPair',
+    r: str = "Rscript",
+    group: str = "Group1",
+    studies: Optional[List[str]] = None,
+    traits: Optional[List[str]] = None,
+    meta: Optional[Dict[str, Any]] = None,
+    ldsc: Optional[List[pd.DataFrame]] = None,
+    ldsc_rg: Optional[pd.DataFrame] = None,
+    nstudy: int = 2,
+    K_A1A0: Optional[float] = None,
+    K_A1A0_high: Optional[float] = None,
+    K_A1A0_low: Optional[float] = None,
+    K_B1B0: Optional[float] = None,
+    K_B1B0_high: Optional[float] = None,
+    K_B1B0_low: Optional[float] = None,
+    h2l_A1A0: Optional[float] = None,
+    h2l_B1B0: Optional[float] = None,
+    rg_A1A0_B1B0: Optional[float] = None,
+    intercept_A1A0_B1B0: Optional[float] = None,
+    m: float = 1e4,
+    N_A1: Optional[int] = None,
+    N_B1: Optional[int] = None,
+    N_A0: Optional[int] = None,
+    N_B0: Optional[int] = None,
+    N_overlap_A0B0: int = 0,
+    log: Log = Log(),
+    verbose: bool = True
+) -> str:
     
     log.write(" Start to run CCGWAS from command line:", verbose=verbose)
     log.write(" -Methods: : {}...".format("Peyrot, W. J., & Price, A. L. (2021). Identifying loci with different allele frequencies among cases of eight psychiatric disorders using CC-GWAS. Nature genetics, 53(4), 445-454."),verbose=verbose)

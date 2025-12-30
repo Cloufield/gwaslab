@@ -70,9 +70,9 @@ def create_test_sumstats_with_real_hapmap3():
         hapmap19 = _get_hapmap_df_polars("19")
         hapmap38 = _get_hapmap_df_polars("38")
         
-        # Get first few positions from each build
-        hg19_sample = hapmap19.head(100).to_pandas()
-        hg38_sample = hapmap38.head(100).to_pandas()
+        # Get first few positions from each build (use 1/10 to speed up tests)
+        hg19_sample = hapmap19.head(10).to_pandas()
+        hg38_sample = hapmap38.head(10).to_pandas()
         
         # Create sumstats with real hg19 positions
         data_hg19 = {

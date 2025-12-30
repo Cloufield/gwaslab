@@ -1,6 +1,6 @@
+from typing import TYPE_CHECKING, Union, Tuple, List, Any, Optional
 import re
 import gc
-from typing import Union, Tuple, List, Any
 import pandas as pd
 import numpy as np
 from multiprocessing import  Pool
@@ -27,17 +27,21 @@ from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import fill_extreme_mlog10p
 
-#process build
-#setbuild
-#fixID
-#rsidtochrpos
-#remove_dup
-#fixchr
-#fixpos
-#fixallele
-#flipallelestats
-#sortcoordinate
-#sortcolumn
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+# Main QC and data fixing functions in this module:
+# - _process_build: Process and validate genome build information
+# - _set_build: Set genome build for sumstats
+# - _fix_ID: Fix SNPID/rsID format, extract CHR/POS/EA/NEA from IDs
+# - _rsid_to_chrpos: Convert rsID to CHR:POS coordinates (if implemented)
+# - _remove_dup: Remove duplicate or multiallelic variants
+# - _fix_chr: Standardize chromosome notation (handle X, Y, MT, prefixes)
+# - _fix_pos: Validate and standardize genomic positions
+# - _fix_allele: Validate and standardize allele representations (EA/NEA)
+# - _flip_allele_stats: Adjust statistics when alleles are flipped/reverse complemented
+# - _sort_coordinate: Sort variants by genomic coordinates (CHR, then POS)
+# - _sort_column: Reorder DataFrame columns according to standard order
 
 @with_logging(
         start_to_msg= "check SNPID/rsID",
@@ -47,10 +51,10 @@ from gwaslab.util.util_in_fill_data import fill_extreme_mlog10p
         check_dtype=False,
         fix=False
 )
-def _fix_ID(sumstats_obj,
-       snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
-       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False, reversea=False,
-       overwrite=False,verbose=True,forcefixid=False,log=Log()) -> pd.DataFrame:  
+def _fix_ID(sumstats_obj: Union['Sumstats', pd.DataFrame],
+       snpid: str = "SNPID", rsid: str = "rsID", chrom: str = "CHR", pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS", fixprefix: bool = False,
+       fixchrpos: bool = False, fixid: bool = False, fixeanea: bool = False, fixeanea_flip: bool = False, fixsep: bool = False, reversea: bool = False,
+       overwrite: bool = False, verbose: bool = True, forcefixid: bool = False, log: Log = Log()) -> pd.DataFrame:  
     
     '''
     Fix various aspects of genomic data including SNPID, rsID, chromosome positions, and allele information.
@@ -283,7 +287,7 @@ def _fix_ID(sumstats_obj,
         if overwrite is True:
             log.write(" -Overwrite mode is applied...", verbose=verbose)
             to_fix = is_chrposrefalt
-        elif (nea in sumstats.columns) and (nea in sumstats.columns):
+        elif (nea in sumstats.columns) and (ea in sumstats.columns):
             to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
             if to_fix.sum()>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...")
         elif (nea in sumstats.columns) and (ea not in sumstats.columns):
@@ -419,7 +423,7 @@ def _fix_ID(sumstats_obj,
         start_function= ".strip_snpid()",
         start_cols=["SNPID"]
 )
-def _strip_SNPID(sumstats_or_dataframe,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
+def _strip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: str = "SNPID", overwrite: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:  
     '''
     Strip non-standard characters from SNPID values to standardize format.
     
@@ -469,7 +473,7 @@ def _strip_SNPID(sumstats_or_dataframe,snpid="SNPID",overwrite=False,verbose=Tru
         start_function= ".flip_snpid()",
         start_cols=["SNPID"]
 )
-def _flip_SNPID(sumstats_or_dataframe,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
+def _flip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: str = "SNPID", overwrite: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:  
     '''
     Flip alleles in SNPID values without changing status codes or statistics.
     
@@ -522,7 +526,7 @@ def _flip_SNPID(sumstats_or_dataframe,snpid="SNPID",overwrite=False,verbose=True
         start_function= ".remove_dup()",
         start_cols=None
 )
-def _remove_dup(sumstats_obj,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()) -> pd.DataFrame:
+def _remove_dup(sumstats_obj: Union['Sumstats', pd.DataFrame], mode: str = "dm", chrom: str = "CHR", pos: str = "POS", snpid: str = "SNPID", ea: str = "EA", nea: str = "NEA", rsid: str = "rsID", keep: str = 'first', keep_col: str = "P", remove_na: bool = False, keep_ascend: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Remove duplicate or multiallelic variants based on user-selected criteria.
 
@@ -803,7 +807,7 @@ def _convert_sex_chromosomes_to_numeric(sumstats, fixable_indices,
         check_dtype=False,
         fix=False
 )
-def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="", remove=False, verbose=True, log=Log()) -> pd.DataFrame:
+def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", status: str = "STATUS", add_prefix: str = "", remove: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
     
@@ -995,7 +999,7 @@ def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="", remove=Fals
         check_dtype=False,
         fix=False
 )
-def _fix_pos(sumstats_obj, pos="POS", status="STATUS", remove=False, verbose=True, lower_limit=0, upper_limit=None, limit=250000000, log=Log()) -> pd.DataFrame:
+def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", status: str = "STATUS", remove: bool = False, verbose: bool = True, lower_limit: int = 0, upper_limit: Optional[int] = None, limit: int = 250000000, log: Log = Log()) -> pd.DataFrame:
     '''
     Standardize and validate genomic base-pair positions.
     
@@ -1115,7 +1119,7 @@ def _fix_pos(sumstats_obj, pos="POS", status="STATUS", remove=False, verbose=Tru
         check_dtype=False,
         fix=False
 )
-def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()) -> pd.DataFrame:
+def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", nea: str = "NEA", status: str = "STATUS", remove: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Validate and standardize allele representations.
     
@@ -1287,7 +1291,7 @@ def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,ver
         start_function= ".normalize()",
         start_cols=["EA","NEA","STATUS"]
 )
-def _parallelize_normalize_allele(sumstats_obj,snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,threads=1,verbose=True,log=Log()) -> pd.DataFrame:
+def _parallelize_normalize_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], snpid: str = "SNPID", rsid: str = "rsID", pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS", chunk: int = 3000000, threads: int = 1, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     '''
     Normalize indels in parallel using left-alignment and parsimony principles.
     
@@ -1407,7 +1411,7 @@ def _parallelize_normalize_allele(sumstats_obj,snpid="SNPID",rsid="rsID",pos="PO
   
     return sumstats_obj.data
 
-def fastnormalizeallele(insumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS",chunk=3000000,log=Log(),verbose=False) -> Tuple[pd.DataFrame, np.ndarray]:
+def fastnormalizeallele(insumstats: pd.DataFrame, pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS", chunk: int = 3000000, log: Log = Log(), verbose: bool = False) -> Tuple[pd.DataFrame, np.ndarray]:
     log.write(" -Number of variants to check:{}".format(len(insumstats)), verbose=verbose)
     log.write(" -Chunk size:{}".format(chunk), verbose=verbose)
     log.write(" -Processing in chunks:",end="", verbose=verbose)
@@ -1429,7 +1433,7 @@ def fastnormalizeallele(insumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS",
     log.write("\n",end="",show_time=False, verbose=verbose)   
     return insumstats, changed_index
 
-def normalizae_chunk(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS") -> Tuple[pd.DataFrame, np.ndarray]:
+def normalizae_chunk(sumstats: pd.DataFrame, pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS") -> Tuple[pd.DataFrame, np.ndarray]:
     """
     Normalize indels in a chunk by removing common suffixes and prefixes.
     Optimized version using vectorized pandas operations.
@@ -1548,7 +1552,7 @@ def flip_direction(series: pd.Series) -> pd.Series:
     translation_table = str.maketrans("+-", "-+")
     return series.astype(str).apply(lambda x: x.translate(translation_table) if pd.notna(x) else x)
 
-def flip_by_swap(sumstats, matched_index, log, verbose) -> pd.DataFrame:
+def flip_by_swap(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool) -> pd.DataFrame:
     """
     Swap NEA and EA columns for matched variants.
     """
@@ -1562,7 +1566,7 @@ def flip_by_swap(sumstats, matched_index, log, verbose) -> pd.DataFrame:
         sumstats.loc[matched_index, ['NEA', 'EA']] = sumstats.loc[matched_index, ['EA', 'NEA']].values
     return sumstats
 
-def flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1) -> pd.DataFrame:
+def flip_by_inverse(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool, cols: Optional[List[str]] = None, factor: float = 1) -> pd.DataFrame:
     """
     Flip ratio statistics (OR, HR) by taking inverse (1/x) for matched variants.
     """
@@ -1604,7 +1608,7 @@ def flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1) 
     
     return sumstats
 
-def flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1) -> pd.DataFrame:
+def flip_by_subtract(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool, cols: Optional[List[str]] = None, factor: float = 1) -> pd.DataFrame:
     """
     Flip frequency statistics (EAF) by subtracting from factor (1 - EAF) for matched variants.
     """
@@ -1617,7 +1621,7 @@ def flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
         sumstats.loc[matched_index, "EAF"] = factor - sumstats.loc[matched_index, "EAF"].values
     return sumstats
 
-def flip_by_sign(sumstats, matched_index, log, verbose, cols=None) -> pd.DataFrame:
+def flip_by_sign(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool, cols: Optional[List[str]] = None) -> pd.DataFrame:
     """
     Flip sign of effect size statistics (BETA, Z, T) and swap confidence intervals for matched variants.
     """
@@ -1667,7 +1671,7 @@ def flip_by_sign(sumstats, matched_index, log, verbose, cols=None) -> pd.DataFra
         start_function= ".flip_allele_stats()",
         start_cols=None
 )
-def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> pd.DataFrame:
+def _flip_allele_stats(sumstats_obj: Union['Sumstats', pd.DataFrame], status: str = "STATUS", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     '''
     Adjust statistics when allele direction has changed based on STATUS codes.
     
@@ -1718,11 +1722,25 @@ def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> p
             reverse_complement_nea = matched_subset['NEA'].apply(get_reverse_complementary_allele)
             reverse_complement_ea = matched_subset['EA'].apply(get_reverse_complementary_allele)
             
-            # Only convert to categorical if there are changes (optimization)
-            categories = set(sumstats['EA']) | set(sumstats['NEA']) | set(reverse_complement_ea) | set(reverse_complement_nea)
-            sumstats['EA'] = pd.Categorical(sumstats['EA'], categories=categories)
-            sumstats['NEA'] = pd.Categorical(sumstats['NEA'], categories=categories)
+            # Convert to strings once to avoid categorical dtype conflicts when assigning
+            reverse_complement_nea = reverse_complement_nea.astype(str)
+            reverse_complement_ea = reverse_complement_ea.astype(str)
             
+            # Update categories to include reverse complement values
+            # Convert full columns to strings once (reused for both unique extraction and categorical conversion)
+            ea_str = sumstats['EA'].astype(str)
+            nea_str = sumstats['NEA'].astype(str)
+            
+            # Get unique values efficiently using .unique() (faster than set conversion from Series)
+            # Combine all unique values and filter invalid ones
+            categories = set(ea_str.unique()) | set(nea_str.unique()) | set(reverse_complement_nea.unique()) | set(reverse_complement_ea.unique())
+            categories = {c for c in categories if pd.notna(c) and c not in ('nan', '<NA>', 'None')}
+            
+            # Convert to categorical with updated categories (reusing already-converted strings)
+            sumstats['EA'] = pd.Categorical(ea_str, categories=categories)
+            sumstats['NEA'] = pd.Categorical(nea_str, categories=categories)
+            
+            # Assign the reverse complement values (already strings, pandas handles categorical conversion)
             sumstats.loc[matched_index, 'NEA'] = reverse_complement_nea
             sumstats.loc[matched_index, 'EA'] = reverse_complement_ea
             sumstats.loc[matched_index, status] = vchange_status(sumstats.loc[matched_index, status], 6, "4", "2")
@@ -1816,7 +1834,7 @@ def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> p
         start_cols=["CHR","POS"],
         show_shape=False
 )
-def _sort_coordinate(sumstats_obj,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()) -> pd.DataFrame:
+def _sort_coordinate(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", pos: str = "POS", reindex: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     '''
     Sort variants by genomic coordinates (chromosome, then position).
     
@@ -1881,7 +1899,7 @@ def _sort_coordinate(sumstats_obj,chrom="CHR",pos="POS",reindex=True,verbose=Tru
         start_cols=None,
         show_shape=False
 )
-def _sort_column(sumstats_obj,verbose=True,log=Log(),order = None) -> pd.DataFrame:
+def _sort_column(sumstats_obj: Union['Sumstats', pd.DataFrame], verbose: bool = True, log: Log = Log(), order: Optional[List[str]] = None) -> pd.DataFrame:
     '''
     Reorder columns according to a specified order.
     

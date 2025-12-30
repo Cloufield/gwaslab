@@ -1,37 +1,38 @@
+from typing import Optional, Any
 import os
 from gwaslab.info.g_Log import Log
 
 
-def _path( *args,
-                 out = None,
-                 directory = None,
-                 tmp = False,
-                 prefix=None,
-                 study = None,
-                 nstudy=None,
-                 trait = None,
-                 exposure = None,
-                 outcome = None,
-                 chrom = None,
-                 rsid = None,
-                 snpid = None,
-                 locus = None,
-                 loci = None, 
-                 analysis = None,
-                 mode = None,
-                 method = None,
-                 ancestry = None,
-                 population = None,
-                 sample_size = None,
-                 genotyping = None, 
-                 pid = None,
-                 build = None,
-                 suffix = None,
-                 result_type = None,
-                 subdirectory = None,
-                 log = Log(),
-                 verbose=True
-                 ):
+def _path(*args: Any,
+                 out: Optional[str] = None,
+                 directory: Optional[str] = None,
+                 tmp: bool = False,
+                 prefix: Optional[str] = None,
+                 study: Optional[str] = None,
+                 nstudy: Optional[str] = None,
+                 trait: Optional[str] = None,
+                 exposure: Optional[str] = None,
+                 outcome: Optional[str] = None,
+                 chrom: Optional[str] = None,
+                 rsid: Optional[str] = None,
+                 snpid: Optional[str] = None,
+                 locus: Optional[str] = None,
+                 loci: Optional[str] = None, 
+                 analysis: Optional[str] = None,
+                 mode: Optional[str] = None,
+                 method: Optional[str] = None,
+                 ancestry: Optional[str] = None,
+                 population: Optional[str] = None,
+                 sample_size: Optional[str] = None,
+                 genotyping: Optional[str] = None, 
+                 pid: Optional[str] = None,
+                 build: Optional[str] = None,
+                 suffix: Optional[str] = None,
+                 result_type: Optional[str] = None,
+                 subdirectory: Optional[str] = None,
+                 log: Log = Log(),
+                 verbose: bool = True
+                 ) -> str:
     """
     Create a file path for gwaslab-generated files based on various components.
     Supports both general file paths and downstream analysis result files.
@@ -160,6 +161,7 @@ def _path( *args,
 
     return path
 
-def _process_out(out):
+def _process_out(out: str) -> tuple:
     out_dirname = os.path.dirname(out)
-    out_basename = os.path.base_name(out)
+    out_basename = os.path.basename(out)
+    return out_dirname, out_basename

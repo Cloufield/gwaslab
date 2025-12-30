@@ -262,15 +262,18 @@ def _process_chromosome_bcftools(args):
         log.write(msg, verbose=verbose, show_time=False)
         return 0
 
-def process_vcf_to_hfd5(vcf, 
-                                 directory=None, 
-                                 chr_dict=None, 
-                                 complevel=3,
-                                 threads=1,
-                                 chr_list=None,
-                                 overwrite=False,
-                                 log=Log(),
-                                 verbose=True):
+from typing import Optional, List, Dict, Union
+from gwaslab.info.g_Log import Log
+
+def process_vcf_to_hfd5(vcf: str, 
+                                 directory: Optional[str] = None, 
+                                 chr_dict: Optional[Dict[str, str]] = None, 
+                                 complevel: int = 3,
+                                 threads: int = 1,
+                                 chr_list: Optional[List[Union[int, str]]] = None,
+                                 overwrite: bool = False,
+                                 log: Log = Log(),
+                                 verbose: bool = True) -> str:
     """
     Process VCF file to HDF5 using bcftools to extract chromosomes in parallel.
     

@@ -1,6 +1,10 @@
+from typing import TYPE_CHECKING, Dict, Any, Optional
 import pandas as pd
 import time
 import numpy as np
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 status_dic_12={
 "13":"CHM13",
@@ -69,16 +73,16 @@ status_dic_7={
     }   
 
 def summarize(
-    self,
-    chrom="CHR",
-    snpid="SNPID",
-    rsid="rsID",
-    eaf="EAF",
-    p="P",
-    beta="BETA",
-    n="N",
-    status="STATUS",
-):
+    self: 'Sumstats',
+    chrom: str = "CHR",
+    snpid: str = "SNPID",
+    rsid: str = "rsID",
+    eaf: str = "EAF",
+    p: str = "P",
+    beta: str = "BETA",
+    n: str = "N",
+    status: str = "STATUS",
+) -> Dict[str, Any]:
     """
     Generate a structured quality-control summary for GWAS summary statistics.
 
@@ -256,10 +260,11 @@ def summarize(
 
 
 
+from typing import Any, Union, List, Dict
 import numpy as np
 import pandas as pd
 
-def to_python(obj):
+def to_python(obj: Any) -> Any:
     # Dict
     if isinstance(obj, dict):
         return {k: to_python(v) for k, v in obj.items()}
@@ -292,18 +297,18 @@ def to_python(obj):
     else:
         return obj
 
-def sum_status(id_to_use, sumstats):
+def sum_status(id_to_use: str, sumstats: pd.DataFrame) -> pd.DataFrame:
         results = sumstats.groupby("STATUS",observed=True).count()
         results = results.loc[results[id_to_use]>0,:].sort_values(id_to_use,ascending=False)
         return results
 
-def _explain_status(i):
+def _explain_status(i: str) -> Dict[str, str]:
     title = ["Genome_Build","rsID&SNPID","CHR&POS","Stadardize&Normalize","Align","Panlidromic_SNP&Indel"]
     value = [status_dic_12[i[:2]] , status_dic_3[i[2]] , status_dic_4[i[3]], status_dic_5[i[4]], status_dic_6[i[5]], status_dic_7[i[6]]]
     explanation = {i:j for i,j in zip(title, value)}
     return explanation
 
-def lookupstatus(status):
+def lookupstatus(status: pd.Series) -> pd.DataFrame:
     """
     Decode and analyze variant status codes.
     

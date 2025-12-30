@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Union, Optional, List, Dict, Any, Tuple
 from gwaslab.qc.qc_check_datatype import check_datatype
 import pandas as pd
 import numpy as np
@@ -24,6 +25,10 @@ import gwaslab as gl
 from gwaslab.util.util_in_fill_data import fill_p
 from gwaslab.util.util_in_get_density import _get_signal_density2
 from gwaslab.qc.qc_decorator import with_logging
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 @with_logging(
         start_to_msg="extract lead variants",
         finished_msg="extracting lead variants",
@@ -31,24 +36,24 @@ from gwaslab.qc.qc_decorator import with_logging
         start_function=".get_lead()",
         fix=True
 )
-def _get_sig(insumstats_or_dataframe,
-           variant_id="SNPID",
-           chrom="CHR",
-           pos="POS",
-           p="P",
-           mlog10p="MLOG10P",
-           scaled=False,
-           use_p=False,
-           windowsizekb=500,
-           sig_level=5e-8,
-           log=Log(),
-           xymt=["X","Y","MT"],
-           anno=False,
-           wc_correction=False,
-           build="19",
-           source="ensembl",
-           gtf_path=None,
-           verbose=True):
+def _get_sig(insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+           variant_id: str = "SNPID",
+           chrom: str = "CHR",
+           pos: str = "POS",
+           p: str = "P",
+           mlog10p: str = "MLOG10P",
+           scaled: bool = False,
+           use_p: bool = False,
+           windowsizekb: int = 500,
+           sig_level: float = 5e-8,
+           log: Log = Log(),
+           xymt: List[str] = ["X","Y","MT"],
+           anno: bool = False,
+           wc_correction: bool = False,
+           build: str = "19",
+           source: str = "ensembl",
+           gtf_path: Optional[str] = None,
+           verbose: bool = True) -> Optional[pd.DataFrame]:
     """
     Extract lead variants by P values using a sliding window approach with significance thresholding.
 
@@ -188,21 +193,23 @@ def _get_sig(insumstats_or_dataframe,
         start_function=".get_top()",
         fix=True
 )
-def _get_top(insumstats_or_dataframe,
-           variant_id="SNPID",
-           chrom="CHR",
-           pos="POS",
-           by="DENSITY",
-           threshold=None,
-           windowsizekb=500,
-           bwindowsizekb=100,
-           log=Log(),
-           xymt=["X","Y","MT"],
-           anno=False,
-           build="19",
-           source="ensembl",
-           gtf_path=None,
-           verbose=True):
+def _get_top(
+    insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    variant_id: str = "SNPID",
+    chrom: str = "CHR",
+    pos: str = "POS",
+    by: str = "DENSITY",
+    threshold: Optional[float] = None,
+    windowsizekb: int = 500,
+    bwindowsizekb: int = 100,
+    log: Log = Log(),
+    xymt: List[str] = ["X","Y","MT"],
+    anno: bool = False,
+    build: str = "19",
+    source: str = "ensembl",
+    gtf_path: Optional[str] = None,
+    verbose: bool = True
+) -> Optional[pd.DataFrame]:
     """
     Extract top variants by maximizing a metric within sliding windows. (used for get top density variants)
 
@@ -291,7 +298,15 @@ def _get_top(insumstats_or_dataframe,
     output = output.drop("__ID",axis=1)
     return output.copy()
 
-def _collect_leads_generic(df, chrom, pos, windowsizekb, score_col, id_col, maximize=True):
+def _collect_leads_generic(
+    df: pd.DataFrame, 
+    chrom: str, 
+    pos: str, 
+    windowsizekb: int, 
+    score_col: str, 
+    id_col: str, 
+    maximize: bool = True
+) -> List[Any]:
     # Return empty immediately if the input is empty
     if len(df) == 0:
         return []
@@ -673,7 +688,14 @@ class SimpleGenome:
 Genome = SimpleGenome
 
 
-def closest_gene(x, data, chrom="CHR", pos="POS", source="ensembl", build="19"):
+def closest_gene(
+    x: pd.Series, 
+    data: Any, 
+    chrom: str = "CHR", 
+    pos: str = "POS", 
+    source: str = "ensembl", 
+    build: str = "19"
+) -> Tuple[int, str]:
     """
     Find the closest gene to a variant position.
     
@@ -713,15 +735,16 @@ def closest_gene(x, data, chrom="CHR", pos="POS", source="ensembl", build="19"):
         finished_msg="annotating variants with nearest gene name(s) successfully!"
 )
 def _anno_gene(
-           insumstats_or_dataframe,
-           id="SNPID",
-           chrom="CHR",
-           pos="POS",
-           log=Log(),
-           build="19",
-           source="ensembl",
-           gtf_path=None,
-           verbose=True):
+    insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    id: str = "SNPID",
+    chrom: str = "CHR",
+    pos: str = "POS",
+    log: Log = Log(),
+    build: str = "19",
+    source: str = "ensembl",
+    gtf_path: Optional[str] = None,
+    verbose: bool = True
+) -> pd.DataFrame:
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):
@@ -851,7 +874,13 @@ def _anno_gene(
     
     return output
 
-def _get_known_variants_from_gwascatalog(client, efo, sig_level=5e-8, verbose=True, log=Log()):
+def _get_known_variants_from_gwascatalog(
+    client: Any, 
+    efo: str, 
+    sig_level: float = 5e-8, 
+    verbose: bool = True, 
+    log: Log = Log()
+) -> pd.DataFrame:
     """
     Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
     
@@ -908,31 +937,33 @@ def _get_known_variants_from_gwascatalog(client, efo, sig_level=5e-8, verbose=Tr
         start_cols=["CHR","POS"],
         start_function=".get_novel()"
 )
-def _get_novel(insumstats_or_dataframe,
-           variant_id="SNPID",
-           chrom="CHR",
-           pos="POS",
-           p="P",
-           use_p=False,
-           known=False,
-           efo=False,
-           only_novel=False,
-           group_key=None,
-           if_get_lead = True,
-           windowsizekb_for_novel=1000,
-           windowsizekb=500,
-           sig_level=5e-8,
-           log=Log(),
-           xymt=["X","Y","MT"],
-           anno=False,
-           wc_correction=False,
-           use_cache=True,
-           cache_dir="./",
-           build="19",
-           source="ensembl",
-           gwascatalog_source="NCBI",
-           output_known=False,
-           verbose=True):
+def _get_novel(
+    insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    variant_id: str = "SNPID",
+    chrom: str = "CHR",
+    pos: str = "POS",
+    p: str = "P",
+    use_p: bool = False,
+    known: Union[bool, pd.DataFrame, str] = False,
+    efo: Union[bool, str, List[str]] = False,
+    only_novel: bool = False,
+    group_key: Optional[str] = None,
+    if_get_lead: bool = True,
+    windowsizekb_for_novel: int = 1000,
+    windowsizekb: int = 500,
+    sig_level: float = 5e-8,
+    log: Log = Log(),
+    xymt: List[str] = ["X","Y","MT"],
+    anno: bool = False,
+    wc_correction: bool = False,
+    use_cache: bool = True,
+    cache_dir: str = "./",
+    build: str = "19",
+    source: str = "ensembl",
+    gwascatalog_source: str = "NCBI",
+    output_known: bool = False,
+    verbose: bool = True
+) -> pd.DataFrame:
     """
     Identify novel variants by comparing against known variant databases.
 
@@ -1156,23 +1187,25 @@ def _get_novel(insumstats_or_dataframe,
         start_function=".check_cis()",
         must_kwargs=["group_key"]
 )
-def _check_cis(insumstats_or_dataframe,
-           variant_id=None,
-           chrom="CHR",
-           pos="POS",
-           p="P",
-           use_p=False,
-           known=False,
-           group_key=None,
-           if_get_lead = False,
-           windowsizekb=500,
-           sig_level=5e-8,
-           log=Log(),
-           xymt=["X","Y","MT"],
-           anno=False,
-           build="19",
-           source="ensembl",
-           verbose=True):
+def _check_cis(
+    insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    variant_id: Optional[str] = None,
+    chrom: str = "CHR",
+    pos: str = "POS",
+    p: str = "P",
+    use_p: bool = False,
+    known: Union[bool, pd.DataFrame, str] = False,
+    group_key: Optional[str] = None,
+    if_get_lead: bool = False,
+    windowsizekb: int = 500,
+    sig_level: float = 5e-8,
+    log: Log = Log(),
+    xymt: List[str] = ["X","Y","MT"],
+    anno: bool = False,
+    build: str = "19",
+    source: str = "ensembl",
+    verbose: bool = True
+) -> pd.DataFrame:
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):

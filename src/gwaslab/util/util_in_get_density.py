@@ -1,24 +1,27 @@
-
+from typing import TYPE_CHECKING, Union, Optional
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 import gc
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 @with_logging(
         start_to_msg="calculate signal DENSITY",
         finished_msg="calculating signal DENSITY successfully!"
 )
 def _get_signal_density2(
-    insumstats_or_dataframe,
-    snpid="SNPID",
-    chrom="CHR",
-    pos="POS",
-    bwindowsizekb=100,
-    sig_sumstats=None,
-    log=None,
-    verbose=True
-    ):
+    insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    snpid: str = "SNPID",
+    chrom: str = "CHR",
+    pos: str = "POS",
+    bwindowsizekb: int = 100,
+    sig_sumstats: Optional[pd.DataFrame] = None,
+    log: Optional[Log] = None,
+    verbose: bool = True
+    ) -> pd.DataFrame:
     """
     Calculate signal density in genomic data using a sliding window approach.
 

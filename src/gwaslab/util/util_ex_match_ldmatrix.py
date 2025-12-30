@@ -6,8 +6,11 @@ import subprocess
 import os
 import re
 import gc
-import pandas as pd
-import numpy as np
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Tuple, Union
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_plink_version
 
@@ -25,34 +28,36 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["SNPID","CHR","POS","EA","NEA"],
         start_function=".calculate_ld_matrix()"
 )
-def tofinemapping_m(sumstats, 
-                    studies=None, 
-                    group=None,
-                    ld_paths = None,
-                    ld_types = None, 
-                    ld_maps = None,
-                    ld_map_dics = None,
-                    bfile=None, 
-                    vcf=None, 
-                    locus=None,
-                    loci=None,
-                    loci_chrpos=None,
-                    out="./",
-                    plink="plink",
-                    plink2="plink2",
-                    windowsizekb=1000,
-                    threads=1, 
-                    mode="r",
-                    exclude_hla=False, 
-                    getlead_kwargs=None, 
-                    memory=None, 
-                    overwrite=False,
-                    log=Log(),
-                    suffixes=None,
-                    ld_map_kwargs=None,
-                    extra_plink_option="",
-                    verbose=True,
-                    **kwargs):
+def tofinemapping_m(
+    sumstats: pd.DataFrame, 
+    studies: Optional[List[str]] = None, 
+    group: Optional[str] = None,
+    ld_paths: Optional[List[str]] = None,
+    ld_types: Optional[List[str]] = None, 
+    ld_maps: Optional[List[str]] = None,
+    ld_map_dics: Optional[List[Dict[str, str]]] = None,
+    bfile: Optional[str] = None, 
+    vcf: Optional[str] = None, 
+    locus: Optional[Tuple[int, int]] = None,
+    loci: Optional[List[str]] = None,
+    loci_chrpos: Optional[List[Tuple[int, int]]] = None,
+    out: str = "./",
+    plink: str = "plink",
+    plink2: str = "plink2",
+    windowsizekb: int = 1000,
+    threads: int = 1, 
+    mode: str = "r",
+    exclude_hla: bool = False, 
+    getlead_kwargs: Optional[Dict[str, Any]] = None, 
+    memory: Optional[int] = None, 
+    overwrite: bool = False,
+    log: Log = Log(),
+    suffixes: Optional[List[str]] = None,
+    ld_map_kwargs: Optional[Dict[str, Any]] = None,
+    extra_plink_option: str = "",
+    verbose: bool = True,
+    **kwargs: Any
+) -> Tuple[Optional[str], pd.DataFrame, str]:
     
     ############################################################################################
     if suffixes is None:
@@ -168,7 +173,14 @@ def tofinemapping_m(sumstats,
     return output_file_list_path, output_file_list,  plink_log
 
 
-def _export_snplist_and_locus_sumstats_m(matched_sumstats, out, group, row, windowsizekb,log):
+def _export_snplist_and_locus_sumstats_m(
+    matched_sumstats: pd.DataFrame, 
+    out: str, 
+    group: str, 
+    row: pd.Series, 
+    windowsizekb: int, 
+    log: Log
+) -> Tuple[str, List[str]]:
         # study suffixes starting from 1
         suffixes=["_{}".format(i+1) for i in range(2)]
         
@@ -214,12 +226,14 @@ def _export_snplist_and_locus_sumstats_m(matched_sumstats, out, group, row, wind
 
 ###################################################################################################################################################################
 ####################################################################################################
-def _load_ld_matrix(path, 
-                    fmt="npz", 
-                    if_square=False, 
-                    if_add_T=False,
-                    log=Log(),
-                    verbose=True):
+def _load_ld_matrix(
+    path: str, 
+    fmt: str = "npz", 
+    if_square: bool = False, 
+    if_add_T: bool = False,
+    log: Log = Log(),
+    verbose: bool = True
+) -> np.ndarray:
     
     if fmt == "npz":
         log.write("   -Loading LD matrix from npz file...",verbose=verbose)
@@ -237,14 +251,16 @@ def _load_ld_matrix(path,
         r_matrix = np.power(r_matrix,2)
     return r_matrix
     
-def _load_ld_map(path, 
-                 snpid="rsid", 
-                 chrom="chromosome", 
-                 pos="position", 
-                 ref="allele1", 
-                 alt="allele2",
-                 ld_map_rename_dic = None,
-                 **ld_map_kwargs):
+def _load_ld_map(
+    path: str, 
+    snpid: str = "rsid", 
+    chrom: str = "chromosome", 
+    pos: str = "position", 
+    ref: str = "allele1", 
+    alt: str = "allele2",
+    ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
+    **ld_map_kwargs: Any
+) -> pd.DataFrame:
     
     if ld_map_rename_dic is not None:
         # ld map format
@@ -282,7 +298,17 @@ def _load_ld_map(path,
     # "SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"
     return ld_map
 
-def _extract_variants_from_ld_matrix_m(merged_sumstats, r_matrix, out, group, row, windowsizekb, log, verbose, index):
+def _extract_variants_from_ld_matrix_m(
+    merged_sumstats: pd.DataFrame, 
+    r_matrix: np.ndarray, 
+    out: str, 
+    group: str, 
+    row: pd.Series, 
+    windowsizekb: int, 
+    log: Log, 
+    verbose: bool, 
+    index: int
+) -> str:
     # study suffixes starting from 1
     index_bim_header = "_INDEX_BIM_{}".format(index + 1) 
     flipped_header = "_FLIPPED_{}".format(index + 1) 
@@ -307,11 +333,13 @@ def _extract_variants_from_ld_matrix_m(merged_sumstats, r_matrix, out, group, ro
     #reduced_r_matrix.to_csv("{}.ld.gz".format(output_prefix),se="\t")
     return output_path
 
-def _merge_ld_map_with_sumstats_m(row, 
-                             locus_sumstats, 
-                             ld_map, 
-                             log=Log(),
-                             index=None):
+def _merge_ld_map_with_sumstats_m(
+    row: pd.Series, 
+    locus_sumstats: pd.DataFrame, 
+    ld_map: pd.DataFrame, 
+    log: Log = Log(),
+    index: Optional[int] = None
+) -> pd.DataFrame:
     '''
     align sumstats with ld map
     '''

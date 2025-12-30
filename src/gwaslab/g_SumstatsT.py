@@ -1,5 +1,10 @@
 import pandas as pd
 import numpy as np
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm.hm_casting import _align_with_mold
@@ -11,7 +16,7 @@ from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 
 
 class SumstatsT( ):
-    def __init__(self, sumstatsObject):
+    def __init__(self, sumstatsObject: 'Sumstats') -> None:
         
         if not isinstance(sumstatsObject, Sumstats):
             raise ValueError("Please provide a GWASLab Sumstats Object.")
@@ -32,7 +37,14 @@ class SumstatsT( ):
 
         self.snp_info = self.snp_info.rename(columns={"EA":"EA_MOLD","NEA":"NEA_MOLD","EAF":"EAF_MOLD"})
     
-    def cast(self, sumstatsObject, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None):
+    def cast(
+        self, 
+        sumstatsObject: 'Sumstats', 
+        threshold: float = 0.2, 
+        verbose: bool = True,
+        windowsizeb: int = 10, 
+        ref_path: Optional[str] = None
+    ) -> None:
 
         molded_sumstats = _merge_mold_with_sumstats_by_chrpos(self.snp_info, sumstats_or_dataframe=sumstatsObject.data, log=sumstatsObject.log, verbose=verbose, windowsizeb=windowsizeb,ref_path=ref_path)
 

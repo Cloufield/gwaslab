@@ -1,6 +1,16 @@
 # Update Logs
 
-# v4.0.1 (Development)
+# v4.0.2 
+
+- Fixed log message accuracy issues: < or <=
+- Fixed log message accuracy issues: corrected typos ("macthes" → "matches", "will will" → "will") and improved grammar in log messages across harmonization and QC modules
+- Fixed bugs in `_parallelize_check_af()` and `_parallelize_infer_af()`: added missing `else` clause for `force=True` case to prevent NameError
+- Fixed bug in `_fix_ID()`: corrected redundant column check `(nea in sumstats.columns) and (nea in sumstats.columns)` to properly check both `nea` and `ea` columns
+- Fixed log message placement in `_infer_strand_with_annotation()`: moved renaming log message inside conditional block to only log when renaming actually occurs
+- Added type hints to improve code documentation and IDE support
+- Added missing dependencies to pyproject.toml: requests, pyyaml, bitarray, platformdirs
+
+# v4.0.1 
 
 - Added ChromosomeMapper with numeric middle layer architecture: unified chromosome format conversion system supporting numeric, string, chr-prefixed, and NCBI RefSeq formats across 12+ species
 - ChromosomeMapper supports automatic format detection from sumstats and reference files (VCF, FASTA, GTF, Chain files)

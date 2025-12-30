@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional
 import subprocess
 import os
 import gc
@@ -5,31 +6,36 @@ import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
 
-def _run_scdrs( gls,
-                scdrs="scdrs",
-                python="python",
-                study="Study1",
-                conda_env=None,
-                zscore_file=None,
-                out_file=None,
-                h5ad_file=None,
-                out_folder=None,
-                exclude_hla=True,
-                group_analysis = None,
-                gene_analysis = False,
-                gs_species="human",
-                h5ad_species="human",
-                flag_filter_data=True,
-                flag_raw_count=True,
-                munge_gs=True,
-                compute_score=True,
-                perform_downstream=True,
-                out="./",
-                delete=True, 
-                ncol="N",
-                build="19",
-                log=Log(), 
-                verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _run_scdrs(
+    gls: 'Sumstats',
+    scdrs: str = "scdrs",
+    python: str = "python",
+    study: str = "Study1",
+    conda_env: Optional[str] = None,
+    zscore_file: Optional[str] = None,
+    out_file: Optional[str] = None,
+    h5ad_file: Optional[str] = None,
+    out_folder: Optional[str] = None,
+    exclude_hla: bool = True,
+    group_analysis: Optional[str] = None,
+    gene_analysis: bool = False,
+    gs_species: str = "human",
+    h5ad_species: str = "human",
+    flag_filter_data: bool = True,
+    flag_raw_count: bool = True,
+    munge_gs: bool = True,
+    compute_score: bool = True,
+    perform_downstream: bool = True,
+    out: str = "./",
+    delete: bool = True,
+    ncol: str = "N",
+    build: str = "19",
+    log: Log = Log(),
+    verbose: bool = True
+) -> None:
     
     log.write(" Start to run scDRS from command line:", verbose=verbose)
     

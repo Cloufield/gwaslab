@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Union
 import pandas as pd
 import polars as pl
 from os import path
@@ -5,6 +6,9 @@ from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 from pathlib import Path
 from gwaslab.util.util_in_filter_value import _get_hapmap_full_polars
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 #A unique identifier (e.g., the rs number)
 #Allele 1 (effect allele)
@@ -18,7 +22,7 @@ from gwaslab.util.util_in_filter_value import _get_hapmap_full_polars
         start_function=".gethapmap3",
         required_species="homo sapiens"
 )
-def _get_hapmap3(sumstats_or_dataframe,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
+def _get_hapmap3(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], rsid: str = "rsID", chrom: str = "CHR", pos: str = "POS", ea: str = "EA", nea: str = "NEA", build: str = "19", verbose: bool = True, match_allele: bool = True, how: str = "inner", log: Log = Log()) -> pd.DataFrame:
     """
     Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
 

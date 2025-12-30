@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Tuple
 import pandas as pd
 import numpy as np
 import subprocess
@@ -5,22 +6,25 @@ from gwaslab.info.g_Log import Log
 import os
 from gwaslab.extension import _checking_plink_version
 
-def _process_plink_input_files(chrlist, 
-                               bfile=None, 
-                               pfile=None, 
-                               vcf=None, 
-                               bgen=None,  
-                               sample=None, 
-                               threads=1, 
-                               plink_log="", 
-                               log=Log(), 
-                               overwrite=False, 
-                               bgen_mode="ref-first", 
-                               convert="bfile", 
-                               memory=None, 
-                               load_bim=False,
-                               plink="plink",
-                               plink2="plink2"):
+if TYPE_CHECKING:
+    pass
+
+def _process_plink_input_files(chrlist: List[int], 
+                               bfile: Optional[str] = None, 
+                               pfile: Optional[str] = None, 
+                               vcf: Optional[str] = None, 
+                               bgen: Optional[str] = None,  
+                               sample: Optional[str] = None, 
+                               threads: int = 1, 
+                               plink_log: str = "", 
+                               log: Log = Log(), 
+                               overwrite: bool = False, 
+                               bgen_mode: str = "ref-first", 
+                               convert: str = "bfile", 
+                               memory: Optional[int] = None, 
+                               load_bim: bool = False,
+                               plink: str = "plink",
+                               plink2: str = "plink2") -> Tuple[str, str, List[pd.DataFrame], str]:
     """
     Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
     
@@ -112,7 +116,7 @@ def _process_plink_input_files(chrlist,
     #         list of BIM/PVAR dataframes (if load_bim=True), and final filetype
     return ref_file_prefix, plink_log, ref_bims, filetype
 
-def _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log):
+def _load_single_bim_to_ref_bims(bpfile_prefix: str, ref_bims: List[pd.DataFrame], log: Log) -> List[pd.DataFrame]:
     bim_path =bpfile_prefix+".bim"
     single_bim = pd.read_csv(bim_path,
                              sep=r"\s+",
@@ -123,7 +127,7 @@ def _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log):
     ref_bims.append(single_bim)
     return ref_bims
 
-def _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log):
+def _load_single_pvar_to_ref_bims(bpfile_prefix: str, ref_bims: List[pd.DataFrame], log: Log) -> List[pd.DataFrame]:
     if os.path.exists(bpfile_prefix+".pvar"):
         bim_path =bpfile_prefix+".pvar"
     elif os.path.exists(bpfile_prefix+".pvar.zst"):
@@ -138,11 +142,11 @@ def _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log):
     ref_bims.append(single_bim)
     return ref_bims
 
-def _check_file_type(bfile=None,  
-                     pfile=None,  
-                     vcf=None,  
-                     bgen=None, 
-                     sample=None):
+def _check_file_type(bfile: Optional[str] = None,  
+                     pfile: Optional[str] = None,  
+                     vcf: Optional[str] = None,  
+                     bgen: Optional[str] = None, 
+                     sample: Optional[str] = None) -> Tuple[str, str, bool]:
     
     is_wild_card = False
     if bfile is None:
@@ -167,7 +171,7 @@ def _check_file_type(bfile=None,
             is_wild_card = True
         return "bfile",  bfile, is_wild_card
     
-def _process_bfile(chrlist ,ref_file_prefix, ref_bims, is_wild_card, log, load_bim=False):
+def _process_bfile(chrlist: List[int], ref_file_prefix: str, ref_bims: List[pd.DataFrame], is_wild_card: bool, log: Log, load_bim: bool = False) -> Tuple[str, List[pd.DataFrame]]:
     if is_wild_card==False:
         is_bim_exist = os.path.exists(ref_file_prefix+".bim")
         is_bed_exist = os.path.exists(ref_file_prefix+".bed")
@@ -192,7 +196,7 @@ def _process_bfile(chrlist ,ref_file_prefix, ref_bims, is_wild_card, log, load_b
 
     return ref_file_prefix, ref_bims
 
-def _process_pfile(chrlist, ref_file_prefix, ref_bims, is_wild_card, log, load_bim=False):
+def _process_pfile(chrlist: List[int], ref_file_prefix: str, ref_bims: List[pd.DataFrame], is_wild_card: bool, log: Log, load_bim: bool = False) -> Tuple[str, List[pd.DataFrame]]:
     if is_wild_card==False:
         is_bim_exist = os.path.exists(ref_file_prefix+".pvar") or os.path.exists(ref_file_prefix+".pvar.zst")
         is_bed_exist = os.path.exists(ref_file_prefix+".pgen")
@@ -216,19 +220,19 @@ def _process_pfile(chrlist, ref_file_prefix, ref_bims, is_wild_card, log, load_b
   
     return ref_file_prefix, ref_bims
 
-def _process_vcf(ref_file_prefix, 
-                 chrlist, 
-                 ref_bims, 
-                 is_wild_card, 
-                 log, 
-                 plink_log, 
-                 threads=1, 
-                 convert="bfile", 
-                 memory=None, 
-                 overwrite=False, 
-                 load_bim=False,
-                 plink="plink",
-                 plink2="plink2"):
+def _process_vcf(ref_file_prefix: str, 
+                 chrlist: List[int], 
+                 ref_bims: List[pd.DataFrame], 
+                 is_wild_card: bool, 
+                 log: Log, 
+                 plink_log: str, 
+                 threads: int = 1, 
+                 convert: str = "bfile", 
+                 memory: Optional[int] = None, 
+                 overwrite: bool = False, 
+                 load_bim: bool = False,
+                 plink: str = "plink",
+                 plink2: str = "plink2") -> Tuple[str, str, List[pd.DataFrame]]:
     log.write(" -Processing VCF : {}...".format(ref_file_prefix))
     
     #check plink version
@@ -332,21 +336,21 @@ def _process_vcf(ref_file_prefix,
                     log.write("  -Warning: PVAR file not found for CHR {}: {}.pvar. Skipping load.".format(i, bpfile_prefix))
     return ref_file_prefix_converted, plink_log, ref_bims
 
-def _process_bgen(ref_file_prefix, 
-                  chrlist, 
-                  ref_bims, 
-                  is_wild_card, 
-                  log=Log(), 
-                  plink_log="",
-                  sample=None, 
-                  bgen_mode="ref-first", 
-                  threads=1, 
-                  convert="bfile", 
-                  memory=None, 
-                  overwrite=False, 
-                  load_bim=False,
-                  plink="plink",
-                 plink2="plink2"):
+def _process_bgen(ref_file_prefix: str, 
+                  chrlist: List[int], 
+                  ref_bims: List[pd.DataFrame], 
+                  is_wild_card: bool, 
+                  log: Log = Log(), 
+                  plink_log: str = "",
+                  sample: Optional[str] = None, 
+                  bgen_mode: str = "ref-first", 
+                  threads: int = 1, 
+                  convert: str = "bfile", 
+                  memory: Optional[int] = None, 
+                  overwrite: bool = False, 
+                  load_bim: bool = False,
+                  plink: str = "plink",
+                  plink2: str = "plink2") -> Tuple[str, str, List[pd.DataFrame]]:
     log.write(" -Processing BGEN files : {}...".format(ref_file_prefix))
     
     #check plink version

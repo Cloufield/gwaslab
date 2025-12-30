@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "4.0.1"
+version = "4.0.2"
 description = "Python toolkit for handling GWAS summary statistics"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,7 +22,11 @@ dependencies = [
   "h5py>=3.10.0",
   "pyarrow",
   "polars>=1.27.0",
-  "sumstats-liftover==1.1.0"
+  "sumstats-liftover==1.1.0",
+  "requests",
+  "pyyaml",
+  "bitarray",
+  "platformdirs"
 ]
 
 [project.urls]
@@ -50,5 +54,27 @@ gwaslab = [
   "data/high_ld/*",
   "data/hapmap3_SNPs/*",
   "qc/qc_researved_header.json"
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+  "*/test/*",
+  "*/tests/*",
+  "*/__pycache__/*",
+  "*/site-packages/*",
+]
+
+[tool.coverage.report]
+precision = 1
+show_missing = true
+skip_covered = false
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
 ]
 

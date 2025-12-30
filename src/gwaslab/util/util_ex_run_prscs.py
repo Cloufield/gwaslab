@@ -15,35 +15,38 @@ python PRScs.py --ref_dir=PATH_TO_REFERENCE --bim_prefix=VALIDATION_BIM_PREFIX -
 
 """
 
-
+from typing import TYPE_CHECKING, Optional, Union, Any
 import os
 import sys
 import getopt
+import pandas as pd
 
 import gwaslab.extension.prscs.prscs_parse_genet as parse_genet
 import gwaslab.extension.prscs.prscs_mcmc_gtb as mcmc_gtb
 import gwaslab.extension.prscs.prscs_gigrnd as gigrnd
 
+if TYPE_CHECKING:
+    from gwaslab.info.g_Log import Log
 
 def _run_prscs(
-         ref_dir=None,
-         bim_prefix=None,
-         sst_file=None,
-            a= 1, 
-            b= 0.5, 
-            phi= None, 
-            n_gwas= None,
-            n_iter= 1000, 
-            n_burnin= 500, 
-            thin= 5, 
-            out_dir= "./", 
-            chrom= range(1,23),
-            beta_std= 'FALSE', 
-            write_psi= 'FALSE', 
-            write_pst= 'FALSE', 
-            seed= None,
-            log=None,
-         **kwargs):
+         ref_dir: Optional[str] = None,
+         bim_prefix: Optional[str] = None,
+         sst_file: Optional[pd.DataFrame] = None,
+            a: float = 1, 
+            b: float = 0.5, 
+            phi: Optional[float] = None, 
+            n_gwas: Optional[int] = None,
+            n_iter: int = 1000, 
+            n_burnin: int = 500, 
+            thin: int = 5, 
+            out_dir: str = "./", 
+            chrom: Union[range, list] = range(1,23),
+            beta_std: str = 'FALSE', 
+            write_psi: str = 'FALSE', 
+            write_pst: str = 'FALSE', 
+            seed: Optional[int] = None,
+            log: Optional['Log'] = None,
+         **kwargs: Any) -> None:
     ## T Ge, CY Chen, Y Ni, YCA Feng, JW Smoller. Polygenic Prediction via Bayesian Regression and Continuous Shrinkage Priors.Nature Communications, 10:1776, 2019.
     sst_file = sst_file.rename(columns={"rsID":"SNP","POS":"BP"})
     log.write("Start to runnig PRScs...")

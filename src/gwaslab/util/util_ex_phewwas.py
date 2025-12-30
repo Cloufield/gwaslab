@@ -7,7 +7,10 @@ and align them with summary statistics data.
 
 import pandas as pd
 import numpy as np
-from typing import Tuple, Optional, Any, Union
+from typing import TYPE_CHECKING, Tuple, Optional, Any, Union, List, Dict
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 from gwaslab.info.g_Log import Log
 
 
@@ -396,7 +399,9 @@ def _normalize_association_columns(df: pd.DataFrame) -> pd.DataFrame:
 # Main Functions
 # ============================================================================
 
-def _extract_associations(sumstats_or_dataframe, rsid: str = "rsID", 
+def _extract_associations(
+    sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], 
+    rsid: str = "rsID", 
                          log: Log = Log(), verbose: bool = True,
                          fetch_metadata: bool = False,
                          fetch_traits: Optional[bool] = None,
@@ -685,8 +690,14 @@ def get_associations_from_gwascatalog(sumstats: pd.DataFrame, rsid: str = "rsID"
     return association, traits, studies, variants
 
 
-def _fetch_associations(client, unique_sumstats: pd.DataFrame, rsid: str,
-                       log: Log, verbose: bool, normalize_columns: bool = True) -> pd.DataFrame:
+def _fetch_associations(
+    client: Any, 
+    unique_sumstats: pd.DataFrame, 
+    rsid: str,
+    log: Log, 
+    verbose: bool, 
+    normalize_columns: bool = True
+) -> pd.DataFrame:
     """
     Fetch associations from GWAS Catalog API for each variant.
     
@@ -751,11 +762,16 @@ def _fetch_associations(client, unique_sumstats: pd.DataFrame, rsid: str,
     return association
 
 
-def _fetch_metadata(client, association: pd.DataFrame, rsid: str,
-                   log: Log, verbose: bool,
-                   fetch_traits: bool = True,
-                   fetch_studies: bool = True,
-                   fetch_variants: bool = True) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def _fetch_metadata(
+    client: Any, 
+    association: pd.DataFrame, 
+    rsid: str,
+    log: Log, 
+    verbose: bool,
+    fetch_traits: bool = True,
+    fetch_studies: bool = True,
+    fetch_variants: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Fetch traits, studies, and variants metadata for each unique association.
     

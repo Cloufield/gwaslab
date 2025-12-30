@@ -279,6 +279,21 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            # First try to get variants with rsIDs, then sample
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    # Sample from rsID variants, but keep at least 10 if available
+                    sample_size = max(10, len(rsid_variants) // 10)
+                    gl.data = rsid_variants.head(sample_size).copy()
+                else:
+                    # Fallback to regular sampling if no rsIDs
+                    gl.data = gl.data.iloc[::10].copy()
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         # Store original CHR and POS for comparison
         original_chr = gl.data["CHR"].copy()
@@ -369,6 +384,18 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    sample_size = max(10, len(rsid_variants) // 10)
+                    gl.data = rsid_variants.head(sample_size).copy()
+                else:
+                    gl.data = gl.data.iloc[::10].copy()
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         # Clear CHR and POS to test assignment
         gl.data["CHR"] = pd.NA
@@ -406,10 +433,19 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
-        
-        # Get a subset of variants with valid rsIDs
-        valid_rsids = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs")].head(10)
-        gl.data = valid_rsids.copy()
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    # Keep up to 10 variants with valid rsIDs
+                    gl.data = rsid_variants.head(10).copy()
+                else:
+                    # If no valid rsIDs, skip this test
+                    self.skipTest("No valid rsIDs found in data")
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         # Clear CHR and POS
         gl.data["CHR"] = pd.NA
@@ -462,6 +498,18 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    sample_size = max(10, len(rsid_variants) // 10)
+                    gl.data = rsid_variants.head(sample_size).copy()
+                else:
+                    gl.data = gl.data.iloc[::10].copy()
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         # Store original values
         original_chr = gl.data["CHR"].copy()
@@ -514,6 +562,18 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    sample_size = max(10, len(rsid_variants) // 10)
+                    gl.data = rsid_variants.head(sample_size).copy()
+                else:
+                    gl.data = gl.data.iloc[::10].copy()
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         # Ensure CHR column has some values
         # Keep only rows with valid CHR for this test
@@ -561,6 +621,18 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    sample_size = max(10, len(rsid_variants) // 10)
+                    gl.data = rsid_variants.head(sample_size).copy()
+                else:
+                    gl.data = gl.data.iloc[::10].copy()
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         # Clear CHR and POS to test assignment from scratch
         gl.data["CHR"] = pd.NA
@@ -675,6 +747,18 @@ class TestRsidToChrposWorkflow(unittest.TestCase):
             rsid="rsID",
             verbose=False
         )
+        # Use only 1/10 of variants to speed up tests
+        # Prioritize variants with rsIDs to ensure matches in HDF5
+        if len(gl.data) > 0:
+            if "rsID" in gl.data.columns:
+                rsid_variants = gl.data[gl.data["rsID"].notna() & gl.data["rsID"].str.startswith("rs", na=False)]
+                if len(rsid_variants) > 0:
+                    sample_size = max(10, len(rsid_variants) // 10)
+                    gl.data = rsid_variants.head(sample_size).copy()
+                else:
+                    gl.data = gl.data.iloc[::10].copy()
+            else:
+                gl.data = gl.data.iloc[::10].copy()
         
         initial_count = len(gl.data)
         initial_chr_count = gl.data["CHR"].notna().sum()

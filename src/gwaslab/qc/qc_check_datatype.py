@@ -1,12 +1,17 @@
+from typing import TYPE_CHECKING, Optional, List, Any
 import gc
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_reserved_headers import dtype_dict
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype
 
-def _get_preferred_dtype(header):
+def _get_preferred_dtype(header: str) -> Optional[str]:
     """
     Get the preferred dtype for a column.
     
@@ -24,7 +29,7 @@ def _get_preferred_dtype(header):
         return dtype_dict[header][0]
     return None
 
-def check_datatype(sumstats, verbose=True, log=Log()):
+def check_datatype(sumstats: pd.DataFrame, verbose: bool = True, log: Log = Log()) -> None:
     """
     Inspect and report data types for all columns in a summary statistics
     DataFrame, comparing each against expected dtypes.
@@ -100,7 +105,7 @@ def check_datatype(sumstats, verbose=True, log=Log()):
     except:
         pass
 
-def verify_datatype(header, dtype):
+def verify_datatype(header: str, dtype: Any) -> str:
     """
     Verify a single column's dtype against expected dtypes.
 
@@ -126,7 +131,7 @@ def verify_datatype(header, dtype):
     else:
         return "NA"
 
-def quick_convert_datatype(sumstats, log, verbose):
+def quick_convert_datatype(sumstats: pd.DataFrame, log: Log, verbose: bool) -> pd.DataFrame:
     """
     Attempt to convert columns with incompatible dtypes to the preferred dtype
     for that column. Logs successes and failures.
@@ -164,7 +169,12 @@ def quick_convert_datatype(sumstats, log, verbose):
                     pass
     return sumstats
 
-def check_dataframe_shape(sumstats, log, verbose, sumstats_obj=None):
+def check_dataframe_shape(
+    sumstats: pd.DataFrame,
+    log: Log,
+    verbose: bool,
+    sumstats_obj: Optional['Sumstats'] = None
+) -> None:
     """
     Log DataFrame shape and estimated memory usage in megabytes.
     Only logs if shape has changed from the last check.
@@ -187,7 +197,7 @@ def check_dataframe_shape(sumstats, log, verbose, sumstats_obj=None):
     # Use the standardized logging method which handles change detection
     log.log_dataframe_shape(sumstats, verbose=verbose, sumstats_obj=sumstats_obj)
     
-def check_dataframe_memory_usage(sumstats, log, verbose):
+def check_dataframe_memory_usage(sumstats: pd.DataFrame, log: Log, verbose: bool) -> None:
     """
     Log DataFrame memory usage in megabytes.
 
@@ -206,7 +216,14 @@ def check_dataframe_memory_usage(sumstats, log, verbose):
     except:
         log.warning("Error: cannot get Memory usage...")
 
-def check_datatype_for_cols(sumstats_obj, cols=None, verbose=True, log=Log(), fix=False, **fix_kwargs):
+def check_datatype_for_cols(
+    sumstats_obj: 'Sumstats',
+    cols: Optional[List[str]] = None,
+    verbose: bool = True,
+    log: Log = Log(),
+    fix: bool = False,
+    **fix_kwargs: Any
+) -> None:
     """
     Verify dtypes for a specified subset of columns and emit fix suggestions.
 

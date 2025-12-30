@@ -1,3 +1,4 @@
+from typing import Optional, Tuple, List
 import subprocess
 import os
 import gc
@@ -8,17 +9,21 @@ from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 from gwaslab.viz.viz_plot_stackedregional import _sort_kwargs
 
-def _run_mesusie(filepath, 
-                 r="Rscript",
-                 types=None, ns=None, 
-                 fillldna=True, delete=False, 
-                 coloc_kwargs="", 
-                 susie_kwargs="", 
-                 ncols=None,
-                 d1_kwargs="",
-                 d2_kwargs="",
-                 log=Log(), 
-                 verbose=True):
+def _run_mesusie(
+    filepath: Optional[str],
+    r: str = "Rscript",
+    types: Optional[Tuple[str, str]] = None,
+    ns: Optional[List[int]] = None,
+    fillldna: bool = True,
+    delete: bool = False,
+    coloc_kwargs: str = "",
+    susie_kwargs: str = "",
+    ncols: Optional[List[int]] = None,
+    d1_kwargs: str = "",
+    d2_kwargs: str = "",
+    log: Log = Log(),
+    verbose: bool = True
+) -> str:
     
     log.write(" Start to run mesusie from command line:", verbose=verbose)
     pass

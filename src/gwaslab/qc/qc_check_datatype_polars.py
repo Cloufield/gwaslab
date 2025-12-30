@@ -1,3 +1,4 @@
+from typing import Any
 import gc
 import pandas as pd
 import polars as pl
@@ -10,7 +11,7 @@ from gwaslab.qc.qc_reserved_headers import get_dtype_dict_polars
 # Get dtype_dict from reserved headers JSON (single source of truth)
 dtype_dict = get_dtype_dict_polars()
 
-def check_datatype_polars(sumstats, verbose=True, log=Log()):
+def check_datatype_polars(sumstats: pl.DataFrame, verbose: bool = True, log: Log = Log()) -> None:
     
     #try:
     headers = []
@@ -42,7 +43,7 @@ def check_datatype_polars(sumstats, verbose=True, log=Log()):
     #except:
     #    pass
 
-def verify_datatype(header, dtype):
+def verify_datatype(header: str, dtype: Any) -> str:
 
     if header in dtype_dict.keys():
         if dtype in dtype_dict[header]:
@@ -52,7 +53,7 @@ def verify_datatype(header, dtype):
     else:
         return "NA"
 
-def quick_convert_datatype(sumstats, log, verbose):
+def quick_convert_datatype(sumstats: pl.DataFrame, log: Log, verbose: bool) -> pl.DataFrame:
     for col in sumstats.columns:
         if col in dtype_dict.keys():
             if sumstats[col].dtype not in dtype_dict[col]:
@@ -66,14 +67,14 @@ def quick_convert_datatype(sumstats, log, verbose):
                     pass
     return sumstats
 
-def check_dataframe_shape_polars(sumstats, log, verbose):
+def check_dataframe_shape_polars(sumstats: pl.DataFrame, log: Log, verbose: bool) -> None:
     memory_in_mb = sumstats.estimated_size(unit="mb") 
     try:
         log.write(" -Current Dataframe shape : {} x {} ; Memory usage: {:.2f} MB".format(len(sumstats),len(sumstats.columns),memory_in_mb), verbose=verbose)
     except:
         log.warning("Error: cannot get Dataframe shape...")
     
-def check_dataframe_memory_usage(sumstats, log, verbose):
+def check_dataframe_memory_usage(sumstats: pl.DataFrame, log: Log, verbose: bool) -> None:
     memory_in_mb = sumstats.estimated_size(unit="mb") 
     try:
         log.write(" -Current Dataframe memory usage: {:.2f} MB".format(memory_in_mb), verbose=verbose)

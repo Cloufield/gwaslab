@@ -349,6 +349,61 @@ Additional columns are appended after the default columns.
 
 The `basic_check()` method performs a comprehensive standardization and quality control pipeline in a single call. It's the recommended starting point for processing new sumstats.
 
+### Basic Check Workflow
+
+The `basic_check()` process follows a sequential workflow to standardize and validate summary statistics:
+
+```
+Load Sumstats
+     │
+     ▼
+Fix ID (fix_id)
+     │
+     ├─→ remove_dup=True ─→ Remove Duplicates ─┐
+     │                                          │
+     └─→ remove_dup=False ──────────────────────┘
+                         │
+                         ▼
+                    Fix CHR (fix_chr)
+                         │
+                         ├─→ remove=True ─→ Remove bad CHR ─┐
+                         │                                  │
+                         └─→ remove=False ──────────────────┘
+                                         │
+                                         ▼
+                                    Fix POS (fix_pos)
+                                         │
+                                         ├─→ remove=True ─→ Remove bad POS ─┐
+                                         │                                  │
+                                         └─→ remove=False ──────────────────┘
+                                                         │
+                                                         ▼
+                                                    Fix Allele (fix_allele)
+                                                         │
+                                                         ├─→ remove=True ─→ Remove bad alleles ─┐
+                                                         │                                      │
+                                                         └─→ remove=False ──────────────────────┘
+                                                                         │
+                                                                         ▼
+                                                                    Normalize Allele
+                                                                    (if normalize=True)
+                                                                         │
+                                                                         ▼
+                                                                    Check Sanity
+                                                                         │
+                                                                         ▼
+                                                                    Check Consistency
+                                                                         │
+                                                                         ▼
+                                                                    Sort Coordinate
+                                                                         │
+                                                                         ▼
+                                                                    Sort Column
+                                                                         │
+                                                                         ▼
+                                                              Standardized Sumstats
+```
+
 ### Pipeline Order
 
 The `basic_check()` method executes the following steps in order:

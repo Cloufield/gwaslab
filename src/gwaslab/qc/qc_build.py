@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Union, List, Tuple
 import re
 import gc
 import pandas as pd
@@ -9,7 +10,10 @@ from gwaslab.info.g_vchange_status import vchange_status
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_build import BUILD_MAPPINGS, BUILD_DISPLAY_NAMES
 
-def check_species_compatibility(species, required_species, operation_name, log=None, verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def check_species_compatibility(species: Optional[str], required_species: Union[str, List[str]], operation_name: str, log: Optional[Log] = None, verbose: bool = True) -> bool:
     """
     Check if the current species is compatible with a species-specific operation.
     
@@ -97,10 +101,10 @@ def check_species_compatibility(species, required_species, operation_name, log=N
     
     return True
 
-def _process_build(build,  
-                   log=Log(), 
-                   verbose=True,
-                   species="homo sapiens"):
+def _process_build(build: str,  
+                   log: Log = Log(), 
+                   verbose: bool = True,
+                   species: str = "homo sapiens") -> str:
     """
     Process and normalize genome build identifier based on species.
     
@@ -143,7 +147,14 @@ def _process_build(build,
         log.warning(f"Species '{species}' not recognized for build processing. Using unknown build.", verbose=verbose)
         return "99"
 
-def _set_build(sumstats_or_dataframe, build="99", status="STATUS", verbose=True, log=Log(), species=None):
+def _set_build(
+    sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    build: str = "99",
+    status: str = "STATUS",
+    verbose: bool = True,
+    log: Log = Log(),
+    species: Optional[str] = None
+) -> Tuple[pd.DataFrame, str]:
     """
     Set genome build in sumstats status column.
     
@@ -196,7 +207,14 @@ def _set_build(sumstats_or_dataframe, build="99", status="STATUS", verbose=True,
     
     return sumstats, processed_build
 
-def _check_build(target_build, build="99", status="STATUS", verbose=True, log=Log(), species=None):
+def _check_build(
+    target_build: str,
+    build: str = "99",
+    status: str = "STATUS",
+    verbose: bool = True,
+    log: Log = Log(),
+    species: Optional[str] = None
+) -> bool:
     """
     Check if sumstats build matches target build.
     

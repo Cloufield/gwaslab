@@ -3,6 +3,11 @@ import numpy as np
 import copy
 import gc
 from math import floor
+from typing import TYPE_CHECKING, Optional, Dict, Any, List, Tuple, Union, Callable
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+    from gwaslab.info.g_Log import Log
 
 from gwaslab.info.g_meta import _init_meta
 from gwaslab.qc.qc_reserved_headers import _get_headers
@@ -41,7 +46,14 @@ from gwaslab.io.io_to_pickle import _reload
 from gwaslab.io.io_read_pipcs import _read_pipcs
 
 class SumstatsPair( ):
-    def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
+    def __init__(
+        self, 
+        sumstatsObject1: 'Sumstats', 
+        sumstatsObject2: 'Sumstats', 
+        study: Optional[str] = None, 
+        suffixes: Tuple[str, str] = ("_1","_2"), 
+        verbose: bool = True
+    ) -> None:
         
         if not isinstance(sumstatsObject1, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #1.")
@@ -157,13 +169,15 @@ class SumstatsPair( ):
         sumstatsObject1.data = sumstatsObject1.data.drop(columns=["_RAW_INDEX_1"])
         sumstatsObject2.data = sumstatsObject2.data.drop(columns=["_RAW_INDEX_2"])
 
-    def _merge_two_sumstats(self, 
-                            sumstatsObject2, 
-                            threshold=0.2, 
-                            verbose=True,
-                            windowsizeb=10, 
-                            ref_path=None,
-                            suffixes=("_1","_2")):
+    def _merge_two_sumstats(
+        self, 
+        sumstatsObject2: 'Sumstats', 
+        threshold: float = 0.2, 
+        verbose: bool = True,
+        windowsizeb: int = 10, 
+        ref_path: Optional[str] = None,
+        suffixes: Tuple[str, str] = ("_1","_2")
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
         # sumstats1 with suffix _1, sumstats2 with no suffix
         molded_sumstats, sumstats1, sumstats2 = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
@@ -198,13 +212,13 @@ class SumstatsPair( ):
         return molded_sumstats, sumstats1, sumstats2
 
 
-    def clump(self,**kwargs):
+    def clump(self, **kwargs: Any) -> None:
         self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.meta["gwaslab"]["group_name"], **kwargs)
 
-    def to_coloc(self,**kwargs):
+    def to_coloc(self, **kwargs: Any) -> None:
         self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = _to_finemapping(self,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
 
-    def to_mesusie(self,**kwargs):
+    def to_mesusie(self, **kwargs: Any) -> None:
         self.mesusie["path"],self.mesusie["file"],self.mesusie["plink_log"] = tofinemapping_m(self.data,
                                                                                               studies = self.study_names,
                                                                                               group = self.meta["gwaslab"]["group_name"],
@@ -212,14 +226,14 @@ class SumstatsPair( ):
                                                                                               log=self.log,
                                                                                               **kwargs)
         
-    def run_mesusie(self,**kwargs):
+    def run_mesusie(self, **kwargs: Any) -> None:
         prefix = _run_mesusie(self.mesusie["path"],log=self.log,ncols=self.ns,**kwargs)
         self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
                                    prefix, 
                                    studie_names = self.study_name,
                                    group=self.meta["gwaslab"]["group_name"])
     
-    def run_ccgwas(self,**kwargs):
+    def run_ccgwas(self, **kwargs: Any) -> None:
          _run_ccgwas(self.data, 
                       meta = self.meta,
                       ldsc = self.ldsc,
@@ -229,25 +243,25 @@ class SumstatsPair( ):
                       log=self.log,
                       **kwargs)
 
-    def read_pipcs(self,prefix,**kwargs):
+    def read_pipcs(self, prefix: str, **kwargs: Any) -> None:
         self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
                                    prefix, 
                                    group=self.meta["gwaslab"]["group_name"], 
                                    studie_names = self.study_name,
                                    **kwargs)
          
-    def run_coloc_susie(self,**kwargs):
+    def run_coloc_susie(self, **kwargs: Any) -> None:
         self.coloc_susie_res = _run_coloc_susie(self, self.coloc["path"],log=self.log,ncols=self.ns,**kwargs)
 
-    def run_two_sample_mr(self, clump=False, **kwargs):
+    def run_two_sample_mr(self, clump: bool = False, **kwargs: Any) -> None:
         exposure1 = self.study_names[0]
         outcome2 = self.study_names[1]
         _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**kwargs)
 
-    def extract_with_ld_proxy(self,**arg):
+    def extract_with_ld_proxy(self, **arg: Any) -> pd.DataFrame:
         return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)
 
-    def filter_value(self, expr, inplace=False, **kwargs):
+    def filter_value(self, expr: str, inplace: bool = False, **kwargs: Any) -> Optional['SumstatsPair']:
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _filter_values(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
@@ -255,12 +269,13 @@ class SumstatsPair( ):
         else:
             self.data = _filter_values(self.data, expr,log=self.log,**kwargs)
         gc.collect()
+        return None
 
-    def _apply_viz_params(self, func, kwargs, key=None, mode=None):
+    def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
         params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
         return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
 
-    def stacked_mqq(self, **kwargs):
+    def stacked_mqq(self, **kwargs: Any) -> None:
         df1 = self.data[["SNPID","CHR","POS","EA","NEA","P_1"]].rename(columns={"P_1":"P"})
         df2 = self.data[["SNPID","CHR","POS","EA","NEA","P_2"]].rename(columns={"P_2":"P"})
         objects = [df1, df2]
@@ -282,7 +297,7 @@ class SumstatsPair( ):
         plot_stacked_mqq(objects=objects, **params)
 
     ## Visualization #############################################################################################################################################
-    def plot_miami(self,**kwargs):
+    def plot_miami(self, **kwargs: Any) -> None:
         params = self._apply_viz_params(plot_miami2, kwargs, key="plot_miami2")
         plot_miami2(merged_sumstats=self.data, 
                     suffixes=self.suffixes,
@@ -290,7 +305,7 @@ class SumstatsPair( ):
                     cols2=["CHR","POS","P_2"],
                     **params)
     
-    def compare_af(self, **kwargs):
+    def compare_af(self, **kwargs: Any) -> Any:
         params = self._apply_viz_params(plotdaf, kwargs, key="plot_compare_af")
         return plotdaf( self.data,
                      eaf="EAF_2",
@@ -299,12 +314,12 @@ class SumstatsPair( ):
                      ylabel="Effect Allele Frequency in Sumstats 2",
                      **params)
 
-    def offload(self):
+    def offload(self) -> None:
         _offload(self.data, self.tmp_path, self.log)
         del self.data
         gc.collect()
 
-    def reload(self, delete_files=None):
+    def reload(self, delete_files: Optional[List[str]] = None) -> None:
         """
         Reload data from temporary pickle file.
         

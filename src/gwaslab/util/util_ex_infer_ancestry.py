@@ -1,8 +1,12 @@
-
+from typing import TYPE_CHECKING, Union, Optional
 import pandas as pd
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_download import get_path
 from gwaslab.qc.qc_decorator import with_logging
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 @with_logging(
         start_to_msg="infer ancestry based on Fst",
         finished_msg="inferring ancestry",
@@ -10,11 +14,13 @@ from gwaslab.qc.qc_decorator import with_logging
         start_function="infer_ancestry",
         must_kwargs=["build"]
 )
-def _infer_ancestry(sumstats_or_dataframe, 
-                    ancestry_af=None,
-                    build=None,
-                    log=Log(),
-                    verbose=True):
+def _infer_ancestry(
+    sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+    ancestry_af: Optional[str] = None,
+    build: Optional[str] = None,
+    log: Log = Log(),
+    verbose: bool = True
+) -> str:
     """Infer ancestry based on Fst values from effective allele frequencies.
 
     A high Fst value indicates that populations are genetically distinct. This function
@@ -93,7 +99,7 @@ def _infer_ancestry(sumstats_or_dataframe,
     log.write("Finished inferring ancestry.", verbose=verbose)
     return closest_ancestry.split("_")[1]
 
-def calculate_fst(p_1, p_2):
+def calculate_fst(p_1: float, p_2: float) -> float:
     # https://bios1140.github.io/understanding-fst-the-fixation-index.html
     # calculate q1 and q2
     q_1 = 1 - p_1

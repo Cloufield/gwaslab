@@ -1,9 +1,13 @@
 import copy
 import gc
 import time
+from typing import TYPE_CHECKING, Optional, Union, Dict, Any, List, Tuple, Callable
 import numpy as np
 import pandas as pd
 from gwaslab.info.g_object_helper import add_doc, suppress_display
+
+if TYPE_CHECKING:
+    from gwaslab.info.g_Log import Log
 
 # ----- Version / Metadata / Logging -----
 from gwaslab.info.g_Log import Log
@@ -170,61 +174,61 @@ class Sumstats():
     
     @add_doc(_preformat)
     def __init__(self,
-             sumstats=None,
-             fmt=None,
-             tab_fmt="tsv",
-             snpid=None,
-             rsid=None,
-             chrom=None,
-             pos=None,
-             ea=None,
-             nea=None,
-             ref=None,
-             alt=None,
-             eaf=None,
-             neaf=None,
-             maf=None,
-             n=None,
-             beta=None,
-             se=None,
-             chisq=None,
-             z=None,
-             f=None,
-             t=None,
-             p=None,
-             q=None,
-             mlog10p=None,
-             test=None,
-             info=None,
-             OR=None,
-             OR_95L=None,
-             OR_95U=None,
-             beta_95L=None,
-             beta_95U=None,
-             HR=None,
-             HR_95L=None,
-             HR_95U=None,
-             ncase=None,
-             ncontrol=None,
-             neff=None,
-             i2=None,
-             phet=None,
-             dof=None,
-             snpr2=None,
-             status=None,
-             other=None,
-             exclude=None,
-             include=None,
-             chrom_pat=None,
-             snpid_pat=None,
-             direction=None,
-             verbose=True,
-             study="Study_1",
-             trait="Trait_1",
-             build="99",
-             species="homo sapiens",
-             readargs=None,
-             **kwreadargs):
+             sumstats: Optional[Union[str, pd.DataFrame]] = None,
+             fmt: Optional[str] = None,
+             tab_fmt: str = "tsv",
+             snpid: Optional[str] = None,
+             rsid: Optional[str] = None,
+             chrom: Optional[str] = None,
+             pos: Optional[str] = None,
+             ea: Optional[str] = None,
+             nea: Optional[str] = None,
+             ref: Optional[str] = None,
+             alt: Optional[str] = None,
+             eaf: Optional[str] = None,
+             neaf: Optional[str] = None,
+             maf: Optional[str] = None,
+             n: Optional[str] = None,
+             beta: Optional[str] = None,
+             se: Optional[str] = None,
+             chisq: Optional[str] = None,
+             z: Optional[str] = None,
+             f: Optional[str] = None,
+             t: Optional[str] = None,
+             p: Optional[str] = None,
+             q: Optional[str] = None,
+             mlog10p: Optional[str] = None,
+             test: Optional[str] = None,
+             info: Optional[str] = None,
+             OR: Optional[str] = None,
+             OR_95L: Optional[str] = None,
+             OR_95U: Optional[str] = None,
+             beta_95L: Optional[str] = None,
+             beta_95U: Optional[str] = None,
+             HR: Optional[str] = None,
+             HR_95L: Optional[str] = None,
+             HR_95U: Optional[str] = None,
+             ncase: Optional[str] = None,
+             ncontrol: Optional[str] = None,
+             neff: Optional[str] = None,
+             i2: Optional[str] = None,
+             phet: Optional[str] = None,
+             dof: Optional[str] = None,
+             snpr2: Optional[str] = None,
+             status: Optional[str] = None,
+             other: Optional[List[str]] = None,
+             exclude: Optional[List[str]] = None,
+             include: Optional[List[str]] = None,
+             chrom_pat: Optional[str] = None,
+             snpid_pat: Optional[str] = None,
+             direction: Optional[str] = None,
+             verbose: bool = True,
+             study: str = "Study_1",
+             trait: str = "Trait_1",
+             build: str = "99",
+             species: str = "homo sapiens",
+             readargs: Optional[Dict[str, Any]] = None,
+             **kwreadargs: Any) -> None:
         
         self.log = Log()
         # Store reference to Sumstats object in log for shape tracking
@@ -338,7 +342,7 @@ class Sumstats():
         # path / file / plink_log        
     
     @property
-    def build(self):
+    def build(self) -> str:
         if self._build =="Unknown" or self._build =="99":
             if self.meta["gwaslab"]["species"] == "homo sapiens":
                 self.log.warning("Build is unknown. .infer_build first.")
@@ -349,7 +353,7 @@ class Sumstats():
         return self._build
 
     @build.setter
-    def build(self, value):
+    def build(self, value: Union[str, int]) -> None:
         # Process the build value and update both _build and meta
         from gwaslab.qc.qc_build import _process_build
         # Ensure meta["gwaslab"] exists
@@ -398,109 +402,109 @@ class Sumstats():
     # ============================================================================
     
     @property
-    def ldsc_h2(self):
+    def ldsc_h2(self) -> Optional[float]:
         """LDSC heritability estimate (backward compatibility)."""
         return self.downstream.ldsc_h2
     
     @ldsc_h2.setter
-    def ldsc_h2(self, value):
+    def ldsc_h2(self, value: Optional[float]) -> None:
         """Set LDSC heritability estimate (backward compatibility)."""
         self.downstream.ldsc_h2 = value
     
     @property
-    def ldsc_h2_results(self):
+    def ldsc_h2_results(self) -> Optional[Any]:
         """Detailed LDSC heritability results (backward compatibility)."""
         return self.downstream.ldsc_h2_results
     
     @ldsc_h2_results.setter
-    def ldsc_h2_results(self, value):
+    def ldsc_h2_results(self, value: Optional[Any]) -> None:
         """Set detailed LDSC heritability results (backward compatibility)."""
         self.downstream.ldsc_h2_results = value
     
     @property
-    def ldsc_rg(self):
+    def ldsc_rg(self) -> pd.DataFrame:
         """LDSC genetic correlation results (backward compatibility)."""
         return self.downstream.ldsc_rg
     
     @ldsc_rg.setter
-    def ldsc_rg(self, value):
+    def ldsc_rg(self, value: pd.DataFrame) -> None:
         """Set LDSC genetic correlation results (backward compatibility)."""
         self.downstream.ldsc_rg = value
     
     @property
-    def ldsc_h2_cts(self):
+    def ldsc_h2_cts(self) -> Optional[Any]:
         """LDSC cell-type-specific heritability results (backward compatibility)."""
         return self.downstream.ldsc_h2_cts
     
     @ldsc_h2_cts.setter
-    def ldsc_h2_cts(self, value):
+    def ldsc_h2_cts(self, value: Optional[Any]) -> None:
         """Set LDSC cell-type-specific heritability results (backward compatibility)."""
         self.downstream.ldsc_h2_cts = value
     
     @property
-    def ldsc_partitioned_h2_summary(self):
+    def ldsc_partitioned_h2_summary(self) -> Optional[Any]:
         """LDSC partitioned heritability summary (backward compatibility)."""
         return self.downstream.ldsc_partitioned_h2_summary
     
     @ldsc_partitioned_h2_summary.setter
-    def ldsc_partitioned_h2_summary(self, value):
+    def ldsc_partitioned_h2_summary(self, value: Optional[Any]) -> None:
         """Set LDSC partitioned heritability summary (backward compatibility)."""
         self.downstream.ldsc_partitioned_h2_summary = value
     
     @property
-    def ldsc_partitioned_h2_results(self):
+    def ldsc_partitioned_h2_results(self) -> Optional[Any]:
         """Detailed LDSC partitioned heritability results (backward compatibility)."""
         return self.downstream.ldsc_partitioned_h2_results
     
     @ldsc_partitioned_h2_results.setter
-    def ldsc_partitioned_h2_results(self, value):
+    def ldsc_partitioned_h2_results(self, value: Optional[Any]) -> None:
         """Set detailed LDSC partitioned heritability results (backward compatibility)."""
         self.downstream.ldsc_partitioned_h2_results = value
     
     @property
-    def finemapping(self):
+    def finemapping(self) -> Dict[str, Any]:
         """Finemapping results dictionary (backward compatibility)."""
         return self.downstream.finemapping
     
     @finemapping.setter
-    def finemapping(self, value):
+    def finemapping(self, value: Dict[str, Any]) -> None:
         """Set finemapping results dictionary (backward compatibility)."""
         self.downstream.finemapping = value
     
     @property
-    def clumps(self):
+    def clumps(self) -> Dict[str, Any]:
         """Clumping results dictionary (backward compatibility)."""
         return self.downstream.clumps
     
     @clumps.setter
-    def clumps(self, value):
+    def clumps(self, value: Dict[str, Any]) -> None:
         """Set clumping results dictionary (backward compatibility)."""
         self.downstream.clumps = value
     
     @property
-    def pipcs(self):
+    def pipcs(self) -> pd.DataFrame:
         """PIPCS results (backward compatibility)."""
         return self.downstream.pipcs
     
     @pipcs.setter
-    def pipcs(self, value):
+    def pipcs(self, value: pd.DataFrame) -> None:
         """Set PIPCS results (backward compatibility)."""
         self.downstream.pipcs = value
 
-    def _apply_viz_params(self, func, kwargs, key=None, mode=None):
+    def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
         params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
         return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: Any) -> Any:
         return self.data[index]
         
-    def __setitem__(self, index, value):
+    def __setitem__(self, index: Any, value: Any) -> None:
         self.data[index] = value
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data)
         
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         # Use object.__getattribute__ to access self.data directly without triggering __getattr__ again
         # This prevents infinite recursion during pickle loading when self.data might not be initialized yet
         try:
@@ -509,7 +513,7 @@ class Sumstats():
         except AttributeError:
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
     
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: Dict[int, Any]) -> 'Sumstats':
         """Custom deepcopy implementation to properly copy Sumstats objects."""
         cls = self.__class__
         result = cls.__new__(cls)
@@ -518,7 +522,7 @@ class Sumstats():
             setattr(result, k, copy.deepcopy(v, memo))
         return result
     
-    def copy(self):
+    def copy(self) -> 'Sumstats':
         """Return a deep copy of the Sumstats object."""
         return copy.deepcopy(self)
 #### healper #################################################################################
@@ -527,27 +531,27 @@ class Sumstats():
     #    self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)
     
     @add_doc(summarize)
-    def summary(self):
+    def summary(self) -> Any:
         return summarize(self)
     
     @add_doc(lookupstatus)
-    def lookup_status(self,status="STATUS"):
+    def lookup_status(self, status: str = "STATUS") -> Any:
         return lookupstatus(self.data[status])
     
     @add_doc(_set_build)
-    def set_build(self, build, verbose=True):
+    def set_build(self, build: Union[str, int], verbose: bool = True) -> None:
         self.data, processed_build = _set_build(self, build=build, log=self.log,verbose=verbose)
         # Update self.build to ensure consistency (setter will also update meta)
         self.build = processed_build
     
     @add_doc(_infer_build)
-    def infer_build(self,verbose=True,**kwargs):
+    def infer_build(self, verbose: bool = True, **kwargs: Any) -> None:
         kwargs = remove_overlapping_kwargs(kwargs,{"log","verbose"})
         # _infer_build now handles updating self.build and self.meta internally
         self.data = _infer_build(self,log=self.log,verbose=verbose,**kwargs)
 
     @add_doc(_liftover_variant)
-    def liftover(self, to_build=None, from_build=None, chain_path=None, **kwargs):
+    def liftover(self, to_build: Optional[str] = None, from_build: Optional[str] = None, chain_path: Optional[str] = None, **kwargs: Any) -> None:
         if from_build is None:
             from_build = self.build
         kwargs = remove_overlapping_kwargs(kwargs, {"from_build", "to_build", "chain_path", "log"})
@@ -866,83 +870,83 @@ class Sumstats():
         self.data =_flip_allele_stats(self, log=self.log)
     
     @add_doc(_check_sumstats_qc_status)
-    def check_sumstats_qc_status(self):
+    def check_sumstats_qc_status(self) -> Any:
         return _check_sumstats_qc_status(self)
     ############################################################################################################
     #customizable API to build your own QC pipeline
     @add_doc(_fix_ID)
-    def fix_id(self,**kwargs):
+    def fix_id(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _fix_ID(self,log=self.log,**kwargs)
         return self
     @add_doc(_flip_SNPID)
-    def flip_snpid(self,**kwargs):
+    def flip_snpid(self, **kwargs: Any) -> None:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _flip_SNPID(self,log=self.log,**kwargs)
     @add_doc(_strip_SNPID)
-    def strip_snpid(self,**kwargs):
+    def strip_snpid(self, **kwargs: Any) -> None:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _strip_SNPID(self,log=self.log,**kwargs)
     @add_doc(_fix_chr)
-    def fix_chr(self,**kwargs):
+    def fix_chr(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _fix_chr(self,log=self.log,**kwargs)
         # Auto-detect and rebuild mapper after chromosome column is modified
         self._update_mapper_from_data()
         return self
     @add_doc(_fix_pos)
-    def fix_pos(self,**kwargs):
+    def fix_pos(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _fix_pos(self,log=self.log,**kwargs)
         return self
     @add_doc(_fix_allele)
-    def fix_allele(self,**kwargs):
+    def fix_allele(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _fix_allele(self,log=self.log,**kwargs)
         return self
     @add_doc(_remove_dup)
-    def remove_dup(self,**kwargs):
+    def remove_dup(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _remove_dup(self,log=self.log,**kwargs)
         return self
     @add_doc(_sanity_check_stats)
-    def check_sanity(self,**kwargs):
+    def check_sanity(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _sanity_check_stats(self,log=self.log,**kwargs)
         return self
     @add_doc(_check_data_consistency)
-    def check_data_consistency(self, **kwargs):
+    def check_data_consistency(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         _check_data_consistency(self,log=self.log,**kwargs)
         return self
-    def check_id(self,**kwargs):
+    def check_id(self, **kwargs: Any) -> None:
         pass
     @add_doc(_check_ref)
-    def check_ref(self,ref_seq,**kwargs):
+    def check_ref(self, ref_seq: Any, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_seq"})
         self.data = _check_ref(self,ref_seq,log=self.log,**kwargs)
         # Harmonization status is already set by _check_ref
         return self
     @add_doc(_parallelize_infer_strand)
-    def infer_strand(self,ref_infer,**kwargs):
+    def infer_strand(self, ref_infer: Any, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.data = _parallelize_infer_strand(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Harmonization status is already set by _parallelize_infer_strand
         return self
     
     @add_doc(_flip_allele_stats)
-    def flip_allele_stats(self,**kwargs):
+    def flip_allele_stats(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _flip_allele_stats(self,log=self.log,**kwargs)
         # Harmonization status is already set by _flip_allele_stats
         return self
     @add_doc(_parallelize_normalize_allele)
-    def normalize_allele(self,**kwargs):
+    def normalize_allele(self, **kwargs: Any) -> 'Sumstats':
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _parallelize_normalize_allele(self,log=self.log,**kwargs)
         return self
 
-    def annotate_sumstats(self,**kwargs):
+    def annotate_sumstats(self, **kwargs: Any) -> None:
         from gwaslab.hm.hm_assign_rsid import _annotate_sumstats
         self.data = _annotate_sumstats(self,**kwargs)
     
@@ -996,7 +1000,7 @@ class Sumstats():
     
     ############################################################################################################
     @add_doc(_fill_data)
-    def fill_data(self, verbose=True, **kwargs):
+    def fill_data(self, verbose: bool = True, **kwargs: Any) -> None:
         kwargs = remove_overlapping_kwargs(kwargs,{"log","verbose"})
         self.data = _fill_data(self, verbose=verbose, log=self.log, **kwargs)
         self.data = _sort_column(self, verbose=verbose, log=self.log)
@@ -1004,43 +1008,47 @@ class Sumstats():
 # utilities ############################################################################################################
     # filter series ######################################################################
     @add_doc(_filter_region)
-    def filter_region(self, inplace=False,**kwargs):
+    def filter_region(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _filter_region(new_Sumstats_object, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _filter_region(self, **kwargs)
+            return None
     
     @add_doc(_get_flanking)
-    def filter_flanking(self, inplace=False,**kwargs):
+    def filter_flanking(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking(new_Sumstats_object, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _get_flanking(self, **kwargs)
+            return None
     
     @add_doc(_get_flanking_by_chrpos)
-    def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**kwargs):
+    def filter_flanking_by_chrpos(self, chrpos: Tuple[int, int], inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object, chrpos, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_chrpos(self, chrpos,**kwargs)
+            return None
     
     @add_doc(_get_flanking_by_id)
-    def filter_flanking_by_id(self, snpid, inplace=False,**kwargs):
+    def filter_flanking_by_id(self, snpid: str, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object, snpid, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_id(self, snpid, **kwargs)
+            return None
     
     @add_doc(_filter_values)
-    def filter_value(self, expr, inplace=False, **kwargs):
+    def filter_value(self, expr: str, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log","expr"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1048,9 +1056,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             _filter_values(self, expr,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_out)
-    def filter_out(self, inplace=False, **kwargs):
+    def filter_out(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1058,9 +1067,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             _filter_out(self,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_in)
-    def filter_in(self, inplace=False, **kwargs):
+    def filter_in(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1068,9 +1078,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             _filter_in(self,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_region_in)
-    def filter_region_in(self, inplace=False, **kwargs):
+    def filter_region_in(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1078,9 +1089,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_region_in(self,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_region_out)
-    def filter_region_out(self, inplace=False, **kwargs):
+    def filter_region_out(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1088,9 +1100,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_region_out(self,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_palindromic)
-    def filter_palindromic(self, inplace=False, **kwargs):
+    def filter_palindromic(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1098,9 +1111,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_palindromic(self,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_snp)
-    def filter_snp(self, inplace=False, **kwargs):
+    def filter_snp(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1108,9 +1122,10 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_snp(self,log=self.log,**kwargs)
+            return None
     
     @add_doc(_filter_indel)
-    def filter_indel(self, inplace=False, **kwargs):
+    def filter_indel(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1118,10 +1133,11 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_indel(self,log=self.log,**kwargs)
+            return None
     
     
     @add_doc(_exclude_hla)
-    def exclude_hla(self, inplace=False, **kwargs):
+    def exclude_hla(self, inplace: bool = False, **kwargs: Any) -> Optional['Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -1129,6 +1145,7 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _exclude_hla(self,log=self.log,**kwargs)
+            return None
 
     @add_doc(_search_variants)
     def search(self, inplace=False, **kwargs):
@@ -1208,12 +1225,12 @@ class Sumstats():
         # Metadata is already set by _infer_af_with_maf_annotation    
     
     @suppress_display
-    def plot_daf(self, **kwargs):
+    def plot_daf(self, **kwargs: Any) -> Tuple[Any, Any]:
         fig, outliers = plotdaf(self, **self._apply_viz_params(plotdaf, kwargs, key="plot_daf"))
         return fig, outliers
     
     @add_doc(_infer_ancestry)
-    def infer_ancestry(self, **kwargs):
+    def infer_ancestry(self, **kwargs: Any) -> None:
         kwargs = remove_overlapping_kwargs(kwargs,{"build","log"})
         self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self,
                                                                     build=self.build, 
@@ -1221,14 +1238,14 @@ class Sumstats():
                                                                     **kwargs)
 
     @suppress_display
-    def plot_gwheatmap(self, **kwargs):
+    def plot_gwheatmap(self, **kwargs: Any) -> Any:
         params = self._apply_viz_params(_gwheatmap, kwargs, key="plot_gwheatmap")
         fig = _gwheatmap(self, **params)
         return fig
     
     @add_doc(_mqqplot)
     @suppress_display
-    def plot_mqq(self, build=None, **kwargs):
+    def plot_mqq(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         mode = kwargs.get("mode", None)
         params = self._apply_viz_params(_mqqplot, kwargs, key="plot_mqq", mode=mode)
         if "build" not in params:
@@ -1238,7 +1255,7 @@ class Sumstats():
     
     @add_doc(_mqqplot)
     @suppress_display
-    def plot_manhattan(self, build=None, **kwargs):
+    def plot_manhattan(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         params = self._apply_viz_params(_mqqplot, kwargs, key="plot_manhattan")
         if "build" not in params:
             params["build"] = self.build
@@ -1247,25 +1264,25 @@ class Sumstats():
     
     @add_doc(_process_density)
     @suppress_display
-    def plot_snp_density(self, build=None, **kwargs):
+    def plot_snp_density(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
         return plot
     
     @add_doc(_plot_qq)
     @suppress_display
-    def plot_qq(self, build=None, **kwargs):
+    def plot_qq(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
         return plot
     
     @add_doc(_plot_regional)
     @suppress_display
-    def plot_region(self, build=None, **kwargs):
+    def plot_region(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
         return plot
 
     @add_doc(_plot_trumpet)
     @suppress_display
-    def plot_trumpet(self, build=None, **kwargs):
+    def plot_trumpet(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         fig = _plot_trumpet(
             self,
             **{**self._apply_viz_params(_plot_trumpet, kwargs, key="plot_trumpet", mode=("b" if kwargs.get("mode") == "b" else "q")),
@@ -1274,11 +1291,11 @@ class Sumstats():
         return fig
 
     @add_doc(_plot_effect)
-    def plot_effect(self,**kwargs):
+    def plot_effect(self, **kwargs: Any) -> None:
         _plot_effect(self, **self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))
 
     @add_doc(_get_sig)
-    def get_lead(self, gls=False, build=None, **kwargs):
+    def get_lead(self, gls: bool = False, build: Optional[str] = None, **kwargs: Any) -> Union[pd.DataFrame, 'Sumstats']:
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
         output = _get_sig(self,
                         log=self.log,

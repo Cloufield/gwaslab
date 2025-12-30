@@ -1,8 +1,15 @@
+from typing import Union
 import scipy as sp
 import numpy as np
 from gwaslab.info.g_Log import Log
 
-def wc_correct(beta, se, sig_level=5e-8, log=Log(), verbose=True):
+def wc_correct(
+    beta: Union[float, np.ndarray],
+    se: Union[float, np.ndarray],
+    sig_level: float = 5e-8,
+    log: Log = Log(),
+    verbose: bool = True
+) -> Union[float, np.ndarray]:
     """winner's curse correction
     Args:
 		beta (float): observed beta
@@ -31,7 +38,11 @@ def wc_correct(beta, se, sig_level=5e-8, log=Log(), verbose=True):
     
     return minimum
 
-def wc_correct_test(beta, se, sig_level=5e-8):
+def wc_correct_test(
+    beta: Union[float, np.ndarray],
+    se: Union[float, np.ndarray],
+    sig_level: float = 5e-8
+) -> Union[float, np.ndarray]:
     """winner's curse correction
     Args:
 		beta (float): observed beta

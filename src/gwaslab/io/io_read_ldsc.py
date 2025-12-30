@@ -1,9 +1,27 @@
+from typing import List, Optional, Dict, Any
 import re
 import pandas as pd
 import numpy as np
 
-def read_ldsc(filelist=[],mode="h2"):
-#h2 mode
+def read_ldsc(filelist: Optional[List[str]] = None, mode: str = "h2") -> pd.DataFrame:
+    """
+    Read LDSC output files and parse heritability or genetic correlation results.
+    
+    Parameters
+    ----------
+    filelist : list of str, optional
+        List of paths to LDSC output files
+    mode : str, default "h2"
+        Mode to parse: "h2" for heritability, "rg" for genetic correlation
+        
+    Returns
+    -------
+    pd.DataFrame
+        Parsed LDSC results
+    """
+    if filelist is None:
+        filelist = []
+    #h2 mode
 #####################################################################    
     is_liab = False
     if mode=="h2":
@@ -117,8 +135,23 @@ def read_ldsc(filelist=[],mode="h2"):
     return summary   
 
 
-def read_popcorn(filelist=[]):
-#h2 mode
+def read_popcorn(filelist: Optional[List[str]] = None) -> pd.DataFrame:
+    """
+    Read Popcorn output files and parse cross-population genetic correlation results.
+    
+    Parameters
+    ----------
+    filelist : list of str, optional
+        List of paths to Popcorn output files
+        
+    Returns
+    -------
+    pd.DataFrame
+        Parsed Popcorn results
+    """
+    if filelist is None:
+        filelist = []
+    #h2 mode
 #####################################################################    
     summary = pd.DataFrame(columns = ["Filename", 'sfile1', 'sfile2', 'mode', 'pg', 'pg_se','pg_z','pg_p', 'h1^2', 'h1^2_se','h1^2_z','h1^2_p', 'h2^2', 'h2^2_se','h2^2_z','h2^2_p'])
 
@@ -175,7 +208,7 @@ def read_popcorn(filelist=[]):
         summary = pd.concat([summary, row], ignore_index=True)
     return summary
 
-def read_greml(filelist=[]):
+def read_greml(filelist: List[str] = []) -> pd.DataFrame:
     summary = pd.DataFrame(columns = ["Filename", 'Sum of V(G)/Vp', 'SE','Pval', 'n'])
     for index, hsqfile in enumerate(filelist):
         print("Loading file "+str(index+1)+" :" + hsqfile +" ...")
@@ -213,7 +246,7 @@ def read_greml(filelist=[]):
         summary = pd.concat([summary, row], ignore_index=True)
     return summary
 
-def parse_ldsc_summary(ldsc_summary):
+def parse_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
     is_liab = False
     if "Liability" in ldsc_summary:
         is_liab = True
@@ -282,7 +315,7 @@ def parse_ldsc_summary(ldsc_summary):
         })
     return row
 
-def parse_partitioned_ldsc_summary(ldsc_summary):
+def parse_partitioned_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
     is_liab = False
     if "Liability" in ldsc_summary:
         is_liab = True

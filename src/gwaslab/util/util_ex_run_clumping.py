@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Tuple, Any
 import subprocess
 import numpy as np
 import os
@@ -9,7 +10,14 @@ from gwaslab.io.io_plink import _process_plink_input_files
 from gwaslab.extension import _checking_plink_version
 from gwaslab.qc.qc_decorator import with_logging
 
-def _match_sumstats_with_ref_bim(sumstats, ref_bim_all, has_allele_info, log, verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _match_sumstats_with_ref_bim(sumstats: pd.DataFrame, 
+                                 ref_bim_all: pd.DataFrame, 
+                                 has_allele_info: bool, 
+                                 log: Log, 
+                                 verbose: bool = True) -> int:
     """
     Match sumstats variants with reference BIM using CHR, POS, and optionally EA, NEA.
     
@@ -131,10 +139,27 @@ def _match_sumstats_with_ref_bim(sumstats, ref_bim_all, has_allele_info, log, ve
         start_cols=["SNPID","CHR","POS"],
         start_function=".clump()"
 )
-def _clump(gls, vcf=None, scaled=False, out="clumping_plink2", 
-           p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, pfile=None,
-           threads=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
-           log=Log(),verbose=True,plink="plink",plink2="plink2"):
+def _clump(gls: 'Sumstats', 
+           vcf: Optional[str] = None, 
+           scaled: bool = False, 
+           out: Optional[str] = "clumping_plink2", 
+           p: str = "P",
+           mlog10p: str = "MLOG10P", 
+           overwrite: bool = False, 
+           study: Optional[str] = None, 
+           bfile: Optional[str] = None, 
+           pfile: Optional[str] = None,
+           threads: int = 1, 
+           memory: Optional[int] = None, 
+           chrom: Optional[Any] = None, 
+           clump_p1: float = 5e-8, 
+           clump_p2: float = 5e-8, 
+           clump_r2: float = 0.01, 
+           clump_kb: int = 250,
+           log: Log = Log(),
+           verbose: bool = True,
+           plink: str = "plink",
+           plink2: str = "plink2") -> Tuple[pd.DataFrame, pd.DataFrame, str]:
     """
     Perform LD clumping of GWAS summary statistics using PLINK2.
 

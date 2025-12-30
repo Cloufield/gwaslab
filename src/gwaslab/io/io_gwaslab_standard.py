@@ -437,7 +437,7 @@ def load_gsf(
     columns: Optional[List[str]] = None,
     filters: Optional[str] = None,
     verbose: bool = True
-):
+) -> 'Sumstats':
     """
     Load GWAS sumstats from GSF (GWASLab Standard Format) file.
     

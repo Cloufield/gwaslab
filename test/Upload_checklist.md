@@ -1,5 +1,7 @@
 # Checklist for uploading to PyPI
 
+> **Note**: This checklist should be used when preparing a release. All paths are relative to the project root directory.
+
 ## Pre-Release Preparation
 
 ### Version and Package Info
@@ -18,14 +20,15 @@
   - [ ] Verify PyPI badge shows correct version
   - [ ] Check install command is correct (`pip install gwaslab`)
   - [ ] Verify Python version support information is accurate
-- [ ] Update `README.md` if it contains version-specific information
 - [ ] Verify all documentation links are working
 - [ ] Review and update any version-specific examples or tutorials
 
 ### Code Quality Checks
-- [ ] Run test suite: `python test/run_all_tests.py`
+- [ ] Run test suite from project root: `python test/run_all_tests.py`
 - [ ] Verify all tests pass
 - [ ] Check for any linting errors
+- [ ] Clean up debug messages (remove all `[DEBUG ...]` log statements)
+- [ ] Make sure log messages are consistent with code behavior
 - [ ] Review breaking changes and ensure backward compatibility notes are documented
 - [ ] Verify new features are properly documented
 - [ ] Test new functionality manually

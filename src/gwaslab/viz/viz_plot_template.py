@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Dict, Any, Union, List, Tuple
 import matplotlib.pyplot as plt
 import seaborn as sns
 from gwaslab.info.g_Log import Log
@@ -6,39 +7,44 @@ from gwaslab.io.io_process_kwargs import _update_kwargs
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
-def _plot( associations, 
-            values="Beta",
-            sort="P-value",
-            mode="gwaslab",
-            fontsize=12,
-            font_family="Arial",
-            cmap=None,
-            ylabel="Y",
-            xlabel="X",
-            xlim=None,
-            ylim=None,
-            yticks=None,
-            xticks=None,
-            ytick_labels=None,
-            xtick_labels=None,
-            title="Title",
-            title_pad=1.08, 
-            title_fontsize=13,
-            title_kwargs=None,
-            linewidth=None,
-            linestyle=None,
-            linecolor=None,
-            dpi=200,
-            anno_kwargs=None,
-            err_kwargs=None,
-            fig_kwargs= None,
-            scatter_kwargs=None,
-            save=None,
-            save_kwargs=None,
-            log=Log(),
-            verbose=True,
-            **args               
-            ):
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
+    from matplotlib.axes import Axes
+
+def _plot(
+    associations: Any,
+    values: str = "Beta",
+    sort: str = "P-value",
+    mode: str = "gwaslab",
+    fontsize: float = 12,
+    font_family: str = "Arial",
+    cmap: Optional[Any] = None,
+    ylabel: str = "Y",
+    xlabel: str = "X",
+    xlim: Optional[Tuple[float, float]] = None,
+    ylim: Optional[Tuple[float, float]] = None,
+    yticks: Optional[List[float]] = None,
+    xticks: Optional[List[float]] = None,
+    ytick_labels: Optional[List[str]] = None,
+    xtick_labels: Optional[List[str]] = None,
+    title: str = "Title",
+    title_pad: float = 1.08,
+    title_fontsize: float = 13,
+    title_kwargs: Optional[Dict[str, Any]] = None,
+    linewidth: Optional[float] = None,
+    linestyle: Optional[str] = None,
+    linecolor: Optional[str] = None,
+    dpi: int = 200,
+    anno_kwargs: Optional[Dict[str, Any]] = None,
+    err_kwargs: Optional[Dict[str, Any]] = None,
+    fig_kwargs: Optional[Dict[str, Any]] = None,
+    scatter_kwargs: Optional[Dict[str, Any]] = None,
+    save: Optional[Union[bool, str]] = None,
+    save_kwargs: Optional[Dict[str, Any]] = None,
+    log: Log = Log(),
+    verbose: bool = True,
+    **args: Any
+) -> Tuple['Figure', 'Axes']:
     
     # update args
     

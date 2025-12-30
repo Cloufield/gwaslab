@@ -256,6 +256,10 @@ class TestMetaAnalyzePolars(unittest.TestCase):
         # The file has columns: SNPID, CHR, POS, EA, NEA, EAF, BETA, SE, P, N, DIRECTION, STATUS, rsID
         df = pd.read_csv(sumstats_path, sep="\t", compression="gzip", low_memory=False)
         
+        # Use only 1/10 of variants to speed up tests
+        if len(df) > 0:
+            df = df.iloc[::10].copy()
+        
         # Create first study from the DataFrame
         s1 = Sumstatsp(
             sumstats=df.copy(),

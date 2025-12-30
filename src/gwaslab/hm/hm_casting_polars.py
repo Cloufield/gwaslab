@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, List, Tuple, Union, Dict, Any
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
@@ -12,14 +13,24 @@ from gwaslab.util.util_in_fill_data import _fill_data
 from itertools import combinations
 import polars as pl
 
-def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_index=False, stats_cols1=None, stats_cols2=None,
-                                        windowsizeb=10, 
-                                        log=Log(),
-                                        suffixes=("_MOLD",""),
-                                        merge_mode="full",
-                                        merge_by_id=False,
-                                        verbose=True,
-                                        return_not_matched_mold =False):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _merge_mold_with_sumstats_by_chrposp(
+    mold: pl.DataFrame,
+    sumstats: pl.DataFrame,
+    ref_path: Optional[str] = None,
+    add_raw_index: bool = False,
+    stats_cols1: Optional[List[str]] = None,
+    stats_cols2: Optional[List[str]] = None,
+    windowsizeb: int = 10,
+    log: Log = Log(),
+    suffixes: Tuple[str, str] = ("_MOLD",""),
+    merge_mode: str = "full",
+    merge_by_id: bool = False,
+    verbose: bool = True,
+    return_not_matched_mold: bool = False
+) -> Union[pl.DataFrame, Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]]:
     
     log.write("Start to merge sumstats...", verbose=verbose)
     if merge_mode=="full":
@@ -185,7 +196,12 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
     
     return mold_sumstats
 
-def _keep_variants_with_same_allele_setp(sumstats, log=Log(),verbose=True,suffixes=("_MOLD","")):
+def _keep_variants_with_same_allele_setp(
+    sumstats: pl.DataFrame,
+    log: Log = Log(),
+    verbose: bool = True,
+    suffixes: Tuple[str, str] = ("_MOLD","")
+) -> pl.DataFrame:
 
     ea1="EA"+suffixes[0]
     nea1="NEA"+suffixes[0]
@@ -199,7 +215,12 @@ def _keep_variants_with_same_allele_setp(sumstats, log=Log(),verbose=True,suffix
     log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
     return sumstats
 
-def _align_with_moldp(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
+def _align_with_moldp(
+    sumstats: pl.DataFrame,
+    log: Log = Log(),
+    verbose: bool = True,
+    suffixes: Tuple[str, str] = ("_MOLD","")
+) -> pl.DataFrame:
     
     ea1="EA"+suffixes[0]
     nea1="NEA"+suffixes[0]
@@ -225,11 +246,22 @@ def _align_with_moldp(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
     
     return sumstats
 
-def _fill_missing_columnsp(sumstats, columns, log=Log(),verbose=True):
+def _fill_missing_columnsp(
+    sumstats: pl.DataFrame,
+    columns: List[str],
+    log: Log = Log(),
+    verbose: bool = True
+) -> pl.DataFrame:
     sumstats = _fill_data(sumstats, to_fill=columns)
     return sumstats
 
-def _renaming_colsp(sumstats, columns, log=Log(),verbose=True, suffixes=("_1","_2")):
+def _renaming_colsp(
+    sumstats: pl.DataFrame,
+    columns: List[str],
+    log: Log = Log(),
+    verbose: bool = True,
+    suffixes: Tuple[str, str] = ("_1","_2")
+) -> pl.DataFrame:
     to_rename =["STATUS"]
     for col in columns:
         if col in sumstats.columns:
@@ -238,7 +270,13 @@ def _renaming_colsp(sumstats, columns, log=Log(),verbose=True, suffixes=("_1","_
     log.write(" -Renaming sumstats2 columns by adding suffix {}".format(suffixes[1]),verbose=verbose)
     return sumstats
 
-def _renaming_cols_rp(sumstats, columns, log=Log(),verbose=True, suffix=""):
+def _renaming_cols_rp(
+    sumstats: pl.DataFrame,
+    columns: List[str],
+    log: Log = Log(),
+    verbose: bool = True,
+    suffix: str = ""
+) -> pl.DataFrame:
     # columns: name without suffix
     to_rename =[]
     for col in columns:
@@ -248,7 +286,14 @@ def _renaming_cols_rp(sumstats, columns, log=Log(),verbose=True, suffix=""):
     log.write(" -Renaming sumstats columns by removing suffix {}".format(suffix),verbose=verbose)
     return sumstats
 
-def _sort_pair_colsp(molded_sumstats, verbose=True, log=Log(), order=None, stats_order=None,suffixes=("_1","_2")):
+def _sort_pair_colsp(
+    molded_sumstats: pl.DataFrame,
+    verbose: bool = True,
+    log: Log = Log(),
+    order: Optional[List[str]] = None,
+    stats_order: Optional[List[str]] = None,
+    suffixes: Tuple[str, str] = ("_1","_2")
+) -> pl.DataFrame:
     if stats_order is None:
         # Base order: first 6 columns from DEFAULT_COLUMN_ORDER
         base_cols = ["SNPID","rsID", "CHR", "POS", "EA", "NEA"]

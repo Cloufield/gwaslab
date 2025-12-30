@@ -1,9 +1,10 @@
+from typing import Dict, Any
 import pandas as pd
 from gwaslab.bd.bd_common_data import get_formats_list
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import get_format_dict
 
-def _read_tabular(path, fmt, **kwargs):
+def _read_tabular(path: str, fmt: str, **kwargs: Any) -> pd.DataFrame:
     
     # default
     load_kwargs_dict = {"sep":"\t",
@@ -56,22 +57,22 @@ def _read_tabular(path, fmt, **kwargs):
 
     return df
 
-def read_bim(path):
+def read_bim(path: str) -> pd.DataFrame:
     df = _read_tabular(path,fmt="plink_bim")
     return df
 
-def read_fam(path):
+def read_fam(path: str) -> pd.DataFrame:
     df = _read_tabular(path,fmt="plink_fam")
     return df
 
-def read_psam(path):
+def read_psam(path: str) -> pd.DataFrame:
     df = _read_tabular(path,fmt="plink_psam")
     return df
 
-def read_pvar(path):
+def read_pvar(path: str) -> pd.DataFrame:
     df = _read_tabular(path,fmt="plink_pvar")
     return df
 
-def read_bgen_sample(path):
+def read_bgen_sample(path: str) -> pd.DataFrame:
     df = _read_tabular(path,fmt="bgen_sample")
     return df

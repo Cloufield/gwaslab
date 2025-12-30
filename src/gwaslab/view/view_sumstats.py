@@ -1,6 +1,10 @@
+from typing import TYPE_CHECKING, Union, Optional
 import pandas as pd
 
-def _view_sumstats(sumstats_or_dataframe, expr=None):
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
+def _view_sumstats(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], expr: Optional[str] = None) -> pd.DataFrame:
     """
     View the sumstats dataframe, optionally filtering by an expression.
 

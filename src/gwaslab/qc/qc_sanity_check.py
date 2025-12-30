@@ -1,4 +1,4 @@
-
+from typing import TYPE_CHECKING, Union, Optional, List, Tuple
 import re
 import gc
 import pandas as pd
@@ -36,8 +36,10 @@ from gwaslab.util.util_in_fill_data import _convert_mlog10p_to_p
 # ----- Internal Helper Functions -----
 from gwaslab.io.io_input_type import _get_id_column
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
-def check_na_columns(sumstats, coltocheck=None, log=Log(), verbose=True):
+def check_na_columns(sumstats: pd.DataFrame, coltocheck: Optional[List[str]] = None, log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Check for columns with all NA values and drop them.
     
@@ -65,7 +67,7 @@ def check_na_columns(sumstats, coltocheck=None, log=Log(), verbose=True):
                 sumstats = sumstats.drop(columns=[col])
     return sumstats
 
-def add_tolerence(stats, float_tolerance, mode):
+def add_tolerence(stats: Tuple[float, float], float_tolerance: float, mode: str) -> Tuple[float, float]:
     if "l" in mode:
         stats = (stats[0] - float_tolerance if stats[0] != float("Inf") else float("Inf"), stats[1])
     if "r" in mode:
@@ -73,7 +75,7 @@ def add_tolerence(stats, float_tolerance, mode):
         stats = (stats[0], stats[1] + float_tolerance if stats[1] != float("Inf") else float("Inf"))
     return stats
 
-def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, verbose, dtype="Int64"):
+def check_range(sumstats: pd.DataFrame, var_range: Optional[Tuple[Optional[float], Optional[float]]], header: str, coltocheck: List[str], cols_to_check: List[str], log: Log, verbose: bool, dtype: str = "Int64") -> pd.DataFrame:
     pre_number=len(sumstats)
     # Performance optimization: Cache column existence check
     has_header = header in sumstats.columns
@@ -180,32 +182,32 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         finished_msg="sanity check for statistics",
         start_function=".check_sanity()"
 )
-def _sanity_check_stats(sumstats_obj,
-                     coltocheck=None,
-                     n=None,
-                     ncase=None,
-                     ncontrol=None,
-                     eaf=None,
-                     mac=None,
-                     maf=None,
-                     chisq=None,
-                     z=None,
-                     t=None,
-                     f=None,
-                     p=None,
-                     mlog10p=None,
-                     beta=None,
-                     se=None,
-                     OR=None,
-                     OR_95L=None,
-                     OR_95U=None,
-                     HR=None,
-                     HR_95L=None,
-                     HR_95U=None,
-                     info=None,
-                     float_tolerance = 1e-7,
-                     verbose=True,
-                     log=Log()):
+def _sanity_check_stats(sumstats_obj: Union['Sumstats', pd.DataFrame],
+                     coltocheck: Optional[List[str]] = None,
+                     n: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     ncase: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     ncontrol: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     eaf: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     mac: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     maf: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     chisq: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     z: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     t: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     f: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     p: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     mlog10p: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     beta: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     se: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     OR: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     OR_95L: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     OR_95U: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     HR: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     HR_95L: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     HR_95U: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     info: Optional[Tuple[Optional[float], Optional[float]]] = None,
+                     float_tolerance: float = 1e-7,
+                     verbose: bool = True,
+                     log: Log = Log()) -> pd.DataFrame:
     '''
     Check whether numerical summary statistics fall within valid ranges.
 
@@ -397,7 +399,7 @@ def _sanity_check_stats(sumstats_obj,
         finished_msg="checking data consistency across columns",
         start_function=".check_data_consistency()"
 )
-def _check_data_consistency(sumstats_obj, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
+def _check_data_consistency(sumstats_obj: Union['Sumstats', pd.DataFrame], beta: str = "BETA", se: str = "SE", p: str = "P", mlog10p: str = "MLOG10P", rtol: float = 1e-3, atol: float = 1e-3, equal_nan: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     '''
     Check consistency between related statistical values. Minor inconsistencies are likely due to rounding.
 

@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Dict, Any, Union, Tuple
 import gc
 import math
 import numpy as np
@@ -17,37 +18,41 @@ from gwaslab.util.util_in_correct_winnerscurse import wc_correct_test
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
 def scatter(
-    df,
-    x,
-    y,
-    mode="0",
-    reg_box=None,
-    is_reg=True,
-    fdr=False,
-    allele_match=False,
-    r_se=False,
-    is_45_helper_line=False,
-    plt_kwargs=None,
-    xylabel_prefix="Per-allele effect size in ",
-    helper_line_kwargs=None,
-    font_kwargs=None,
-    build="19",
-    r_or_r2="r",
-    err_kwargs=None,
-    legend_kwargs=None,
-    log=Log(),
-    save=False,
-    reg_xmin=None,
-    verbose=True,
-    save_kwargs=None,
-    scatter_kwargs=None,
-    null_beta=0,
-    engine="plt",
-    xerr=None,
-    yerr=None,
-    **kwargs,
-):
+    df: pd.DataFrame,
+    x: str,
+    y: str,
+    mode: str = "0",
+    reg_box: Optional[Dict[str, Any]] = None,
+    is_reg: bool = True,
+    fdr: bool = False,
+    allele_match: bool = False,
+    r_se: bool = False,
+    is_45_helper_line: bool = False,
+    plt_kwargs: Optional[Dict[str, Any]] = None,
+    xylabel_prefix: str = "Per-allele effect size in ",
+    helper_line_kwargs: Optional[Dict[str, Any]] = None,
+    font_kwargs: Optional[Dict[str, Any]] = None,
+    build: str = "19",
+    r_or_r2: str = "r",
+    err_kwargs: Optional[Dict[str, Any]] = None,
+    legend_kwargs: Optional[Dict[str, Any]] = None,
+    log: Log = Log(),
+    save: Union[bool, str] = False,
+    reg_xmin: Optional[float] = None,
+    verbose: bool = True,
+    save_kwargs: Optional[Dict[str, Any]] = None,
+    scatter_kwargs: Optional[Dict[str, Any]] = None,
+    null_beta: float = 0,
+    engine: str = "plt",
+    xerr: Optional[Union[str, pd.Series, np.ndarray]] = None,
+    yerr: Optional[Union[str, pd.Series, np.ndarray]] = None,
+    **kwargs: Any
+) -> Union['Figure', 'Axes', Tuple['Figure', 'Axes']]:
     
     style = set_plot_style(
         plot="plot_scatter",
@@ -143,29 +148,29 @@ def scatter(
 
 
 def scatter_with_err_and_reg(
-    df,
-    x,
-    y,
-    xerr=None,
-    yerr=None,
-    engine="plt",
-    scatter_kwargs=None,
-    err_kwargs=None,
-    is_reg=True,
-    reg_box=None,
-    helper_line_kwargs=None,
-    font_kwargs=None,
-    null_beta=0,
-    r_se=False,
-    is_45_helper_line=False,
-    reg_xmin=None,
-    mode="0",
-    plt_kwargs=None,
-    log=Log(),
-    verbose=True,
-    save=False,
-    save_kwargs=None,
-):
+    df: pd.DataFrame,
+    x: str,
+    y: str,
+    xerr: Optional[Union[str, pd.Series, np.ndarray]] = None,
+    yerr: Optional[Union[str, pd.Series, np.ndarray]] = None,
+    engine: str = "plt",
+    scatter_kwargs: Optional[Dict[str, Any]] = None,
+    err_kwargs: Optional[Dict[str, Any]] = None,
+    is_reg: bool = True,
+    reg_box: Optional[Dict[str, Any]] = None,
+    helper_line_kwargs: Optional[Dict[str, Any]] = None,
+    font_kwargs: Optional[Dict[str, Any]] = None,
+    null_beta: float = 0,
+    r_se: bool = False,
+    is_45_helper_line: bool = False,
+    reg_xmin: Optional[float] = None,
+    mode: str = "0",
+    plt_kwargs: Optional[Dict[str, Any]] = None,
+    log: Log = Log(),
+    verbose: bool = True,
+    save: Union[bool, str] = False,
+    save_kwargs: Optional[Dict[str, Any]] = None
+) -> Tuple['Figure', 'Axes', Any]:
     fig, ax, reg = scatter(
         df=df,
         x=x,
@@ -194,16 +199,16 @@ def scatter_with_err_and_reg(
 
 
 def plot_scatter_with_err(
-    ax,
-    df,
-    x,
-    y,
-    xerr=None,
-    yerr=None,
-    engine="plt",
-    scatter_kwargs=None,
-    err_kwargs=None,
-):
+    ax: 'Axes',
+    df: pd.DataFrame,
+    x: str,
+    y: str,
+    xerr: Optional[Union[str, pd.Series, np.ndarray]] = None,
+    yerr: Optional[Union[str, pd.Series, np.ndarray]] = None,
+    engine: str = "plt",
+    scatter_kwargs: Optional[Dict[str, Any]] = None,
+    err_kwargs: Optional[Dict[str, Any]] = None
+) -> 'Axes':
     if err_kwargs is None:
         err_kwargs = {"ecolor": "#cccccc", "elinewidth": 1}
     if scatter_kwargs is None:
@@ -237,9 +242,27 @@ def plot_scatter_with_err(
     return ax
 
 
-def confire_regression_line(x, y, is_reg, reg_box, df,  ax, mode,xl,yl,xh,yh, null_beta, r_se, 
-                            is_45_helper_line,helper_line_kwargs, font_kwargs,
-                            log, verbose, reg_xmin):
+def confire_regression_line(
+    x: str,
+    y: str,
+    is_reg: bool,
+    reg_box: Optional[Dict[str, Any]],
+    df: pd.DataFrame,
+    ax: 'Axes',
+    mode: str,
+    xl: float,
+    yl: float,
+    xh: float,
+    yh: float,
+    null_beta: float,
+    r_se: bool,
+    is_45_helper_line: bool,
+    helper_line_kwargs: Optional[Dict[str, Any]],
+    font_kwargs: Optional[Dict[str, Any]],
+    log: Log,
+    verbose: bool,
+    reg_xmin: Optional[float]
+) -> Tuple['Axes', Any]:
     # if N <3
     if len(df)<3: 
         is_reg=False
@@ -274,7 +297,7 @@ def confire_regression_line(x, y, is_reg, reg_box, df,  ax, mode,xl,yl,xh,yh, nu
     return ax, reg
 
 #############################################################################################################################################################################
-def create_reg_log(reg,log, verbose):
+def create_reg_log(reg: Any, log: Log, verbose: bool) -> None:
     #t_score = (reg[0]-null_beta) / reg[4]
     #degree = len(df.dropna())-2
     p =  reg[3]
@@ -285,11 +308,13 @@ def create_reg_log(reg,log, verbose):
     log.write(" -Peason correlation coefficient =  ", "{:.2f}".format(reg[2]), verbose=verbose)
     log.write(" -r2 =  ", "{:.2f}".format(reg[2]**2), verbose=verbose)
 
-def create_helper_line(ax, 
-                       slope,
-                       is_45_helper_line, 
-                       helper_line_kwargs,
-                       reg_xmin=0):
+def create_helper_line(
+    ax: 'Axes',
+    slope: float,
+    is_45_helper_line: bool,
+    helper_line_kwargs: Optional[Dict[str, Any]],
+    reg_xmin: float = 0
+) -> 'Axes':
     
     if is_45_helper_line is True:
         xl,xh=ax.get_xlim()
@@ -301,13 +326,12 @@ def create_helper_line(ax,
 
     return ax
 
-def create_reg_line(ax, reg, reg_xmin=0):
+def create_reg_line(ax: 'Axes', reg: Any, reg_xmin: float = 0) -> 'Axes':
     xy1 = (reg_xmin,reg[0]*reg_xmin+reg[1])
     ax.axline(xy1=xy1,slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
     return ax
 
-def create_reg_string(reg,  
-                      r_se_jackknife_string):
+def create_reg_string(reg: Any, r_se_jackknife_string: str) -> str:
     p = reg[2]
     try:
         p12=str("{:.2e}".format(p)).split("e")[0]
@@ -323,7 +347,7 @@ def create_reg_string(reg,
     
     return reg_string
 
-def jackknife_r(df,x,y,log,verbose):
+def jackknife_r(df: pd.DataFrame, x: str, y: str, log: Log, verbose: bool) -> float:
     """Jackknife estimation of se for rsq
     """
 

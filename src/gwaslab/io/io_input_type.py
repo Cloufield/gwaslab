@@ -4,10 +4,13 @@ Input type handling utilities for GWASLab functions.
 Provides helpers to handle both DataFrame and Sumstats object inputs.
 """
 
+from typing import TYPE_CHECKING, Union
 import pandas as pd
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
-def _get_id_column(sumstats_or_dataframe):
+def _get_id_column(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame]) -> str:
     """
     Internal helper function to select the appropriate ID column (SNPID or rsID).
     

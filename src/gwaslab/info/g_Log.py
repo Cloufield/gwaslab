@@ -1,9 +1,14 @@
 import time
+from typing import TYPE_CHECKING, Optional, Tuple, Any
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 class Log():
-    def __init__(self):
+    def __init__(self) -> None:
         self.log_text=str(time.strftime('%Y/%m/%d %H:%M:%S'))+ " " + "Sumstats Object created."+ "\n"
     
-    def write(self,*message,end="\n",show_time=True, verbose=True):
+    def write(self, *message: Any, end: str = "\n", show_time: bool = True, verbose: bool = True) -> None:
         if show_time is True:
             if verbose: print(str(time.strftime('%Y/%m/%d %H:%M:%S')),*message,end=end)
             self.log_text = self.log_text + str(time.strftime('%Y/%m/%d %H:%M:%S')) + " " + " ".join(map(str,message)) + end
@@ -11,21 +16,21 @@ class Log():
             if verbose: print(*message,end=end)
             self.log_text = self.log_text + " ".join(map(str,message)) + end
     
-    def warning(self,*message,end="\n",show_time=True, verbose=True):
+    def warning(self, *message: Any, end: str = "\n", show_time: bool = True, verbose: bool = True) -> None:
         self.write("#WARNING! {}".format(" ".join(map(str,message))), 
                    end=end, 
                    show_time=show_time,
                    verbose=verbose)
 
-    def show(self):
+    def show(self) -> None:
         print(self.log_text)
 
-    def save(self,path,verbose=True):
+    def save(self, path: str, verbose: bool = True) -> None:
         with open(path,"w") as f:
             if verbose: print(str(time.strftime('%Y/%m/%d %H:%M:%S')) + " " + " -Save log file to : ", path)
             f.write(self.log_text)
 
-    def log(self,*message,end="\n",show_time=True, verbose=True):
+    def log(self, *message: Any, end: str = "\n", show_time: bool = True, verbose: bool = True) -> None:
         if show_time is True:
             if verbose: print(str(time.strftime('%Y/%m/%d %H:%M:%S')),*message,end=end)
             self.log_text = self.log_text + str(time.strftime('%Y/%m/%d %H:%M:%S')) + " " + " ".join(map(str,message)) + end
@@ -33,7 +38,7 @@ class Log():
             if verbose: print(*message,end=end)
             self.log_text = self.log_text + " ".join(map(str,message)) + end
 
-    def get_log_for_last_operation(self):
+    def get_log_for_last_operation(self) -> str:
         last_log = []
         rows = self.log_text.strip().split("\n")
 
@@ -45,7 +50,7 @@ class Log():
 
         return "".join(reversed(last_log))
     
-    def combine(self, log, pre=True):
+    def combine(self, log: 'Log', pre: bool = True) -> None:
         if pre ==True:
             self.log_text = "{}\n{}".format(log.log_text, self.log_text)
         else:
@@ -55,7 +60,7 @@ class Log():
     # Standardized logging methods for common operations
     # ============================================================================
     
-    def _get_indent(self, indent=0, indent_size=2):
+    def _get_indent(self, indent: int = 0, indent_size: int = 2) -> str:
         """
         Generate indentation string.
         
@@ -73,7 +78,7 @@ class Log():
         """
         return " " * (indent * indent_size)
     
-    def log_variants_filtered(self, count, reason=None, verbose=True, indent=0):
+    def log_variants_filtered(self, count: int, reason: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log filtered variants count with optional reason.
         
@@ -94,7 +99,7 @@ class Log():
         else:
             self.write(f"{indent_str} -Filtered out variants: {count}", verbose=verbose)
     
-    def log_variants_removed(self, count, reason=None, verbose=True, indent=0):
+    def log_variants_removed(self, count: int, reason: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log removed variants count with optional reason.
         
@@ -115,7 +120,7 @@ class Log():
         else:
             self.write(f"{indent_str} -Removed variants: {count}", verbose=verbose)
     
-    def log_variants_kept(self, count, reason=None, verbose=True, indent=0):
+    def log_variants_kept(self, count: int, reason: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log kept variants count with optional reason.
         
@@ -136,7 +141,7 @@ class Log():
         else:
             self.write(f"{indent_str} -Keeping variants: {count}", verbose=verbose)
     
-    def log_column_added(self, column_name, verbose=True, indent=0):
+    def log_column_added(self, column_name: str, verbose: bool = True, indent: int = 0) -> None:
         """
         Log addition of a column.
         
@@ -152,7 +157,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Added column: {column_name}", verbose=verbose)
     
-    def log_column_dropped(self, column_name, reason=None, verbose=True, indent=0):
+    def log_column_dropped(self, column_name: str, reason: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log removal of a column.
         
@@ -173,7 +178,7 @@ class Log():
         else:
             self.write(f"{indent_str} -Dropped column: {column_name}", verbose=verbose)
     
-    def log_shape_change(self, before_shape, after_shape, verbose=True, indent=0):
+    def log_shape_change(self, before_shape: Tuple[int, int], after_shape: Tuple[int, int], verbose: bool = True, indent: int = 0) -> None:
         """
         Log DataFrame shape change.
         
@@ -204,7 +209,7 @@ class Log():
             change_str = ", ".join(changes)
             self.write(f"{indent_str} -Shape changed: {rows_before} x {cols_before} -> {rows_after} x {cols_after} ({change_str})", verbose=verbose)
     
-    def log_dataframe_shape(self, sumstats, verbose=True, indent=0, sumstats_obj=None):
+    def log_dataframe_shape(self, sumstats: Any, verbose: bool = True, indent: int = 0, sumstats_obj: Optional['Sumstats'] = None) -> None:
         """
         Log current DataFrame shape and memory usage.
         Only logs if shape or memory has changed from the last check.
@@ -258,7 +263,7 @@ class Log():
         except Exception:
             self.warning("Error: cannot get Dataframe shape...", verbose=verbose)
     
-    def log_operation_start(self, operation_name, version=None, verbose=True, indent=0):
+    def log_operation_start(self, operation_name: str, version: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log start of an operation with optional version.
         
@@ -279,7 +284,7 @@ class Log():
         else:
             self.write(f"{indent_str}Start to {operation_name} ...", verbose=verbose)
     
-    def log_operation_finish(self, operation_name, verbose=True, indent=0):
+    def log_operation_finish(self, operation_name: str, verbose: bool = True, indent: int = 0) -> None:
         """
         Log completion of an operation.
         
@@ -295,7 +300,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str}Finished {operation_name}.", verbose=verbose)
     
-    def log_filtering_condition(self, column, operator, threshold, count, action="Removing", verbose=True, indent=0):
+    def log_filtering_condition(self, column: str, operator: str, threshold: Any, count: int, action: str = "Removing", verbose: bool = True, indent: int = 0) -> None:
         """
         Log filtering condition with count of affected variants.
         
@@ -319,7 +324,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -{action} variants with {column} {operator} {threshold}: {count}", verbose=verbose)
     
-    def log_operation(self, message, prefix=" -", verbose=True, indent=0):
+    def log_operation(self, message: str, prefix: str = " -", verbose: bool = True, indent: int = 0) -> None:
         """
         Log a general operation message with optional prefix.
         
@@ -337,7 +342,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str}{prefix}{message}", verbose=verbose)
     
-    def log_status_change(self, digit, before, after, count=None, reason=None, verbose=True, indent=0):
+    def log_status_change(self, digit: int, before: Any, after: Any, count: Optional[int] = None, reason: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log STATUS column changes (digit position updates).
         
@@ -379,7 +384,7 @@ class Log():
         
         self.write(" ".join(msg_parts), verbose=verbose)
     
-    def log_datatype_change(self, column, from_dtype, to_dtype, success=True, status=None, verbose=True, indent=0):
+    def log_datatype_change(self, column: str, from_dtype: str, to_dtype: str, success: bool = True, status: Optional[str] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log datatype conversion for a column.
         
@@ -421,7 +426,7 @@ class Log():
             # Fallback for unknown status
             self.write(f"{indent_str} -Datatype conversion for {column}: {from_dtype} -> {to_dtype} ({status})", verbose=verbose)
     
-    def log_formula(self, target_column, formula, source_columns=None, verbose=True, indent=0):
+    def log_formula(self, target_column: str, formula: str, source_columns: Optional[list] = None, verbose: bool = True, indent: int = 0) -> None:
         """
         Log formula/calculation used to fill or compute a column.
         
@@ -445,7 +450,7 @@ class Log():
         else:
             self.write(f"{indent_str}    Filling {target_column} {formula}...", verbose=verbose)
     
-    def log_reference_path(self, ref_type, path, verbose=True, indent=0):
+    def log_reference_path(self, ref_type: str, path: str, verbose: bool = True, indent: int = 0) -> None:
         """
         Log reference file path (VCF, FASTA, TSV, etc.).
         
@@ -463,7 +468,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Reference {ref_type}: {path}", verbose=verbose)
     
-    def log_threads(self, threads, verbose=True, indent=0):
+    def log_threads(self, threads: int, verbose: bool = True, indent: int = 0) -> None:
         """
         Log number of threads/cores being used.
         
@@ -479,7 +484,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Number of threads/cores to use: {threads}", verbose=verbose)
     
-    def log_variants_with_condition(self, condition, count, verbose=True, indent=0):
+    def log_variants_with_condition(self, condition: str, count: int, verbose: bool = True, indent: int = 0) -> None:
         """
         Log count of variants matching a specific condition.
         
@@ -497,7 +502,7 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Variants with {condition}: {count}", verbose=verbose)
     
-    def log_variants_count(self, count, description="variants", verbose=True, indent=0):
+    def log_variants_count(self, count: int, description: str = "variants", verbose: bool = True, indent: int = 0) -> None:
         """
         Log a count of variants with optional description.
         

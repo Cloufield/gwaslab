@@ -1,9 +1,10 @@
+from typing import Union, Tuple, Optional
 import numpy as np
 from scipy.stats import norm
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 
-def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
+def h2_obs_to_liab(h2_obs: float, P: float, K: float, se_obs: Optional[float] = None) -> Union[float, Tuple[float, float]]:
     '''
     Adopted from ldsc
     Reference:
@@ -46,29 +47,36 @@ def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
         return h2_obs * conversion_factor, se_lia
     return h2_obs * conversion_factor
 
-def h2_se_to_p(h2,se):
+def h2_se_to_p(h2: float, se: float) -> float:
+    """Convert heritability and standard error to p-value."""
     z = h2 / se
     return norm.sf(abs(z))
     
+
+from typing import TYPE_CHECKING
+import pandas as pd
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 @with_logging(
         start_to_msg="calculate per-SNP heritibility",
         finished_msg="calculating per-SNP heritibility"
 )
-def _get_per_snp_r2(sumstats_or_dataframe,
-           beta="BETA",
-           af="EAF",
-           n = "N", 
-           mode="q",
-           se="SE",
-           vary=1,
-           ncase=None, 
-           ncontrol=None, 
-           prevalence=None, 
-           k=1,
-           log=Log(),
-           adjuested=False,
-           verbose=True):
+def _get_per_snp_r2(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
+           beta: str = "BETA",
+           af: str = "EAF",
+           n: str = "N", 
+           mode: str = "q",
+           se: str = "SE",
+           vary: Union[int, float, str] = 1,
+           ncase: Optional[Union[int, str]] = None, 
+           ncontrol: Optional[Union[int, str]] = None, 
+           prevalence: Optional[Union[float, str]] = None, 
+           k: Union[int, float, str] = 1,
+           log: Log = Log(),
+           adjuested: bool = False,
+           verbose: bool = True) -> pd.DataFrame:
     """
     Calculate per-SNP heritability (R²) and optionally F-statistics.
     
@@ -109,7 +117,6 @@ def _get_per_snp_r2(sumstats_or_dataframe,
         - ADJUESTED_SNPR2: Adjusted R² (if adjuested=True)
         - F: F-statistic for instrument strength (if N column exists)
     """
-    import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe
@@ -174,8 +181,7 @@ def _get_per_snp_r2(sumstats_or_dataframe,
         
     log.write("Finished calculating per-SNP heritability!", verbose=verbose)
     return sumstats
-#
-def get_population_allele_frequency(af, prop, odds_ratio, prevalence,eps=1e-15):
+def get_population_allele_frequency(af: float, prop: float, odds_ratio: float, prevalence: float, eps: float = 1e-15) -> float:
     #OR = (a × d)/(b × c)
 
     #https://stats.stackexchange.com/questions/241384/how-to-derive-2x2-cell-counts-from-contingency-table-margins-and-the-odds-ratio

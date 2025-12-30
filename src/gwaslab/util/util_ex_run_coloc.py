@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Optional, Tuple, List, Any
 import subprocess
 import os
 import gc
@@ -7,19 +8,26 @@ from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 
-def _run_coloc_susie(glsp,
-                     filepath, 
-                     r="Rscript",
-                     types=None, ns=None, 
-                     fillldna=True, delete=False, 
-                     coloc_kwargs="", 
-                     susie_kwargs="", 
-                     ncols=None,
-                     d1_kwargs="",
-                     d2_kwargs="",
-                     out=None,
-                     log=Log(), 
-                     verbose=True):
+if TYPE_CHECKING:
+    from gwaslab.g_SumstatsPair import SumstatsPair
+
+def _run_coloc_susie(
+    glsp: 'SumstatsPair',
+    filepath: Optional[str],
+    r: str = "Rscript",
+    types: Optional[Tuple[str, str]] = None,
+    ns: Optional[Tuple[int, int]] = None,
+    fillldna: bool = True,
+    delete: bool = False,
+    coloc_kwargs: str = "",
+    susie_kwargs: str = "",
+    ncols: Optional[Tuple[int, int]] = None,
+    d1_kwargs: str = "",
+    d2_kwargs: str = "",
+    out: Optional[str] = None,
+    log: Log = Log(),
+    verbose: bool = True
+) -> pd.DataFrame:
     
     log.write("Start to run coloc.susie from command line:", verbose=verbose)
 

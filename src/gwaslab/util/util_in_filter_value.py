@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING, Union, Optional, Dict, Any, List
 import re
 import pandas as pd
 import numpy as np
@@ -17,10 +18,13 @@ from gwaslab.hm.hm_harmonize_sumstats import is_palindromic
 from gwaslab.info.g_version import _get_version
 import gc
 
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
+
 _HAPMAP_DF_CACHE = {}
 _HAPMAP_FULL_CACHE = {}
 
-def _get_hapmap_df_polars(build):
+def _get_hapmap_df_polars(build: str) -> pl.DataFrame:
     """Get Hapmap3 coordinates as a Polars DataFrame for fast lookup."""
     if build in _HAPMAP_DF_CACHE:
         return _HAPMAP_DF_CACHE[build]
@@ -51,7 +55,7 @@ def _get_hapmap_df_polars(build):
     _HAPMAP_DF_CACHE[build] = hapmap_df
     return hapmap_df
 
-def _get_hapmap_full_polars(build, include_alleles=True):
+def _get_hapmap_full_polars(build: str, include_alleles: bool = True) -> pl.DataFrame:
     """Get full Hapmap3 data as a Polars DataFrame with rsid, CHR, POS, and optionally A1, A2.
     
     Parameters
@@ -106,7 +110,7 @@ def _get_hapmap_full_polars(build, include_alleles=True):
     _HAPMAP_FULL_CACHE[cache_key] = hapmap_df
     return hapmap_df
 
-def with_logging_filter(start_to_msg,finished_msg):
+def with_logging_filter(start_to_msg: str, finished_msg: str) -> Any:
     def decorator(func):
         @wraps(func)  # This preserves the original function's metadata including __doc__
         def wrapper(*args, **kwargs):
@@ -216,7 +220,8 @@ value thresholds, genomic regions, and special variant types.
 """
 
 @with_logging_filter("filter variants by condition...","filtering variants")
-def _filter_values(sumstats_obj, expr, remove=False, verbose=True, log=Log()):
+
+def _filter_values(sumstats_obj: Union['Sumstats', pd.DataFrame], expr: str, remove: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Filter variants based on a query expression.
     
@@ -346,7 +351,16 @@ def _filter_values(sumstats_obj, expr, remove=False, verbose=True, log=Log()):
     return sumstats
 
 @with_logging_filter("filter out variants based on threshold values...", "filtering variants")
-def _filter_out(sumstats_obj, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
+def _filter_out(
+    sumstats_obj: Union['Sumstats', pd.DataFrame], 
+    interval: Dict[str, Any] = {}, 
+    lt: Dict[str, Any] = {}, 
+    gt: Dict[str, Any] = {}, 
+    eq: Dict[str, Any] = {}, 
+    remove: bool = False, 
+    verbose: bool = True, 
+    log: Log = Log()
+) -> pd.DataFrame:
     """
     Filter out variants based on threshold values.
     
@@ -399,7 +413,15 @@ def _filter_out(sumstats_obj, interval={}, lt={}, gt={}, eq={}, remove=False, ve
     return sumstats
 
 @with_logging_filter("filter in variants based on threshold values", "filtering variants")
-def _filter_in(sumstats_obj, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
+def _filter_in(
+    sumstats_obj: Union['Sumstats', pd.DataFrame], 
+    lt: Dict[str, Any] = {}, 
+    gt: Dict[str, Any] = {}, 
+    eq: Dict[str, Any] = {}, 
+    remove: bool = False, 
+    verbose: bool = True, 
+    log: Log = Log()
+) -> pd.DataFrame:
     """
     Filter in variants based on threshold values.
     
@@ -452,7 +474,7 @@ def _filter_in(sumstats_obj, lt={}, gt={}, eq={}, remove=False, verbose=True, lo
     return sumstats
 
 @with_logging_filter("filter in variants if in intervals defined in bed files", "filtering variants")
-def _filter_region_in(sumstats_or_dataframe, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
+def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], path: Optional[str] = None, chrom: str = "CHR", pos: str = "POS", high_ld: bool = False, build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Keep variants located within specified genomic regions from a BED file.
     
@@ -565,7 +587,7 @@ def _filter_region_in(sumstats_or_dataframe, path=None, chrom="CHR", pos="POS", 
     return sumstats
 
 @with_logging_filter("filter out variants if in intervals defined in bed files", "filtering variants")
-def _filter_region_out(sumstats_or_dataframe, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
+def _filter_region_out(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], path: Optional[str] = None, chrom: str = "CHR", pos: str = "POS", high_ld: bool = False, build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Remove variants located within specified genomic regions from a BED file.
     
@@ -667,10 +689,10 @@ def _filter_region_out(sumstats_or_dataframe, path=None, chrom="CHR", pos="POS",
               start_function=".infer_build()",
               start_cols=["CHR","POS"],
               check_dtype=True)
-def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS", 
-               ea="EA", nea="NEA", build="19",
-               change_status=True, 
-               verbose=True, log=Log()):
+def _infer_build(sumstats: Union['Sumstats', pd.DataFrame], status: str = "STATUS", chrom: str = "CHR", pos: str = "POS", 
+               ea: str = "EA", nea: str = "NEA", build: str = "19",
+               change_status: bool = True, 
+               verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Infer genome build version using Hapmap3 SNPs.
     
@@ -749,7 +771,7 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     return sumstats_data
 
 @with_logging_filter("randomly select variants from the sumstats", "sampling")
-def _sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
+def _sampling(sumstats: pd.DataFrame, n: int = 1, p: Optional[float] = None, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
     """
     Randomly sample variants from summary statistics.
     
@@ -795,7 +817,7 @@ def _sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     return sampled
 
 @with_logging_filter("extract variants in the flanking regions", "extracting variants in the flanking regions")
-def _get_flanking(sumstats_or_dataframe, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
+def _get_flanking(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: str, windowsizekb: int = 500, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
     """
     Extract variants in flanking regions around a specified variant.
     
@@ -844,7 +866,7 @@ def _get_flanking(sumstats_or_dataframe, snpid, windowsizekb=500, verbose=True, 
     return flanking
 
 @with_logging_filter("extract variants in the flanking regions using rsID or SNPID", "extracting variants in the flanking regions")
-def _get_flanking_by_id(sumstats_or_dataframe, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
+def _get_flanking_by_id(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: Union[str, List[str]], windowsizekb: int = 500, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
     """
     Extract variants in flanking regions using rsID or SNPID.
     
@@ -911,7 +933,7 @@ def _get_flanking_by_id(sumstats_or_dataframe, snpid, windowsizekb=500, verbose=
     return flanking
 
 @with_logging_filter("extract variants in the flanking regions using CHR and POS", "extracting variants in the flanking regions")
-def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, log=Log(), **kwargs):
+def _get_flanking_by_chrpos(sumstats: pd.DataFrame, chrpos: Union[List[Union[int, float]], List[List[Union[int, float]]]], windowsizekb: int = 500, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
     """
     Extract variants in flanking regions using chromosome and position.
     
@@ -971,7 +993,7 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     return flanking
 
 @with_logging_filter("filter palindromic variants", "filtering variants")
-def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True):
+def _filter_palindromic(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: str = "NEA", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Filter palindromic variants based on allele symmetry.
     
@@ -1002,7 +1024,7 @@ def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verb
     return palindromic
 
 @with_logging_filter("filter indels", "filtering variants")
-def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True):
+def _filter_indel(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: str = "NEA", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Filter indels based on allele length differences.
     
@@ -1031,7 +1053,7 @@ def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=Tr
     return indel
 
 @with_logging_filter("filter SNPs", "filtering variants")
-def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True):
+def _filter_snp(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: str = "NEA", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Filter SNPs based on allele length.
     
@@ -1060,7 +1082,7 @@ def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True
     return snp
 
 @with_logging_filter("exclude variants in HLA regions", "filtering variants")
-def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, build=None, mode="xmhc", log=Log(), verbose=True):
+def _exclude_hla(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS", lower: Optional[int] = None, upper: Optional[int] = None, build: Optional[str] = None, mode: str = "xmhc", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Exclude variants in HLA regions based on genomic coordinates.
     
@@ -1140,7 +1162,7 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, buil
     return sumstats
 
 @with_logging_filter("exclude variants on sex chromosomes", "filtering variants")
-def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Log(), verbose=True):
+def _exclude_sexchr(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS", sexchrs: List[int] = [23,24,25], log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Exclude variants on sex chromosomes.
     
@@ -1178,7 +1200,7 @@ def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Lo
     return sumstats
 
 @with_logging_filter("extract specific variants by ID", "extracting variants")
-def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
+def _extract(sumstats: pd.DataFrame, extract: Optional[List[str]] = None, id_use: str = "SNPID", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Extract specific variants by ID.
     
@@ -1206,7 +1228,7 @@ def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
     return sumstats
 
 @with_logging_filter("exclude specific variants by ID", "filtering variants")
-def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
+def _exclude(sumstats: pd.DataFrame, exclude: Optional[List[str]] = None, id_use: str = "SNPID", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Exclude specific variants by ID.
     
@@ -1234,7 +1256,7 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
     return sumstats
 
 @with_logging_filter("filter variants within a specific genomic region", "filtering variants")
-def _filter_region(sumstats_or_dataframe, region=None, chrom="CHR", pos="POS", log=Log(), verbose=True):
+def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], region: Optional[List[Union[int, str]]] = None, chrom: str = "CHR", pos: str = "POS", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Filter variants within a specific genomic region.
     
@@ -1279,10 +1301,10 @@ def _filter_region(sumstats_or_dataframe, region=None, chrom="CHR", pos="POS", l
         sumstats = sumstats.loc[in_region_snp,:]
         return sumstats.copy()    
     
-def _search_variants( sumstats, snplist=None, 
-                     snpid="SNPID" ,rsid="rsID",
-                     chrom="CHR", pos="POS", ea="EA", nea="NEA",
-                     log=Log(), verbose=True):
+def _search_variants(sumstats: pd.DataFrame, snplist: Optional[List[Union[str, List[Union[int, float]]]]] = None, 
+                     snpid: str = "SNPID", rsid: str = "rsID",
+                     chrom: str = "CHR", pos: str = "POS", ea: str = "EA", nea: str = "NEA",
+                     log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Search for variants in summary statistics using multiple identifier formats.
     
@@ -1361,12 +1383,12 @@ def _search_variants( sumstats, snplist=None,
     return to_search
 
 def _get_region_start_and_end(
-    chrom,
-    pos,
+    chrom: Union[str, int],
+    pos: Union[int, float, str],
     windowsizekb: int = 500,
     verbose: bool = True,
-    log=None,
-    **kwargs):
+    log: Optional[Log] = None,
+    **kwargs: Any) -> List[Union[int, str]]:
     """
     Determine the [chr, start, end] for a region. 
 
@@ -1417,8 +1439,8 @@ def _get_region_start_and_end(
     return [chrom, start, end]
 
 @with_logging_filter("filter duplicate/multiallelic variants", "filtering variants")
-def _filter_dup(sumstats_obj, mode="dm", chrom="CHR", pos="POS", snpid="SNPID", ea="EA", nea="NEA", rsid="rsID", 
-keep='first', keep_col="P", remove_na=False, keep_ascend=True, verbose=True, log=Log()):
+def _filter_dup(sumstats_obj: Union['Sumstats', pd.DataFrame], mode: str = "dm", chrom: str = "CHR", pos: str = "POS", snpid: str = "SNPID", ea: str = "EA", nea: str = "NEA", rsid: str = "rsID", 
+keep: Union[str, bool] = 'first', keep_col: str = "P", remove_na: bool = False, keep_ascend: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
     """
     Filter to keep only duplicate or multiallelic variants based on user-selected criteria.
     

@@ -5,11 +5,15 @@ This module provides functions to generate comprehensive QC reports
 including basic QC, lead variant extraction, and visualization.
 """
 
+from typing import TYPE_CHECKING, Optional, Dict, Any, List
 import os
 import pandas as pd
 from pathlib import Path
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_filter_value import _get_region_start_and_end
+
+if TYPE_CHECKING:
+    from gwaslab.g_Sumstats import Sumstats
 
 # Try to import PDF generation library
 try:
@@ -21,17 +25,17 @@ except ImportError:
 
 
 def generate_qc_report(
-    sumstats,
-    output_path="gwas_qc_report.html",
-    basic_check_kwargs=None,
-    harmonize_kwargs=None,
-    get_lead_kwargs=None,
-    mqq_plot_kwargs=None,
-    regional_plot_kwargs=None,
-    output_kwargs=None,
-    report_title="GWAS Quality Control Report",
-    verbose=True
-):
+    sumstats: 'Sumstats',
+    output_path: str = "gwas_qc_report.html",
+    basic_check_kwargs: Optional[Dict[str, Any]] = None,
+    harmonize_kwargs: Optional[Dict[str, Any]] = None,
+    get_lead_kwargs: Optional[Dict[str, Any]] = None,
+    mqq_plot_kwargs: Optional[Dict[str, Any]] = None,
+    regional_plot_kwargs: Optional[Dict[str, Any]] = None,
+    output_kwargs: Optional[Dict[str, Any]] = None,
+    report_title: str = "GWAS Quality Control Report",
+    verbose: bool = True
+) -> str:
     """
     Generate a comprehensive QC report including basic QC, harmonization (optional),
     lead variants, MQQ plots, regional plots, and output (optional).
@@ -356,20 +360,20 @@ def generate_qc_report(
 
 
 def _generate_html_report(
-    sumstats,
-    lead_variants,
-    mqq_plot_path,
-    regional_plots,
-    report_title,
-    output_dir,
-    plots_dir,
-    use_absolute_paths=False,
-    processing_steps=None,
-    harmonization_performed=False,
-    output_files=None,
-    summary_dict=None,
-    log_text=""
-):
+    sumstats: 'Sumstats',
+    lead_variants: pd.DataFrame,
+    mqq_plot_path: Optional[Path],
+    regional_plots: Dict[str, Path],
+    report_title: str,
+    output_dir: Path,
+    plots_dir: Path,
+    use_absolute_paths: bool = False,
+    processing_steps: Optional[List[str]] = None,
+    harmonization_performed: bool = False,
+    output_files: Optional[List[str]] = None,
+    summary_dict: Optional[Dict[str, Any]] = None,
+    log_text: str = ""
+) -> str:
     """
     Generate HTML content for the QC report.
     

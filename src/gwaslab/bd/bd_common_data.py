@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Union, Tuple
 import os
 import json
 import tarfile
@@ -18,7 +19,7 @@ from gwaslab.qc.qc_build import _process_build
 # Loaded from JSON file: src/gwaslab/data/chromosomes/chromosomes_nc.json
 _NCBI_ACCESSION_IDS = None
 
-def _load_ncbi_accession_ids():
+def _load_ncbi_accession_ids() -> Dict[Tuple[str, str], Dict[str, str]]:
     """Load NCBI accession IDs from JSON file."""
     global _NCBI_ACCESSION_IDS
     if _NCBI_ACCESSION_IDS is not None:
@@ -45,7 +46,7 @@ def _load_ncbi_accession_ids():
         _NCBI_ACCESSION_IDS = {}
         return _NCBI_ACCESSION_IDS
 
-def _get_ncbi_accession_mapping(species, build, log=None, verbose=True):
+def _get_ncbi_accession_mapping(species: Optional[str], build: str, log: Optional[Log] = None, verbose: bool = True) -> Optional[Dict[str, str]]:
     """
     Get NCBI RefSeq accession ID mapping for a species and build.
     
@@ -126,7 +127,7 @@ def _get_ncbi_accession_mapping(species, build, log=None, verbose=True):
     return None
 
 #hard-coded data
-def get_chr_to_NC(build, inverse=False, species="homo sapiens", log=None, verbose=True):
+def get_chr_to_NC(build: str, inverse: bool = False, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[str, str]:
     """
     Create a dictionary mapping chromosome identifiers to NCBI RefSeq accession IDs.
     
@@ -165,7 +166,7 @@ def get_chr_to_NC(build, inverse=False, species="homo sapiens", log=None, verbos
         return inv_dic
     return dic
 
-def get_NC_to_chr(build, species="homo sapiens", log=None, verbose=True):
+def get_NC_to_chr(build: str, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[str, str]:
     """
     Create a dictionary mapping NCBI RefSeq accession IDs to chromosome identifiers.
     
@@ -188,7 +189,7 @@ def get_NC_to_chr(build, species="homo sapiens", log=None, verbose=True):
     return get_chr_to_NC(build=build, inverse=True, species=species, log=log, verbose=verbose)
 
 
-def get_number_to_NC(build, inverse=False, species="homo sapiens", log=None, verbose=True):
+def get_number_to_NC(build: str, inverse: bool = False, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[Union[int, str], str]:
     """
     Create a dictionary mapping chromosome numbers (int) to NCBI RefSeq accession IDs (string).
     
@@ -241,7 +242,7 @@ def get_number_to_NC(build, inverse=False, species="homo sapiens", log=None, ver
     return dic
 
 
-def get_NC_to_number(build, species="homo sapiens", log=None, verbose=True):
+def get_NC_to_number(build: str, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[str, Union[int, str]]:
     """
     Create a dictionary mapping NCBI RefSeq accession IDs to chromosome numbers (int).
     
@@ -263,7 +264,7 @@ def get_NC_to_number(build, species="homo sapiens", log=None, verbose=True):
     """
     return get_number_to_NC(build=build, inverse=True, species=species, log=log, verbose=verbose)
 
-def get_chr_list(add_number=False, n=25, only_number=False, species="homo sapiens"):
+def get_chr_list(add_number: bool = False, n: int = 25, only_number: bool = False, species: str = "homo sapiens") -> List[Union[str, int]]:
     """
     Generate a list of chromosome identifiers.
     
@@ -299,7 +300,7 @@ def get_chr_list(add_number=False, n=25, only_number=False, species="homo sapien
     if only_number:
         chrom_list = [i for i in range(1, n+1)]
     return chrom_list
-def get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], species="homo sapiens", max_chr=200):
+def get_chr_to_number(out_chr: bool = False, xymt: Optional[List[str]] = None, xymt_num: Optional[List[int]] = None, species: str = "homo sapiens", max_chr: int = 200) -> Dict[str, Union[int, str]]:
     """
     Create a dictionary mapping chromosome identifiers to numeric representations.
     
@@ -323,6 +324,10 @@ def get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], s
         Dictionary mapping chromosome identifiers to numeric values or strings
         depending on the out_chr parameter
     """
+    if xymt is None:
+        xymt = ["X","Y","MT"]
+    if xymt_num is None:
+        xymt_num = [23,24,25]
     # Use Chromosomes class if species is provided (or default to human)
     if species is not None:
         chromosomes_obj = Chromosomes(species=species)
@@ -347,7 +352,7 @@ def get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], s
             dic[xymt[2]] = xymt_num[2]
             dic["M"] = xymt_num[2]
     return dic
-def get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix="", species="homo sapiens", max_chr=200):
+def get_number_to_chr(in_chr: bool = False, xymt: Optional[List[str]] = None, xymt_num: Optional[List[int]] = None, prefix: str = "", species: str = "homo sapiens", max_chr: int = 200) -> Dict[Union[int, str], str]:
     """
     Create a dictionary mapping chromosome numbers to string representations.
     
@@ -372,6 +377,10 @@ def get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], pr
     dict
         Dictionary mapping chromosome numbers to string representations
     """
+    if xymt is None:
+        xymt = ["X","Y","MT"]
+    if xymt_num is None:
+        xymt_num = [23,24,25]
     # Use Chromosomes class if species is provided (or default to human)
     if species is not None:
         chromosomes_obj = Chromosomes(species=species)
@@ -397,7 +406,7 @@ def get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], pr
     return dic
 # reading from files    
 ###################################################################################################################    
-def get_high_ld(build="19"):
+def get_high_ld(build: str = "19") -> str:
     """
     Get the path to the high LD region file for the specified genome build.
     
@@ -414,7 +423,7 @@ def get_high_ld(build="19"):
         #data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg38.bed.gz'
         data_path = path.join( Path(__file__).parents[1], "data","high_ld","high_ld_hla_hg38.bed.gz")
     return data_path
-def get_format_dict(fmt, inverse=False):
+def get_format_dict(fmt: str, inverse: bool = False) -> tuple:
     """
     Retrieve format dictionary and metadata for a specified format.
     
@@ -438,7 +447,7 @@ def get_format_dict(fmt, inverse=False):
         inv_dic = {v: k for k, v in dic_dict.items()}
         return dic_meta,inv_dic
     return dic_meta, dic_dict
-def get_formats_list():
+def get_formats_list() -> List[str]:
     """
     Retrieve a list of available format names from the format book.
     
@@ -453,7 +462,7 @@ def get_formats_list():
 # Module-level cache for recombination rate data
 _RECOMBINATION_RATE_CACHE = {}
 
-def get_recombination_rate(chrom, build="19"):
+def get_recombination_rate(chrom: Union[str, int], build: str = "19") -> pd.DataFrame:
     """
     Retrieve recombination rate data for a specific chromosome and genome build.
     
@@ -507,7 +516,7 @@ def get_recombination_rate(chrom, build="19"):
     
     return recombination_rate
 ####################################################################################################################
-def get_chain(from_build="19", to_build="38"):    
+def get_chain(from_build: str = "19", to_build: str = "38") -> str:    
     """
     Get the path to a chain file for liftover between genome builds.
     
@@ -548,7 +557,7 @@ from gwaslab.io.io_gtf import gtf_to_all_gene
 
 ####################################################################################################################   
 # From BioPython: https://github.com/biopython/biopython/blob/c5a6b1374267d769b19c1022b4b45472316e78b4/Bio/Seq.py#L36
-def _maketrans(complement_mapping):
+def _maketrans(complement_mapping: Dict[str, str]) -> bytes:
     """Make a python string translation table.
 
     Arguments:
@@ -566,7 +575,7 @@ def _maketrans(complement_mapping):
         
 ####################################################################################################################   
         
-def _inch_to_point(inch):
+def _inch_to_point(inch: float) -> float:
     #dpi: Dots per Inch
     #points: 1/72 inch
     return inch*72
