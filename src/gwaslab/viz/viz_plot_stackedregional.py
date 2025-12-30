@@ -41,8 +41,8 @@ from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
-
-
+from gwaslab.util.util_in_filter_value import _filter_region
+from gwaslab.qc.qc_normalize_args import _normalize_region
 def plot_stacked_mqq(   objects,
                         vcfs=None,
                         mode="r",
@@ -75,6 +75,43 @@ def plot_stacked_mqq(   objects,
                         log=Log(),
                         **mqq_kwargs
                         ):
+    """
+    Create stacked Manhattan/QQ/regional plots by iteratively calling plot_mqq.
+    
+    Parameters
+    ----------
+    objects : list
+        List of Sumstats objects or DataFrames to plot
+    vcfs : list, optional
+        List of VCF file paths for LD calculation. Default is None.
+    mode : str, default="r"
+        Plot mode: "r" for regional, "m" for Manhattan, "mqq" for Manhattan+QQ
+    region_ld_legends : list, optional, default=None
+        List of panel indices to show LD legends (cbar). 
+        If None, automatically enables legends for all mqq panels.
+        After plotting, if all panels with legends share the same legend (same lead variant),
+        duplicate legends are automatically removed (keeping only the first panel's legend).
+        If panels have different legends, all legends are kept.
+    region_lead_grids : list, optional, default=None
+        List of panel indices to draw vertical grid lines for lead variants.
+        If None, draws grid lines for all panels.
+    **mqq_kwargs
+        Additional keyword arguments passed to plot_mqq for each panel.
+        Panel-specific arguments can be specified with numeric suffix (e.g., region_ref1, region_ref2).
+    
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The created matplotlib figure object.
+    log : gwaslab.Log
+        Updated logging object with operation records.
+    
+    Notes
+    -----
+    - By default, LD legends are automatically enabled for all mqq panels
+    - Duplicate legends are removed only when ALL panels with legends share the same lead variant
+    - If any panel has a different lead variant, all legends are kept to show the differences
+    """
     
     log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
     # load sumstats
@@ -141,7 +178,8 @@ def plot_stacked_mqq(   objects,
     if region_chromatin_labels is None:
         region_chromatin_labels = []
     if region_ld_legends is None:
-        region_ld_legends = [0]
+        # By default, enable LD legends for all mqq panels (will check for duplicates later)
+        region_ld_legends = None  # Will be set after we know which panels are mqq
     if not title_kwargs:
         title_kwargs = {"family": font_family}
     else:
@@ -221,11 +259,18 @@ def plot_stacked_mqq(   objects,
     mqq_kwargs_for_each_plot = _sort_kwargs(mqq_kwargs, n_plot)
 
     ##########################################################################################################################################
+    # Auto-enable LD legends for all mqq panels by default
+    if region_ld_legends is None:
+        mqq_panel_indices = [i for i in range(n_plot) if pm[i] == "m"]
+        region_ld_legends = mqq_panel_indices if len(mqq_panel_indices) > 0 else [0]
+    
+    ##########################################################################################################################################
     # get x axis dict
     if mode=="m" or mode=="r":
         _posdiccul = _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02)
     else:
         _posdiccul=None
+
     
     ##########################################################################################################################################
     # a dict to store lead variants of each plot
@@ -241,6 +286,8 @@ def plot_stacked_mqq(   objects,
             figax = (fig,axes[index],axes[-1])
         elif mode=="mqq":
             figax = (fig,axes[index,0],axes[index,1])
+        
+        
         if index in region_ld_legends:
             region_ld_legend = True
         else:
@@ -319,6 +366,18 @@ def plot_stacked_mqq(   objects,
                                   log=log,
                                   verbose=verbose,
                                   **mqq_kwargs_for_each_plot[index])
+    
+    ##########################################################################################################################################
+    # Check for duplicate LD legends (cbar) and remove them ONLY when ALL mqq panels share the same legend
+    # Only check panels that actually have legends enabled (are in region_ld_legends)
+    if mode == "r":
+        mqq_panel_indices = [i for i in range(n_plot) if pm[i] == "m"]
+        # Get mqq panels that have legends enabled
+        mqq_panels_with_legends = [idx for idx in mqq_panel_indices if idx in region_ld_legends]
+        if len(mqq_panels_with_legends) > 1:
+            # Check for duplicates only among panels that have legends enabled
+            _remove_duplicate_ld_legends(fig, axes, mqq_panels_with_legends, lead_variants_is, log, verbose)
+    
     if len(region_chromatin_files)>0 and mode=="r":
         xlim_i = axes[-1].get_xlim()
         fig = _plot_chromatin_state(     region_chromatin_files = region_chromatin_files, 
@@ -381,7 +440,8 @@ def plot_stacked_mqq(   objects,
                 zorder=999999,
                 **(title_kwargs or {"family": font_family, "fontsize": fontsize})
             )
-    
+    print(lead_variants_is, lead_variants_is_color)
+    #{0: [2793163258], 1: [2793301317]} {0: ['#FF0000'], 1: ['#FF0000']}
     ##########################################################################################################################################
     # draw the line for lead variants
     region_lead_grid_line = mqq_kwargs.get("region_lead_grid_line", {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"})
@@ -399,6 +459,164 @@ def plot_stacked_mqq(   objects,
     log.write("Finished creating stacked mqq plot by iteratively calling plot_mqq.",verbose=verbose)
     
     return fig, log
+
+def _remove_duplicate_ld_legends(fig, axes, mqq_panel_indices, lead_variants_is, log, verbose):
+    """
+    Remove duplicate LD legends (cbar) ONLY when ALL mqq panels share the same legend.
+    
+    Logic: 
+    - If ANY panel has a different legend, keep ALL legends (do NOT remove any)
+    - Only when ALL panels have the EXACT SAME legend, remove duplicates (keep first one)
+    
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure containing all axes
+    axes : list
+        List of axes for all panels
+    mqq_panel_indices : list
+        List of indices for mqq panels
+    lead_variants_is : dict
+        Dictionary mapping panel index to list of lead variant positions (i values)
+    log : gwaslab.Log
+        Logging object
+    verbose : bool
+        Whether to show verbose messages
+    """
+    # Step 1: Collect lead variant positions for all mqq panels
+    lead_variant_positions = {}
+    for idx in mqq_panel_indices:
+        if idx in lead_variants_is and len(lead_variants_is[idx]) > 0:
+            # Convert to tuple for comparison (sorted to handle multiple lead variants)
+            lead_variant_positions[idx] = tuple(sorted(lead_variants_is[idx]))
+        else:
+            lead_variant_positions[idx] = None
+    
+    # Step 2: Check if ALL panels have the same lead variant positions
+    # Only proceed if ALL panels have valid positions and they are ALL identical
+    valid_positions = {k: v for k, v in lead_variant_positions.items() if v is not None}
+    
+    # Condition 1: All panels must have valid positions
+    # Condition 2: All positions must be identical (only one unique value)
+    # If ANY panel has a different position, we keep ALL legends
+    if len(valid_positions) == len(mqq_panel_indices):
+        unique_positions = set(valid_positions.values())
+        # Only remove duplicates if ALL panels have the EXACT SAME legend
+        if len(unique_positions) == 1:
+            # ALL panels have the same lead variant positions - safe to remove duplicates
+            # Keep the first panel's legend, remove from all others
+            first_idx = list(valid_positions.keys())[0]
+            if verbose:
+                log.write(f" -All panels share the same lead variant positions: {valid_positions[first_idx]}. Removing duplicate legends.", verbose=verbose)
+            for idx in list(valid_positions.keys())[1:]:
+                _remove_cbar_from_axis(fig, axes[idx], idx, first_idx, log, verbose)
+        else:
+            # Panels have different legends - keep ALL legends
+            if verbose:
+                log.write(f" -Panels have different lead variant positions. Keeping all legends.", verbose=verbose)
+    else:
+        # Not all panels have valid positions
+        if verbose:
+            log.write(f" -Not all panels have valid lead variant positions. Keeping all legends.", verbose=verbose)
+
+def _remove_cbar_from_axis(fig, ax, panel_idx, first_panel_idx, log, verbose):
+    """
+    Helper function to find and remove cbar (LD legend) from a specific axis.
+    
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        The figure containing all axes
+    ax : matplotlib.axes.Axes
+        The axis to remove cbar from
+    panel_idx : int
+        Index of the panel (for logging)
+    first_panel_idx : int
+        Index of the first panel that keeps its legend (for logging)
+    log : gwaslab.Log
+        Logging object
+    verbose : bool
+        Whether to show verbose messages
+    """
+    cbar_found = False
+    ax_pos = ax.get_position()
+    
+    # Method 1: Check all axes in the figure to find inset axes (cbar)
+    # Check characteristics first, then verify position
+    for fig_ax in list(fig.axes):
+        if fig_ax == ax:
+            continue
+        try:
+            # First check if it has LD legend characteristics
+            yticklabels = [label.get_text() for label in fig_ax.get_yticklabels()]
+            patches = fig_ax.patches
+            
+            # LD legend cbar has yticks (region_ref names) and patches (rectangles for LD thresholds)
+            # Check if it has the characteristics of an LD legend
+            if len(yticklabels) > 0 and len(patches) >= 3:  # LD legend has many patches
+                # Check if it's positioned within or overlapping the parent axes (inset axes)
+                pos = fig_ax.get_position()
+                # Check for overlap with parent axes (very lenient - any overlap)
+                overlaps = (pos.x0 < ax_pos.x1 and pos.x1 > ax_pos.x0 and 
+                           pos.y0 < ax_pos.y1 and pos.y1 > ax_pos.y0)
+                
+                # Also check if it's smaller than parent (inset axes are typically much smaller)
+                pos_width = pos.x1 - pos.x0
+                pos_height = pos.y1 - pos.y0
+                ax_width = ax_pos.x1 - ax_pos.x0
+                ax_height = ax_pos.y1 - ax_pos.y0
+                is_smaller = (pos_width < ax_width * 0.6 and pos_height < ax_height * 0.6)
+                
+                # If it has yticks, many patches, and (overlaps with parent OR is smaller), it's likely the cbar
+                if overlaps or is_smaller:
+                    # Additional check: white facecolor (LD legend has white background)
+                    try:
+                        facecolor = fig_ax.get_facecolor()
+                        # Handle different facecolor formats
+                        if isinstance(facecolor, (tuple, list, np.ndarray)):
+                            if len(facecolor) >= 3:
+                                is_white = (abs(float(facecolor[0]) - 1.0) < 0.1 and 
+                                           abs(float(facecolor[1]) - 1.0) < 0.1 and 
+                                           abs(float(facecolor[2]) - 1.0) < 0.1)
+                            else:
+                                is_white = False
+                        else:
+                            is_white = False
+                    except Exception:
+                        is_white = False
+                    
+                    # Strong indicators: white facecolor OR (many patches AND overlaps/smaller)
+                    if is_white or (len(patches) >= 3):
+                        # This is likely the LD legend cbar - remove it
+                        fig_ax.remove()
+                        log.write(f" -Removed duplicate LD legend (cbar) from panel {panel_idx} (all panels share the same legend).", verbose=verbose)
+                        cbar_found = True
+                        break
+        except Exception as e:
+            if verbose:
+                log.write(f" -Warning: Error checking axis for cbar in panel {panel_idx}: {e}", verbose=verbose)
+            continue
+    
+    # Method 2: Check children of ax directly (inset axes might be stored as children)
+    if not cbar_found:
+        for child in list(ax.get_children()):
+            if isinstance(child, plt.Axes) and child != ax:
+                try:
+                    yticklabels = [label.get_text() for label in child.get_yticklabels()]
+                    patches = child.patches
+                    # Check if this looks like an LD legend cbar
+                    if len(yticklabels) > 0 and len(patches) > 3:  # LD legend has many patches
+                        child.remove()
+                        log.write(f" -Removed duplicate LD legend (cbar) from panel {panel_idx} (all panels share the same legend).", verbose=verbose)
+                        cbar_found = True
+                        break
+                except Exception as e:
+                    if verbose:
+                        log.write(f" -Warning: Error checking child axis for cbar: {e}", verbose=verbose)
+                    continue
+    
+    if not cbar_found and verbose:
+        log.write(f" -Warning: Could not find cbar to remove from panel {panel_idx}. Total axes in figure: {len(fig.axes)}.", verbose=verbose)
 
 def _drop_old_y_labels(axes, n_plot):
     for index in range(n_plot):

@@ -1472,6 +1472,62 @@
         "fig_kwargs": [],
         "save_kwargs": []
       }
+    },
+    "plot_phenogram": {
+      "allowed": [
+        "snpid",
+        "chrom",
+        "pos",
+        "p",
+        "mlog10p",
+        "windowsizekb",
+        "sig_level",
+        "cytoband_path",
+        "build",
+        "ncols",
+        "figsize",
+        "dpi",
+        "annotate_snps",
+        "annotation_kwargs",
+        "anno_style",
+        "repel_force",
+        "anno_max_iter",
+        "ancestry_col",
+        "subtype_col",
+        "ancestry_colors",
+        "subtype_shapes",
+        "save",
+        "save_kwargs",
+        "fig_kwargs",
+        "verbose",
+        "log"
+      ],
+      "defaults": {
+        "snpid": "SNPID",
+        "chrom": "CHR",
+        "pos": "POS",
+        "p": "P",
+        "mlog10p": "MLOG10P",
+        "windowsizekb": 500,
+        "sig_level": 5e-08,
+        "build": "19",
+        "ncols": 11,
+        "figsize": [
+          20,
+          40
+        ],
+        "dpi": 100,
+        "annotate_snps": true,
+        "anno_style": "expand",
+        "repel_force": 0.5,
+        "anno_max_iter": 100,
+        "save": false
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "annotation_kwargs": []
+      }
     }
   }
 }

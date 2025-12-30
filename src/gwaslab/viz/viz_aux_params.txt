@@ -1370,6 +1370,13 @@
           ],
           "dpi": 200
         },
+        "plot_phenogram": {
+          "figsize": [
+            15,
+            15
+          ],
+          "dpi": 200
+        },
         "plot_stacked_mqq": {
           "dpi": 200
         }

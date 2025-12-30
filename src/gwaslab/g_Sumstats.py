@@ -144,6 +144,7 @@ from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_plot_effect import _plot_effect
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
+from gwaslab.viz.viz_plot_phenogram import _plot_phenogram
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
@@ -1288,6 +1289,15 @@ class Sumstats():
             **{**self._apply_viz_params(_plot_trumpet, kwargs, key="plot_trumpet", mode=("b" if kwargs.get("mode") == "b" else "q")),
                "build": kwargs.get("build", self.build)}
         )
+        return fig
+
+    @add_doc(_plot_phenogram)
+    @suppress_display
+    def plot_phenogram(self, build: Optional[str] = None, **kwargs: Any) -> Any:
+        params = self._apply_viz_params(_plot_phenogram, kwargs, key="plot_phenogram")
+        if "build" not in params:
+            params["build"] = self.build
+        fig = _plot_phenogram(self, **params)
         return fig
 
     @add_doc(_plot_effect)
