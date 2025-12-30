@@ -14,8 +14,8 @@
 !!! note "4th Anniversary & Major Upgrade"
     This year marks the 4th year since GWASLab launched. To celebrate this milestone, we will release a major upgrade **v4** with significant improvements and new features.
 
-!!! info "GWASLab v4.0.0"
-    GWASLab v4.0.0 introduces major improvements including:
+!!! info "GWASLab v4"
+    GWASLab v4 introduces major improvements including:
     
     - **Command Line Interface (CLI)**: Process sumstats directly from the command line
     - **Performance Improvements**: Optimized algorithms and data structures for faster processing
@@ -30,10 +30,10 @@
 The latest version of GWASLab now supports Python 3.9, 3.10, 3.11, and 3.12.
 
 !!! tip "Recommended: Python 3.12"
-    We recommend using **Python 3.12** for the best performance and compatibility with GWASLab v4.0.0.
+    We recommend using **Python 3.12** for the best performance and compatibility with GWASLab v4.
 
 ```python
-pip install gwaslab
+pip install -U gwaslab
 ```
 
 ### Install via uv
@@ -41,7 +41,7 @@ pip install gwaslab
 [uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver written in Rust.
 
 ```python
-uv pip install gwaslab
+uv pip install -U gwaslab
 ```
 
 ### Install in conda environment
@@ -53,7 +53,7 @@ conda create -n gwaslab -c conda-forge python=3.12
 
 conda activate gwaslab
 
-pip install gwaslab
+pip install -U gwaslab
 ```
 
 or create a new environment using yml file [environment.yml](https://github.com/Cloufield/gwaslab/blob/main/environment.yml)
@@ -225,7 +225,7 @@ See [CLI documentation](CLI.md) for complete details and examples.
 
 ## Acknowledgement
 
-Thanks to @sup3rgiu, @soumickmj and @gmauro for their contributions to the source codes.
+Thanks to @sup3rgiu, @soumickmj, @gmauro, @jhchung, @sroener, @bwaxse, @joshchiou, and @laleoarrow for their contributions to the source codes. Thanks to @wangyiyisheng for comprehensive feedbacks.
 
 ## Contacts
 
