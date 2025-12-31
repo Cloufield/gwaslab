@@ -81,6 +81,11 @@ def with_logging(start_to_msg: str,
             log = bound_kwargs.arguments.get('log', Log())
             verbose = bound_kwargs.arguments.get('verbose', True)
             
+            # Log thread information first, before any other operations
+            threads = bound_kwargs.arguments.get('threads', None)
+            if threads is not None:
+                log.log_threads(threads, verbose=verbose)
+            
             #############################################################################################
 
             insumstats = bound_kwargs.arguments.get('insumstats', None)
@@ -89,12 +94,9 @@ def with_logging(start_to_msg: str,
             else:
                 sumstats = insumstats
             #############################################################################################
-            threads = bound_kwargs.arguments.get('threads', None)
             ref_vcf = bound_kwargs.arguments.get('ref_vcf', None)
             ref_fasta = bound_kwargs.arguments.get('ref_fasta', None)
             ref_tsv = bound_kwargs.arguments.get('ref_tsv',None)
-            if threads is not None:
-                log.log_threads(threads, verbose=verbose)
             if ref_vcf is not None:
                 log.log_reference_path("VCF", ref_vcf, verbose=verbose)
             if ref_fasta is not None:

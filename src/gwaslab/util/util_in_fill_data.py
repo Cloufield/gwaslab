@@ -450,9 +450,20 @@ def _convert_betase_to_z(beta: pd.Series, se: pd.Series) -> pd.Series:
     return beta/se 
 
 def _convert_betase_to_p(beta: pd.Series, se: pd.Series) -> pd.Series:
-    z = _convert_betase_to_z(beta, se)
-    p = _convert_z_to_p(z)
-    return p
+    # Performance optimization: Convert to numpy arrays for faster computation
+    beta_arr = np.asarray(beta, dtype=np.float64)
+    se_arr = np.asarray(se, dtype=np.float64)
+    
+    # Handle division by zero and NaN cases
+    with np.errstate(divide='ignore', invalid='ignore'):
+        z_arr = beta_arr / se_arr
+    
+    # Convert z to p using vectorized norm.sf (faster than chi2.sf)
+    # For two-sided test: chi2.sf(z^2, 1) = 2 * norm.sf(abs(z))
+    p_arr = 2 * norm.sf(np.abs(z_arr))
+    
+    # Convert back to pandas Series with original index
+    return pd.Series(p_arr, index=beta.index, dtype=np.float64)
 
 def _convert_betase_to_mlog10p(beta: pd.Series, se: pd.Series) -> pd.Series:
     z = _convert_betase_to_z(beta, se)
@@ -466,7 +477,15 @@ def _convert_z_to_chisq(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Seri
     return (z)**2
 
 def _convert_z_to_p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return ss.chi2.sf(z**2,1) 
+    # Performance optimization: Use norm.sf directly (faster than chi2.sf)
+    # For two-sided test: chi2.sf(z^2, 1) = 2 * norm.sf(abs(z))
+    if isinstance(z, pd.Series):
+        z_arr = np.asarray(z, dtype=np.float64)
+        p_arr = 2 * norm.sf(np.abs(z_arr))
+        return pd.Series(p_arr, index=z.index, dtype=np.float64)
+    else:
+        z_arr = np.asarray(z, dtype=np.float64)
+        return 2 * norm.sf(np.abs(z_arr)) 
 
 def _convert_z_to_mlog10p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
     log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z)) #two-sided

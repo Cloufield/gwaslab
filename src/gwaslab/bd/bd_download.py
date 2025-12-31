@@ -616,8 +616,6 @@ def scan_downloaded_files(log=Log(), verbose=True):
         if filename in downloaded:
             continue
             
-        log.write(f" -Found unregistered file: {filename}", verbose=verbose)
-        
         # Try to match with available references
         matched_ref = None
         for ref_name, ref_info in available.items():
@@ -629,7 +627,6 @@ def scan_downloaded_files(log=Log(), verbose=True):
                 break
         
         if not matched_ref:
-            log.write(f"  -No matching reference found for {filename}", verbose=verbose)
             continue
         
         # Update config with matched reference

@@ -96,15 +96,20 @@ def check_range(sumstats: pd.DataFrame, var_range: Optional[Tuple[Optional[float
             return sumstats
         
         if dtype in ["Int64","Int32","int","int32","in64"]:
-            log.write(" -Checking if {} <= {} <= {} ...".format( var_range[0] ,header, var_range[1]), verbose=verbose) 
             # Remove commas for string representations of numbers before conversion
             if sumstats[header].dtype == 'object':
                 sumstats[header] = sumstats[header].astype(str).str.replace(',', '')
             sumstats[header] = np.floor(pd.to_numeric(sumstats[header], errors='coerce')).astype(dtype)
             is_valid = (sumstats[header]>=var_range[0]) & (sumstats[header]<=var_range[1])
+            range_str = "{} <= {} <= {}".format(var_range[0], header, var_range[1])
         elif dtype in ["Float64","Float32","float","float64","float32"]:
-            log.write(" -Checking if {} < {} < {} ...".format( var_range[0] ,header, var_range[1]),verbose=verbose) 
             sumstats[header] = pd.to_numeric(sumstats[header], errors='coerce').astype(dtype)
+            is_valid = (sumstats[header]>var_range[0]) & (sumstats[header]<var_range[1])
+            range_str = "{} < {} < {}".format(var_range[0], header, var_range[1])
+        else:
+            # Fallback for unexpected dtype
+            range_str = "{} < {} < {}".format(var_range[0], header, var_range[1])
+            sumstats[header] = pd.to_numeric(sumstats[header], errors='coerce')
             is_valid = (sumstats[header]>var_range[0]) & (sumstats[header]<var_range[1])
         is_valid = is_valid.fillna(False)
 
@@ -174,7 +179,8 @@ def check_range(sumstats: pd.DataFrame, var_range: Optional[Tuple[Optional[float
         else:
             sumstats = sumstats.loc[is_valid,:]
             after_number=len(sumstats)
-            log.write(" -Removed {} variants with bad/na {}.".format(pre_number - after_number, header), verbose=verbose) 
+            removed_count = pre_number - after_number
+            log.write(" -Checking if {} : removed {} variants.".format(range_str, removed_count), verbose=verbose) 
     return sumstats
 
 @with_logging(
@@ -365,8 +371,11 @@ def _sanity_check_stats(sumstats_obj: Union['Sumstats', pd.DataFrame],
     sumstats = check_range(sumstats, var_range=None, header="STATUS", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="Int64")
 
     after_number=len(sumstats)
-    log.write(" -Removed "+str(original_number - after_number)+" variants with bad statistics in total.",verbose=verbose) 
-    log.write(" -Data types for each column:",verbose=verbose)
+    removed_count = original_number - after_number
+    if removed_count == 0:
+        log.write(" -No variants were removed with bad statistics in total.",verbose=verbose)
+    else:
+        log.write(" -Removed "+str(removed_count)+" variants with bad statistics in total.",verbose=verbose) 
     
     # Performance optimization: is_dataframe already determined above, no need to recompute
     
@@ -461,7 +470,7 @@ def _check_data_consistency(sumstats_obj: Union['Sumstats', pd.DataFrame], beta:
         if has_p:
             log.write(" -Checking if BETA/SE-derived-P is consistent with P...",verbose=verbose)
             betase_derived_p =  _convert_betase_to_p(sumstats["BETA"], sumstats["SE"])
-            
+
             # For P-values, use fold change as the primary consistency metric
             # since P-values span many orders of magnitude (e.g., 1e-300 to 1)
             p_values = sumstats["P"].copy()
@@ -619,7 +628,7 @@ def _check_data_consistency(sumstats_obj: Union['Sumstats', pd.DataFrame], beta:
         check_status=1
         
     if check_status==1:
-        log.write(" -Note: Minor differences are typically due to rounding.",verbose=verbose)
-        log.write("  -If the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
+        log.write("  -Note: Minor differences are typically due to rounding.",verbose=verbose)
+        log.write("   -If the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
     else:
         log.write(" -No availalbe columns for data consistency checking...Skipping...",verbose=verbose)

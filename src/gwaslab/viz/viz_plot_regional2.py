@@ -943,7 +943,9 @@ def _plot_gene_track(
                                             build=build,
                                             region_protein_coding=region_protein_coding,
                                             gtf_chr_dict=gtf_chr_dict,
-                                            gtf_gene_name=gtf_gene_name)
+                                            gtf_gene_name=gtf_gene_name,
+                                            verbose=verbose,
+                                            log=log)
 
     n_uniq_stack = uniq_gene_region["stack"].nunique()
     stack_num_to_plot = max(taf[0],n_uniq_stack)
@@ -1270,23 +1272,31 @@ def process_gtf(gtf_path,
                 build,
                 region_protein_coding,
                 gtf_chr_dict,
-                gtf_gene_name):
+                gtf_gene_name,
+                verbose=True,
+                log=Log()):
     #loading
+    log.write(f" -Processing GTF from: {gtf_path}", verbose=verbose)
     
     # chr to string datatype using gtf_chr_dict
     to_query_chrom = gtf_chr_dict[region[0]]
 
     # loading gtf data
     if gtf_path =="default" or gtf_path =="ensembl":
-        
-        gtf = get_gtf(chrom=to_query_chrom, build=build, source="ensembl")
+        log.write(f"  -Loading Ensembl GTF for chromosome {to_query_chrom}, build {build}", verbose=verbose)
+        gtf, actual_gtf_path = get_gtf(chrom=to_query_chrom, build=build, source="ensembl", if_return_path=True)
+        if actual_gtf_path:
+            log.write(f"  -Resolved GTF file path: {actual_gtf_path}", verbose=verbose)
     
     elif gtf_path =="refseq":
-
-        gtf = get_gtf(chrom=to_query_chrom, build=build, source="refseq")
+        log.write(f"  -Loading RefSeq GTF for chromosome {to_query_chrom}, build {build}", verbose=verbose)
+        gtf, actual_gtf_path = get_gtf(chrom=to_query_chrom, build=build, source="refseq", if_return_path=True)
+        if actual_gtf_path:
+            log.write(f"  -Resolved GTF file path: {actual_gtf_path}", verbose=verbose)
     
     else:
         # if user-provided gtf
+        log.write(f"  -Loading user-provided GTF file: {gtf_path}", verbose=verbose)
         #gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#", low_memory=False,dtype={0:"string"})
         # Filter by chromosome early for speed
         gtf = read_gtf(gtf_path, chrom=gtf_chr_dict[region[0]])
@@ -1324,8 +1334,11 @@ def process_gtf(gtf_path,
     # extract protein coding gene
     if region_protein_coding is True:
         #genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:]
-        pc_genes_1mb_list = genes_1mb.loc[(genes_1mb["feature"]=="gene")& (genes_1mb["gene_biotype"]=="protein_coding") & (genes_1mb["name"]!=""),"name"].values
-        genes_1mb = genes_1mb.loc[(genes_1mb["feature"].isin(["exon","gene"])) & (genes_1mb["name"].isin(pc_genes_1mb_list)),:]
+        if "gene_biotype" in genes_1mb.columns:
+            pc_genes_1mb_list = genes_1mb.loc[(genes_1mb["feature"]=="gene")& (genes_1mb["gene_biotype"]=="protein_coding") & (genes_1mb["name"]!=""),"name"].values
+            genes_1mb = genes_1mb.loc[(genes_1mb["feature"].isin(["exon","gene"])) & (genes_1mb["name"].isin(pc_genes_1mb_list)),:]
+        else:
+            log.write("  -Warning: 'gene_biotype' column not found in GTF file. Cannot filter for protein coding genes. Showing all genes.", verbose=verbose)
     # extract exon
     exons = genes_1mb.loc[genes_1mb["feature"]=="exon",:].copy()
     

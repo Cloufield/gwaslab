@@ -1081,7 +1081,10 @@ def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", st
     # Performance optimization: Reuse is_pos_na_after instead of recomputing, and compute outlier count once
     is_outlier = ((sumstats[pos] <= lower_limit) | (sumstats[pos] >= upper_limit)) & (~is_pos_na_after)
     outlier_num = is_outlier.sum()
-    log.log_variants_removed(outlier_num, reason="outliers", verbose=verbose)
+    if outlier_num == 0:
+        log.write(" -No outlier variants were removed.", verbose=verbose)
+    else:
+        log.log_variants_removed(outlier_num, reason="outliers", verbose=verbose)
     sumstats = sumstats.loc[~is_outlier, :]
     
     # Optionally remove remaining NA positions
@@ -1185,16 +1188,14 @@ def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", n
     # Performance optimization: Compute sums once and reuse
     bad_ea_num = bad_ea.sum()
     bad_nea_num = bad_nea.sum()
-    log.log_variants_with_condition("bad EA", bad_ea_num, verbose=verbose)
-    log.log_variants_with_condition("bad NEA", bad_nea_num, verbose=verbose)
     
     ## check NA
     is_eanea_na = sumstats[ea].isna() |  sumstats[nea].isna()
-    log.log_variants_with_condition("NA for EA or NEA", is_eanea_na.sum(), verbose=verbose)
+    eanea_na_num = is_eanea_na.sum()
     
     ## check same alleles
     not_variant = sumstats[nea] == sumstats[ea]
-    log.log_variants_with_condition("same EA and NEA", not_variant.sum(), verbose=verbose)
+    not_variant_num = not_variant.sum()
 
     ## sum up invalid variants
     is_invalid = bad_ea | bad_nea | not_variant
@@ -1202,6 +1203,15 @@ def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", n
     exclude = bad_nea | bad_ea
     # Performance optimization: Compute exclude sum once
     exclude_num = exclude.sum()
+    
+    # Check if all counts are 0 - if so, skip individual logs and add summary message
+    if bad_ea_num == 0 and bad_nea_num == 0 and eanea_na_num == 0 and not_variant_num == 0:
+        log.write(" -All variants have valid alleles (EA and NEA are A/C/T/G, not NA, and different).", verbose=verbose)
+    else:
+        log.log_variants_with_condition("bad EA", bad_ea_num, verbose=verbose)
+        log.log_variants_with_condition("bad NEA", bad_nea_num, verbose=verbose)
+        log.log_variants_with_condition("NA for EA or NEA", eanea_na_num, verbose=verbose)
+        log.log_variants_with_condition("same EA and NEA", not_variant_num, verbose=verbose)
     
     if len(set(sumstats.loc[bad_ea,ea].head())) >0:
         log.write(" -A look at the non-ATCG EA:",set(sumstats.loc[bad_ea,ea].head()),"...", verbose=verbose) 
@@ -1230,7 +1240,8 @@ def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", n
         is_eanea_na = is_eanea_na.loc[sumstats.index]
     else:
         sumstats[[ea,nea]] = sumstats[[ea,nea]].fillna("N")
-        log.write(" -Detected "+str(exclude_num)+" variants with alleles that contain bases other than A/C/T/G .", verbose=verbose) 
+        if exclude_num > 0:
+            log.write(" -Detected "+str(exclude_num)+" variants with alleles that contain bases other than A/C/T/G .", verbose=verbose) 
     # Performance optimization: Compute uppercase once and reuse for categories
     ea_upper_after = sumstats[ea].str.upper()
     nea_upper_after = sumstats[nea].str.upper()

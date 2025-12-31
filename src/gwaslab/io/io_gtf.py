@@ -300,8 +300,9 @@ def read_gtf_file(gtf_path):
 
 # Module-level cache for GTF data
 _GTF_CACHE = {}
+_GTF_PATH_CACHE = {}
 
-def get_gtf(chrom, build="19", source="ensembl"):
+def get_gtf(chrom, build="19", source="ensembl", if_return_path=False):
     """
     Get GTF data for a specific chromosome.
     
@@ -316,20 +317,31 @@ def get_gtf(chrom, build="19", source="ensembl"):
         Genome build ("19" or "38")
     source : str
         Data source ("ensembl" or "refseq")
+    if_return_path : bool, optional
+        If True, return both the GTF data and the actual file path as a tuple.
+        Default is False.
     
     Returns
     -------
-    pandas.DataFrame
-        GTF data for the specified chromosome
+    pandas.DataFrame or tuple
+        If if_return_path is False: GTF data for the specified chromosome
+        If if_return_path is True: tuple of (GTF data, file path)
     """
     # Create cache key
     cache_key = f"{build}_{source}_{chrom}"
     
     # Check cache first
     if cache_key in _GTF_CACHE:
-        return _GTF_CACHE[cache_key].copy()
+        gtf = _GTF_CACHE[cache_key].copy()
+        if if_return_path:
+            # Return cached path if available, otherwise None
+            data_path = _GTF_PATH_CACHE.get(cache_key, None)
+            return gtf, data_path
+        return gtf
     
     gtf = None
+    data_path = None
+    
     if source == "ensembl":
         if build == "19":
             data_path = check_and_download("ensembl_hg19_gtf")
@@ -429,7 +441,12 @@ def get_gtf(chrom, build="19", source="ensembl"):
     
     # Cache the result for future use
     _GTF_CACHE[cache_key] = gtf.copy()
+    if data_path is not None:
+        _GTF_PATH_CACHE[cache_key] = data_path
     
+    # Return based on if_return_path flag
+    if if_return_path:
+        return gtf, data_path
     return gtf
 
 def gtf_to_protein_coding(gtfpath, log=Log(), verbose=True):

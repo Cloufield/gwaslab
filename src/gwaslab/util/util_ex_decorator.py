@@ -151,7 +151,11 @@ def _extract_sumstats(bound_kwargs: inspect.BoundArguments) -> Optional[pd.DataF
 
 
 def _log_references(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> None:
-    """Log thread and reference file information."""
+    """Log thread and reference file information.
+    
+    Note: Thread information is logged first to ensure it appears before operation start messages.
+    """
+    # Log thread information first, before reference paths
     threads = bound_kwargs.arguments.get('threads', None)
     if threads is not None:
         log.log_threads(threads, verbose=verbose)
