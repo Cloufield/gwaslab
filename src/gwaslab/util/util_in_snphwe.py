@@ -35,11 +35,18 @@ def snphwe(obs_hets: int, obs_hom1: int, obs_hom2: int) -> float:
     #// Written by Jan Wigginton
     #*/
     
+    # Input validation (matching C++ implementation)
+    if obs_hom1 < 0 or obs_hom2 < 0 or obs_hets < 0:
+        raise ValueError("snphwe: negative allele count")
+    
     obs_homr = min(obs_hom1, obs_hom2)
     obs_homc = max(obs_hom1, obs_hom2)
     
     rare = 2 * obs_homr + obs_hets
     genotypes = obs_hets + obs_homc + obs_homr
+    
+    if genotypes == 0:
+        raise ValueError("snphwe: zero genotypes")
     
     probs = np.array([0.0 for i in range(rare +1)])
     

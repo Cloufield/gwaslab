@@ -81,11 +81,6 @@ def with_logging(start_to_msg: str,
             log = bound_kwargs.arguments.get('log', Log())
             verbose = bound_kwargs.arguments.get('verbose', True)
             
-            # Log thread information first, before any other operations
-            threads = bound_kwargs.arguments.get('threads', None)
-            if threads is not None:
-                log.log_threads(threads, verbose=verbose)
-            
             #############################################################################################
 
             insumstats = bound_kwargs.arguments.get('insumstats', None)
@@ -94,6 +89,21 @@ def with_logging(start_to_msg: str,
             else:
                 sumstats = insumstats
             #############################################################################################
+
+            if "build" in bound_kwargs.arguments:
+                bound_kwargs.arguments["build"] = _process_build(bound_kwargs.arguments["build"], log=log, verbose=verbose)
+                args = bound_kwargs.args
+                kwargs = bound_kwargs.kwargs
+
+            # Log start message
+            log.log_operation_start(start_to_msg, version=_get_version(), verbose=verbose)
+            
+            # Log thread information after start message
+            threads = bound_kwargs.arguments.get('threads', None)
+            if threads is not None:
+                log.log_threads(threads, verbose=verbose)
+            
+            # Log reference paths after start message
             ref_vcf = bound_kwargs.arguments.get('ref_vcf', None)
             ref_fasta = bound_kwargs.arguments.get('ref_fasta', None)
             ref_tsv = bound_kwargs.arguments.get('ref_tsv',None)
@@ -103,14 +113,6 @@ def with_logging(start_to_msg: str,
                 log.log_reference_path("FASTA", ref_fasta, verbose=verbose)
             if ref_tsv is not None:
                 log.log_reference_path("TSV", ref_tsv, verbose=verbose)
-
-            if "build" in bound_kwargs.arguments:
-                bound_kwargs.arguments["build"] = _process_build(bound_kwargs.arguments["build"], log=log, verbose=verbose)
-                args = bound_kwargs.args
-                kwargs = bound_kwargs.kwargs
-
-            # Log start message
-            log.log_operation_start(start_to_msg, version=_get_version(), verbose=verbose)
             
             # must_arg can not be None
             #############################################################################################

@@ -119,16 +119,15 @@ def _fix_ID(sumstats_obj: Union['Sumstats', pd.DataFrame],
             sumstats[snpid] = sumstats[snpid].astype("string")
             
     ############################  checking string NA ###################################################
-    log.write(" -Checking NA strings :{}".format(",".join(NA_STRINGS)),verbose=verbose)  
     if snpid in sumstats.columns:  
-        log.write(" -Checking if SNPID contains NA strings...",verbose=verbose)
+        log.write(" -Checking if SNPID contains NA strings :{}...".format(",".join(NA_STRINGS)),verbose=verbose)
         is_snpid_string_na = sumstats[snpid].isin(NA_STRINGS)
         if is_snpid_string_na.sum() > 0:
             log.log_operation("Converting {} NA strings in SNPID to pd.NA".format(is_snpid_string_na.sum()), indent=1, verbose=verbose)
             sumstats.loc[is_snpid_string_na ,snpid] = pd.NA
 
     if rsid in sumstats.columns: 
-        log.write(" -Checking if rsID contains NA strings...",verbose=verbose)
+        log.write(" -Checking if rsID contains NA strings :{}...".format(",".join(NA_STRINGS)),verbose=verbose)
         is_rsid_string_na = sumstats[rsid].isin(NA_STRINGS)
         if is_rsid_string_na.sum() > 0:
             log.log_operation("Converting {} NA strings in rsID to pd.NA".format(is_rsid_string_na.sum()), indent=1, verbose=verbose)

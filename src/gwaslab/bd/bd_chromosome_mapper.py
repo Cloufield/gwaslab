@@ -109,6 +109,8 @@ class ChromosomeMapper:
     - FASTA files (`.fa`, `.fasta`, `.fa.gz`, `.fasta.gz`, `.fa.bgz`, `.fasta.bgz`)
     - GTF/GFF files (`.gtf`, `.gff`, `.gtf.gz`, `.gff.gz`)
     - Chain files (`.chain`, `.chain.gz`)
+    - PLINK files (`.bim`, `.map`, `.pvar`, `.pvar.zst`)
+    - UCSC BED files (`.bed`, `.bed.gz`)
     
     Format detection is case-insensitive and handles various chromosome notations:
     - Numeric: "1", "2", "22", "23", "24", "25"
@@ -662,6 +664,8 @@ class ChromosomeMapper:
         from gwaslab.io.io_gtf import GTF_GFF_SUFFIXES
         from gwaslab.io.io_fasta import FASTA_SUFFIXES
         from gwaslab.io.io_chain import CHAIN_SUFFIXES
+        from gwaslab.io.io_plink import PLINK_SUFFIXES
+        from gwaslab.io.io_ucsc_bed import BED_SUFFIXES
         
         # Sample chromosomes from file based on file type
         # Handle double extensions like .vcf.gz, .gtf.gz, etc.
@@ -676,6 +680,10 @@ class ChromosomeMapper:
             return self._detect_fasta_format(reference_file)
         elif file_ext_lower.endswith(CHAIN_SUFFIXES):
             return self._detect_chain_format(reference_file)
+        elif file_ext_lower.endswith(PLINK_SUFFIXES):
+            return self._detect_plink_format(reference_file)
+        elif file_ext_lower.endswith(BED_SUFFIXES):
+            return self._detect_bed_format(reference_file)
         else:
             # Default: try to detect from first few lines
             return self._detect_generic_format(reference_file)
@@ -686,6 +694,8 @@ class ChromosomeMapper:
         from gwaslab.io.io_vcf import VCF_BCF_SUFFIXES
         from gwaslab.io.io_gtf import GTF_GFF_SUFFIXES
         from gwaslab.io.io_fasta import FASTA_SUFFIXES
+        from gwaslab.io.io_plink import PLINK_SUFFIXES
+        from gwaslab.io.io_ucsc_bed import BED_SUFFIXES
         
         contigs = []
         file_ext_lower = reference_file.lower()
@@ -713,6 +723,53 @@ class ChromosomeMapper:
                 with pysam.FastaFile(reference_file) as fasta:
                     contigs = list(fasta.references)
             except (ImportError, Exception):
+                pass
+        elif file_ext_lower.endswith(BED_SUFFIXES):
+            # Extract chromosomes from BED files
+            try:
+                from gwaslab.io.io_ucsc_bed import read_bed
+                bed_df = read_bed(reference_file, verbose=False)
+                if len(bed_df) > 0 and 'chrom' in bed_df.columns:
+                    contigs = bed_df['chrom'].unique().tolist()
+            except Exception:
+                pass
+        elif file_ext_lower.endswith(PLINK_SUFFIXES):
+            # Extract chromosomes from PLINK files
+            try:
+                import gzip
+                import zstandard as zstd
+                
+                if file_ext_lower.endswith('.zst'):
+                    try:
+                        with zstd.open(reference_file, 'rt') as f:
+                            for line in f:
+                                if line.startswith('#'):
+                                    continue
+                                parts = line.strip().split()
+                                if parts:
+                                    chrom = parts[0]
+                                    if chrom not in contigs:
+                                        contigs.append(chrom)
+                    except ImportError:
+                        pass
+                elif file_ext_lower.endswith('.gz'):
+                    open_func = gzip.open
+                    mode = 'rt'
+                else:
+                    open_func = open
+                    mode = 'r'
+                
+                if not file_ext_lower.endswith('.zst'):
+                    with open_func(reference_file, mode) as f:
+                        for line in f:
+                            if line.startswith('#'):
+                                continue
+                            parts = line.strip().split()
+                            if parts:
+                                chrom = parts[0]
+                                if chrom not in contigs:
+                                    contigs.append(chrom)
+            except Exception:
                 pass
         
         return contigs
@@ -856,6 +913,166 @@ class ChromosomeMapper:
                 self.log.warning(f"Could not read chain file: {e}.")
         
         return "string", ""
+    
+    def _detect_plink_format(self, plink_path: str) -> Tuple[str, str]:
+        """
+        Detect chromosome format from PLINK files (BIM, MAP, PVAR, PVAR.ZST).
+        
+        PLINK files use numeric chromosome codes stored as strings:
+        - 1-22: Autosomes
+        - 23: X chromosome
+        - 24: Y chromosome
+        - 25: XY (pseudo-autosomal region)
+        - 26: MT (mitochondrial)
+        
+        Format:
+        - BIM files: space/tab-delimited, column 0 is chromosome
+        - MAP files: space/tab-delimited, column 0 is chromosome
+        - PVAR files: space/tab-delimited, column 0 is chromosome, may have comment lines starting with #
+        - PVAR.ZST files: compressed with zstd
+        
+        Parameters
+        ----------
+        plink_path : str
+            Path to PLINK file (.bim, .map, .pvar, or .pvar.zst)
+        
+        Returns
+        -------
+        tuple[str, str]
+            Tuple of (format_type, prefix) where format_type is "numeric" for PLINK files
+            and prefix is empty string.
+        
+        References
+        ----------
+        PLINK 2.0 file formats: https://www.cog-genomics.org/plink/2.0/formats
+        """
+        try:
+            import gzip
+            import zstandard as zstd
+            
+            # Determine file type and open function
+            file_ext_lower = plink_path.lower()
+            
+            # Handle compressed files
+            if file_ext_lower.endswith('.zst'):
+                # PVAR.ZST file - use zstandard
+                try:
+                    with zstd.open(plink_path, 'rt') as f:
+                        chromosomes = []
+                        for i, line in enumerate(f):
+                            if i >= 100:
+                                break
+                            # Skip comment lines in PVAR files
+                            if line.startswith('#'):
+                                continue
+                            parts = line.strip().split()
+                            if parts:
+                                chromosomes.append(parts[0])
+                except ImportError:
+                    if self.verbose:
+                        self.log.warning("zstandard library not available. Cannot read .pvar.zst files.")
+                    return "numeric", ""
+            elif file_ext_lower.endswith('.gz'):
+                # Gzipped file
+                open_func = gzip.open
+                mode = 'rt'
+            else:
+                # Uncompressed file
+                open_func = open
+                mode = 'r'
+            
+            # Read chromosomes from file
+            chromosomes = []
+            with open_func(plink_path, mode) as f:
+                for i, line in enumerate(f):
+                    if i >= 100:
+                        break
+                    # Skip comment lines in PVAR files
+                    if line.startswith('#'):
+                        continue
+                    # Split by whitespace (handles both space and tab)
+                    parts = line.strip().split()
+                    if parts:
+                        # Column 0 is chromosome in all PLINK formats
+                        chromosomes.append(parts[0])
+            
+            if chromosomes:
+                # PLINK uses numeric codes as strings (e.g., "1", "23", "24", "25", "26")
+                # Check if they're all numeric strings
+                format_type = self.detect_format(chromosomes)
+                # PLINK always uses numeric format, so return "numeric"
+                return "numeric", ""
+            else:
+                if self.verbose:
+                    self.log.warning(f"No chromosomes found in PLINK file: {plink_path}")
+                return "numeric", ""
+                
+        except Exception as e:
+            if self.verbose:
+                self.log.warning(f"Could not read PLINK file: {e}. Defaulting to numeric format.")
+            # PLINK files always use numeric format, so default to numeric
+            return "numeric", ""
+    
+    def _detect_bed_format(self, bed_path: str) -> Tuple[str, str]:
+        """
+        Detect chromosome format from UCSC BED files.
+        
+        BED files use 0-based, half-open intervals [chromStart, chromEnd).
+        The chrom field (column 0) can use various chromosome notations:
+        - Numeric: "1", "2", "23", "24", "25"
+        - String: "1", "2", "X", "Y", "MT"
+        - Chr-prefixed: "chr1", "chr2", "chrX", "chrY", "chrMT"
+        - NCBI RefSeq: "NC_000001.11", "NC_000023.11"
+        
+        Format:
+        - BED files: tab/space-delimited, column 0 is chromosome
+        - Required fields: chrom, chromStart, chromEnd
+        - May have header lines starting with "browser" or "track"
+        - Supports uncompressed (.bed) and gzipped (.bed.gz) files
+        
+        Parameters
+        ----------
+        bed_path : str
+            Path to BED file (.bed or .bed.gz)
+        
+        Returns
+        -------
+        tuple[str, str]
+            Tuple of (format_type, prefix) where format_type is detected format
+            ("numeric", "string", "chr", or "nc") and prefix is "chr" if chr-prefixed.
+        
+        References
+        ----------
+        UCSC BED format: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
+        """
+        try:
+            from gwaslab.io.io_ucsc_bed import read_bed
+            
+            # Read BED file (sample first 100 lines for format detection)
+            bed_df = read_bed(bed_path, verbose=False)
+            
+            if len(bed_df) == 0:
+                if self.verbose:
+                    self.log.warning(f"BED file is empty: {bed_path}")
+                return "string", ""
+            
+            # Extract chromosomes from chrom column
+            chromosomes = bed_df['chrom'].dropna().head(100).tolist()
+            
+            if chromosomes:
+                # Detect format from chromosome names
+                format_type = self.detect_format(pd.Series(chromosomes))
+                prefix = self._extract_prefix(chromosomes[0]) if format_type == "chr" else ""
+                return format_type, prefix
+            else:
+                if self.verbose:
+                    self.log.warning(f"No valid chromosomes found in BED file: {bed_path}")
+                return "string", ""
+                
+        except Exception as e:
+            if self.verbose:
+                self.log.warning(f"Could not read BED file: {e}. Defaulting to string format.")
+            return "string", ""
     
     def _detect_generic_format(self, file_path: str) -> Tuple[str, str]:
         """Generic format detection from file."""

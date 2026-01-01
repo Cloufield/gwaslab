@@ -5,9 +5,13 @@ import subprocess
 from gwaslab.info.g_Log import Log
 import os
 from gwaslab.extension import _checking_plink_version
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
 if TYPE_CHECKING:
     pass
+
+# PLINK file suffix definitions
+PLINK_SUFFIXES = ('.bim', '.map', '.pvar', '.pvar.zst')
 
 def _process_plink_input_files(chrlist: List[int], 
                                bfile: Optional[str] = None, 
@@ -496,4 +500,259 @@ def _load_pvar_single(chrom: int, bpfile_prefix: str, log: Log) -> pd.DataFrame:
     single_bim = single_bim.loc[single_bim["CHR_bim"]==str(chrom),:]
     log.write("   -#variants in ref file: {}".format(len(single_bim))) 
     return single_bim
+
+def _plink_chr_to_sumstats_chr(plink_chr: Union[str, int, float], 
+                                mapper: ChromosomeMapper) -> Union[str, int, None]:
+    """
+    Convert PLINK chromosome (from BIM/PVAR file) to sumstats chromosome format using ChromosomeMapper.
+    
+    PLINK uses numeric codes for chromosomes:
+    - 1-22: Autosomes
+    - 23: X chromosome
+    - 24: Y chromosome
+    - 25: XY (pseudo-autosomal region)
+    - 26: MT (mitochondrial)
+    
+    This notation is consistent across both PLINK 1.9 and PLINK 2.0. BIM files (PLINK 1.9)
+    and PVAR files (PLINK 2.0) typically store chromosomes as strings like "1", "23", "24", "25", "26".
+    
+    By default, sumstats only have 1-25, and XY (PLINK 25) is treated as X (23).
+    MT (PLINK 26) maps to 25 in sumstats.
+    
+    Note: The pseudo-autosomal region (PAR, PLINK 25) is mapped to chrX/chr23 in sumstats.
+    
+    Parameters
+    ----------
+    plink_chr : str, int, or float
+        PLINK chromosome from BIM/PVAR file (typically string like "1", "23", "24", "25", "26")
+    mapper : ChromosomeMapper
+        ChromosomeMapper instance with detected sumstats format
+    
+    Returns
+    -------
+    str, int, or None
+        Chromosome in sumstats format, or None if unconvertible
+    
+    References
+    ----------
+    PLINK 1.9 chromosome notation: https://www.cog-genomics.org/plink/1.9/filter#chr
+    PLINK 2.0 chromosome notation: https://www.cog-genomics.org/plink/2.0/filter#chr
+    """
+    # Handle None, NaN, or empty values
+    if pd.isna(plink_chr) or plink_chr == "":
+        return None
+    
+    # Convert PLINK chromosome to numeric (PLINK notation)
+    # PLINK files store chromosomes as numeric strings, so parse directly
+    try:
+        plink_chr_num = int(str(plink_chr).strip())
+    except (ValueError, TypeError):
+        return None
+    
+    # Map PLINK numeric codes to sumstats numeric codes
+    # PLINK 25 (XY) -> 23 (X), PLINK 26 (MT) -> 25 (MT)
+    if plink_chr_num == 25:
+        # PAR (XY) maps to X (23) in sumstats
+        sumstats_chr_num = 23
+    elif plink_chr_num == 26:
+        # MT (26) maps to 25 in sumstats
+        sumstats_chr_num = 25
+    elif 1 <= plink_chr_num <= 24:
+        # Autosomes (1-22), X (23), Y (24) map directly
+        sumstats_chr_num = plink_chr_num
+    else:
+        # Out of range
+        return None
+    
+    # Use mapper to convert numeric code to sumstats format
+    return mapper.number_to_sumstats(sumstats_chr_num)
+
+
+def _match_sumstats_with_ref_bim(sumstats: pd.DataFrame, 
+                                 ref_bim_all: pd.DataFrame, 
+                                 has_allele_info: bool, 
+                                 log: Log, 
+                                 verbose: bool = True) -> int:
+    """
+    Match sumstats variants with reference BIM using CHR, POS, and optionally EA, NEA.
+    
+    Handles PLINK chromosome notation by converting PLINK chromosomes (from BIM files) 
+    to match sumstats chromosome notation using ChromosomeMapper. PLINK uses numeric codes:
+    - 1-22: Autosomes
+    - 23: X chromosome
+    - 24: Y chromosome
+    - 25: XY (pseudo-autosomal region)
+    - 26: MT (mitochondrial)
+    
+    By default, sumstats only have 1-25, and XY (PLINK 25) is treated as X (23).
+    MT (PLINK 26) maps to 25 in sumstats.
+    
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics dataframe with CHR, POS, and optionally EA, NEA columns
+    ref_bim_all : pd.DataFrame
+        Reference BIM dataframe with CHR_bim, POS_bim, SNPID, EA_bim, NEA_bim columns.
+        CHR_bim is typically stored as string/category in BIM files (e.g., "1", "23", "24", "25").
+    has_allele_info : bool
+        Whether to use EA/NEA for matching (True) or just CHR/POS (False)
+    log : Log
+        Logger instance
+    verbose : bool
+        Whether to log messages
+        
+    Returns
+    -------
+    int
+        Number of matched variants
+    """
+    # Initialize SNPID_bim column to store the matched BIM ID (default to original SNPID)
+    sumstats["SNPID_bim"] = sumstats["SNPID"].copy()
+    
+    if len(ref_bim_all) == 0:
+        log.write(" -Warning: ref_bim is empty. Using original SNPIDs.",verbose=verbose)
+        return 0
+    
+    # Initialize ChromosomeMapper and detect sumstats format
+    mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
+    sumstats_format = mapper.detect_sumstats_format(sumstats["CHR"])
+    log.write(" -Detected sumstats chromosome format: {}".format(sumstats_format),verbose=verbose)
+    
+    # Convert PLINK chromosomes (from BIM/PVAR) to sumstats format using mapper
+    # PLINK 25 (XY) is treated as X (23) by default, PLINK 26 (MT) maps to 25
+    ref_bim_all["_CHR_bim_sumstats"] = ref_bim_all["CHR_bim"].apply(
+        lambda x: _plink_chr_to_sumstats_chr(x, mapper)
+    )
+    
+    # Filter out unconvertible chromosomes
+    ref_bim_valid = ref_bim_all["_CHR_bim_sumstats"].notna()
+    n_invalid_bim = (~ref_bim_valid).sum()
+    
+    if n_invalid_bim > 0:
+        log.write(" -Warning: {} BIM variants have unconvertible chromosome notation.".format(n_invalid_bim),verbose=verbose)
+    
+    # Filter to only valid chromosomes
+    ref_bim_filtered = ref_bim_all[ref_bim_valid].copy()
+    
+    if len(ref_bim_filtered) == 0:
+        log.write(" -Error: No valid chromosomes found in BIM after conversion.",verbose=verbose)
+        return 0
+    
+    # Convert POS to int for consistent comparison (only if not already int)
+    if not pd.api.types.is_integer_dtype(ref_bim_filtered["POS_bim"]):
+        ref_bim_filtered["POS_bim"] = ref_bim_filtered["POS_bim"].astype(int)
+    if not pd.api.types.is_integer_dtype(sumstats["POS"]):
+        sumstats["POS"] = sumstats["POS"].astype(int)
+    
+    # Detect if type conversion is needed for CHR matching
+    # Check if sumstats CHR and converted BIM CHR have compatible types
+    sumstats_chr_sample = sumstats["CHR"].dropna().head(10)
+    bim_chr_sample = ref_bim_filtered["_CHR_bim_sumstats"].dropna().head(10)
+    
+    if len(sumstats_chr_sample) > 0 and len(bim_chr_sample) > 0:
+        sumstats_chr_type = type(sumstats_chr_sample.iloc[0])
+        bim_chr_type = type(bim_chr_sample.iloc[0])
+        needs_conversion = sumstats_chr_type != bim_chr_type
+    else:
+        needs_conversion = False
+    
+    # Convert BIM CHR to match sumstats CHR type if needed
+    if needs_conversion:
+        if pd.api.types.is_integer_dtype(sumstats["CHR"]):
+            # Sumstats uses int, convert BIM CHR to int
+            ref_bim_filtered["_CHR_bim_sumstats"] = pd.to_numeric(
+                ref_bim_filtered["_CHR_bim_sumstats"], errors='coerce'
+            )
+        else:
+            # Sumstats uses string, convert BIM CHR to string
+            ref_bim_filtered["_CHR_bim_sumstats"] = ref_bim_filtered["_CHR_bim_sumstats"].astype(str)
+    
+    # Create set of (CHR, POS) tuples from sumstats for fast lookup
+    # Sumstats CHR is already standardized, so use it directly
+    sumstats_chr_pos = set(zip(sumstats["CHR"], sumstats["POS"]))
+    
+    # Create a boolean mask for filtering - more efficient than apply
+    ref_bim_filtered["_chr_pos_tuple"] = list(zip(ref_bim_filtered["_CHR_bim_sumstats"], ref_bim_filtered["POS_bim"]))
+    mask = ref_bim_filtered["_chr_pos_tuple"].isin(sumstats_chr_pos)
+    ref_bim_matched = ref_bim_filtered[mask].drop(columns=["_chr_pos_tuple"]).copy()
+    
+    log.write(" -Filtered reference BIM from {} to {} variants matching sumstats CHR/POS...".format(
+        len(ref_bim_all), len(ref_bim_matched)),verbose=verbose)
+    
+    if len(ref_bim_matched) == 0:
+        log.write(" -No matching CHR/POS found in reference BIM.",verbose=verbose)
+        return 0
+    
+    # Create mapping dictionary for efficient lookup
+    # Map (CHR, POS) -> list of variant dicts with SNPID, EA, NEA
+    pos_to_variants = {}
+    for _, row in ref_bim_matched.iterrows():
+        key = (row["_CHR_bim_sumstats"], int(row["POS_bim"]))
+        if key not in pos_to_variants:
+            pos_to_variants[key] = []
+        pos_to_variants[key].append({
+            "SNPID": row["SNPID"],
+            "EA": str(row["EA_bim"]).upper() if pd.notna(row["EA_bim"]) else None,
+            "NEA": str(row["NEA_bim"]).upper() if pd.notna(row["NEA_bim"]) else None
+        })
+    
+    # Match variants using dictionary lookup
+    n_matched = 0
+    
+    if has_allele_info:
+        log.write(" -Matching sumstats with reference BIM using CHR, POS, EA, NEA...",verbose=verbose)
+        
+        for idx in sumstats.index:
+            chr_val = sumstats.loc[idx, "CHR"]
+            if pd.isna(chr_val):
+                continue
+            chr_pos = (chr_val, int(sumstats.loc[idx, "POS"]))
+            
+            if chr_pos not in pos_to_variants:
+                continue
+            
+            # Get sumstats alleles
+            ea_sum = str(sumstats.loc[idx, "EA"]).upper() if pd.notna(sumstats.loc[idx, "EA"]) else None
+            nea_sum = str(sumstats.loc[idx, "NEA"]).upper() if pd.notna(sumstats.loc[idx, "NEA"]) else None
+            
+            if ea_sum == "nan" or nea_sum == "nan" or ea_sum is None or nea_sum is None:
+                continue
+            
+            # Try to find match with same or swapped alleles
+            for variant in pos_to_variants[chr_pos]:
+                ea_bim = variant["EA"]
+                nea_bim = variant["NEA"]
+                
+                if ea_bim is None or nea_bim is None:
+                    continue
+                
+                # Check same allele order
+                if ea_sum == ea_bim and nea_sum == nea_bim:
+                    sumstats.loc[idx, "SNPID_bim"] = variant["SNPID"]
+                    n_matched += 1
+                    break
+                # Check swapped allele order
+                elif ea_sum == nea_bim and nea_sum == ea_bim:
+                    sumstats.loc[idx, "SNPID_bim"] = variant["SNPID"]
+                    n_matched += 1
+                    break
+        
+        log.write(" -Matched {} variants using CHR, POS, EA, NEA...".format(n_matched),verbose=verbose)
+    else:
+        log.write(" -Warning: EA/NEA columns not found in sumstats. Using CHR, POS only for matching...",verbose=verbose)
+        # CHR, POS only matching - use first match if multiple variants at same position
+        for idx in sumstats.index:
+            chr_val = sumstats.loc[idx, "CHR"]
+            if pd.isna(chr_val):
+                continue
+            chr_pos = (chr_val, int(sumstats.loc[idx, "POS"]))
+            
+            if chr_pos in pos_to_variants:
+                # Use first variant at this position
+                sumstats.loc[idx, "SNPID_bim"] = pos_to_variants[chr_pos][0]["SNPID"]
+                n_matched += 1
+        
+        log.write(" -Matched {} variants using CHR, POS only...".format(n_matched),verbose=verbose)
+    
+    return n_matched
 

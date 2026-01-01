@@ -65,13 +65,17 @@ def _process_sumstats(args: argparse.Namespace) -> gl.Sumstats:
     if args.rsid_to_chrpos:
         # Use HDF5-based parallel processing (faster than old TSV approach)
         # Accepts VCF file (will auto-generate HDF5 path) or direct HDF5 path
-        s.rsid_to_chrpos(
-            ref_rsid_to_chrpos_vcf=args.ref_rsid_vcf if args.ref_rsid_vcf else None,
-            ref_rsid_to_chrpos_hdf5=args.ref_rsid_tsv if args.ref_rsid_tsv else None,  # Reuse TSV arg for HDF5 path
-            build=args.build,
-            threads=args.threads if args.threads else 4,
-            verbose=not args.quiet
-        )
+        # Note: ref_rsid_tsv is reused for HDF5 path for backward compatibility
+        rsid_to_chrpos_kwargs = {
+            "ref_rsid_to_chrpos_vcf": args.ref_rsid_vcf if args.ref_rsid_vcf else None,
+            "ref_rsid_to_chrpos_hdf5": args.ref_rsid_tsv if args.ref_rsid_tsv else None,
+            "build": args.build,
+            "threads": args.threads if args.threads > 1 else 4,  # Default to 4 for rsid-to-chrpos
+            "verbose": not args.quiet
+        }
+        # Remove None values
+        rsid_to_chrpos_kwargs = {k: v for k, v in rsid_to_chrpos_kwargs.items() if v is not None}
+        s.rsid_to_chrpos(**rsid_to_chrpos_kwargs)
     
     # Output formatting
     if args.out is not None:
@@ -165,8 +169,10 @@ Examples:
     # rsID to CHR:POS options
     rtc_group = parser.add_argument_group("rsID to CHR:POS Options")
     rtc_group.add_argument("--build", default="19", help="Genome build (default: 19)")
-    rtc_group.add_argument("--overwrite-rtc", action="store_true", help="Overwrite existing CHR:POS")
-    rtc_group.add_argument("--chunksize", type=int, default=5000000, help="Chunk size for processing (default: 5000000)")
+    # Note: The following arguments are kept for backward compatibility but are not currently used
+    # by rsid_to_chrpos (the function doesn't support overwrite, and block_size is deprecated)
+    rtc_group.add_argument("--overwrite-rtc", action="store_true", help="[Not implemented] Overwrite existing CHR:POS")
+    rtc_group.add_argument("--chunksize", type=int, default=5000000, help="[Not implemented] Chunk size for processing (default: 5000000)")
     
     # Output formatting options
     format_group = parser.add_argument_group("Output Formatting Options")

@@ -12,11 +12,16 @@ from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_decorator import with_logging
-from gwaslab.bd.bd_common_data import get_high_ld
+from gwaslab.qc.qc_normalize_args import _normalize_region
+from gwaslab.bd.bd_common_data import get_high_ld, get_par
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.hm.hm_harmonize_sumstats import is_palindromic
 from gwaslab.info.g_version import _get_version
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+from gwaslab.io.io_ucsc_bed import read_bed, bed_to_sumstats_coordinates
 import gc
+import os
+import numpy as np
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
@@ -484,6 +489,9 @@ def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], pa
         Sumstats object or DataFrame to process.
     path : str or None, default=None
         Path to BED file containing regions of interest
+    chrom : str, default="CHR"
+        Column name for chromosome information
+    pos : str, default="POS"
         Column name for position information
     high_ld : bool, default=False
         If True, uses high LD regions from the specified build
@@ -491,9 +499,8 @@ def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], pa
         Genome build version (19 or 38) for high LD regions
     verbose : bool, default=True
         If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
+    log : Log, default=Log()
+        Logger instance
 
     Returns:
     --------
@@ -507,84 +514,23 @@ def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], pa
     else:
         sumstats = sumstats_or_dataframe.data
     
-    sumstats = _sort_coordinate(sumstats,verbose=verbose)
+    # Get BED file path (either from high_ld or provided path)
     if high_ld is True:
         path = get_high_ld(build=build)
-        log.write(" -Loading bed format file for hg"+build, verbose=verbose)
-
-    else:
-        log.write(" -Loading bed format file: " , path, verbose=verbose)
-    bed = pd.read_csv(path,sep="\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
+        log.write(" -Using high LD regions for hg" + build, verbose=verbose)
+    elif path is None:
+        raise ValueError("Either 'path' must be provided or 'high_ld' must be True")
     
-    bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
-    sumstats["bed_indicator"]=False
-    dic=get_chr_to_number(out_chr=True)
-    bed[0]=bed[0].str.strip("chr")
-    bed[0]=bed[0].map(dic).astype("string")
-    bed[0]=bed[0].astype("Int64")
-    sumstats = sumstats.sort_values(["CHR","POS"])
-    
-    if len(bed)<100:
-        log.write(" -Bed file < 100 lines: using pd IntervalIndex... ", verbose=verbose)
-        for i in sumstats[chrom].unique():
-            if sum(bed[0]==i)>0:
-                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==i,"tuple"])
-                sumstats.loc[sumstats[chrom]==i,"bed_indicator"] = sumstats.loc[sumstats[chrom]==i,pos].apply(lambda x: any(interval.contains(x)))
-            else:
-                continue
-    else:
-        log.write(" -Bed file > 100 lines: using two pointers, please make files are all sorted... ", verbose=verbose)
-        bed_num  =0
-        bed_chr   =bed.iloc[bed_num,0]
-        bed_left  =bed.iloc[bed_num,1]
-        bed_right =bed.iloc[bed_num,2]
-        
-        sum_num=0
-        sum_chr_col = sumstats.columns.get_loc(chrom)
-        sum_pos_col = sumstats.columns.get_loc(pos)
-        sum_ind_col = sumstats.columns.get_loc("bed_indicator")
-        while bed_num<len(bed) and sum_num<len(sumstats):
-            #sumstats variant chr < bed chr
-            if sumstats.iat[sum_num,sum_chr_col]<bed_chr:
-                # next variant
-                sum_num+=1
-                continue
-            #sumstats variant chr > bed chr
-            elif sumstats.iat[sum_num,sum_chr_col]>bed_chr:
-                # next bed record
-                bed_num+=1
-                bed_chr  =bed.iat[bed_num,0]
-                bed_left  = bed.iat[bed_num,1]
-                bed_right  = bed.iat[bed_num,2]
-                continue
-            #sumstats variant chr == bed chr
-            else:
-                #sumstats variant pos < bed left
-                if sumstats.iat[sum_num,sum_pos_col]<bed_left:
-                    # next variant
-                    sum_num+=1
-                    continue
-                #sumstats variant pos > bed right
-                elif sumstats.iat[sum_num,sum_pos_col]>bed_right:
-                    # next bed record
-                    bed_num+=1
-                    bed_chr  =bed.iat[bed_num,0]
-                    bed_left  = bed.iat[bed_num,1]
-                    bed_right  = bed.iat[bed_num,2]
-                # bed left  < sumstats variant  pos < bed right
-                else:
-                    # set to true
-                    sumstats.iat[sum_num,sum_ind_col]=True
-                    # next variant
-                    sum_num+=1
-                           
-    ## in
-    
-    sumstats = sumstats.loc[sumstats["bed_indicator"],:]
-    log.write(" -Number of variants in the specified regions to keep:",sum(sumstats["bed_indicator"]), verbose=verbose)
-    sumstats = sumstats.drop(columns="bed_indicator")
-    gc.collect()
-    return sumstats
+    # Use the new _filter_bed function with keep=True
+    return _filter_bed(
+        sumstats_or_dataframe=sumstats,
+        path=path,
+        chrom=chrom,
+        pos=pos,
+        keep=True,
+        verbose=verbose,
+        log=log
+    )
 
 @with_logging_filter("filter out variants if in intervals defined in bed files", "filtering variants")
 def _filter_region_out(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], path: Optional[str] = None, chrom: str = "CHR", pos: str = "POS", high_ld: bool = False, build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
@@ -597,15 +543,18 @@ def _filter_region_out(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], p
         Sumstats object or DataFrame to process.
     path : str or None, default=None
         Path to BED file containing regions to exclude
+    chrom : str, default="CHR"
+        Column name for chromosome information
+    pos : str, default="POS"
+        Column name for position information
     high_ld : bool, default=False
         If True, excludes variants in high LD regions from the specified build
     build : str, default="19"
         Genome build version (19 or 38) for high LD regions
     verbose : bool, default=True
         If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
+    log : Log, default=Log()
+        Logger instance
         
     Returns:
     --------
@@ -619,70 +568,263 @@ def _filter_region_out(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], p
     else:
         sumstats = sumstats_or_dataframe.data
     
-    sumstats = _sort_coordinate(sumstats,verbose=verbose)
+    # Get BED file path (either from high_ld or provided path)
     if high_ld is True:
         path = get_high_ld(build=build)
-        log.write(" -Loading bed format file for hg"+build, verbose=verbose)
+        log.write(" -Using high LD regions for hg" + build, verbose=verbose)
+    elif path is None:
+        raise ValueError("Either 'path' must be provided or 'high_ld' must be True")
+    
+    # Use the new _filter_bed function with keep=False
+    return _filter_bed(
+        sumstats_or_dataframe=sumstats,
+        path=path,
+        chrom=chrom,
+        pos=pos,
+        keep=False,
+        verbose=verbose,
+        log=log
+    )
 
-    else:
-        log.write(" -Loading bed format file: " , path, verbose=verbose)
-            
-    bed = pd.read_csv(path,sep="\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
-    bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
-    sumstats["bed_indicator"]=False
+@with_logging_filter("filter variants using BED file with chromosome mapper", "filtering variants")
+def _filter_bed(
+    sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], 
+    path: Optional[str] = None, 
+    chrom: str = "CHR", 
+    pos: str = "POS", 
+    keep: bool = True,
+    verbose: bool = True, 
+    log: Log = Log()
+) -> pd.DataFrame:
+    """
+    Filter variants using a BED file with automatic chromosome format conversion.
     
-    dic=get_chr_to_number(out_chr=True)
-    bed[0]=bed[0].str.strip("chr")
-    bed[0]=bed[0].map(dic).astype("string")
-    bed[0]=bed[0].astype("Int64")
+    This function uses the UCSC BED format specification and ChromosomeMapper to handle
+    chromosome notation conversion between the BED file and sumstats, ensuring correct
+    matching regardless of format.
     
-    if len(bed)<100:
-        log.write(" -Bed file < 100 lines: using pd IntervalIndex... ", verbose=verbose)
-        for i in sumstats[chrom].unique():
-            if sum(bed[0]==i)>0:
-                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==i,"tuple"])
-                sumstats.loc[sumstats[chrom]==i,"bed_indicator"] = sumstats.loc[sumstats[chrom]==i,pos].apply(lambda x: any(interval.contains(x)))
-            else:
-                continue
-    else:
-        log.write(" -Bed file > 100 lines: using two pointers, please make files are all sorted... ", verbose=verbose)
-        bed_num  =0
-        bed_chr  =bed.iloc[bed_num,0]
-        bed_left  =bed.iloc[bed_num,1]
-        bed_right =bed.iloc[bed_num,2]
+    Parameters
+    ----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process
+    path : str or None, default=None
+        Path to BED file. BED format: chr\tstart\tend (0-based, half-open intervals).
+        Supports uncompressed (.bed) and gzipped (.bed.gz) files.
+    chrom : str, default="CHR"
+        Column name for chromosome in sumstats
+    pos : str, default="POS"
+        Column name for position in sumstats
+    keep : bool, default=True
+        If True, keep variants within BED regions (filter in).
+        If False, remove variants within BED regions (filter out).
+    verbose : bool, default=True
+        If True, writes progress to log
+    log : Log, default=Log()
+        Logger instance
         
-        sum_num=0
-        sum_chr_col = sumstats.columns.get_loc(chrom)
-        sum_pos_col = sumstats.columns.get_loc(pos)
-        sum_ind_col = sumstats.columns.get_loc("bed_indicator")
-        while bed_num<len(bed) and sum_num<len(sumstats):
-            if sumstats.iat[sum_num,sum_chr_col]<bed_chr:
-                sum_num+=1
-                continue
-            elif sumstats.iat[sum_num,sum_chr_col]>bed_chr:
-                bed_num+=1
-                bed_chr  =bed.iat[bed_num,0]
-                bed_left  = bed.iat[bed_num,1]
-                bed_right  = bed.iat[bed_num,2]
-                continue
-            else:
-                if sumstats.iat[sum_num,sum_pos_col]<bed_left:
-                    sum_num+=1
-                    continue
-                elif sumstats.iat[sum_num,sum_pos_col]>bed_right:
-                    bed_num+=1
-                    bed_chr  =bed.iat[bed_num,0]
-                    bed_left  = bed.iat[bed_num,1]
-                    bed_right  = bed.iat[bed_num,2]
-                else:
-                    sumstats.iat[sum_num,sum_ind_col]=True
-                    sum_num+=1
-                           
-    ## out
-    sumstats = sumstats.loc[~sumstats["bed_indicator"],:]
-    sumstats = sumstats.drop(columns="bed_indicator")
+    Returns
+    -------
+    pd.DataFrame
+        Filtered summary statistics table
+        
+    Notes
+    -----
+    BED file format (0-based, half-open intervals):
+    - Column 0 (chrom): Chromosome name (can be "1", "chr1", "X", "chrX", etc.)
+    - Column 1 (chromStart): Start position (0-based, inclusive)
+    - Column 2 (chromEnd): End position (1-based, exclusive)
+    
+    BED format uses 0-based, half-open intervals [chromStart, chromEnd).
+    For example, chromStart=0, chromEnd=100 spans bases 0-99 (0-based) or positions 1-100 (1-based).
+    
+    The function automatically:
+    - Reads BED files using io_ucsc_bed module (handles compression and format validation)
+    - Detects chromosome format in both BED file and sumstats
+    - Converts chromosomes to numeric format for matching (only if needed)
+    - Builds a per-chromosome packed uint8 bitmask (1 bit per base, 8 bits per byte)
+    - Uses efficient bit manipulation to set intervals in packed arrays
+    - Filters sumstats by vectorized bit lookups for all POS in each chromosome block
+    - Handles BED 0-based half-open intervals correctly (converts to 1-based for matching)
+    
+    Algorithm: O(n + m) where n=variants, m=BED intervals.
+    Uses packed uint8 arrays (8x memory efficient vs boolean arrays) with vectorized bit operations
+    for O(1) position lookups. Direct position indexing eliminates offset calculations.
+    
+    References
+    ----------
+    UCSC BED format specification: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
+    
+    Examples
+    --------
+    >>> # Filter to keep variants in BED regions
+    >>> filtered = _filter_bed(sumstats, path="regions.bed", keep=True)
+    >>> 
+    >>> # Filter to remove variants in BED regions
+    >>> filtered = _filter_bed(sumstats, path="regions.bed", keep=False)
+    """
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe.copy()
+    else:
+        sumstats = sumstats_or_dataframe.data.copy()
+    
+    if path is None:
+        raise ValueError("BED file path must be provided")
+    
+    # Sort sumstats by CHR and POS for efficient matching
+    sumstats = _sort_coordinate(sumstats, verbose=verbose)
+    
+    # Initialize ChromosomeMapper for format conversion
+    mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
+    
+    # Detect sumstats format
+    mapper.detect_sumstats_format(sumstats[chrom])
+    
+    # Read and convert BED file using io_ucsc_bed module
+    log.write(" -Loading BED file: {}".format(path), verbose=verbose)
+    bed_df = read_bed(path, verbose=verbose, log=log)
+    
+    if len(bed_df) == 0:
+        log.write(" -Warning: BED file is empty.", verbose=verbose)
+        return sumstats if keep else sumstats.iloc[0:0].copy()
+    
+    # Convert BED chromosomes to numeric (keep original 0-based coordinates)
+    bed_chr_numeric = bed_df["chrom"].apply(
+        lambda x: mapper.sumstats_to_number(str(x).strip().lstrip("chr").lstrip("CHR")) if pd.notna(x) else None
+    )
+    bed_df["_chr_num"] = bed_chr_numeric
+    
+    # Filter out unconvertible chromosomes
+    bed_valid = bed_chr_numeric.notna()
+    n_invalid_bed = (~bed_valid).sum()
+    
+    if n_invalid_bed > 0:
+        log.write(" -Warning: {} BED regions have unconvertible chromosome notation.".format(n_invalid_bed), verbose=verbose)
+    
+    bed_df = bed_df[bed_valid].copy()
+    bed_chr_numeric = bed_chr_numeric[bed_valid]
+    
+    if len(bed_df) == 0:
+        log.write(" -Error: No valid regions found in BED file after chromosome conversion.", verbose=verbose)
+        return sumstats if keep else sumstats.iloc[0:0].copy()
+    
+    # Convert sumstats chromosomes to numeric for matching (only if needed)
+    # Check if already numeric to avoid unnecessary conversion
+    if pd.api.types.is_numeric_dtype(sumstats[chrom]):
+        # Already numeric, use directly (convert to int for consistency)
+        sumstats_chr_numeric = sumstats[chrom].astype('Int64')  # Nullable integer
+    else:
+        # Not numeric, convert using mapper
+        sumstats_chr_numeric = sumstats[chrom].apply(
+            lambda x: mapper.sumstats_to_number(x) if pd.notna(x) else None
+        )
+    
+    # Use packed uint8 bitmask for efficient filtering (1 bit per base, 8x memory efficient)
+    log.write(" -Matching variants with BED regions using packed uint8 bitmask...", verbose=verbose)
+    
+    # Process chromosome by chromosome
+    bed_indicator = np.zeros(len(sumstats), dtype=np.bool_)
+    
+    def _set_interval_packed(mask_u8: np.ndarray, start: int, end: int) -> None:
+        """
+        Set bits for [start, end) in packed uint8 array.
+        Bit convention: LSB (bit 0) corresponds to position % 8 (little-endian within byte).
+        """
+        if end <= start:
+            return
+        b0 = start >> 3  # byte index for start
+        b1 = (end - 1) >> 3  # byte index for end
+        o0 = start & 7  # bit offset within start byte
+        o1 = (end - 1) & 7  # bit offset within end byte
+
+        if b0 == b1:
+            # Single byte: set bits o0..o1
+            width = o1 - o0 + 1
+            m = ((1 << width) - 1) << o0
+            mask_u8[b0] |= np.uint8(m & 0xFF)
+            return
+
+        # First byte: set bits o0..7
+        mask_u8[b0] |= np.uint8((0xFF << o0) & 0xFF)
+
+        # Middle bytes: set all bits (0xFF)
+        if b1 > b0 + 1:
+            mask_u8[b0 + 1 : b1] = 0xFF
+
+        # Last byte: set bits 0..o1
+        mask_u8[b1] |= np.uint8((1 << (o1 + 1)) - 1)
+    
+    def _lookup_packed(mask_u8: np.ndarray, pos0: np.ndarray) -> np.ndarray:
+        """Vectorized membership lookup for 0-based positions in packed uint8 array."""
+        byte_idx = pos0 >> 3  # byte index
+        bit_idx = pos0 & 7  # bit offset within byte
+        return ((mask_u8[byte_idx] >> bit_idx) & 1).astype(np.bool_)
+    
+    for chr_num in sumstats_chr_numeric.dropna().unique():
+        # Get BED regions for this chromosome (using original 0-based coordinates)
+        bed_chr = bed_df[bed_chr_numeric == chr_num].copy()
+        if len(bed_chr) == 0:
+            continue
+        
+        # Get sumstats variants on this chromosome
+        mask_chr = (sumstats_chr_numeric == chr_num)
+        if not mask_chr.any():
+            continue
+        
+        chr_indices = np.where(mask_chr)[0]
+        positions = sumstats.loc[mask_chr, pos].values
+        
+        # Get max position for this chromosome to determine array size
+        # Use position directly as index (no offset)
+        max_pos = int(positions.max())
+        # Packed uint8 array: ceil((max_pos+1)/8) bytes, 1 bit per base
+        mask_size_bytes = (max_pos + 1 + 7) // 8
+        
+        # Build packed uint8 mask for this chromosome (1 bit per base)
+        chr_mask_u8 = np.zeros(mask_size_bytes, dtype=np.uint8)
+        
+        # Mark all positions in BED intervals using packed bit operations
+        # BED uses 0-based half-open [chromStart, chromEnd)
+        # According to UCSC BED spec: BED [chromStart, chromEnd) in 0-based = [chromStart+1, chromEnd] in 1-based (both inclusive)
+        for _, row in bed_chr.iterrows():
+            chrom_start = row["chromStart"]
+            chrom_end = row["chromEnd"]
+            
+            # Convert to 1-based inclusive range for sumstats
+            start_1based = chrom_start + 1
+            end_1based = chrom_end  # chromEnd in 0-based (exclusive) = chromEnd in 1-based (inclusive)
+            
+            # Clamp to valid array range
+            start_idx = max(start_1based, 0)
+            end_idx = min(end_1based, max_pos)
+            
+            if start_idx <= end_idx:
+                # Set interval in packed mask: [start_idx, end_idx+1) for inclusive end
+                _set_interval_packed(chr_mask_u8, start_idx, end_idx + 1)
+        
+        # Vectorized lookup using packed mask
+        # Convert positions to 0-based for bit operations
+        pos0 = positions.astype(np.int64)
+        
+        # Check if positions are in valid range
+        valid_mask = (pos0 >= 0) & (pos0 <= max_pos)
+        
+        if valid_mask.any():
+            # Vectorized packed lookup (O(1) per position)
+            marked_mask = _lookup_packed(chr_mask_u8, pos0[valid_mask])
+            bed_indicator[chr_indices[valid_mask]] = marked_mask
+    
+    # Apply filter based on keep parameter using boolean mask
+    if keep:
+        result = sumstats.loc[bed_indicator, :]
+        log.write(" -Number of variants in BED regions to keep: {}".format(bed_indicator.sum()), verbose=verbose)
+    else:
+        result = sumstats.loc[~bed_indicator, :]
+        log.write(" -Number of variants in BED regions to remove: {}".format((~bed_indicator).sum()), verbose=verbose)
+    
     gc.collect()
-    return sumstats
+    
+    return result
 
 @with_logging("infer genome build version using hapmap3 SNPs", 
               "inferring genome build version using hapmap3 SNPs",
@@ -1199,6 +1341,106 @@ def _exclude_sexchr(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS"
     
     return sumstats
 
+@with_logging_filter("exclude variants in pseudo-autosomal regions (PAR)", "filtering variants")
+def _filter_par(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", pos: str = "POS", build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
+    """
+    Exclude variants located in pseudo-autosomal regions (PAR) on the X chromosome.
+    
+    PAR regions are regions on the X chromosome that have homologous sequences on the Y chromosome.
+    These regions are often excluded from GWAS analyses due to their unique inheritance patterns.
+    
+    Parameters:
+    -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
+    chrom : str, default="CHR"
+        Column name for chromosome information
+    pos : str, default="POS"
+        Column name for position information
+    build : str, default="19"
+        Genome build version (19 or 38) for PAR region definitions
+    verbose : bool, default=True
+        If True, writes progress to log
+    log : Log, default=Log()
+        Logger instance
+
+    Returns:
+    --------
+    pandas.DataFrame
+        Filtered summary statistics table with PAR region variants removed
+    """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
+    # Get PAR BED file path
+    par_path = get_par(build=build)
+    log.write(" -Using PAR regions for hg" + build, verbose=verbose)
+    
+    # Use _filter_bed to exclude variants in PAR regions
+    return _filter_bed(
+        sumstats_or_dataframe=sumstats,
+        path=par_path,
+        chrom=chrom,
+        pos=pos,
+        keep=False,  # Filter out (exclude) variants in PAR regions
+        verbose=verbose,
+        log=log
+    )
+
+@with_logging_filter("exclude variants in high LD regions", "filtering variants")
+def _filter_high_ld(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", pos: str = "POS", build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
+    """
+    Exclude variants located in high linkage disequilibrium (LD) regions.
+    
+    High LD regions, such as the HLA region on chromosome 6, are often excluded from GWAS analyses
+    due to complex LD patterns that can confound association signals.
+    
+    Parameters:
+    -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
+    chrom : str, default="CHR"
+        Column name for chromosome information
+    pos : str, default="POS"
+        Column name for position information
+    build : str, default="19"
+        Genome build version (19 or 38) for high LD region definitions
+    verbose : bool, default=True
+        If True, writes progress to log
+    log : Log, default=Log()
+        Logger instance
+
+    Returns:
+    --------
+    pandas.DataFrame
+        Filtered summary statistics table with high LD region variants removed
+    """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
+    # Get high LD BED file path
+    high_ld_path = get_high_ld(build=build)
+    log.write(" -Using high LD regions for hg" + build, verbose=verbose)
+    
+    # Use _filter_bed to exclude variants in high LD regions
+    return _filter_bed(
+        sumstats_or_dataframe=sumstats,
+        path=high_ld_path,
+        chrom=chrom,
+        pos=pos,
+        keep=False,  # Filter out (exclude) variants in high LD regions
+        verbose=verbose,
+        log=log
+    )
+
 @with_logging_filter("extract specific variants by ID", "extracting variants")
 def _extract(sumstats: pd.DataFrame, extract: Optional[List[str]] = None, id_use: str = "SNPID", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
@@ -1256,7 +1498,7 @@ def _exclude(sumstats: pd.DataFrame, exclude: Optional[List[str]] = None, id_use
     return sumstats
 
 @with_logging_filter("filter variants within a specific genomic region", "filtering variants")
-def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], region: Optional[List[Union[int, str]]] = None, chrom: str = "CHR", pos: str = "POS", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
+def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], region: Optional[Union[List[Union[int, str]], str]] = None, chrom: str = "CHR", pos: str = "POS", build: str = "19", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
     """
     Filter variants within a specific genomic region.
     
@@ -1264,18 +1506,32 @@ def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], regio
     -----------
     sumstats_or_dataframe : Sumstats or pd.DataFrame
         Sumstats object or DataFrame to process.
-    region : List
-        Genomic region to filter [chr, start, end]
+    region : List, str, or None, default=None
+        Genomic region to filter. Can be:
+        - List/tuple [chr, start, end]: Specific genomic region coordinates
+        - String formats (normalized automatically):
+          - "chr:start-end" (e.g., "chr1:1000-5000")
+          - "chr:pos:flanking" (e.g., "1:5000:2000" or "1:5000:2kb")
+          - "snpid:flanking" (e.g., "rs123:500" or "1:5000:C:T:2000")
+        - Special strings:
+          - "HLA": Filter variants in HLA region (excludes HLA)
+          - "HIGH_LD": Filter variants in high LD regions (excludes high LD)
+          - "PAR": Filter variants in pseudo-autosomal regions (excludes PAR)
+    chrom : str, default="CHR"
+        Column name for chromosome information
+    pos : str, default="POS"
+        Column name for position information
+    build : str, default="19"
+        Genome build version (19 or 38) for HLA/HIGH_LD/PAR regions
     verbose : bool, default=True
         If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
+    log : Log, default=Log()
+        Logger instance
 
     Returns:
     --------
     pandas.DataFrame
-        Subset of summary statistics in the specified region
+        Subset of summary statistics in the specified region (or with specified regions excluded)
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1285,21 +1541,61 @@ def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], regio
         sumstats = sumstats_or_dataframe.data
     
     if region is not None:
+        # Handle special region strings
+        if isinstance(region, str):
+            region_upper = region.upper()
+            if region_upper == "HLA":
+                # Exclude HLA region
+                return _exclude_hla(sumstats, chrom=chrom, pos=pos, build=build, log=log, verbose=verbose)
+            elif region_upper == "HIGH_LD":
+                # Exclude high LD regions
+                return _filter_high_ld(sumstats, chrom=chrom, pos=pos, build=build, log=log, verbose=verbose)
+            elif region_upper == "PAR":
+                # Exclude PAR regions
+                return _filter_par(sumstats, chrom=chrom, pos=pos, build=build, log=log, verbose=verbose)
+            else:
+                # Try to normalize as a region string (e.g., "chr1:1000-5000", "1:1500:500", etc.)
+                try:
+                    normalized_region = _normalize_region(
+                        region,
+                        sumstats=sumstats,
+                        chrom_col=chrom,
+                        pos_col=pos,
+                        log=log,
+                        verbose=verbose
+                    )
+                    if normalized_region is None:
+                        raise ValueError(f"Failed to normalize region: {region}")
+                    region_chr, region_start, region_end = normalized_region
+                except (ValueError, Exception) as e:
+                    raise ValueError(f"Unknown region string: {region}. Supported values: 'HLA', 'HIGH_LD', 'PAR', or region formats like 'chr:start-end', 'chr:pos:flanking', 'snpid:flanking'. Error: {e}")
+        else:
+            # Handle list/tuple format [chr, start, end] - normalize it
+            try:
+                normalized_region = _normalize_region(
+                    region,
+                    sumstats=sumstats,
+                    chrom_col=chrom,
+                    pos_col=pos,
+                    log=log,
+                    verbose=verbose
+                )
+                if normalized_region is None:
+                    raise ValueError(f"Failed to normalize region: {region}")
+                region_chr, region_start, region_end = normalized_region
+            except (ValueError, Exception) as e:
+                raise ValueError(f"Invalid region format. Expected list/tuple [chr, start, end] or string. Error: {e}")
         
-        if type(region[0]) is str:
-            region[0] = int(region[0])
-            
-        region_chr = region[0]
-        region_start = region[1]
-        region_end = region[2]
+        # Filter variants in the normalized region
+        log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region_start, region_end), verbose=verbose)
         
-        log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
+        in_region_snp = (sumstats[chrom] == region_chr) & (sumstats[pos] < region_end) & (sumstats[pos] > region_start)
         
-        in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
-        
-        log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
-        sumstats = sumstats.loc[in_region_snp,:]
-        return sumstats.copy()    
+        log.write(" -Extract SNPs in specified regions: " + str(sum(in_region_snp)), verbose=verbose)
+        sumstats = sumstats.loc[in_region_snp, :]
+        return sumstats.copy()
+    
+    return sumstats    
     
 def _search_variants(sumstats: pd.DataFrame, snplist: Optional[List[Union[str, List[Union[int, float]]]]] = None, 
                      snpid: str = "SNPID", rsid: str = "rsID",

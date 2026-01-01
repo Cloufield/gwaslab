@@ -423,6 +423,22 @@ def get_high_ld(build: str = "19") -> str:
         #data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg38.bed.gz'
         data_path = path.join( Path(__file__).parents[1], "data","high_ld","high_ld_hla_hg38.bed.gz")
     return data_path
+
+def get_par(build: str = "19") -> str:
+    """
+    Get the path to the pseudo-autosomal region (PAR) file for the specified genome build.
+    
+    Parameters:
+    build (str): Genome build version ('19' or '38') indicating which reference genome to use
+    
+    Returns:
+    str: Path to the PAR region BED file for the specified genome build
+    """
+    if build=="19":
+        data_path = path.join( Path(__file__).parents[1], "data","chrx_par","chrx_par_hg19.bed.gz")
+    elif build=="38":
+        data_path = path.join( Path(__file__).parents[1], "data","chrx_par","chrx_par_hg38.bed.gz")
+    return data_path
 def get_format_dict(fmt: str, inverse: bool = False) -> tuple:
     """
     Retrieve format dictionary and metadata for a specified format.

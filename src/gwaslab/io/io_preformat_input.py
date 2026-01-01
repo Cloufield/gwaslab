@@ -778,7 +778,8 @@ def _process_neaf(sumstats,log,verbose):
         sumstats.loc[:, "EAF"] = 1 - sumstats["EAF"]
     log.write(" -Converted NEAF to EAF.",verbose=verbose) 
     after_number=len(sumstats)
-    log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose) 
+    removed_count = pre_number - after_number
+    log.write(" -Removed "+str(removed_count)+" variants with bad NEAF.",verbose=verbose if removed_count > 0 else False) 
     return sumstats
 
 def _process_allele(sumstats,

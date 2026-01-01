@@ -267,7 +267,7 @@ There will be no gap if `use_rank = True`
 
 ![Output image](images/notebooks/visualization_mqq_img_11.png)
 
-Since there are a large number of novel loci, if we annotate all loci, it will be too messy. Let's only annotate the loci with P<1e-20 by specifying `sig_level_lead=1e-20`.
+Since there are a large number of novel loci, if we annotate all loci, it will be too messy. Let's only annotate the loci with P<1e-20 by specifying `anno_sig_level=1e-20`.
 
 !!! example
     ```python
@@ -314,7 +314,7 @@ Note: remember to set `build=19` or `build=38` when loading or plotting.
 
 !!! example
     ```python
-    mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME", sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME", anno_sig_level=1e-20,mode= "m",check=False,verbose=False)
     ```
 
 **stdout:**
@@ -342,7 +342,7 @@ For example, `1:"left"` means to adjust towards left.
 
 !!! example
     ```python
-    mysumstats.plot_mqq(anno_d={1:"left",2:"right"}, skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    mysumstats.plot_mqq(anno_d={1:"left",2:"right"}, skip=3,cut=20,anno=True, anno_sig_level=1e-20,mode= "m",check=False,verbose=False)
     ```
 
 **stdout:**
@@ -361,7 +361,7 @@ For example, `arm_scale=1.2` means the default length will be multiplied by a fa
 
 !!! example
     ```python
-    mysumstats.plot_mqq(arm_scale=1.2, skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    mysumstats.plot_mqq(arm_scale=1.2, skip=3,cut=20,anno=True, anno_sig_level=1e-20,mode= "m",check=False,verbose=False)
     ```
 
 **stdout:**
@@ -382,7 +382,7 @@ For example, `1:1.2` means to adjust the arm of the second by a factor of 1.2.
                                      1:0.7,
                                      2:0.6,
                                      3:0.8}, 
-                        skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+                        skip=3,cut=20,anno=True, anno_sig_level=1e-20,mode= "m",check=False,verbose=False)
     ```
 
 **stdout:**
@@ -401,7 +401,7 @@ GWASLab provides three types of different annotation styles
 
 !!! example
     ```python
-    mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="expand", sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="expand", anno_sig_level=1e-20,mode= "m",check=False,verbose=False)
     ```
 
 **stdout:**
@@ -414,7 +414,7 @@ GWASLab provides three types of different annotation styles
 
 !!! example
     ```python
-    mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="tight", sig_level_lead=1e-20,mode= "m", check=False,verbose=False)
+    mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="tight", anno_sig_level=1e-20,mode= "m", check=False,verbose=False)
     ```
 
 **stdout:**
@@ -570,7 +570,7 @@ Instead of a list, you can provide a list of lists. Each member list is then a g
                     cut=20,
                     cut_line_color="purple",
                     sig_level=5e-8,  
-                    sig_level_lead=1e-6, 
+                    anno_sig_level=1e-6, 
                     sig_line_color="grey",
                     suggestive_sig_line = True,
                     suggestive_sig_level = 1e-6,

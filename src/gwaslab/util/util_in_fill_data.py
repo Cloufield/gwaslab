@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 def _fill_data( 
     insumstats: Union['Sumstats', pd.DataFrame],
     to_fill: Optional[Union[str, List[str]]] = None,
-    df: Optional[pd.DataFrame] = None,
+    df: Optional[str] = None,
     overwrite: bool = False,
     verbose: bool = True,
     only_sig: bool = False,
@@ -128,30 +128,32 @@ def fill_p(sumstats: pd.DataFrame, log: Log, df: Optional[str] = None, only_sig:
     """Fill P column from MLOG10P, Z, or CHISQ."""
     if "MLOG10P" in sumstats.columns:
         log.write("    Filling P from MLOG10P...", verbose=verbose)
-        sumstats["P"] = np.power(10, -sumstats["MLOG10P"])
+        sumstats["P"] = _convert_mlog10p_to_p(sumstats["MLOG10P"])
         return 1, filled_count + 1
     
     if "Z" in sumstats.columns:
         log.write("    Filling P from Z...", verbose=verbose)
-        stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
-        sumstats["P"] = ss.chisqprob(sumstats["Z"]**2, 1)
+        sumstats["P"] = _convert_z_to_p(sumstats["Z"])
         return 1, filled_count + 1
     
     if "CHISQ" in sumstats.columns:
         log.write("    Filling P from CHISQ...", verbose=verbose)
-        stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
         if df is None:
             if only_sig and overwrite:
-                sumstats.loc[sumstats["P"] < sig_level, "P"] = stats.chisqprob(
-                    sumstats.loc[sumstats["P"] < sig_level, "CHISQ"], 1)
+                sumstats.loc[sumstats["P"] < sig_level, "P"] = _convert_chisq_to_p(
+                    sumstats.loc[sumstats["P"] < sig_level, "CHISQ"])
             else:
-                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"], 1)
+                sumstats["P"] = _convert_chisq_to_p(sumstats["CHISQ"])
         else:
             if only_sig and overwrite:
+                # For non-standard df, use chi2.sf directly
+                stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
                 sumstats.loc[sumstats["P"] < sig_level, "P"] = stats.chisqprob(
                     sumstats.loc[sumstats["P"] < sig_level, "CHISQ"],
                     sumstats.loc[sumstats["P"] < sig_level, df].astype("int"))
             else:
+                # For non-standard df, use chi2.sf directly
+                stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
                 sumstats["P"] = stats.chisqprob(sumstats["CHISQ"], sumstats[df].astype("int"))
         return 1, filled_count + 1
     
@@ -161,7 +163,7 @@ def fill_z(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count:
     """Fill Z column from BETA/SE."""
     if "BETA" in sumstats.columns and "SE" in sumstats.columns:
         log.write("    Filling Z from BETA/SE...", verbose=verbose)
-        sumstats["Z"] = sumstats["BETA"] / sumstats["SE"]
+        sumstats["Z"] = _convert_betase_to_z(sumstats["BETA"], sumstats["SE"])
         return 1, filled_count + 1
     return 0, filled_count
 
@@ -169,11 +171,11 @@ def fill_chisq(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_co
     """Fill CHISQ column from Z or P."""
     if "Z" in sumstats.columns:
         log.write("    Filling CHISQ from Z...", verbose=verbose)
-        sumstats["CHISQ"] = sumstats["Z"]**2
+        sumstats["CHISQ"] = _convert_z_to_chisq(sumstats["Z"])
         return 1, filled_count + 1
     if "P" in sumstats.columns:
         log.write("    Filling CHISQ from P...", verbose=verbose)
-        sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)
+        sumstats["CHISQ"] = _convert_p_to_chisq(sumstats["P"])
         return 1, filled_count + 1
     return 0, filled_count
 
@@ -181,22 +183,37 @@ def fill_or(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count
     """Fill OR and optionally OR_95L/OR_95U from BETA/SE."""
     if "BETA" in sumstats.columns:
         log.write("    Filling OR from BETA...", verbose=verbose)
-        sumstats["OR"] = np.exp(sumstats["BETA"])
+        sumstats["OR"] = _convert_beta_to_or(sumstats["BETA"])
         filled_count += 1
         
         if "SE" in sumstats.columns:
             log.write("    Filling OR_95L/OR_95U from BETA/SE...", verbose=verbose)
-            z_critical = ss.norm.ppf(0.975)
-            sumstats["OR_95L"] = np.exp(sumstats["BETA"] - z_critical * sumstats["SE"])
-            sumstats["OR_95U"] = np.exp(sumstats["BETA"] + z_critical * sumstats["SE"])
+            sumstats["OR_95L"] = _convert_betase_to_or_95l(sumstats["BETA"], sumstats["SE"])
+            sumstats["OR_95U"] = _convert_betase_to_or_95u(sumstats["BETA"], sumstats["SE"])
             filled_count += 1
         return 1, filled_count
     return 0, filled_count
+def fill_or_95l(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
+    """Fill OR_95L column from BETA/SE."""
+    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+        log.write("    Filling OR_95L from BETA/SE...", verbose=verbose)
+        sumstats["OR_95L"] = _convert_betase_to_or_95l(sumstats["BETA"], sumstats["SE"])
+        return 1, filled_count + 1
+    return 0, filled_count
+
+def fill_or_95u(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
+    """Fill OR_95U column from BETA/SE."""
+    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+        log.write("    Filling OR_95U from BETA/SE...", verbose=verbose)
+        sumstats["OR_95U"] = _convert_betase_to_or_95u(sumstats["BETA"], sumstats["SE"])
+        return 1, filled_count + 1
+    return 0, filled_count
+
 def fill_beta(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
     """Fill BETA column from OR."""
     if "OR" in sumstats.columns:
         log.write("    Filling BETA from OR...", verbose=verbose)
-        sumstats["BETA"] = np.log(sumstats["OR"])
+        sumstats["BETA"] = _convert_or_to_beta(sumstats["OR"])
         return 1, filled_count + 1
     return 0, filled_count
 
@@ -204,20 +221,17 @@ def fill_se(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count
     """Fill SE column from BETA/P, OR/OR_95U, or OR/OR_95L."""
     if "BETA" in sumstats.columns and "P" in sumstats.columns:
         log.write("    Filling SE from BETA/P...", verbose=verbose)
-        abs_z = np.sqrt(2) * erfcinv(sumstats["P"])
-        sumstats["SE"] = np.abs(sumstats["BETA"] / abs_z)
+        sumstats["SE"] = _convert_betap_to_se(sumstats["BETA"], sumstats["P"])
         return 1, filled_count + 1
     
     if "OR" in sumstats.columns and "OR_95U" in sumstats.columns:
         log.write("    Filling SE from OR/OR_95U...", verbose=verbose)
-        z_critical = ss.norm.ppf(0.975)
-        sumstats["SE"] = (np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"])) / z_critical
+        sumstats["SE"] = _convert_or_or95u_to_se(sumstats["OR"], sumstats["OR_95U"])
         return 1, filled_count + 1
     
     if "OR" in sumstats.columns and "OR_95L" in sumstats.columns:
         log.write("    Filling SE from OR/OR_95L...", verbose=verbose)
-        z_critical = ss.norm.ppf(0.975)
-        sumstats["SE"] = (np.log(sumstats["OR"]) - np.log(sumstats["OR_95L"])) / z_critical
+        sumstats["SE"] = _convert_or_or95l_to_se(sumstats["OR"], sumstats["OR_95L"])
         return 1, filled_count + 1
     
     return 0, filled_count
@@ -226,7 +240,7 @@ def fill_mlog10p(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_
     """Fill MLOG10P column from P."""
     if "P" in sumstats.columns:
         log.write("    Filling MLOG10P from P...", verbose=verbose)
-        sumstats["MLOG10P"] = -np.log10(sumstats["P"])
+        sumstats["MLOG10P"] = _convert_p_to_mlog10p(sumstats["P"])
         return 1, filled_count + 1
     return 0, filled_count
 
@@ -243,19 +257,19 @@ def fill_extreme_mlog10p(sumstats: pd.DataFrame, df: Optional[str], log: Log, ve
     
     if "BETA" in sumstats.columns and "SE" in sumstats.columns:
         log.write("    Filling MLOG10P from BETA/SE (extreme, via Z)...", verbose=verbose)
-        sumstats["Z"] = sumstats["BETA"] / sumstats["SE"]
+        sumstats["Z"] = _convert_betase_to_z(sumstats["BETA"], sumstats["SE"])
         sumstats = fill_extreme_mlog10(sumstats, "Z")
         return 1, filled_count + 1
     
-    if "CHISQ" in sumstats.columns and "DOF" in sumstats.columns:
-        log.write("    Filling MLOG10P from CHISQ/DOF (extreme)...", verbose=verbose)
+    if "CHISQ" in sumstats.columns and df is not None and df in sumstats.columns:
+        log.write("    Filling MLOG10P from CHISQ/{} (extreme)...".format(df), verbose=verbose)
         sumstats = fill_extreme_mlog10_chisq(sumstats, "CHISQ", df)
         return 1, filled_count + 1
     
     # Last resort: convert from P
     if "P" in sumstats.columns:
         log.write("    Filling MLOG10P from P (fallback)...", verbose=verbose)
-        sumstats["MLOG10P"] = -np.log10(sumstats["P"])
+        sumstats["MLOG10P"] = _convert_p_to_mlog10p(sumstats["P"])
         return 1, filled_count + 1
     
     return 0, filled_count
@@ -264,7 +278,7 @@ def fill_maf(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_coun
     """Fill MAF column from EAF."""
     if "EAF" in sumstats.columns:
         log.write("    Filling MAF from EAF...", verbose=verbose)
-        sumstats["MAF"] = sumstats["EAF"].apply(lambda x: min(x, 1-x) if pd.notnull(x) else np.nan)
+        sumstats["MAF"] = _convert_eaf_to_maf(sumstats["EAF"])
         return 1, filled_count + 1
     return 0, filled_count
 
@@ -285,13 +299,14 @@ def fill_sig(sumstats: pd.DataFrame, log: Log, sig_level: float = 5e-8, verbose:
 
 ####################################################################################################################
 def fill_extreme_mlog10(sumstats: pd.DataFrame, z: str) -> pd.DataFrame:
-    log_pvalue = np.log(2) + ss.norm.logsf(np.abs(sumstats[z])) #two-sided
-    log10_pvalue = log_pvalue/np.log(10)
-    mantissa = 10**(log10_pvalue %1 )
+    # Use helper function for conversion, then extract mantissa and exponent
+    mlog10p = _convert_z_to_mlog10p(sumstats[z])
+    log10_pvalue = -mlog10p
+    mantissa = 10**(log10_pvalue % 1)
     exponent = log10_pvalue // 1
-    sumstats["MLOG10P"] = -log10_pvalue
-    sumstats["P_MANTISSA"]= mantissa
-    sumstats["P_EXPONENT"]= exponent
+    sumstats["MLOG10P"] = mlog10p
+    sumstats["P_MANTISSA"] = mantissa
+    sumstats["P_EXPONENT"] = exponent
     return sumstats
 
 def fill_extreme_mlog10_chisq(sumstats: pd.DataFrame, chisq: str, df: str) -> pd.DataFrame:
@@ -313,7 +328,7 @@ def _try_fill_mlog10p(sumstats: pd.DataFrame, to_fill: List[str], df: Optional[s
     Attempt to fill MLOG10P column.
     
     Strategy:
-    1. Try extreme value methods first (Z, BETA/SE, CHISQ/DOF)
+    1. Try extreme value methods first (Z, BETA/SE, CHISQ/df)
     2. If that fails and P doesn't exist, try to fill P first, then retry
     3. Drop intermediate P column if it wasn't requested
     4. Always drop P_MANTISSA and P_EXPONENT (created by extreme methods)
@@ -371,6 +386,8 @@ def fill_iteratively(sumstats: pd.DataFrame, to_fill: List[str], log: Log, only_
     # Define fill functions for standard columns
     fill_functions = {
         "OR": lambda: fill_or(sumstats, log, verbose=verbose, filled_count=0),
+        "OR_95L": lambda: fill_or_95l(sumstats, log, verbose=verbose, filled_count=0),
+        "OR_95U": lambda: fill_or_95u(sumstats, log, verbose=verbose, filled_count=0),
         "BETA": lambda: fill_beta(sumstats, log, verbose=verbose, filled_count=0),
         "SE": lambda: fill_se(sumstats, log, verbose=verbose, filled_count=0),
         "P": lambda: fill_p(sumstats, log, only_sig=only_sig, df=df, sig_level=sig_level, verbose=verbose, filled_count=0),
@@ -446,13 +463,31 @@ def _log_round_results(
          
 ###Base functions########################################################################################
 
-def _convert_betase_to_z(beta: pd.Series, se: pd.Series) -> pd.Series:
-    return beta/se 
+def _convert_betase_to_z(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert BETA/SE to Z-score."""
+    if isinstance(beta, pd.Series):
+        result = beta / se
+        return result
+    else:
+        beta_arr = np.asarray(beta, dtype=np.float64)
+        se_arr = np.asarray(se, dtype=np.float64)
+        result = beta_arr / se_arr
+        # Return scalar if both inputs were scalars
+        if isinstance(beta, (int, float)) and isinstance(se, (int, float)):
+            return float(result)
+        return result 
 
-def _convert_betase_to_p(beta: pd.Series, se: pd.Series) -> pd.Series:
-    # Performance optimization: Convert to numpy arrays for faster computation
-    beta_arr = np.asarray(beta, dtype=np.float64)
-    se_arr = np.asarray(se, dtype=np.float64)
+def _convert_betase_to_p(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert BETA/SE to P-value."""
+    # Convert to numpy arrays for computation
+    if isinstance(beta, pd.Series):
+        beta_arr = np.asarray(beta, dtype=np.float64)
+        se_arr = np.asarray(se, dtype=np.float64)
+        index = beta.index
+    else:
+        beta_arr = np.asarray(beta, dtype=np.float64)
+        se_arr = np.asarray(se, dtype=np.float64)
+        index = None
     
     # Handle division by zero and NaN cases
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -462,21 +497,46 @@ def _convert_betase_to_p(beta: pd.Series, se: pd.Series) -> pd.Series:
     # For two-sided test: chi2.sf(z^2, 1) = 2 * norm.sf(abs(z))
     p_arr = 2 * norm.sf(np.abs(z_arr))
     
-    # Convert back to pandas Series with original index
-    return pd.Series(p_arr, index=beta.index, dtype=np.float64)
+    # Preserve input type
+    if isinstance(beta, pd.Series):
+        return pd.Series(p_arr, index=index, dtype=np.float64)
+    elif isinstance(beta, (int, float)) and isinstance(se, (int, float)):
+        return float(p_arr)
+    else:
+        return p_arr
 
-def _convert_betase_to_mlog10p(beta: pd.Series, se: pd.Series) -> pd.Series:
+def _convert_betase_to_mlog10p(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert BETA/SE to -log10(P-value)."""
     z = _convert_betase_to_z(beta, se)
     mlog10p = _convert_z_to_mlog10p(z)
     return mlog10p
 
 def _convert_p_to_chisq(p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return ss.chi2.isf(p, 1)
+    """Convert P-value to chi-square statistic."""
+    if isinstance(p, pd.Series):
+        result = ss.chi2.isf(p, 1)
+        return result
+    else:
+        result = ss.chi2.isf(p, 1)
+        # Return scalar if input was scalar
+        if isinstance(p, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
 
 def _convert_z_to_chisq(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return (z)**2
+    """Convert Z-score to chi-square statistic."""
+    if isinstance(z, pd.Series):
+        result = z ** 2
+        return result
+    else:
+        result = np.asarray(z) ** 2
+        # Return scalar if input was scalar
+        if isinstance(z, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
 
 def _convert_z_to_p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert Z-score to P-value."""
     # Performance optimization: Use norm.sf directly (faster than chi2.sf)
     # For two-sided test: chi2.sf(z^2, 1) = 2 * norm.sf(abs(z))
     if isinstance(z, pd.Series):
@@ -485,24 +545,165 @@ def _convert_z_to_p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, 
         return pd.Series(p_arr, index=z.index, dtype=np.float64)
     else:
         z_arr = np.asarray(z, dtype=np.float64)
-        return 2 * norm.sf(np.abs(z_arr)) 
+        result = 2 * norm.sf(np.abs(z_arr))
+        # Return scalar if input was scalar
+        if isinstance(z, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result 
 
 def _convert_z_to_mlog10p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z)) #two-sided
-    mlog10p = log_pvalue/np.log(10)
-    return -mlog10p 
+    """Convert Z-score to -log10(P-value)."""
+    if isinstance(z, pd.Series):
+        z_arr = np.asarray(z, dtype=np.float64)
+        log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z_arr))  # two-sided
+        mlog10p = log_pvalue / np.log(10)
+        return pd.Series(-mlog10p, index=z.index, dtype=np.float64)
+    else:
+        z_arr = np.asarray(z, dtype=np.float64)
+        log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z_arr))  # two-sided
+        mlog10p = log_pvalue / np.log(10)
+        result = -mlog10p
+        # Return scalar if input was scalar
+        if isinstance(z, (int, float)):
+            return float(result)
+        return result 
 
-def _conver_chisq_to_p(chisq: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return ss.chi2.sf(chisq,1)
+def _convert_chisq_to_p(chisq: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert chi-square statistic to P-value."""
+    if isinstance(chisq, pd.Series):
+        result = ss.chi2.sf(chisq, 1)
+        return result
+    else:
+        result = ss.chi2.sf(chisq, 1)
+        # Return scalar if input was scalar
+        if isinstance(chisq, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
 
 def _convert_mlog10p_to_p(mlog10p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return np.power(10, -mlog10p) 
+    """Convert -log10(P-value) to P-value."""
+    if isinstance(mlog10p, pd.Series):
+        result = np.power(10, -mlog10p)
+        return result
+    else:
+        result = np.power(10, -mlog10p)
+        # Return scalar if input was scalar
+        if isinstance(mlog10p, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_p_to_mlog10p(p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert P-value to -log10(P-value)."""
+    if isinstance(p, pd.Series):
+        result = -np.log10(p)
+        return result
+    else:
+        result = -np.log10(p)
+        # Return scalar if input was scalar
+        if isinstance(p, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result 
 
 def _convert_or_to_beta(OR: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return np.log(OR)  
+    """Convert Odds Ratio to BETA (log-odds)."""
+    if isinstance(OR, pd.Series):
+        result = np.log(OR)
+        return result
+    else:
+        result = np.log(OR)
+        # Return scalar if input was scalar
+        if isinstance(OR, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result  
 
 def _convert_beta_to_or(beta: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    return np.exp(beta)   
+    """Convert BETA (log-odds) to Odds Ratio."""
+    if isinstance(beta, pd.Series):
+        result = np.exp(beta)
+        return result
+    else:
+        result = np.exp(beta)
+        # Return scalar if input was scalar
+        if isinstance(beta, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_betase_to_or_95l(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert BETA/SE to OR_95L (lower bound of 95% confidence interval)."""
+    z_critical = ss.norm.ppf(0.975)
+    if isinstance(beta, pd.Series):
+        result = np.exp(beta - z_critical * se)
+        return result
+    else:
+        result = np.exp(beta - z_critical * se)
+        # Return scalar if both inputs were scalars
+        if isinstance(beta, (int, float)) and isinstance(se, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_betase_to_or_95u(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert BETA/SE to OR_95U (upper bound of 95% confidence interval)."""
+    z_critical = ss.norm.ppf(0.975)
+    if isinstance(beta, pd.Series):
+        result = np.exp(beta + z_critical * se)
+        return result
+    else:
+        result = np.exp(beta + z_critical * se)
+        # Return scalar if both inputs were scalars
+        if isinstance(beta, (int, float)) and isinstance(se, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_betap_to_se(beta: Union[pd.Series, np.ndarray, float], p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert BETA/P to SE."""
+    abs_z = np.sqrt(2) * erfcinv(p)
+    if isinstance(beta, pd.Series):
+        result = np.abs(beta / abs_z)
+        return result
+    else:
+        result = np.abs(beta / abs_z)
+        # Return scalar if both inputs were scalars
+        if isinstance(beta, (int, float)) and isinstance(p, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_or_or95u_to_se(or_val: Union[pd.Series, np.ndarray, float], or_95u: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert OR/OR_95U to SE."""
+    z_critical = ss.norm.ppf(0.975)
+    if isinstance(or_val, pd.Series):
+        result = (np.log(or_95u) - np.log(or_val)) / z_critical
+        return result
+    else:
+        result = (np.log(or_95u) - np.log(or_val)) / z_critical
+        # Return scalar if both inputs were scalars
+        if isinstance(or_val, (int, float)) and isinstance(or_95u, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_or_or95l_to_se(or_val: Union[pd.Series, np.ndarray, float], or_95l: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert OR/OR_95L to SE."""
+    z_critical = ss.norm.ppf(0.975)
+    if isinstance(or_val, pd.Series):
+        result = (np.log(or_val) - np.log(or_95l)) / z_critical
+        return result
+    else:
+        result = (np.log(or_val) - np.log(or_95l)) / z_critical
+        # Return scalar if both inputs were scalars
+        if isinstance(or_val, (int, float)) and isinstance(or_95l, (int, float)):
+            return float(result) if hasattr(result, '__len__') else float(result)
+        return result
+
+def _convert_eaf_to_maf(eaf: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
+    """Convert EAF (Effect Allele Frequency) to MAF (Minor Allele Frequency)."""
+    if isinstance(eaf, pd.Series):
+        # Use np.minimum for consistency and performance (handles NaN automatically)
+        maf_series = pd.Series(np.minimum(eaf.values, 1 - eaf.values), index=eaf.index)
+        return maf_series
+    else:
+        # Handle scalar or array
+        eaf_arr = np.asarray(eaf)
+        maf_arr = np.minimum(eaf_arr, 1 - eaf_arr)
+        return maf_arr
 
 def rank_based_int(series: pd.Series, c: float = 3/8) -> pd.Series:
     """
