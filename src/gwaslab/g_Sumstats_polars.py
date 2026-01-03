@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import time
 import copy
 from typing import TYPE_CHECKING, Optional, List, Any, Union
 
@@ -19,6 +18,8 @@ from gwaslab.qc.qc_fix_sumstats import _remove_dup
 from gwaslab.qc.qc_fix_sumstats import _fix_chr
 from gwaslab.qc.qc_fix_sumstats import _fix_pos
 from gwaslab.qc.qc_fix_sumstats import _fix_allele
+from gwaslab.qc.qc_fix_sumstats_polars import _fix_chrp
+from gwaslab.qc.qc_fix_sumstats_polars import _fix_posp
 from gwaslab.qc.qc_fix_sumstats import _parallelize_normalize_allele
 from gwaslab.qc.qc_sanity_check import _sanity_check_stats
 
@@ -87,7 +88,6 @@ from gwaslab.util.util_ex_ldsc import _estimate_rg_by_ldsc
 from gwaslab.util.util_ex_ldsc import _estimate_h2_cts_by_ldsc
 from gwaslab.util.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc 
 from gwaslab.util.util_ex_ldproxyfinder import _extract_ld_proxy
-from gwaslab.bd.bd_get_hapmap3 import _get_hapmap3
 from gwaslab.util.util_abf_finemapping import _abf_finemapping
 from gwaslab.util.util_abf_finemapping import _make_cs
 from gwaslab.io.io_read_pipcs import _read_pipcs
@@ -247,4 +247,72 @@ class Sumstatsp():
           readargs=readargs,
           log=self.log)
 
-        gc.collect()   
+        gc.collect()
+    
+    def fix_chr(self, **kwargs: Any) -> 'Sumstatsp':
+        """
+        Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
+        
+        This method normalizes chromosome labels to a consistent format, extracts chromosome
+        numbers from various formats (e.g., "chr1", "1", "chrX"), maps special chromosomes
+        (X, Y, mitochondrial) to standardized numeric identifiers, and optionally removes
+        invalid chromosome values.
+        
+        Parameters
+        ----------
+        chrom : str, default "CHR"
+            Column name for chromosome.
+        status : str, default "STATUS"
+            Column name for status.
+        add_prefix : str, optional, default=""
+            Prefix to prepend to chromosome labels (e.g., "chr").
+        remove : bool, default False
+            If True, remove records with invalid or unrecognized chromosome labels.
+        verbose : bool, default True
+            If True, print progress or diagnostic messages.
+        
+        Returns
+        -------
+        Sumstatsp
+            Returns self for method chaining.
+        """
+        from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
+        kwargs = remove_overlapping_kwargs(kwargs, {"log"})
+        self.data = _fix_chrp(self, log=self.log, **kwargs)
+        return self
+    
+    def fix_pos(self, **kwargs: Any) -> 'Sumstatsp':
+        """
+        Standardize and validate genomic base-pair positions.
+        
+        This method checks that reported genomic positions fall within valid chromosomal bounds
+        and optionally removes invalid entries. It handles string-formatted positions with
+        thousands separators, converts positions to Int64 type, and filters out positions
+        outside the specified range.
+        
+        Parameters
+        ----------
+        pos : str, default "POS"
+            Column name for position.
+        status : str, default "STATUS"
+            Column name for status.
+        remove : bool, default False
+            If True, remove records with invalid or out-of-range positions.
+        verbose : bool, default True
+            If True, print progress or diagnostic messages.
+        lower_limit : int, optional
+            Minimum acceptable genomic position. Default is 0.
+        upper_limit : int, optional
+            Maximum acceptable genomic position.
+        limit : int, default 250000000
+            Default upper limit applied when `upper_limit` is not provided.
+        
+        Returns
+        -------
+        Sumstatsp
+            Returns self for method chaining.
+        """
+        from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
+        kwargs = remove_overlapping_kwargs(kwargs, {"log"})
+        self.data = _fix_posp(self, log=self.log, **kwargs)
+        return self   

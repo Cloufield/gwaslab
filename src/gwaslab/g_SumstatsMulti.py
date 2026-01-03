@@ -8,7 +8,6 @@ if TYPE_CHECKING:
     from gwaslab.info.g_Log import Log
 
 from gwaslab.info.g_Log import Log
-from math import floor
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_input_type import _get_id_column
 from gwaslab.g_Sumstats_polars import Sumstatsp
@@ -18,8 +17,6 @@ from gwaslab.bd.bd_path_manager import _path
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm.hm_casting import _align_with_mold
 from gwaslab.hm.hm_casting import _fill_missing_columns
-from gwaslab.hm.hm_casting import _check_daf
-from gwaslab.hm.hm_casting import _assign_warning_code
 from gwaslab.hm.hm_casting import _renaming_cols
 from gwaslab.hm.hm_casting import _sort_pair_cols
 from gwaslab.hm.hm_casting_polars import _merge_mold_with_sumstats_by_chrposp

@@ -98,7 +98,8 @@ def preformatp(sumstats,
         if type(sumstats) is str:
             log.write("Start to load data from parquet file....",verbose=verbose)
             log.write(" -path: {}".format(sumstats),verbose=verbose)
-            sumstats = pl.read_parquet(sumstats,**readargs)
+            readargs_clean = _filter_polars_readargs(readargs)
+            sumstats = pl.read_parquet(sumstats,**readargs_clean)
             log.write("Finished loading parquet file into DataFrame....",verbose=verbose)
         else:
             raise ValueError("Please input a path for parquet file.")
@@ -344,7 +345,7 @@ def preformatp(sumstats,
                     skip_rows = get_skip_rows(i)
                     readargs["skip_rows"] = skip_rows
                     explicit = {"columns","schema_overrides"}
-                    readargs_clean = {k: v for k, v in readargs.items() if k not in explicit}
+                    readargs_clean = _filter_polars_readargs(readargs, exclude_explicit=explicit)
                     sumstats_chr = pl.read_csv(i,
                                         columns=usecols,
                                         schema_overrides=dtype_dictionary,
@@ -379,7 +380,7 @@ def preformatp(sumstats,
                                                 verbose=verbose)
                 else:
                     explicit = {"columns","schema_overrides"}
-                    readargs_clean = {k: v for k, v in readargs.items() if k not in explicit}
+                    readargs_clean = _filter_polars_readargs(readargs, exclude_explicit=explicit)
                     sumstats = pl.read_csv(inpath,
                                     columns=usecols,
                                     schema_overrides=dtype_dictionary,
@@ -504,6 +505,44 @@ def isfile_casesensitive(path):
     directory, filename = os.path.split(path)
     return filename in os.listdir(directory)
 
+def _filter_polars_readargs(readargs, exclude_explicit=None):
+    """
+    Filter readargs to only include valid polars read_csv/read_parquet parameters.
+    
+    Parameters
+    ----------
+    readargs : dict
+        Dictionary of read arguments
+    exclude_explicit : set, optional
+        Additional parameter names to exclude (e.g., 'columns', 'schema_overrides')
+    
+    Returns
+    -------
+    dict
+        Filtered readargs with only valid polars parameters
+    """
+    # Valid polars read_csv/read_parquet parameters (non-exhaustive list)
+    valid_polars_params = {
+        'separator', 'has_header', 'skip_rows', 'n_rows', 'infer_schema_length',
+        'null_values', 'comment_prefix', 'quote_char', 'encoding', 'low_memory',
+        'ignore_errors', 'try_parse_dates', 'truncate_ragged_lines', 'schema',
+        'schema_overrides', 'columns', 'new_columns', 'dtypes', 'dtype_overrides',
+        'missing_utf8_is_empty_string', 'raise_if_empty', 'rechunk', 'storage_options',
+        'use_pyarrow', 'pyarrow_options', 'parallel', 'row_count_name', 'row_count_offset'
+    }
+    
+    if exclude_explicit is None:
+        exclude_explicit = set()
+    
+    # Filter out invalid parameters
+    readargs_filtered = {
+        k: v for k, v in readargs.items() 
+        if k in valid_polars_params and k not in exclude_explicit
+    }
+    
+    return readargs_filtered
+
+
 def get_readargs_header(inpath,readargs):
     if "vcf.gz" in inpath:
         with gzip.open(inpath,'r') as file:      
@@ -518,6 +557,10 @@ def get_readargs_header(inpath,readargs):
     readargs_header = readargs.copy()
     readargs_header["n_rows"] = 1
     readargs_header["infer_schema_length"] = 0
+    
+    # Filter out gwaslab-specific parameters that polars doesn't understand
+    readargs_header = _filter_polars_readargs(readargs_header)
+    
     return readargs_header
 
 def get_skip_rows(inpath):

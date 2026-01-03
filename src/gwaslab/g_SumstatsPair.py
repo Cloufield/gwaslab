@@ -17,8 +17,6 @@ from gwaslab.g_Sumstats import Sumstats
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm.hm_casting import _align_with_mold
 from gwaslab.hm.hm_casting import _fill_missing_columns
-from gwaslab.hm.hm_casting import _check_daf
-from gwaslab.hm.hm_casting import _assign_warning_code
 from gwaslab.hm.hm_casting import _renaming_cols
 from gwaslab.hm.hm_casting import _sort_pair_cols
 
