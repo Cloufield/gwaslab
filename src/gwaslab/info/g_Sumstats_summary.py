@@ -98,8 +98,78 @@ def summarize(
     Returns
     -------
     dict
-        A hierarchical dictionary stored under `self.meta["gwaslab"]["summary"]`,
-        organized by categories listed above.
+        A hierarchical dictionary containing comprehensive quality-control summary
+        statistics. The dictionary is organized into the following sections:
+        
+        **META** (key: "overview")
+            Basic dataset metadata including:
+            - "Row_num": Total number of variants (rows) in the dataset
+            - "Column_num": Total number of columns in the dataset
+            - "Column_names": Comma-separated list of all column names
+            - "Last_checked_time": Timestamp of when the summary was generated
+            - "QC and Harmonization": Status of QC and harmonization checks
+        
+        **CHR** (key: "chromosomes")
+            Chromosome distribution information:
+            - "Chromosomes_notations": Sorted list of unique chromosome identifiers
+            - "Chromosomes_numbers": Count of unique chromosomes
+            - "chr{chr_id}": Count of variants per chromosome (one key per chromosome)
+        
+        **MISSING** (key: "missing_values")
+            Missing value statistics:
+            - "Missing_total": Total number of variants with at least one missing value
+            - "Missing_{col_name}": Count of missing values per column (only included if > 0)
+            - Each count also includes a corresponding "{key} percentage" entry
+        
+        **MAF** (key: "MAF", only if EAF column exists)
+            Minor allele frequency distribution:
+            - "Common (MAF>=0.05)": Count of common variants
+            - "Low_frequency (0.01<MAF<=0.05)": Count of low-frequency variants
+            - "Rare (0.001<MAF<=0.01)": Count of rare variants
+            - "Ultra Rare (MAF<=0.001)": Count of ultra-rare variants
+            - Each count also includes a corresponding "{key} percentage" entry
+        
+        **P** (key: "p_values", only if P column exists)
+            P-value significance statistics:
+            - "Minimum": Minimum p-value in the dataset
+            - "P<5e-8": Count of genome-wide significant variants (p < 5e-8)
+            - "P<5e-6": Count of suggestive significant variants (p < 5e-6)
+            - Each count also includes a corresponding "{key} percentage" entry
+        
+        **BETA** (key: "beta_for_significant_variants", only if both P and BETA columns exist)
+            Effect size magnitude for genome-wide significant variants (p < 5e-8):
+            - "P<5e-8 with ABS(BETA)>{threshold}": Count of significant variants with
+              absolute beta exceeding threshold, for thresholds: 10, 3, 1, 0.5, 0.3, 0.2, 0.1, 0.05
+            - Each count also includes a corresponding "{key} percentage" entry
+        
+        **STATUS** (key: "variant_status", only if STATUS column exists)
+            Variant QC status summary, organized by status code:
+            - Each status code (as string key) contains:
+              - "count": Number of variants with this status code
+              - "explanation": Dictionary explaining each digit of the status code:
+                - "Genome_Build": Reference genome build (CHM13/hg19/hg38/Unmapped/Unknown/Unchecked)
+                - "rsID&SNPID": Validation status of rsID and SNPID fields
+                - "CHR&POS": Validation status of chromosome and position fields
+                - "Stadardize&Normalize": Standardization and normalization status
+                - "Align": Alignment status to reference genome
+                - "Panlidromic_SNP&Indel": Palindromic SNP and indel status
+            - Each count also includes a corresponding "{key} percentage" entry
+        
+        **variants** (key: "variants")
+            Additional variant-level metadata:
+            - "variant_number": Total number of variants
+            - "min_P": Minimum p-value (only if P column exists and has values)
+            - "min_minor_allele_freq": Minimum minor allele frequency (only if EAF column exists)
+        
+        **samples** (key: "samples", only if N column exists)
+            Sample size statistics:
+            - "sample_size": Maximum sample size
+            - "sample_size_median": Median sample size
+            - "sample_size_min": Minimum sample size
+        
+        All numeric values are converted to native Python types (int, float, str, list, dict)
+        via the `to_python` function. Percentages are calculated as fractions of the total
+        variant count and are included for all count-based statistics.
     """
 
     # -------------------------------------------------------------------------
@@ -328,15 +398,102 @@ def lookupstatus(status: pd.Series) -> pd.DataFrame:
     Returns:
     --------
     pandas.DataFrame
-        DataFrame with columns:
-        - Genome_Build: Reference genome build information
-        - rsID&SNPID: Validation status of ID fields
-        - CHR&POS: Chromosome/position validation status
-        - Stadardize&Normalize: Standardization status
-        - Align: Reference alignment status
-        - Panlidromic_SNP&Indel: Variant type characteristics
-        - Count: Absolute count of each status code
-        - Percentage(%): Relative percentage of total variants
+        A DataFrame with one row per unique status code, sorted by status code index.
+        All columns are of string dtype. The DataFrame contains the following columns:
+        
+        **Index**: 
+            Status codes (as strings), sorted in ascending order. Each status code
+            is a 7-digit string where each digit position encodes different validation
+            information.
+        
+        **Genome_Build** (str):
+            Reference genome build mapping status. Possible values:
+            - "CHM13": Mapped to CHM13 reference
+            - "hg19": Mapped to hg19/GRCh37 reference
+            - "hg38": Mapped to hg38/GRCh38 reference
+            - "Unmapped": Variant could not be mapped to any reference
+            - "Unknown": Genome build status unknown
+            - "Unchecked": Genome build not yet checked
+            Encoded in the 1st-2nd digits of the status code.
+        
+        **rsID&SNPID** (str):
+            Validation status of rsID and SNPID identifier fields. Possible values:
+            - "rsid valid & SNPID valid": Both identifiers are valid
+            - "rsid valid & SNPID invalid": rsID valid, SNPID invalid
+            - "rsid invalid & SNPID valid": rsID invalid, SNPID valid
+            - "rsid invalid & SNPID invalid": Both identifiers invalid
+            - "rsid valid & SNPID valid": Both valid (alternative encoding)
+            - "rsid valid & SNPID unknown": rsID valid, SNPID status unknown
+            - "rsid unknown & SNPID valid": rsID status unknown, SNPID valid
+            - "rsid invalid & SNPID unknown": rsID invalid, SNPID status unknown
+            - "rsid unknown & SNPID invalid": rsID status unknown, SNPID invalid
+            - "Unchecked": Validation not yet performed
+            Encoded in the 3rd digit of the status code.
+        
+        **CHR&POS** (str):
+            Validation status of chromosome and position fields. Possible values:
+            - "CHR valid & POS valid": Both chromosome and position are valid
+            - "CHR invalid & POS invalid": Both chromosome and position invalid
+            - "CHR invalid & POS valid": Chromosome invalid, position valid
+            - "CHR valid & POS invalid": Chromosome valid, position invalid
+            - "CHR valid & POS unknown": Chromosome valid, position status unknown
+            - "CHR unknown & POS valid": Chromosome status unknown, position valid
+            - "CHR invalid & POS unknown": Chromosome invalid, position status unknown
+            - "CHR unknown & POS invalid": Chromosome status unknown, position invalid
+            - "Unchecked": Validation not yet performed
+            Encoded in the 4th digit of the status code.
+        
+        **Stadardize&Normalize** (str):
+            Standardization and normalization status of variant alleles. Possible values:
+            - "standardized SNP": Variant is a standardized SNP
+            - "standardized & normalized insertion": Standardized insertion variant
+            - "standardized & normalized deletion": Standardized deletion variant
+            - "standardized & normalized indel": Standardized indel variant
+            - "standardized indel": Standardized but not normalized indel
+            - "indistinguishable or not normalized allele": Allele cannot be distinguished or normalized
+            - "invalid allele notation": Allele notation is invalid
+            - "Unknown": Standardization status unknown
+            - "Unchecked": Standardization not yet performed
+            Encoded in the 5th digit of the status code.
+        
+        **Align** (str):
+            Alignment status to reference genome. Possible values:
+            - "Match: NEA=REF": Non-effect allele matches reference
+            - "Flipped_fixed": Alleles were flipped and fixed
+            - "Reverse_complementary_fixed": Reverse complement applied and fixed
+            - "Flipped": Alleles need to be flipped
+            - "Reverse_complementary": Reverse complement needed
+            - "Reverse_complementary+Flipped": Both reverse complement and flip needed
+            - "Both_alleles_on_ref+indistinguishable": Both alleles on reference, indistinguishable
+            - "Not_on_reference_genome": Variant not found on reference genome
+            - "Unchecked": Alignment not yet checked
+            Encoded in the 6th digit of the status code.
+        
+        **Panlidromic_SNP&Indel** (str):
+            Palindromic SNP and indel status. Possible values:
+            - "Not_palindromic_SNPs": Variant is not a palindromic SNP
+            - "Palindromic+strand": Palindromic SNP on positive strand
+            - "Palindromic-strand_fixed": Palindromic SNP on negative strand, fixed
+            - "Indel_match": Indel matches reference
+            - "Indel_flipped_fixed": Indel flipped and fixed
+            - "Palindromic-strand": Palindromic SNP on negative strand
+            - "Indel_flipped": Indel needs to be flipped
+            - "Indistinguishable": Variant type indistinguishable
+            - "No_matching_or_no_info": No matching information available
+            - "Unchecked": Status not yet checked
+            Encoded in the 7th digit of the status code.
+        
+        **Count** (str):
+            Absolute count of variants with this status code. Represented as a string
+            but contains numeric count values.
+        
+        **Percentage(%)** (str):
+            Relative percentage of variants with this status code, calculated as
+            (count / total_variants) * 100. Rounded to 2 decimal places. Represented
+            as a string but contains numeric percentage values.
+        
+        The DataFrame is sorted by the status code index in ascending order. Only
+        status codes that appear in the input Series are included in the output.
     """
     uniq_status = status.unique()
  

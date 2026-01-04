@@ -177,6 +177,8 @@ def _set_build(
     -------
     tuple
         (sumstats DataFrame, processed_build)
+        When called via :meth:`Sumstats.set_build()`, updates the Sumstats object in place
+        (modifies ``self.data`` and ``self.build``) and the method returns ``None``.
     """
     import pandas as pd
     

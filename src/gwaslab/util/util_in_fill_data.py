@@ -48,7 +48,9 @@ def _fill_data(
     Returns
     -------
     pandas.DataFrame
-        Modified summary statistics DataFrame with filled values
+        Modified summary statistics DataFrame with filled values.
+        When called via :meth:`Sumstats.fill_data()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
 
     Less used parameters
     ----------------

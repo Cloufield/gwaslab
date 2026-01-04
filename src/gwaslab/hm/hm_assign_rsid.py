@@ -98,6 +98,8 @@ def _assign_rsid(
     -------
     pd.DataFrame
         The input `sumstats` DataFrame with rsID column updated.
+        When called via :meth:`Sumstats.assign_rsid2()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
 
     Raises
     ------

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "4.0.2"
+version = "4.0.3"
 description = "Python toolkit for handling GWAS summary statistics"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -50,6 +50,7 @@ gwaslab = [
   "viz/*.json",
   "data/chrx_par/*",
   "data/chromosomes/*",
+  "data/cytoband/*",
   "data/high_ld/*",
   "data/hapmap3_SNPs/*",
   "qc/qc_researved_header.json"

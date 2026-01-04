@@ -24,7 +24,42 @@ from gwaslab.util.util_in_filter_value import _exclude_sexchr
 
 class ARGS():
     def __init__(self, kwargs=None):
+        """
+        Initialize ARGS object for LDSC (LD Score Regression) parameters.
         
+        This class stores all configuration parameters needed for LDSC analysis,
+        including reference LD scores, annotation files, and analysis options.
+        All parameters default to None unless specified in kwargs.
+        
+        Parameters
+        ----------
+        kwargs : dict, optional
+            Dictionary of keyword arguments containing LDSC parameters.
+            Common parameters include:
+            - bfile : str
+                Path to PLINK binary files (prefix)
+            - l2 : str
+                Path to LD score files
+            - ref_ld_chr : str
+                Path to reference LD score files (per chromosome)
+            - w_ld_chr : str
+                Path to LD weight files (per chromosome)
+            - annot : str
+                Path to annotation files
+            - h2 : bool
+                Flag to estimate heritability
+            - rg : str
+                Comma-separated list of trait names for genetic correlation
+            - samp_prev : str
+                Sample prevalence (case proportion)
+            - pop_prev : str
+                Population prevalence
+            - n_blocks : int, default=200
+                Number of blocks for jackknife
+            - chunk_size : int, default=50
+                Chunk size for processing
+            And many other LDSC-specific parameters.
+        """
         self.out = "ldsc"
 
         if "bfile" in kwargs.keys():
@@ -307,8 +342,10 @@ def _estimate_h2_by_ldsc(
     -------
     tuple
         A tuple containing:
-        - parsed_summary (pd.DataFrame): Heritability estimate and related statistics
-        - results_table (pd.DataFrame or None): Coefficient results if available; otherwise None
+        - parsed_summary : Stored in Sumstats.ldsc_h2
+            Heritability estimate and related statistics (typically a float or parsed summary)
+        - results_table : Stored in Sumstats.ldsc_h2_results
+            Coefficient results DataFrame if available; otherwise None
 
     Notes
     -----
@@ -385,6 +422,58 @@ def _estimate_h2_by_ldsc(
         start_function="estimate_partitioned_h2_by_ldsc"
 )
 def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, **raw_kwargs):
+    """
+    Estimate partitioned SNP heritability using LD score regression.
+    
+    This function performs partitioned LD score regression to estimate heritability
+    across different genomic annotations or functional categories (e.g., coding,
+    regulatory, intergenic regions).
+    
+    Parameters
+    ----------
+    insumstats : Sumstats or pd.DataFrame
+        Input summary statistics. Must contain columns: CHR, POS, EA, NEA.
+        Optionally requires: Z (or BETA/SE), N, SNP (or rsID).
+    log : Log
+        Logging object for recording progress and messages.
+    meta : dict, optional
+        Metadata dictionary containing study information. If provided and contains
+        sample_prevalence and population_prevalence, these will be used for
+        case-control trait analysis.
+    verbose : bool, default=True
+        If True, print detailed progress and status messages during execution.
+    **raw_kwargs
+        Additional keyword arguments forwarded to LDSC. Required parameters include:
+        - ref_ld_chr : str or path-like
+            Path to reference LD score files (per chromosome) with annotations
+        - w_ld_chr : str or path-like
+            Path to LD weight files (per chromosome)
+        - annot : str or path-like
+            Path to annotation files defining genomic partitions
+        Optional parameters:
+        - samp_prev : str or float
+            Sample prevalence (case proportion) for case-control traits
+        - pop_prev : str or float
+            Population prevalence for case-control traits
+        - n_blocks : int
+            Number of blocks for jackknife variance estimation
+        - Other LDSC-specific parameters
+    
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - parsed_summary : Stored in Sumstats.ldsc_partitioned_h2_summary
+            Partitioned heritability estimates and statistics
+        - results : Stored in Sumstats.ldsc_partitioned_h2_results
+            Detailed coefficient results DataFrame for each partition
+    
+    Notes
+    -----
+    This function wraps the partitioned LDSC implementation from Bulik-Sullivan et al. (2015).
+    Requires annotation files that define genomic partitions (e.g., functional categories).
+    For case-control studies, provide samp_prev and pop_prev via meta or raw_kwargs.
+    """
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
@@ -447,6 +536,62 @@ def _estimate_rg_by_ldsc(
     verbose: bool = True, 
     **raw_kwargs: Any
 ) -> pd.DataFrame:
+    """
+    Estimate genetic correlation between traits using cross-trait LD score regression.
+    
+    This function performs cross-trait LD score regression to estimate genetic
+    correlation (rg) between the primary trait and one or more other traits.
+    Genetic correlation measures the extent to which genetic effects are shared
+    between traits.
+    
+    Parameters
+    ----------
+    insumstats : Sumstats or pd.DataFrame
+        Primary trait summary statistics. Must contain columns: CHR, POS, EA, NEA.
+        Optionally requires: Z (or BETA/SE), N, SNP (or rsID).
+    other_traits : list of Sumstats or pd.DataFrame
+        List of summary statistics for other traits to correlate with the primary trait.
+        Each trait should have the same required columns as insumstats.
+    log : Log
+        Logging object for recording progress and messages.
+    meta : dict, optional
+        Metadata dictionary for the primary trait. If provided and contains
+        sample_prevalence and population_prevalence, these will be used for
+        case-control trait analysis.
+    verbose : bool, default=True
+        If True, print detailed progress and status messages during execution.
+    **raw_kwargs
+        Additional keyword arguments forwarded to LDSC. Required parameters include:
+        - ref_ld_chr : str or path-like
+            Path to reference LD score files (per chromosome)
+        - w_ld_chr : str or path-like
+            Path to LD weight files (per chromosome)
+        Optional parameters:
+        - rg : str
+            Comma-separated list of trait names. If not provided, will be
+            constructed from study names in metadata.
+        - samp_prev : str
+            Comma-separated sample prevalences for all traits (primary + others)
+        - pop_prev : str
+            Comma-separated population prevalences for all traits (primary + others)
+        - Other LDSC-specific parameters
+    
+    Returns
+    -------
+    pd.DataFrame
+        Stored in Sumstats.ldsc_rg. DataFrame containing genetic correlation estimates (rg) 
+        and standard errors between the primary trait and each other trait, along with 
+        p-values and confidence intervals.
+    
+    Notes
+    -----
+    This function wraps the cross-trait LDSC implementation from Bulik-Sullivan et al. (2015).
+    Genetic correlation ranges from -1 to 1, where:
+    - rg = 1: Complete positive genetic correlation
+    - rg = 0: No genetic correlation
+    - rg = -1: Complete negative genetic correlation
+    For case-control studies, provide samp_prev and pop_prev for all traits.
+    """
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
@@ -560,6 +705,53 @@ def _estimate_h2_cts_by_ldsc(
     verbose: bool = True, 
     **raw_kwargs: Any
 ) -> Tuple[Any, Any]:
+    """
+    Estimate cell type-specific (CTS) heritability using LD score regression.
+    
+    This function performs cell type-specific LD score regression to identify
+    which cell types or tissues are most relevant for a trait by testing for
+    heritability enrichment in cell type-specific annotations.
+    
+    Parameters
+    ----------
+    insumstats : Sumstats or pd.DataFrame
+        Input summary statistics. Must contain columns: CHR, POS, EA, NEA.
+        Optionally requires: Z (or BETA/SE), N, SNP (or rsID).
+    log : Log
+        Logging object for recording progress and messages.
+    verbose : bool, default=True
+        If True, print detailed progress and status messages during execution.
+    **raw_kwargs
+        Additional keyword arguments forwarded to LDSC. Required parameters include:
+        - ref_ld_chr_cts : str or path-like
+            Path to cell type-specific LD score files (per chromosome)
+        - w_ld_chr : str or path-like
+            Path to LD weight files (per chromosome)
+        - cts_bin : str or path-like
+            Path to binary annotation files for cell types
+        Optional parameters:
+        - cts_breaks : str
+            Comma-separated breakpoints for binning annotations
+        - cts_names : str
+            Comma-separated names for cell types
+        - print_all_cts : bool
+            If True, print results for all cell types
+        - Other LDSC-specific parameters
+    
+    Returns
+    -------
+    Any
+        Stored in Sumstats.ldsc_h2_cts. Results from cell type-specific analysis,
+        typically containing heritability enrichment estimates for different cell types
+        or tissues.
+    
+    Notes
+    -----
+    This function wraps the cell type-specific LDSC implementation from
+    Finucane et al. (2018). It identifies disease-relevant tissues and cell types
+    by testing for heritability enrichment in cell type-specific gene expression
+    annotations. Requires pre-computed cell type-specific LD scores.
+    """
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:

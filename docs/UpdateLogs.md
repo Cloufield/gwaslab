@@ -1,5 +1,21 @@
 # Update Logs
 
+# v4.0.3 20260104
+
+- Added new visualization: `plot_phenogram()` for chromosome-wide association visualization with cytoband annotations
+- Enhanced BED file support: added `io_ucsc_bed.py` and `io_plink.py` for comprehensive BED file reading and processing
+- Added ChromosomeMapper integration: unified chromosome format conversion system in `bd_chromosome_mapper.py` and `bd_common_data.py`
+- Enhanced Polars support: major refactoring of Polars-based QC functions (`qc_check_datatype_polars.py`, `qc_fix_sumstats_polars.py`)
+- Improved `fill_data()`: enhanced allele frequency inference and data filling capabilities with expanded test coverage
+- Enhanced `filter_value()`: improved filtering logic with better expression parsing and performance optimizations
+- Added cytoband data files: included hg19 and hg38 cytoband annotation files for visualization
+- Enhanced regional plot: improved stacked regional plot functionality with better visualization options
+- Improved GTF parsing: enhanced gene annotation and region extraction capabilities
+- Enhanced QC decorators: improved error handling and logging in QC functions
+- Comprehensive test suite: added extensive tests for `fill_data()`, BED filtering, and `fix_id()` functionality
+- Updated CLI: improved command-line interface functionality
+- Documentation updates: enhanced visualization and index documentation
+
 # v4.0.2 
 
 - Fixed log message accuracy issues: < or <=

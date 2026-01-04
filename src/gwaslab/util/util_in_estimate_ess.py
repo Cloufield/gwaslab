@@ -33,7 +33,9 @@ def _get_ess(
     Returns
     -------
     pandas.DataFrame
-        Modified sumstats DataFrame with N_EFF column added
+        Modified sumstats DataFrame with N_EFF column added.
+        When called via :meth:`Sumstats.get_ess()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     
     References
     ----------

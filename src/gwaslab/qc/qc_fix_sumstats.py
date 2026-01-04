@@ -93,6 +93,8 @@ def _fix_ID(sumstats_obj: Union['Sumstats', pd.DataFrame],
     -------
     pd.DataFrame
         Modified sumstats.data with fixed data.
+        When called via :meth:`Sumstats.fix_id()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -442,6 +444,8 @@ def _strip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: 
     -------
     pd.DataFrame
         Modified sumstats with stripped SNPIDs.
+        When called via :meth:`Sumstats.strip_snpid()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     '''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -495,6 +499,8 @@ def _flip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: s
     -------
     pd.DataFrame
         Modified sumstats with flipped alleles.
+        When called via :meth:`Sumstats.flip_snpid()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     '''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -561,6 +567,8 @@ def _remove_dup(sumstats_obj: Union['Sumstats', pd.DataFrame], mode: str = "dm",
     pandas.DataFrame
         Summary statistics with duplicates and multi-allelic variants removed
         according to the specified mode.
+        When called via :meth:`Sumstats.remove_dup()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
 
     """
     sumstats = sumstats_obj.data
@@ -834,6 +842,8 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
     -------
     pandas.DataFrame
         Summary statistics table with standardized chromosome identifiers.
+        When called via :meth:`Sumstats.fix_chr()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     """
     import pandas as pd
     
@@ -1026,6 +1036,8 @@ def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", st
     -------
     pandas.DataFrame
         Summary statistics with standardized and validated base-pair positions.
+        When called via :meth:`Sumstats.fix_pos()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1143,6 +1155,8 @@ def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", n
     -------
     pandas.DataFrame
         Summary statistics table with validated and standardized allele values.
+        When called via :meth:`Sumstats.fix_allele()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1323,6 +1337,8 @@ def _parallelize_normalize_allele(sumstats_obj: Union['Sumstats', pd.DataFrame],
     -------
     pandas.DataFrame
         Summary statistics with normalized indel allele representations.
+        When called via :meth:`Sumstats.normalize_allele()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     sumstats = sumstats_obj.data
     ############################################################################################
@@ -1702,6 +1718,8 @@ def _flip_allele_stats(sumstats_obj: Union['Sumstats', pd.DataFrame], status: st
     -------
     pandas.DataFrame
         Summary statistics with effect sizes and alleles flipped where required.
+        When called via :meth:`Sumstats.flip_allele_stats()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -1862,6 +1880,8 @@ def _sort_coordinate(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str =
     -------
     pandas.DataFrame
         DataFrame with sorted genomic coordinates.
+        When called via :meth:`Sumstats.sort_coordinate()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -1928,6 +1948,8 @@ def _sort_column(sumstats_obj: Union['Sumstats', pd.DataFrame], verbose: bool = 
     -------
     pd.DataFrame
         Modified sumstats with reordered columns.
+        When called via :meth:`Sumstats.sort_column()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     import pandas as pd
     # Handle both DataFrame and Sumstats object

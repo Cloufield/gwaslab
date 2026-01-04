@@ -322,6 +322,8 @@ def _parallelize_rsid_to_chrpos(
         Updated summary statistics DataFrame with CHR and POS values assigned based on rsID matches. 
         Variants without valid rsIDs or matches will retain original values (or NaN if new columns were 
         created).
+        When called via :meth:`Sumstats.rsid_to_chrpos()` or :meth:`Sumstats.rsid_to_chrpos2()`, 
+        updates the Sumstats object in place (modifies ``self.data``) and the method returns ``self``.
 
     Notes
     -----
@@ -958,6 +960,8 @@ def _check_ref(
     pd.DataFrame
         Updated summary statistics DataFrame with status codes reflecting
         alignment with reference genome.
+        When called via :meth:`Sumstats.check_ref()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
 
     Notes
     -----
@@ -1274,6 +1278,8 @@ def _parallelize_assign_rsid(
     -------
     pd.DataFrame
         Updated summary statistics DataFrame with rsID assignments.
+        When called via :meth:`Sumstats.assign_rsid()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
 
     Notes
     -----
@@ -1780,6 +1786,13 @@ def _parallelize_infer_strand(
 
         The usefulness of a cache_loader or cache_process object is to pass a custom object which already has the cache loaded. This can be useful if the cache is loaded in background in another thread/process while other operations are performed.
         The cache_manager is a CacheManager object is used to expose the API to interact with the cache.
+    
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with inferred strand information.
+        When called via :meth:`Sumstats.infer_strand()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     """
     # Handle both DataFrame and Sumstats object
     import pandas as pd

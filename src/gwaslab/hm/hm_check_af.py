@@ -122,6 +122,8 @@ def _check_af_with_annotation(
     pd.DataFrame or Sumstats
         If input is a DataFrame, returns updated DataFrame with DAF column.
         If input is a Sumstats object, returns the Sumstats object with updated data.
+        When called via :meth:`Sumstats.check_af2()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     
     Notes
     -----
@@ -399,6 +401,8 @@ def _infer_af_with_annotation(
     pd.DataFrame or Sumstats
         If input is a DataFrame, returns updated DataFrame with inferred EAF values.
         If input is a Sumstats object, returns the Sumstats object with updated data.
+        When called via :meth:`Sumstats.infer_af2()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     
     Notes
     -----
@@ -693,6 +697,8 @@ def _infer_af_with_maf_annotation(
     pd.DataFrame or Sumstats
         If input is a DataFrame, returns updated DataFrame with inferred EAF values.
         If input is a Sumstats object, returns the Sumstats object with updated data.
+        When called via :meth:`Sumstats.infer_af2()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     
     Notes
     -----

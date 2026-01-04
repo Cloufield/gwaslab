@@ -247,7 +247,10 @@ def _filter_values(sumstats_obj: Union['Sumstats', pd.DataFrame], expr: str, rem
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table
+        Filtered summary statistics table.
+        When called via :meth:`Sumstats.filter_value()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -450,7 +453,10 @@ def _filter_in(
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table
+        Filtered summary statistics table.
+        When called via :meth:`Sumstats.filter_in()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -505,7 +511,10 @@ def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], pa
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table containing only variants in the specified regions
+        Filtered summary statistics table containing only variants in the specified regions.
+        When called via :meth:`Sumstats.filter_region_in()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -559,7 +568,10 @@ def _filter_region_out(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], p
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table with variants in specified regions removed
+        Filtered summary statistics table with variants in specified regions removed.
+        When called via :meth:`Sumstats.filter_region_out()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -845,7 +857,9 @@ def _infer_build(sumstats: Union['Sumstats', pd.DataFrame], status: str = "STATU
     -------
     pandas.DataFrame
         Updated summary statistics DataFrame with inferred build version.
-        If called with Sumstats object, also updates self.build and self.meta["gwaslab"]["genome_build"].
+        When called via :meth:`Sumstats.infer_build()`, updates the Sumstats object in place
+        (modifies ``self.data``, ``self.build``, and ``self.meta["gwaslab"]["genome_build"]``)
+        and the method returns ``None``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -934,7 +948,10 @@ def _sampling(sumstats: pd.DataFrame, n: int = 1, p: Optional[float] = None, ver
     Returns:
     --------
     pandas.DataFrame
-        Subsampled summary statistics table
+        Subsampled summary statistics table.
+        When called via :meth:`Sumstats.random_variants()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     
     """
     if p is None:
@@ -980,7 +997,10 @@ def _get_flanking(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid:
     Returns:
     --------
     pandas.DataFrame
-        Variants in flanking regions
+        Variants in flanking regions.
+        When called via :meth:`Sumstats.filter_flanking()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1029,7 +1049,10 @@ def _get_flanking_by_id(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], 
     Returns:
     --------
     pandas.DataFrame
-        Variants in flanking regions
+        Variants in flanking regions.
+        When called via :meth:`Sumstats.filter_flanking_by_id()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1095,7 +1118,10 @@ def _get_flanking_by_chrpos(sumstats: pd.DataFrame, chrpos: Union[List[Union[int
     Returns:
     --------
     pandas.DataFrame
-        Variants in flanking regions
+        Variants in flanking regions.
+        When called via :meth:`Sumstats.filter_flanking_by_chrpos()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1152,7 +1178,10 @@ def _filter_palindromic(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA"
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table
+        Filtered summary statistics table.
+        When called via :meth:`Sumstats.filter_palindromic()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     is_palindromic_snp = is_palindromic(sumstats[[nea,ea]],a1=nea,a2=ea)   
     
@@ -1183,7 +1212,10 @@ def _filter_indel(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea:
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table
+        Filtered summary statistics table.
+        When called via :meth:`Sumstats.filter_indel()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     is_indel = (sumstats[ea].str.len()!=sumstats[nea].str.len()) 
     
@@ -1212,7 +1244,10 @@ def _filter_snp(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: s
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table
+        Filtered summary statistics table.
+        When called via :meth:`Sumstats.filter_snp()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
     
@@ -1251,7 +1286,10 @@ def _exclude_hla(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS", l
     Returns:
     --------
     pandas.DataFrame
-        Filtered summary statistics table with HLA variants removed
+        Filtered summary statistics table with HLA variants removed.
+        When called via :meth:`Sumstats.exclude_hla()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     if build is not None:
         build = _process_build(build = build,log = log,verbose = verbose)
@@ -1531,7 +1569,10 @@ def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], regio
     Returns:
     --------
     pandas.DataFrame
-        Subset of summary statistics in the specified region (or with specified regions excluded)
+        Subset of summary statistics in the specified region (or with specified regions excluded).
+        When called via :meth:`Sumstats.filter_region()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     """
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -1622,7 +1663,10 @@ def _search_variants(sumstats: pd.DataFrame, snplist: Optional[List[Union[str, L
     Returns:
     --------
     pandas.DataFrame
-        Subset of summary statistics containing matching variants
+        Subset of summary statistics containing matching variants.
+        When called via :meth:`Sumstats.search()`, returns a new Sumstats object
+        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+        and returns ``None`` if ``inplace=True``.
     
     Examples:
     ---------

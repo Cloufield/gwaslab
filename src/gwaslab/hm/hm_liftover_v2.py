@@ -129,6 +129,8 @@ def _liftover_variant(sumstats_obj,
         - Updated STATUS column with new status codes reflecting the liftover results
         - Unmapped variants are either removed (if remove=True) or kept with NA values
           for CHR and POS (if remove=False)
+        When called via :meth:`Sumstats.liftover()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``None``.
     
     Notes
     -----

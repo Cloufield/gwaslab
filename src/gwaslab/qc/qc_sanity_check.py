@@ -277,6 +277,8 @@ def _sanity_check_stats(sumstats_obj: Union['Sumstats', pd.DataFrame],
 
     Returns:
         pd.DataFrame: Modified sumstats with invalid variants removed.
+        When called via :meth:`Sumstats.check_sanity()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     # Load default ranges from JSON file (single source of truth)
     default_ranges = get_default_sanity_ranges()
@@ -429,6 +431,8 @@ def _check_data_consistency(sumstats_obj: Union['Sumstats', pd.DataFrame], beta:
     -------
     pandas.DataFrame
         Summary statistics table including annotations for detected inconsistencies.
+        When called via :meth:`Sumstats.check_data_consistency()`, updates the Sumstats object in place
+        (modifies ``self.data``) and the method returns ``self``.
     '''
     sumstats = sumstats_obj.data
 

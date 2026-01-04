@@ -348,7 +348,7 @@ class Sumstats():
             if self.meta["gwaslab"]["species"] == "homo sapiens":
                 self.log.warning("Build is unknown. .infer_build first.")
                 try:
-                    self.infer_build()
+                    self.infer_build(log=self.log, verbose=verbose)
                 except:
                     pass
         return self._build
@@ -1237,6 +1237,7 @@ class Sumstats():
                                                                     build=self.build, 
                                                                     log=self.log,
                                                                     **kwargs)
+        return self.meta["gwaslab"]["inferred_ancestry"]
 
     @suppress_display
     def plot_gwheatmap(self, **kwargs: Any) -> Any:
