@@ -38,7 +38,7 @@ from gwaslab.viz.viz_aux_save_figure import safefig
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_plot_density import _process_density
-from gwaslab.viz.viz_plot_manhattan_like import _configure_fig_save_kwargs, _add_pad_to_x_axis, _configure_cols_to_use, _sanity_check, _process_p_value, _process_highlight, _process_line, _process_cbar, _process_xtick, _process_ytick, _process_xlabel, _process_ylabel, _process_spine, _process_layout
+from gwaslab.viz.viz_plot_manhattan_like import _configure_fig_save_kwargs, _add_pad_to_x_axis, _configure_cols_to_use, _sanity_check, _process_p_value, _process_highlight, _process_line, _process_cbar, _process_xtick, _process_ytick, _process_xlabel, _process_ylabel, _process_spine, _process_layout, _adjust_spacing_for_ax3_labels
 import gwaslab.viz.viz_plot_manhattan_like as manlike
 from gwaslab.viz.viz_plot_manhattan_mode import draw_manhattan_panel
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
@@ -187,6 +187,7 @@ def _mqqplot(insumstats,
           ld_if_add_T = False,
           ld_map_rename_dic = None,
           ld_map_kwargs = None,
+          ld_block=False,
           cbar_title='LD $\mathregular{r^2}$ with variant',
           cbar_fontsize = None,
           cbar_scale=True,
@@ -880,11 +881,25 @@ def _mqqplot(insumstats,
     # "qq": QQ plot
     # "r" : regional plot
     
-    fig, ax1, ax2, ax3, ax4, cbar = _process_layout(mode=mode, 
+    # Check if ld_block is requested for regional plots
+    ld_block_enabled = (ld_block and "r" in mode and vcf_path is not None and region is not None)
+    if ld_block:
+        log.write("ld_block requested: ld_block={}, mode={}, vcf_path={}, region={}".format(
+            ld_block, mode, vcf_path is not None, region is not None), verbose=verbose)
+        log.write("ld_block_enabled: {}".format(ld_block_enabled), verbose=verbose)
+    
+    layout_result = _process_layout(mode=mode, 
                                          figax=figax, 
                                          fig_kwargs=fig_kwargs, 
                                          mqqratio=mqqratio, 
-                                         region_hspace=region_hspace)
+                                         region_hspace=region_hspace,
+                                         ld_block=ld_block_enabled)
+    if ld_block_enabled:
+        fig, ax1, ax2, ax3, ax4, cbar, ax_pos, ax_ld_block = layout_result
+    else:
+        fig, ax1, ax2, ax3, ax4, cbar = layout_result
+        ax_pos = None
+        ax_ld_block = None
     highlight_i = []
     
 # mode specific settings ####################################################################
@@ -1184,7 +1199,7 @@ def _mqqplot(insumstats,
         # Step 9: Add region panel if specified ##################################################
         if (region is not None) and ("r" in mode):
             
-            ax1, ax3, ax4, cbar, lead_snp_is, lead_snp_is_color =_plot_regional(
+            ax1, ax3, ax4, cbar, lead_snp_is, lead_snp_is_color = _plot_regional(
                                 sumstats=sumstats,
                                 fig=fig,
                                 ax1=ax1,
@@ -1236,6 +1251,44 @@ def _mqqplot(insumstats,
                                 verbose=verbose,
                                 log=log
                             )
+            
+            # After _plot_regional sets ticks on ax3, hide tick labels on ax1 and ax_pos (if they exist)
+            # Only ax3 should show x-axis tick labels
+            # Do this immediately after _plot_regional sets ticks, before LD block is plotted
+
+            # Add LD block plot if requested
+            if ld_block_enabled and ax_ld_block is not None:
+                from gwaslab.viz.viz_plot_ld_block import plot_ld_block as _plot_ld_block
+                log.write("Adding LD block plot with position bar...", verbose=verbose)
+                
+                # Ensure ax_pos shares x-axis with ax1 (regional plot)
+                # ax_ld_block does NOT share x-axis (uses rank-based coordinate system)
+                if ax_pos is not None:
+                    if not hasattr(ax_pos, '_shared_axes') or 'x' not in ax_pos._shared_axes:
+                        ax_pos.sharex(ax1)
+                
+                # Plot LD block with position bar in regional mode
+                _plot_ld_block(
+                    vcf_path=vcf_path,
+                    region=region,
+                    sumstats=sumstats,
+                    ax=ax_ld_block,
+                    ax_pos=ax_pos,
+                    xlabel="",
+                    cbar=True,
+                    log=log,
+                    verbose=verbose,
+                    fontsize=fontsize,
+                    font_family=fontfamily
+                )
+                
+                # Note: Spacing adjustment will be done before saving (after all plots are complete)
+            
+            if ld_block_enabled and ax_pos is not None:
+                # Hide x-axis tick labels on ax1 and ax_pos (only show on ax3)
+                # Keep tick marks visible, just hide labels
+                ax1.tick_params(axis='x', which='both', labelbottom=False)
+                ax_pos.tick_params(axis='x', which='both', labelbottom=False)
             
         else:
             lead_snp_is =[]
@@ -1505,6 +1558,11 @@ def _mqqplot(insumstats,
         )
 
     
+    # Step 12.5: Adjust spacing for ax3 tick labels (if ld_block is enabled)
+    # This must happen after all plots are done but before saving
+    if ld_block_enabled and ax_pos is not None and ax_ld_block is not None:
+        _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=log, verbose=verbose)
+    
     # Step 13: Save figure
     save_figure(fig = fig, save = save, keyword=mode, save_kwargs=save_kwargs, log = log, verbose=verbose)
 
@@ -1531,3 +1589,4 @@ from gwaslab.viz.viz_plot_manhattan_like import _process_xlabel as _process_xlab
 from gwaslab.viz.viz_plot_manhattan_like import _process_ylabel as _process_ylabel
 from gwaslab.viz.viz_plot_manhattan_like import _process_spine as _process_spine
 from gwaslab.viz.viz_plot_manhattan_like import _process_layout as _process_layout
+from gwaslab.viz.viz_plot_manhattan_like import _adjust_spacing_for_ax3_labels as _adjust_spacing_for_ax3_labels

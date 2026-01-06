@@ -35,6 +35,7 @@ from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq as _plot_stack
 from gwaslab.viz.viz_plot_trumpetplot import plot_power as _plot_power
 from gwaslab.viz.viz_plot_trumpetplot import plot_power_x as _plot_power_x
 from gwaslab.viz.viz_plot_scatter_with_reg import scatter as _scatter
+from gwaslab.viz.viz_plot_ld_block import plot_ld_block as _plot_ld_block
 
 from gwaslab.bd.bd_common_data import get_NC_to_chr
 from gwaslab.bd.bd_common_data import get_NC_to_number
@@ -117,3 +118,9 @@ def scatter(df: Union[pd.DataFrame, Sumstats], x: str, y: str, **kwargs: Any) ->
     params = _viz_params.merge("plot_scatter", kwargs)
     params = _viz_params.filter(_scatter, params, key="plot_scatter", log=Log(), verbose=params.get("verbose", True))
     return _scatter(df=df, x=x, y=y, **params)
+
+def plot_ld_block(**kwargs: Any) -> Any:
+    """Plot LD block as a 45°-rotated inverted triangle from LD matrix or VCF file."""
+    params = _viz_params.merge("plot_ld_block", kwargs)
+    params = _viz_params.filter(_plot_ld_block, params, key="plot_ld_block", log=Log(), verbose=params.get("verbose", True))
+    return _plot_ld_block(**params)

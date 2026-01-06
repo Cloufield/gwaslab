@@ -148,6 +148,7 @@ from gwaslab.viz.viz_plot_phenogram import _plot_phenogram
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
+from gwaslab.viz.viz_plot_ld_block import plot_ld_block as _plot_ld_block
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 # ----- Downstream Analysis -----
@@ -1299,6 +1300,16 @@ class Sumstats():
         if "build" not in params:
             params["build"] = self.build
         fig = _plot_phenogram(self, **params)
+        return fig
+
+    @add_doc(_plot_ld_block)
+    @suppress_display
+    def plot_ld_block(self, **kwargs: Any) -> Any:
+        params = self._apply_viz_params(_plot_ld_block, kwargs, key="plot_ld_block")
+        # If vcf_path and region are provided, automatically use self as sumstats
+        if params.get("vcf_path") is not None and params.get("region") is not None:
+            params["sumstats"] = self
+        fig, ax = _plot_ld_block(**params)
         return fig
 
     @add_doc(_plot_effect)
