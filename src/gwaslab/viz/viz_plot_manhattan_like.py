@@ -284,7 +284,7 @@ def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(), verbose=True):
 
 def _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=Log(), verbose=True):
     """
-    Adjust spacing between ax3 and ax_pos based on ax3 x-axis label positions.
+    Adjust spacing between ax3 and ax_pos based on ax3 x-axis tick label positions.
     
     Calculates the space needed for ax3's rotated tick labels and adjusts
     the positions of ax_pos and ax_ld_block accordingly.
@@ -330,7 +330,7 @@ def _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=Log(), ver
             label_height_fig = (label_height_points / 72.0) / fig_height
             vertical_extent = label_height_fig * 0.707  # sin(45)
             padding = 0.02
-            required_space = vertical_extent + padding
+            required_space = vertical_extent*1.3 + padding
         else:
             for label in ax3_tick_labels:
                 if label.get_visible():
@@ -342,7 +342,7 @@ def _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=Log(), ver
                         max_bottom = min(max_bottom, bbox_fig.y0)
             
             # Calculate required space: distance from ax3 bottom to lowest label
-            required_space = pos3.y0 - max_bottom + 0.01  # Add small padding
+            required_space = (pos3.y0 - max_bottom)*1.3 + 0.01  # Add small padding
     else:
         # Fallback if no labels
         required_space = 0.05

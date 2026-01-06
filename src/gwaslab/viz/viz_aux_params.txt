@@ -2060,6 +2060,72 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
+    "anno_cell": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Whether to annotate LD block cells with r² values.",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "anno_cell_fmt": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Format string for LD cell annotations (e.g., '{:.2f}' for 2 decimal places).",
+      "default": "{:.2f}",
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "anno_cell_kwargs": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Additional keyword arguments for LD cell text annotations (e.g., {'fontsize': 10, 'weight': 'bold', 'color': 'white'}).",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_block_grid": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Whether to draw grid lines on the LD block plot.",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_block_grid_kwargs": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Additional keyword arguments for LD block grid lines (e.g., {'color': 'gray', 'linewidth': 0.5, 'alpha': 0.5}).",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_block": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Enable LD block plot (45° rotated inverted triangle) in regional plots",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
     "legend1": {
       "plots": [
         "plot_daf"

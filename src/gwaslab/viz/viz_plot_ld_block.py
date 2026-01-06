@@ -436,15 +436,15 @@ def _plot_position_bar(
     bar_height = 0.1
     ax_pos.barh(0, width=pos_range, left=pos_min, height=bar_height, color='gray', alpha=0.3)
     
-    # Add tick marks at ALL variant positions (using actual positions)
-    ax_pos.scatter(actual_positions, np.zeros(n), s=10, color='black', marker='|', zorder=3)
+    # Add vertical lines at ALL variant positions (using actual positions) that fill ylim(0, 0.05)
+    ax_pos.vlines(actual_positions, 0, 0.05, colors='black', linewidth=1, zorder=3)
     
     # Set x-axis limits based on actual positions (only if not shared)
     # In regional mode, xlim is set by shared x-axis
     if not (hasattr(ax_pos, '_shared_axes') and 'x' in ax_pos._shared_axes):
         padding = pos_range * 0.02 if pos_range > 0 else (pos_max * 0.01 if pos_max > 0 else 1)
         ax_pos.set_xlim(pos_min - padding, pos_max + padding)
-    ax_pos.set_ylim(-0.05, 0.05)
+    ax_pos.set_ylim(0, 0.05)
     
     # Create equally spaced tick positions along the x-axis range
     # Use a reasonable number of ticks (10-20 depending on range)
@@ -477,10 +477,10 @@ def _plot_position_bar(
     
     # Remove y-axis
     ax_pos.set_yticks([])
-    ax_pos.spines['left'].set_visible(False)
-    ax_pos.spines['right'].set_visible(False)
+    ax_pos.spines['left'].set_visible(True)
+    ax_pos.spines['right'].set_visible(True)
     ax_pos.spines['top'].set_visible(True)  # Show top spine since bar is on top
-    ax_pos.spines['bottom'].set_visible(False)  # Hide bottom spine
+    ax_pos.spines['bottom'].set_visible(True)  # Hide bottom spine
 
 
 def _add_annotation_lines(
@@ -492,7 +492,9 @@ def _add_annotation_lines(
     line_color: str = 'gray',
     line_alpha: float = 0.3,
     line_style: str = '--',
-    line_width: float = 0.5
+    line_width: float = 0.5,
+    lead_snp_is: Optional[list] = None,
+    lead_snp_is_color: Optional[list] = None
 ) -> None:
     """
     Add annotation lines connecting position bar to LD block cell right top corners.
@@ -519,8 +521,18 @@ def _add_annotation_lines(
         Line style for annotation lines. Default: '--'.
     line_width : float
         Line width for annotation lines. Default: 0.5.
+    lead_snp_is : list, optional
+        List of lead SNP i-coordinates (x-axis positions). Default: None.
+    lead_snp_is_color : list, optional
+        List of colors corresponding to lead SNPs. Default: None.
     """
     n = len(ranks)
+    
+    # Create a mapping from actual positions to lead SNP colors
+    lead_snp_color_map = {}
+    if lead_snp_is is not None and lead_snp_is_color is not None:
+        for lead_pos, lead_color in zip(lead_snp_is, lead_snp_is_color):
+            lead_snp_color_map[lead_pos] = lead_color
     
     # Select positions to annotate - all if n_lines is None, otherwise subset
     if n_lines is None:
@@ -537,6 +549,15 @@ def _add_annotation_lines(
     for idx in indices:
         rank = ranks[idx]
         actual_pos = actual_positions[idx]
+        
+        # Determine color and line width for this line: use lead SNP color and thicker width if available
+        current_color = line_color
+        current_linewidth = line_width
+        is_lead_snp = actual_pos in lead_snp_color_map
+        if is_lead_snp:
+            current_color = lead_snp_color_map[actual_pos]
+            # Make lead SNP lines more visible with thicker width
+            current_linewidth = max(line_width * 2.5, 2.0)  # At least 2.0, or 2.5x the default width
         
         # Start point: position bar (actual position, bottom of bar)
         x_start = actual_pos  # Use actual position, not rank
@@ -567,10 +588,178 @@ def _add_annotation_lines(
             xyA=(x_start, y_start), xyB=(x_end, y_end),
             coordsA=ax_pos.transData, coordsB=ax_ld.transData,
             axesA=ax_pos, axesB=ax_ld,
-            color=line_color, alpha=line_alpha, linestyle=line_style, linewidth=line_width,
+            color=current_color, alpha=line_alpha, linestyle=line_style, linewidth=current_linewidth,
             zorder=1
         )
         ax_ld.add_patch(con)
+
+
+def _draw_ld_block_grid(
+    ax: 'Axes',
+    ranks: np.ndarray,
+    grid_kwargs: Optional[dict] = None
+) -> None:
+    """
+    Draw grid lines on the LD block plot.
+    
+    Parameters
+    ----------
+    ax : Axes
+        Axes object for the LD block plot.
+    ranks : np.ndarray
+        Variant rank array (length n).
+    grid_kwargs : dict, optional
+        Additional keyword arguments for grid lines (e.g., {'color': 'gray', 'linewidth': 0.5, 'alpha': 0.5}).
+        Default: None.
+    """
+    n = len(ranks)
+    
+    # Get edge coordinates (same as used in _plot_ld_triangle)
+    e = _edges_from_centers(ranks)  # (n+1,)
+    
+    # Default grid styling
+    default_grid_kwargs = {
+        'color': 'gray',
+        'linewidth': 0.5,
+        'alpha': 0.3,
+        'linestyle': '-',
+        'zorder': 5
+    }
+    
+    # Update with user-provided kwargs if any
+    if grid_kwargs is not None:
+        default_grid_kwargs.update(grid_kwargs)
+    
+    # Draw grid lines along cell boundaries in the transformed coordinate system
+    # For the upper triangle, we draw lines along the edges of cells
+    
+    # Draw lines along constant X (from diagonal to top boundary)
+    for i in range(len(e)):
+        x_edge = e[i]
+        y_max = e[-1]
+        
+        # Only draw if this X edge is within the triangle (x_edge <= y_max)
+        if x_edge <= y_max:
+            # Start at diagonal where Y = X: U = x_edge, V_negated = 0
+            u_start = x_edge
+            v_neg_start = 0.0
+            
+            # End at top boundary where Y = y_max
+            u_end = (x_edge + y_max) / 2.0
+            v_neg_end = -(y_max - x_edge) / 2.0
+            
+            # Only draw if end point is in upper triangle (V_negated <= 0)
+            if v_neg_end <= 0:
+                ax.plot([u_start, u_end], [v_neg_start, v_neg_end], **default_grid_kwargs)
+    
+    # Draw lines along constant Y (from diagonal to right boundary)
+    for j in range(len(e)):
+        y_edge = e[j]
+        x_max = e[-1]
+        
+        # Only draw if this Y edge is within the triangle (y_edge <= x_max for upper triangle)
+        # Actually, for upper triangle, we want y_edge >= 0 and the line should go from diagonal to right
+        if y_edge >= 0:
+            # Start at diagonal where X = Y: U = y_edge, V_negated = 0
+            u_start = y_edge
+            v_neg_start = 0.0
+            
+            # End at right boundary where X = x_max (only if y_edge <= x_max)
+            if y_edge <= x_max:
+                u_end = (x_max + y_edge) / 2.0
+                v_neg_end = -(y_edge - x_max) / 2.0
+                
+                # Only draw if end point is in upper triangle (V_negated <= 0)
+                if v_neg_end <= 0:
+                    ax.plot([u_start, u_end], [v_neg_start, v_neg_end], **default_grid_kwargs)
+
+
+def _annotate_ld_cells(
+    ax: 'Axes',
+    ld: np.ndarray,
+    ranks: np.ndarray,
+    ld_tri: np.ma.MaskedArray,
+    anno_cell_fmt: str = "{:.2f}",
+    fontsize: float = 8,
+    font_family: str = "Arial",
+    color: str = "black",
+    anno_cell_kwargs: Optional[dict] = None
+) -> None:
+    """
+    Add text annotations to LD cells showing the r² values.
+    
+    Parameters
+    ----------
+    ax : Axes
+        Axes object for the LD block plot.
+    ld : np.ndarray
+        LD matrix (n x n).
+    ranks : np.ndarray
+        Variant rank array (length n).
+    ld_tri : np.ma.MaskedArray
+        Masked LD matrix (upper triangle).
+    anno_cell_fmt : str
+        Format string for cell annotations. Default: "{:.2f}".
+    fontsize : float
+        Font size for annotations. Default: 8.
+    font_family : str
+        Font family for annotations. Default: "Arial".
+    color : str
+        Text color. Default: "black".
+    anno_cell_kwargs : dict, optional
+        Additional keyword arguments for text annotations. Default: None.
+        These will override default text styling (fontsize, fontfamily, color, etc.).
+    """
+    n = len(ranks)
+    
+    # Get edge coordinates (same as used in _plot_ld_triangle)
+    e = _edges_from_centers(ranks)  # (n+1,)
+    
+    # Iterate over upper triangle (j >= i)
+    for i in range(n):
+        for j in range(i, n):
+            # Skip if masked (lower triangle or NaN)
+            if ld_tri.mask[i, j]:
+                continue
+            
+            # Get LD value from the masked array
+            ld_value = ld_tri[i, j]
+            # Check if value is masked or NaN
+            if isinstance(ld_value, np.ma.core.MaskedConstant) or np.isnan(ld_value):
+                continue
+            
+            # Calculate cell center in rank coordinates
+            # Cell spans from e[i] to e[i+1] in X, and e[j] to e[j+1] in Y
+            x_center = (e[i] + e[i+1]) / 2.0
+            y_center = (e[j] + e[j+1]) / 2.0
+            
+            # Transform to U, V_negated coordinates (same as in _plot_ld_triangle)
+            u_center = (x_center + y_center) / 2.0
+            v_negated_center = -(y_center - x_center) / 2.0
+            
+            # Format the text using the format string
+            try:
+                text = anno_cell_fmt.format(float(ld_value))
+            except (ValueError, TypeError):
+                # Fallback to default format if custom format fails
+                text = f"{float(ld_value):.2f}"
+            
+            # Prepare default text kwargs
+            default_text_kwargs = {
+                'ha': 'center',
+                'va': 'center',
+                'fontsize': fontsize,
+                'fontfamily': font_family,
+                'color': color,
+                'zorder': 10  # High zorder to appear on top
+            }
+            
+            # Update with user-provided kwargs if any
+            if anno_cell_kwargs is not None:
+                default_text_kwargs.update(anno_cell_kwargs)
+            
+            # Add text annotation
+            ax.text(u_center, v_negated_center, text, **default_text_kwargs)
 
 
 def plot_ld_block(
@@ -600,6 +789,13 @@ def plot_ld_block(
     fontsize: float = 12,
     font_family: str = "Arial",
     region_step: int = 21,
+    lead_snp_is: Optional[list] = None,
+    lead_snp_is_color: Optional[list] = None,
+    anno_cell: bool = False,
+    anno_cell_fmt: str = "{:.2f}",
+    anno_cell_kwargs: Optional[dict] = None,
+    ld_block_grid: bool = False,
+    ld_block_grid_kwargs: Optional[dict] = None,
     log: Log = Log(),
     verbose: bool = True,
     **kwargs
@@ -643,7 +839,8 @@ def plot_ld_block(
         Axes object to plot on. If None, creates a new figure (standalone mode).
         If provided with region/sumstats/i-coordinates, uses regional mode.
     cmap : str or matplotlib.colors.Colormap, optional
-        Colormap for the LD values. Default: "Reds".
+        Colormap for the LD values. Default: continuous gradient matching region plot
+        LD categories (dark blue -> light blue -> green -> orange -> red).
     vmin : float, optional
         Minimum value for colormap scaling. Default: 0.0.
     vmax : float, optional
@@ -670,6 +867,18 @@ def plot_ld_block(
         Font family. Default: "Arial".
     region_step : int, optional
         Number of x-axis tick positions for regional mode. Default: 21.
+    lead_snp_is : list, optional
+        List of lead SNP i-coordinates for colored annotation lines. Default: None.
+    lead_snp_is_color : list, optional
+        List of colors corresponding to lead SNPs. Default: None.
+    anno_cell : bool, optional
+        Whether to annotate cells with LD r² values. Default: False.
+    anno_cell_fmt : str, optional
+        Format string for cell annotations (e.g., "{:.2f}" for 2 decimal places).
+        Default: "{:.2f}".
+    anno_cell_kwargs : dict, optional
+        Additional keyword arguments for text annotations (e.g., {'fontsize': 10, 'weight': 'bold'}).
+        Default: None.
     log : Log, optional
         Logger instance. Default: Log().
     verbose : bool, optional
@@ -685,8 +894,6 @@ def plot_ld_block(
         Axes object.
     """
     log.write("Start to create LD block plot (45° rotated inverted triangle)...", verbose=verbose)
-    log.write(f"DEBUG: ax={ax is not None}, type(ax)={type(ax) if ax is not None else None}", verbose=verbose)
-    log.write(f"DEBUG: vcf_path={vcf_path}, region={region}, sumstats={sumstats is not None}", verbose=verbose)
  
     # ============================================================================
     # STEP 1: Prepare LD data
@@ -695,7 +902,6 @@ def plot_ld_block(
     all_i_positions = None
     
     if vcf_path is not None and region is not None:
-        log.write(f"DEBUG: Extracting LD from VCF...", verbose=verbose)
         # Extract LD from VCF
         ld_matrix, matched_sumstats, region_sumstats, use_i_coordinate, all_i_positions = \
             _prepare_ld_data_from_vcf(
@@ -757,7 +963,6 @@ def plot_ld_block(
     # STEP 2: Determine plot mode
     # ============================================================================
     mode = _determine_plot_mode(ax, region, sumstats, use_i_coordinate)
-    log.write(f"DEBUG: Plot mode: {mode} (ax={ax is not None}, region={region is not None}, sumstats={sumstats is not None}, use_i_coordinate={use_i_coordinate})", verbose=verbose)
     
     # ============================================================================
     # STEP 3: Set up figure and axes
@@ -777,7 +982,6 @@ def plot_ld_block(
     
     # Create figure/axes if not provided
     if ax is None:
-        log.write(f"DEBUG: Creating new figure with fig_kwargs={fig_kwargs}", verbose=verbose)
         # Create figure with subplots: position bar on top, LD block on bottom
         fig = plt.figure(**fig_kwargs)
         # Create grid for subplots: 2 rows, 1 column
@@ -786,21 +990,18 @@ def plot_ld_block(
         ax_pos = fig.add_subplot(gs[0])  # Position bar axes (top)
         ax = fig.add_subplot(gs[1])  # LD block axes (bottom)
         # Note: We don't share x-axis because position bar uses actual positions, LD block uses ranks
-        log.write(f"DEBUG: Created figure size: {fig.get_size_inches()}", verbose=verbose)
     else:
         fig = ax.figure
         # If ax is provided (regional mode), ax_pos should also be provided
         # Both axes are created by _process_layout in plot_mqq
-        log.write(f"DEBUG: Using provided ax and ax_pos, figure size: {fig.get_size_inches()}", verbose=verbose)
     
-    # Set default colormap
+    # Set default colormap to match region plot LD categories
     if cmap is None:
-        try:
-            # matplotlib >=3.7
-            cmap = matplotlib.colormaps.get_cmap('Reds')
-        except AttributeError:
-            # Fallback for older matplotlib versions
-            cmap = matplotlib.cm.get_cmap('Reds')
+        # Create continuous gradient from region plot LD colors
+        # Colors: dark blue -> light blue -> green -> orange -> red
+        ld_colors = ["#020080", "#86CEF9", "#24FF02", "#FDA400", "#FF0000"]
+        from matplotlib.colors import LinearSegmentedColormap
+        cmap = LinearSegmentedColormap.from_list('ld_block', ld_colors, N=256)
     
     # ============================================================================
     # STEP 4: Plot LD triangle using ranks
@@ -821,8 +1022,6 @@ def plot_ld_block(
     # ============================================================================
     # STEP 5: Set axis limits
     # ============================================================================
-    log.write(f"DEBUG: Setting axis limits, ranks range: [{ranks.min():.2f}, {ranks.max():.2f}], ld shape: {ld.shape}", verbose=verbose)
-    
     if mode == 'regional':
         # In regional mode, ax_ld_block does NOT share x-axis
         # Grid uses ranks (uniform cells), x-axis is in rank space
@@ -859,7 +1058,6 @@ def plot_ld_block(
             ylim_top = ylim_bottom + y_range
         
         ax.set_ylim(ylim_bottom, ylim_top)
-        log.write(f"DEBUG: Regional mode - xlim={ax.get_xlim()} (rank coordinates), ylim={ax.get_ylim()}", verbose=verbose)
     else:
         # Standalone mode: use _set_axis_limits
         _set_axis_limits(
@@ -868,10 +1066,35 @@ def plot_ld_block(
             ld_tri=ld_tri,
             mode=mode
         )
-        log.write(f"DEBUG: After setting limits, xlim={ax.get_xlim()}, ylim={ax.get_ylim()}", verbose=verbose)
     
     # ============================================================================
-    # STEP 6: Apply cosmetics
+    # STEP 6: Draw grid if requested
+    # ============================================================================
+    if ld_block_grid:
+        _draw_ld_block_grid(
+            ax=ax,
+            ranks=ranks,
+            grid_kwargs=ld_block_grid_kwargs
+        )
+    
+    # ============================================================================
+    # STEP 7: Add cell annotations if requested
+    # ============================================================================
+    if anno_cell:
+        _annotate_ld_cells(
+            ax=ax,
+            ld=ld,
+            ranks=ranks,
+            ld_tri=ld_tri,
+            anno_cell_fmt=anno_cell_fmt,
+            fontsize=fontsize * 0.7,  # Slightly smaller than default fontsize
+            font_family=font_family,
+            color="black",
+            anno_cell_kwargs=anno_cell_kwargs
+        )
+    
+    # ============================================================================
+    # STEP 8: Apply cosmetics
     # ============================================================================
     # Remove spine lines
     for spine in ax.spines.values():
@@ -931,9 +1154,6 @@ def plot_ld_block(
             ylim_top = ylim_bottom + y_range
         
         ax.set_ylim(ylim_bottom, ylim_top)
-        
-        log.write(f"DEBUG: Standalone mode - n={n}, ax_aspect_ratio={ax_aspect_ratio:.2f}", verbose=verbose)
-        log.write(f"DEBUG: xlim={ax.get_xlim()}, ylim={ax.get_ylim()}", verbose=verbose)
     
     if title is not None:
         ax.set_title(title, fontsize=fontsize, fontfamily=font_family)
@@ -964,7 +1184,9 @@ def plot_ld_block(
                 line_color='gray',
                 line_alpha=0.3,
                 line_style='--',
-                line_width=0.5
+                line_width=0.5,
+                lead_snp_is=lead_snp_is,
+                lead_snp_is_color=lead_snp_is_color
             )
         elif mode == 'regional':
             log.write("Adding position bar (regional mode, using i coordinates)...", verbose=verbose)
@@ -995,7 +1217,9 @@ def plot_ld_block(
                 line_color='gray',
                 line_alpha=0.3,
                 line_style='--',
-                line_width=0.5
+                line_width=0.5,
+                lead_snp_is=lead_snp_is,
+                lead_snp_is_color=lead_snp_is_color
             )
     
     # ============================================================================
@@ -1009,7 +1233,7 @@ def plot_ld_block(
         # For inverted triangle, the lower right area has space
         # bbox_to_anchor must be 4-tuple when using relative units for width/height
         cax = inset_axes(ax, width="25%", height="5%", loc='lower right', 
-                        bbox_to_anchor=(0.0, 0.05, 0.85, 1), bbox_transform=ax.transAxes,
+                        bbox_to_anchor=(0.0, 0.05, 1, 1), bbox_transform=ax.transAxes,
                         borderpad=0)
         cbar_obj = plt.colorbar(m, cax=cax, orientation='horizontal', **cbar_kwargs)
         # Set label and ticks on top of horizontal colorbar

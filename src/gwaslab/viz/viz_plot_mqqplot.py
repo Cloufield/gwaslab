@@ -188,6 +188,11 @@ def _mqqplot(insumstats,
           ld_map_rename_dic = None,
           ld_map_kwargs = None,
           ld_block=False,
+          anno_cell=False,
+          anno_cell_fmt="{:.2f}",
+          anno_cell_kwargs=None,
+          ld_block_grid=False,
+          ld_block_grid_kwargs=None,
           cbar_title='LD $\mathregular{r^2}$ with variant',
           cbar_fontsize = None,
           cbar_scale=True,
@@ -1279,7 +1284,14 @@ def _mqqplot(insumstats,
                     log=log,
                     verbose=verbose,
                     fontsize=fontsize,
-                    font_family=fontfamily
+                    font_family=fontfamily,
+                    lead_snp_is=lead_snp_is,
+                    lead_snp_is_color=lead_snp_is_color,
+                    anno_cell=anno_cell,
+                    anno_cell_fmt=anno_cell_fmt,
+                    anno_cell_kwargs=anno_cell_kwargs,
+                    ld_block_grid=ld_block_grid,
+                    ld_block_grid_kwargs=ld_block_grid_kwargs
                 )
                 
                 # Note: Spacing adjustment will be done before saving (after all plots are complete)
