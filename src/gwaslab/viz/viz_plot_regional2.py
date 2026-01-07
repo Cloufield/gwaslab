@@ -63,6 +63,7 @@ def _plot_regional(
     region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
     region_title_kwargs = None,
     region_ld_threshold = [0.2,0.4,0.6,0.8],
+    region_ld_colors = None,
     region_marker_shapes=None,
     cbar_fontsize=None,
     cbar_scale=False,
@@ -80,6 +81,13 @@ def _plot_regional(
     track_font_family="Arial",
     taf=[4,0,0.95,1,1],
     pos="POS",
+    ld_link=False,
+    ld_link_thr=0,
+    ld_link_color="blue",
+    ld_link_alpha_scale=0.2,
+    ld_link_linewidth=1.0,
+    ld_link_sig_level=None,
+    sig_level=5e-8,
     verbose=True,
     log=Log()
 ):
@@ -470,6 +478,28 @@ def _plot_regional(
                                         rr_ylabel=rr_ylabel)
     else:
         ax4 = None
+    
+    ## LD link plot ##################################################       
+    if (region is not None) and ld_link and (vcf_path is not None):
+        from gwaslab.viz.viz_plot_ld_link import _plot_ld_link
+        # Use sig_level as default for ld_link_sig_level if not specified
+        if ld_link_sig_level is None:
+            ld_link_sig_level = sig_level
+        _plot_ld_link(
+            ax=ax1,
+            vcf_path=vcf_path,
+            region=region,
+            sumstats=sumstats,
+            pos_col=pos,
+            region_ld_threshold=region_ld_threshold,
+            region_ld_colors=region_ld_colors,
+            palette=palette,
+            link_alpha_scale=ld_link_alpha_scale,
+            link_linewidth=ld_link_linewidth,
+            sig_level=ld_link_sig_level,
+            log=log,
+            verbose=verbose
+        )
      
     ## regional plot : gene track ######################################################################
                 # calculate offset

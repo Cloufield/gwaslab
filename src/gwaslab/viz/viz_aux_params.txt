@@ -2115,6 +2115,50 @@
       "ctx_defaults": {},
       "add_to_docstring": true
     },
+    "ld_block_anno": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Whether to add annotations on the left side of the LD block triangle. If True, uses 'chr:pos' format. If a string (e.g., 'SNPID', 'rsID'), uses that column for annotation text. Annotations are styled like axis ticks and labels, with right-aligned text.",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_block_anno_kwargs": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Additional keyword arguments for left-side annotations (e.g., {'fontsize': 8, 'color': 'black'}).",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_block_anno_set": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "List of SNPIDs to annotate. If None, annotates all variants. Variants are matched by SNPID column.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_block_anno_max_rows": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Maximum number of variants to annotate. If the number of variants to annotate exceeds this limit, annotations will be skipped.",
+      "default": 100,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
     "ld_block": {
       "plots": [
         "plot_mqq:r",
@@ -2125,6 +2169,72 @@
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
+    },
+    "ld_link": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Enable LD link plot in regional plots. Draws straight lines connecting SNPs with LD r² above threshold.",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_link_thr": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "LD r² threshold for drawing lines. Only pairs with LD >= thr will be connected.",
+      "default": 0.8,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_link_color": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Color for the LD lines.",
+      "default": "blue",
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_link_alpha_scale": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Scaling factor for line transparency based on LD value. Alpha = ld * link_alpha_scale.",
+      "default": 0.2,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_link_linewidth": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Line width for LD lines.",
+      "default": 1.0,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
+    "ld_link_sig_level": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "P-value significance threshold for LD lines. Only lines connecting pairs where at least one variant meets this threshold will be drawn. If None, uses sig_level. If sig_level is also None, all lines above ld_link_thr are drawn.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": true
     },
     "legend1": {
       "plots": [

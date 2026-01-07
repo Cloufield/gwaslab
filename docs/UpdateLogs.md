@@ -1,5 +1,13 @@
 # Update Logs
 
+# v4.0.4 20260104
+
+- Added new visualization function: `plot_ld_block()` for plotting LD (linkage disequilibrium) matrices as 45°-rotated inverted triangles, supporting both standalone mode and integration with regional plots
+- Added `ld_block=True` option to `plot_mqq(mode="r")` for regional plots: enables LD block visualization below the regional plot with automatic alignment and position bar integration
+- Added new visualization feature: `ld_link=True` option to `plot_mqq(mode="r")` for regional plots: draws lines connecting variant pairs with high LD (r²), with colors matching LD categories and optional significance filtering
+- LD link visualization features: line colors match variant LD categories using `region_ld_threshold` and `region_ld_colors`, transparency scales with LD value, and supports filtering by significance threshold via `ld_link_sig_level`
+- Updated log messages in Manhattan plot annotation: changed "significant variants" to "lead variants" and added scaled threshold information to improve clarity
+
 # v4.0.3 20260104
 
 - Added new visualization: `plot_phenogram()` for chromosome-wide association visualization with cytoband annotations

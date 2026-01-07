@@ -45,10 +45,36 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 | `tabix`                   | `string`     | path to tabix; if None, GWASLab will search in environmental path; Note: if tabix is available, the speed is much faster!!!          | `None`                                                                    |
 | `taf`                     | `list`       | a five-element list; number of gene track lanes, offset for gene track, font_ratio, exon_ratio, text_offset                          | `[4,0,0.95,1,1]`                                                          |
 | `build`                   | `19` or `38` | reference genome build; `99` for unknown                                                                                             | `99`                                                                      |
+| `ld_link`                 | `boolean`    | If True, draw lines connecting variant pairs with high LD (r²). Lines are colored based on LD categories matching variant colors. Requires `vcf_path` and `region` to be specified. | `False`                                                                   |
+| `ld_link_alpha_scale`      | `float`      | Scaling factor for line transparency based on LD value. Alpha = ld * link_alpha_scale (capped at 1.0). Higher values make lines more opaque. | `0.2`                                                                     |
+| `ld_link_linewidth`       | `float`      | Line width for LD link lines. All lines use the same fixed width.                                                                   | `1.0`                                                                     |
+| `ld_link_sig_level`       | `float`      | Significance threshold (P-value). Only draw lines for pairs where at least one variant has P <= sig_level. If None, uses `sig_level` parameter. | `None` (uses `sig_level`)                                                 |
 
 
 !!! quote "Calculation of LD r2"
     The calculation is based on [Rogers and Huff r implemented in scikit-alle](https://scikit-allel.readthedocs.io/en/stable/stats/ld.html). Variants in reference vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.
+
+!!! note "LD Link Visualization"
+    The `ld_link` option draws straight lines connecting variant pairs with high LD (r²). Key features:
+    
+    - **Line colors**: Lines are colored based on LD categories using the same color scheme as variant markers (`region_ld_threshold` and `region_ld_colors`)
+    - **Line transparency**: Alpha (transparency) is scaled by LD value: `alpha = ld * ld_link_alpha_scale` (capped at 1.0)
+    - **Significance filtering**: When `ld_link_sig_level` is specified, only lines connecting pairs where at least one variant meets the significance threshold are drawn
+    - **Minimum LD threshold**: Lines are only drawn for pairs with LD >= the first value in `region_ld_threshold` (typically 0.2)
+    - **Coordinates**: Lines connect variant positions using the same coordinate system as the plot (i-coordinates for x-axis, scaled_P for y-axis)
+    
+    Example usage:
+    ```python
+    mysumstats.plot_mqq(
+        mode="r",
+        region=(7, 156938803, 157038803),
+        vcf_path="path/to/reference.vcf.gz",
+        ld_link=True,
+        ld_link_alpha_scale=0.2,
+        ld_link_linewidth=1.0,
+        ld_link_sig_level=5e-8  # Only show lines for significant variants
+    )
+    ```
 
 
 ## Examples

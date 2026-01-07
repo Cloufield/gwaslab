@@ -479,7 +479,7 @@ def _extract_to_annotate(sumstats,
                 to_annotate = pd.DataFrame()
             # Log the number of significant variants found (only for non-bubble mode)
             if ("b" not in mode) and (to_annotate.empty is not True):
-                log.write(" -Found " + str(len(to_annotate)) + " significant variants with a sliding window size of " + str(windowsizekb) + " kb...", verbose=verbose)
+                log.write(" -Found " + str(len(to_annotate)) + " lead variants with a sliding window size of " + str(windowsizekb) + " kb (scaled threshold: " + str(scaled_threhosld) + ")...", verbose=verbose)
     else:
         # Case 3: Annotation not explicitly enabled, but still extract variants for potential annotation
         # For bubble plot mode: get top variants by density
@@ -513,7 +513,7 @@ def _extract_to_annotate(sumstats,
         if to_annotate is None:
             to_annotate = pd.DataFrame()
         if ("b" not in mode) and (to_annotate.empty is not True):
-            log.write(" -Found " + str(len(to_annotate)) + " significant variants with a sliding window size of " + str(windowsizekb) + " kb...", verbose=verbose)
+            log.write(" -Found " + str(len(to_annotate)) + " lead variants with a sliding window size of " + str(windowsizekb) + " kb (scaled threshold: " + str(scaled_threhosld) + ")...", verbose=verbose)
     if (to_annotate is not None) and (to_annotate.empty is not True) and anno == "GENENAME":
         to_annotate = _anno_gene(to_annotate,
                                id=snpid,
