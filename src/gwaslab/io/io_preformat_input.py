@@ -6,6 +6,7 @@ import os
 import re
 import gc
 from gwaslab.bd.bd_common_data import get_format_dict
+from gwaslab.bd.bd_sumstats_formats import detect_sumstats_format
 from gwaslab.qc.qc_fix_sumstats import _sort_column
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_datatype
@@ -39,7 +40,7 @@ def _initialize_preformat_parameters(*, readargs=None, kwreadargs=None, log=None
     return readargs, log, other, exclude, include
 
 
-def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbose=False):
+def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbose=False, sumstats_path=None):
     """Load format configuration from formatbook if format is specified."""
     meta_data = None
     rename_dictionary = {}
@@ -66,9 +67,35 @@ def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbos
         
         if "format_other_cols" in meta_data:
             other += meta_data["format_other_cols"]
+    
+    # When fmt="auto", detect separator from file
+    if fmt == "auto" and sumstats_path is not None and isinstance(sumstats_path, str):
+        from gwaslab.bd.bd_sumstats_formats import read_header_and_rows
         
+        # Handle "@" pattern for multi-chromosome files
+        detection_path = sumstats_path
+        if "@" in sumstats_path:
+            # Try to find the first matching file
+            dirname = os.path.dirname(sumstats_path)
+            basename = os.path.basename(sumstats_path)
+            pat = basename.replace("@", r"(\w+)")
+            if os.path.exists(dirname):
+                files = os.listdir(dirname)
+                files.sort()
+                for file in files:
+                    result = re.match(pat, file)
+                    if result:
+                        detection_path = os.path.join(dirname, file)
+                        break
+        
+        _, _, meta = read_header_and_rows(detection_path)
+        detected_sep = meta.get("delimiter", "\t")
         if "sep" not in readargs:
-            readargs["sep"] = "\t"
+            readargs["sep"] = detected_sep
+            log.write('  - Detected separator: "{}"'.format(repr(detected_sep)), verbose=verbose)
+    
+    if "sep" not in readargs:
+        readargs["sep"] = "\t"
     
     return meta_data, rename_dictionary, readargs, other
 
@@ -608,8 +635,10 @@ def _preformat(sumstats,
             raise ValueError("Please input a path for parquet file.")
     
     # Step 3: Load format configuration
+    # Pass sumstats path for separator detection when fmt="auto"
+    sumstats_path_for_detection = sumstats if isinstance(sumstats, str) else None
     meta_data, rename_dictionary, readargs, other = _load_format_config(
-        fmt=fmt, readargs=readargs, other=other, log=log, verbose=verbose
+        fmt=fmt, readargs=readargs, other=other, log=log, verbose=verbose, sumstats_path=sumstats_path_for_detection
     )
     
     # Initialize data structures
@@ -916,6 +945,32 @@ def _check_path_and_header(sumstats=None,
                     format_cols, raw_cols, inpath_chr_list, inpath_chr_num_list = _process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbose)
             except:
                 raise ValueError("Please input a valid path, and make sure the separator is correct and the columns you specified are in the file.") 
+
+        # Always detect format (even when fmt is specified, for validation)
+        if inpath is not None:
+            try:
+                # Use the actual file path that was successfully loaded
+                # For multi-chromosome files, use the first file; otherwise use the single file path
+                detection_path = inpath_chr_list[0] if (inpath_chr_list and len(inpath_chr_list) > 0) else inpath
+                detection_result = detect_sumstats_format(detection_path)
+                
+                # Show top 3 matching formats in one line
+                if "top" in detection_result and len(detection_result["top"]) > 0:
+                    top_formats = detection_result["top"][:3]
+                    format_list = []
+                    for i, (fmt_name, score) in enumerate(top_formats, 1):
+                        markers = []
+                        if fmt is not None and fmt_name == fmt:
+                            markers.append("[SPECIFIED]")
+                        if detection_result.get("best_format") == fmt_name:
+                            markers.append("[DETECTED]")
+                        marker_str = " " + " ".join(markers) if markers else ""
+                        format_list.append("{}. {}{} (score: {:.3f})".format(i, fmt_name, marker_str, score))
+                    log.write(" -Top 3 inferred source formats:", verbose=True)
+                    log.write("   " + " | ".join(format_list), verbose=True)
+            except Exception:
+                # Silently fail format detection if it errors (don't interrupt loading)
+                pass
 
         ###################################################################################### 
     elif isinstance(sumstats, pd.DataFrame):

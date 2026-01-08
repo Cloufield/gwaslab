@@ -36,6 +36,10 @@ from gwaslab.viz.viz_plot_trumpetplot import plot_power as _plot_power
 from gwaslab.viz.viz_plot_trumpetplot import plot_power_x as _plot_power_x
 from gwaslab.viz.viz_plot_scatter_with_reg import scatter as _scatter
 from gwaslab.viz.viz_plot_ld_block import plot_ld_block as _plot_ld_block
+from gwaslab.viz.viz_plot_track import plot_track
+from gwaslab.viz.viz_plot_arc import plot_arc
+from gwaslab.viz.viz_aux_panel import Panel
+from gwaslab.viz.viz_plot_stackedpanel import plot_panels as _plot_panels
 
 from gwaslab.bd.bd_common_data import get_NC_to_chr
 from gwaslab.bd.bd_common_data import get_NC_to_number
@@ -124,3 +128,9 @@ def plot_ld_block(**kwargs: Any) -> Any:
     params = _viz_params.merge("plot_ld_block", kwargs)
     params = _viz_params.filter(_plot_ld_block, params, key="plot_ld_block", log=Log(), verbose=params.get("verbose", True))
     return _plot_ld_block(**params)
+
+def plot_panels(panels: Any, **kwargs: Any) -> Any:
+    """Plot stacked panels from a list of Panel objects."""
+    params = _viz_params.merge("plot_panels", kwargs)
+    params = _viz_params.filter(_plot_panels, params, key="plot_panels", log=Log(), verbose=params.get("verbose", True))
+    return _plot_panels(panels, **params)
