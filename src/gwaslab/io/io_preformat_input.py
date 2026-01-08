@@ -966,8 +966,8 @@ def _check_path_and_header(sumstats=None,
                             markers.append("[DETECTED]")
                         marker_str = " " + " ".join(markers) if markers else ""
                         format_list.append("{}. {}{} (score: {:.3f})".format(i, fmt_name, marker_str, score))
-                    log.write(" -Top 3 inferred source formats:", verbose=True)
-                    log.write("   " + " | ".join(format_list), verbose=True)
+                    log.write(" -Top 3 inferred source formats:", verbose=verbose)
+                    log.write("   " + " | ".join(format_list), verbose=verbose)
             except Exception:
                 # Silently fail format detection if it errors (don't interrupt loading)
                 pass

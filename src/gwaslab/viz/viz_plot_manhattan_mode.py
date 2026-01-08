@@ -79,12 +79,17 @@ def draw_manhattan_panel(
             highlight_i = to_plot.loc[~to_plot["HUE"].isna(), "i"].values
         else:
             log.write(" -Highlighting target loci...", verbose=verbose)
+            # Ensure highlight_color is a single color value, not a list
+            if isinstance(highlight_color, list):
+                highlight_color_single = highlight_color[0]
+            else:
+                highlight_color_single = highlight_color
             sns.scatterplot(
                 data=to_plot.loc[to_plot["HUE"] == 0],
                 x='i',
                 y='scaled_P',
                 hue="HUE",
-                palette={0: highlight_color},
+                palette={0: highlight_color_single},
                 legend=legend,
                 style=style,
                 size="s",

@@ -584,13 +584,18 @@ def _mqqplot(insumstats,
         Colors for additional lines. Default is None.
     sc_linewidth : int, default=2
         Line width for significance lines.
-    highlight : list, optional
-        A list of variant identifiers (e.g., SNPIDs). Each specified variant will be treated 
-        as a focal point, and all variants in surrounding loci will be highlighted in distinct colors.
+    highlight : str, list, or list of lists, optional
+        Variant identifiers to highlight regions. Each variant serves as a focal point; all variants
+        within `highlight_windowkb` window around each focal point are highlighted (highlights
+        a region, not just the single SNP). Formats: single SNPID, list of SNPIDs, or grouped lists
+        for distinct colors. When `highlight_chrpos=True`, use chromosome:position tuples like
+        ``[(1, 1000000)]``.
     highlight_chrpos : bool, default=False
         Whether to interpret highlight as chromosome:position format instead of SNP IDs.
     highlight_color : str or list, default='#CB132D'
-        Color(s) for highlighted variants. Can be a single color or list of colors.
+        Color(s) for highlighted variants. Single color for flat lists, list of colors
+        for grouped lists. Colors cycle if fewer colors than groups. Accepts hex codes,
+        named colors, or any matplotlib color.
     highlight_windowkb : int, default=500
         Window size for highlighting variants in kb.
     highlight_anno_kwargs : dict, optional
@@ -599,10 +604,15 @@ def _mqqplot(insumstats,
         Custom limits for highlighting. Default is None.
     highlight_lim_mode : {'absolute', 'relative'}, default='absolute'
         Mode for highlight limits.
-    pinpoint : list, optional
-        List of variants to pinpoint (mark with special styling). Default is None.
+    pinpoint : str, list, or list of lists, optional
+        Variant identifiers to pinpoint (mark individual SNPs only, no region/window). Unlike
+        `highlight`, this marks just the exact specified variant(s), not surrounding variants.
+        Formats: single SNPID, list of SNPIDs, or grouped lists for distinct colors. Only SNP IDs
+        supported.
     pinpoint_color : str or list, default='red'
-        Color(s) for pinpointed variants. Can be a single color or list of colors.
+        Color(s) for pinpointed variants. Single color for flat lists, list of colors
+        for grouped lists. Colors cycle if fewer colors than groups. Accepts hex codes,
+        named colors, or any matplotlib color.
     cut : float, default=0
         Threshold for shrinking extremely large -log10(P) values. Variants with MLOG10P 
         greater than this threshold will be shrunk by a factor of `cutfactor`.
