@@ -47,6 +47,11 @@ def _to_finemapping(
     
     ##start function with col checking##########################################################
     
+    # Reload data if it has been offloaded
+    if not hasattr(gls, 'data'):
+        if hasattr(gls, 'reload'):
+            gls.reload()
+    
     sumstats = gls.data
     gls.offload()
 

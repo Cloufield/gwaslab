@@ -91,26 +91,41 @@ def _get_hapmap_full_polars(build: str, include_alleles: bool = True) -> pl.Data
     if include_alleles:
         columns.extend(["A1", "A2"])
     
-    # Read with pandas first (handles whitespace-separated files with \s+)
-    # Then convert to Polars for fast operations
-    # This is still much faster than reading from disk every time due to caching
-    df = pd.read_csv(
-        p, 
-        sep=r"\s+", 
-        usecols=columns, 
-        dtype={"#CHROM": "Int64", "POS": "Int64", "rsid": "string"}
-    )
-    df = df.rename(columns={"#CHROM": "CHR"})
-    
-    # Convert to Polars
-    hapmap_df = pl.from_pandas(df)
-    
-    # Ensure A1 and A2 are strings if included
+    # Read directly with Polars - file is tab-separated
+    # Define schema for type safety and performance
+    schema = {
+        "#CHROM": pl.Int64,
+        "POS": pl.Int64,
+        "rsid": pl.Utf8
+    }
     if include_alleles:
-        hapmap_df = hapmap_df.with_columns([
-            pl.col("A1").cast(pl.Utf8),
-            pl.col("A2").cast(pl.Utf8)
-        ])
+        schema["A1"] = pl.Utf8
+        schema["A2"] = pl.Utf8
+    
+    try:
+        hapmap_df = pl.read_csv(
+            p,
+            separator="\t",
+            columns=columns,
+            schema=schema,
+            null_values=["", "NA", "N/A"]
+        ).rename({"#CHROM": "CHR"})
+    except Exception:
+        # Fallback to pandas if Polars fails, then convert to Polars
+        df = pd.read_csv(
+            p, 
+            sep="\t", 
+            usecols=columns, 
+            dtype={"#CHROM": "Int64", "POS": "Int64", "rsid": "string"}
+        )
+        df = df.rename(columns={"#CHROM": "CHR"})
+        hapmap_df = pl.from_pandas(df)
+        # Ensure A1 and A2 are strings if included
+        if include_alleles:
+            hapmap_df = hapmap_df.with_columns([
+                pl.col("A1").cast(pl.Utf8),
+                pl.col("A2").cast(pl.Utf8)
+            ])
     
     _HAPMAP_FULL_CACHE[cache_key] = hapmap_df
     return hapmap_df

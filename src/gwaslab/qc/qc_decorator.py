@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Optional, List, Union, Callable, Any
 import gc
+import time
 import pandas as pd
 from functools import partial
 from functools import wraps
@@ -95,6 +96,9 @@ def with_logging(start_to_msg: str,
                 args = bound_kwargs.args
                 kwargs = bound_kwargs.kwargs
 
+            # Record start time for timing
+            start_time = time.time()
+            
             # Log start message
             log.log_operation_start(start_to_msg, version=_get_version(), verbose=verbose)
             
@@ -215,8 +219,14 @@ def with_logging(start_to_msg: str,
                 final_shape = (len(sumstats), len(sumstats.columns))
                 if initial_shape != final_shape:
                     check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose, sumstats_obj=sumstats_obj)
-            # Log finish message
+            
+            # Calculate elapsed time
+            elapsed_time = time.time() - start_time
+            
+            # Log finish message with timing
+            log.write(f" -Time taken: {elapsed_time:.3f}s", verbose=verbose)
             log.log_operation_finish(finished_msg, verbose=verbose)
+            
             return result
         return wrapper
     return decorator

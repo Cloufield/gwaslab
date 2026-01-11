@@ -313,9 +313,11 @@ class SumstatsPair( ):
                      **params)
 
     def offload(self) -> None:
-        _offload(self.data, self.tmp_path, self.log)
-        del self.data
-        gc.collect()
+        # Only offload if data exists (skip if already offloaded)
+        if hasattr(self, 'data') and self.data is not None:
+            _offload(self.data, self.tmp_path, self.log)
+            del self.data
+            gc.collect()
 
     def reload(self, delete_files: Optional[List[str]] = None) -> None:
         """

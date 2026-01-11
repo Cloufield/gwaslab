@@ -149,6 +149,11 @@ def _clump(gls: 'Sumstats',
     """
     ##start function with col checking##########################################################
     
+    # Reload data if it has been offloaded
+    if not hasattr(gls, 'data'):
+        if hasattr(gls, 'reload'):
+            gls.reload()
+    
     if out is None:
         out = f"./{study}_clumpping".lstrip('/')
     else:

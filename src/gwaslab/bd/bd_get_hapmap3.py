@@ -73,97 +73,100 @@ def _get_hapmap3(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], rsid: s
     # Use cached Polars function for fast loading
     hapmap3_ref_pl = _get_hapmap_full_polars(build, include_alleles=match_allele)
     
-    # Convert to pandas for compatibility with existing merge logic
-    # Only convert what we need - this is still faster than reading from disk
-    hapmap3_ref = hapmap3_ref_pl.to_pandas()
+    # Helper function for allele matching
+    def _match_alleles(output_df, ea_col, nea_col, how_join):
+        """Check if alleles match between sumstats and hapmap3."""
+        ea_str = output_df[ea_col].astype("string")
+        nea_str = output_df[nea_col].astype("string")
+        a1_str = output_df["A1"].astype("string")
+        a2_str = output_df["A2"].astype("string")
+        
+        is_matched = ((ea_str == a1_str) & (nea_str == a2_str)) | ((ea_str == a2_str) & (nea_str == a1_str))
+        if how_join == "right":
+            is_matched = is_matched | output_df[ea_col].isna()
+        return is_matched
     
-    # Ensure CHR and POS are strings for compatibility with existing string concatenation logic
-    hapmap3_ref["#CHROM"] = hapmap3_ref["CHR"].astype("string")
-    hapmap3_ref["POS"] = hapmap3_ref["POS"].astype("string")
-    
-    #rsid    A1      A2      #CHROM  POS
-    #rs3094315       G       A       1       752566
+    # Helper function to drop temporary columns
+    def _drop_temp_columns(output_df, cols_to_drop):
+        """Drop temporary columns if they exist."""
+        cols_to_remove = [col for col in cols_to_drop if col in output_df.columns]
+        if cols_to_remove:
+            output_df = output_df.drop(columns=cols_to_remove, errors="ignore")
+        return output_df
     
     if rsid in sumstats.columns:
         log.write(" -rsID will be used for matching...", verbose=verbose)
-        hapmap3_ref = hapmap3_ref.rename(columns={"rsid":rsid})
         
-        output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref[rsid].values),:].copy()
+        # Convert to pandas only for rsID path (needed for string operations)
+        hapmap3_ref = hapmap3_ref_pl.to_pandas()
+        hapmap3_ref["#CHROM"] = hapmap3_ref["CHR"].astype("string")
+        hapmap3_ref["POS"] = hapmap3_ref["POS"].astype("string")
+        hapmap3_ref = hapmap3_ref.rename(columns={"rsid": rsid})
         
-        output = pd.merge(output, hapmap3_ref, on = rsid, how=how, suffixes=('', '_hapmap3'))
+        output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref[rsid].values), :].copy()
+        output = pd.merge(output, hapmap3_ref, on=rsid, how=how, suffixes=('', '_hapmap3'))
 
-        raw_rsid_count= len(output)
+        raw_rsid_count = len(output)
         log.write(f" -Raw input contains {raw_rsid_count} Hapmap3 variants based on rsID...", verbose=verbose)
 
         if match_allele:
             log.write(" -Checking if alleles are same...")
-            is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
-                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"]))
-            if how=="right":
-                is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
-                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"])) | output[ea].isna()
-            output = output.loc[is_matched,:]
-            output = output.drop(columns=["#CHROM","A1","A2"] )
+            is_matched = _match_alleles(output, ea, nea, how)
+            output = output.loc[is_matched, :]
             log.write(f" -Filtered {raw_rsid_count - len(output)} Hapmap3 variants due to unmatched alleles...", verbose=verbose)
         
-        for i in ["#CHROM","A1","A2","POS_hapmap3"]:
-            todrop=[]
-            if i in output.columns:
-                todrop.append(i)
-        output = output.drop(columns=todrop)
+        # Drop temporary columns
+        output = _drop_temp_columns(output, ["#CHROM", "A1", "A2", "POS_hapmap3"])
         return output
     
     elif chrom in sumstats.columns and pos in sumstats.columns:
         log.write(" -Since rsID not in sumstats, CHR:POS( build "+build+") will be used for matching...", verbose=verbose)
         
-        # Use Polars for fast CHR:POS matching - much faster than string concatenation
-        # Convert full sumstats to Polars to preserve all columns
-        sumstats_pl = pl.from_pandas(sumstats)
+        # Optimize: First filter by POS (more selective) for inner join, then join on CHR+POS
+        # Get all POS values from hapmap3 for fast filtering
+        hapmap3_pos_set = set(hapmap3_ref_pl["POS"].to_list())
         
-        # Filter out null values and ensure correct types for join columns
-        sumstats_pl = sumstats_pl.filter(
-            pl.col(chrom).is_not_null() & pl.col(pos).is_not_null()
-        ).with_columns([
-            pl.col(chrom).cast(pl.Int64).alias("_CHR_join"),
-            pl.col(pos).cast(pl.Int64).alias("_POS_join")
-        ])
+        # Filter out null values in pandas (no Polars conversion overhead)
+        sumstats_filtered = sumstats.dropna(subset=[chrom, pos])
         
-        # Prepare hapmap3 reference for join
-        hapmap3_join = hapmap3_ref_pl.select([
-            pl.col("CHR").alias("_CHR_join"),
-            pl.col("POS").alias("_POS_join"),
+        # Fast POS filtering: filter sumstats to POS values in hapmap3 (reduces dataset size significantly before join)
+        # This is safe for all join types since non-matching POS values won't match anyway
+        sumstats_filtered = sumstats_filtered[sumstats_filtered[pos].isin(hapmap3_pos_set)]
+        
+        # Prepare hapmap3 reference for join (convert to pandas only when needed)
+        hapmap3_ref_pd = hapmap3_ref_pl.select([
+            pl.col("CHR"),
+            pl.col("POS"),
             pl.col("rsid").alias("rsID")
-        ] + (["A1", "A2"] if match_allele else []))
+        ] + (["A1", "A2"] if match_allele else [])).to_pandas()
         
-        # Map how parameter to Polars join type
-        join_type_map = {"inner": "inner", "left": "left", "right": "right"}
-        join_type = join_type_map.get(how, "inner")
-        
-        # Join on CHR and POS using Polars (fast)
-        matched_pl = sumstats_pl.join(
-            hapmap3_join,
-            on=["_CHR_join", "_POS_join"],
-            how=join_type,
-            suffix="_hapmap3"
+        # Join on CHR and POS using pandas merge (no Polars conversion overhead)
+        output = pd.merge(
+            sumstats_filtered,
+            hapmap3_ref_pd,
+            left_on=[chrom, pos],
+            right_on=["CHR", "POS"],
+            how=how,
+            suffixes=("", "_hapmap3")
         )
         
-        # Drop temporary join columns
-        matched_pl = matched_pl.drop(["_CHR_join", "_POS_join"])
-        
-        # Convert back to pandas for allele matching and final processing
-        output = matched_pl.to_pandas()
+        # Drop duplicate CHR and POS columns from hapmap3 (keep original sumstats columns)
+        # The merge adds "CHR" and "POS" from hapmap3, but we keep the original columns from sumstats
+        cols_to_drop = []
+        # Only drop hapmap3's CHR/POS if they're different from the original column names
+        if "CHR" in output.columns and chrom != "CHR":
+            cols_to_drop.append("CHR")
+        if "POS" in output.columns and pos != "POS":
+            cols_to_drop.append("POS")
+        if cols_to_drop:
+            output = output.drop(columns=cols_to_drop, errors="ignore")
         
         if match_allele:
             log.write(" -Checking if alleles are same...")
-            is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
-                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"]))
-            if how=="right":
-                is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
-                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"])) | output[ea].isna()
-
+            is_matched = _match_alleles(output, ea, nea, how)
             log.write(" -Variants with matched alleles: {}".format(sum(is_matched)))
-            output = output.loc[is_matched,:]
-            output = output.drop(columns=["A1", "A2"], errors="ignore")
+            output = output.loc[is_matched, :]
+            output = _drop_temp_columns(output, ["A1", "A2"])
         
         log.write(" -Raw input contains "+str(len(output))+" Hapmap3 variants based on CHR:POS...", verbose=verbose)
         return output

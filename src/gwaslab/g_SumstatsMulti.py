@@ -48,6 +48,7 @@ from gwaslab.util.rwrapper.util_ex_run_hyprcoloc import _run_hyprcoloc
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_in_fill_data import _get_multi_min
 from gwaslab.util.util_ex_run_mtag import _run_mtag
+# from gwaslab.util.util_ex_run_multisusie import _run_multisusie_rss
 
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz.viz_plot_compare_af import  plotdaf
@@ -291,6 +292,55 @@ class SumstatsMulti( ):
                        study= self.meta["gwaslab"]["group_name"], 
                        traits=self.names, 
                        **kwargs)
+
+    # def run_multisusie_rss(self, R_list: List[np.ndarray], **kwargs: Any) -> pd.DataFrame:
+    #     """
+    #     Run finemapping using MultiSuSiE RSS (summary statistics version).
+    #     
+    #     This method runs MultiSuSiE on multiple populations/studies using summary statistics.
+    #     It extracts BETA, SE, and N from the SumstatsMulti object for each study and runs
+    #     MultiSuSiE finemapping.
+    #     
+    #     Parameters
+    #     ----------
+    #     R_list : List[np.ndarray]
+    #         List of LD correlation matrices, one for each population/study.
+    #         Each matrix should be PxP where P is the number of variants.
+    #         Variants should be in the same order across all matrices.
+    #     **kwargs : Any
+    #         Additional keyword arguments passed to _run_multisusie_rss.
+    #         See _run_multisusie_rss documentation for full list of parameters.
+    #     
+    #     Returns
+    #     -------
+    #     pd.DataFrame
+    #         DataFrame containing finemapping results with columns:
+    #         - SNPID: Variant identifier
+    #         - CHR: Chromosome (if available)
+    #         - POS: Position (if available)
+    #         - PIP: Posterior inclusion probability
+    #         - CREDIBLE_SET_INDEX: Credible set index (0 if not in any set)
+    #         - CS_CATEGORY: Credible set category (if available)
+    #         - Additional columns from MultiSuSiE results
+    #     
+    #     Examples
+    #     --------
+    #     >>> # Assuming you have a SumstatsMulti object and LD matrices
+    #     >>> results = sumstats_multi.run_multisusie_rss(
+    #     ...     R_list=[ld_matrix_1, ld_matrix_2],
+    #     ...     L=10,
+    #     ...     max_iter=100
+    #     ... )
+    #     """
+    #     kwargs = {k: v for k, v in kwargs.items() if k != "log"}
+    #     verbose = kwargs.pop("verbose", True)
+    #     return _run_multisusie_rss(
+    #         gls=self,
+    #         R_list=R_list,
+    #         log=self.log,
+    #         verbose=verbose,
+    #         **kwargs
+    #     )
 
     def get_lead(self, build: Optional[str] = None, gls: bool = False, **kwargs: Any) -> Union[pd.DataFrame, 'SumstatsMulti']:
         

@@ -138,6 +138,10 @@ def _plot_cs(pipcs_raw,
         ax.set_xticklabels(region_ticks,rotation=45)
         xlabel = "Chromosome "+str(region[0])+" (MB)"
         ax.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
+        
+        # Set xlim based on region
+        if region is not None:
+            ax.set_xlim(i_pos_offset + region[1], i_pos_offset + region[2])
 
         # process legend
         handles, labels = ax.get_legend_handles_labels()
