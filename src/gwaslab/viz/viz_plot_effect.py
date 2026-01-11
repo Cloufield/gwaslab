@@ -6,7 +6,7 @@ from gwaslab.io.io_process_kwargs import _extract_kwargs
 import seaborn as sns
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
-def _plot_effect(to_plot, 
+def _plot_effect(insumstats, 
                  y=None, 
                  y_sort=None, 
                  group=None, 
@@ -131,8 +131,11 @@ def _plot_effect(to_plot,
         The generated figure object.
     """
     # Extract dataframe if Sumstats object is passed
-    if hasattr(to_plot, 'data') and not isinstance(to_plot, pd.DataFrame):
-        to_plot = to_plot.data
+    if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
+        insumstats = insumstats.data
+    
+    # Create working copy to preserve original (plotting functions should not modify input)
+    to_plot = insumstats.copy()
     
     style = set_plot_style(
         plot="plot_effect",

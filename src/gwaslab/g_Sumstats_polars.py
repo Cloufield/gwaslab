@@ -80,8 +80,8 @@ from gwaslab.util.util_ex_calculate_prs import _calculate_prs
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
 from gwaslab.viz.viz_plot_compare_af import plotdaf
-from gwaslab.util.util_ex_run_susie import _run_susie_rss
-from gwaslab.util.util_ex_run_susie import _get_cs_lead
+from gwaslab.util.rwrapper.util_ex_run_susie import _run_susie_rss
+from gwaslab.util.rwrapper.util_ex_run_susie import _get_cs_lead
 from gwaslab.qc.qc_sanity_check import _check_data_consistency
 from gwaslab.util.util_ex_ldsc import _estimate_h2_by_ldsc
 from gwaslab.util.util_ex_ldsc import _estimate_rg_by_ldsc

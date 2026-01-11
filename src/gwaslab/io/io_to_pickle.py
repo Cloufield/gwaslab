@@ -8,6 +8,15 @@ from gwaslab import g_Sumstats
 from gwaslab.info import g_Log
 import pandas as pd
 
+# Try to import ctypes for malloc_trim (Linux only)
+try:
+    import ctypes
+    import platform
+    MALLOC_TRIM_AVAILABLE = (platform.system() == 'Linux')
+except ImportError:
+    MALLOC_TRIM_AVAILABLE = False
+    ctypes = None
+
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
@@ -52,10 +61,43 @@ def load_data_from_pickle(path: str, usecols: Optional[List[str]] = None) -> pd.
         gc.collect()
     return data
 
+def _force_memory_release():
+    """
+    Force Python's memory allocator to release memory back to OS.
+    Works on Linux by calling malloc_trim() from glibc.
+    
+    Note: This only works on Linux with glibc. On other systems,
+    Python's memory allocator may not release memory back to the OS
+    even after objects are deleted and garbage collected.
+    """
+    if MALLOC_TRIM_AVAILABLE:
+        try:
+            # Call malloc_trim(0) to force glibc to return freed memory to OS
+            # This is the key to actually seeing memory reduction in RSS
+            libc = ctypes.CDLL("libc.so.6")
+            result = libc.malloc_trim(0)
+            # malloc_trim returns 1 if memory was released, 0 otherwise
+            return result == 1
+        except (OSError, AttributeError):
+            # malloc_trim not available or failed
+            return False
+    return False
+
+
 def _offload(df: pd.DataFrame, path: str, log: Log) -> None:
+    # Get DataFrame size for logging
+    df_size_mb = df.memory_usage(deep=True).sum() / (1024 * 1024) if hasattr(df, 'memory_usage') else 0
+    
     with open(path, 'wb') as file:
         pickle.dump(df, file)
         log.write("Dumpping dataframe to : ", path)
+        if df_size_mb > 0:
+            log.write("  -DataFrame size: {:.2f} MB".format(df_size_mb))
+    
+    # Force memory release after pickling
+    del df
+    gc.collect()
+    _force_memory_release()  # Force memory allocator to release memory to OS (Linux only)
 
 def _reload(path: str, log: Log, delete_files: Optional[List[str]] = None) -> pd.DataFrame:
     """

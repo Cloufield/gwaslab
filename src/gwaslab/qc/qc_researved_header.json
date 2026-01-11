@@ -59,6 +59,36 @@
       "Int64"
     ]
   },
+  "START": {
+    "Keyword": "start",
+    "Datatype": "Int64",
+    "Category": "info",
+    "ValidDtypes": [
+      "int64",
+      "Int64",
+      "int"
+    ],
+    "Description": "start position",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
+  "END": {
+    "Keyword": "end",
+    "Datatype": "Int64",
+    "Category": "info",
+    "ValidDtypes": [
+      "int64",
+      "Int64",
+      "int"
+    ],
+    "Description": "end position",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
   "EA": {
     "Keyword": "ea",
     "Datatype": "category",
@@ -180,6 +210,82 @@
     "Note": "-",
     "ValidDtypesPolars": [
       "Float64"
+    ]
+  },
+  "EAF_CASE": {
+    "Keyword": "eaf_case",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "effect allele frequency in cases",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
+  "EAF_CONTROL": {
+    "Keyword": "eaf_control",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "effect allele frequency in controls",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
+  "NEAF_CASE": {
+    "Keyword": "neaf_case",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "non-effect allele frequency in cases",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
+  "NEAF_CONTROL": {
+    "Keyword": "neaf_control",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "non-effect allele frequency in controls",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
     ]
   },
   "MAF": {
@@ -486,6 +592,23 @@
       1
     ]
   },
+  "Q": {
+    "Keyword": "q",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "FDR (False Discovery Rate)",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
   "P_MANTISSA": {
     "Keyword": "p_mantissa",
     "Datatype": "float64",
@@ -564,6 +687,23 @@
     "Note": "-",
     "ValidDtypesPolars": [
       "Float64"
+    ]
+  },
+  "HWE_P": {
+    "Keyword": "hwe_p",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "Hardy-Weinberg Equilibrium P value",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
     ]
   },
   "I2_HET": {
@@ -676,6 +816,69 @@
       2147483647
     ]
   },
+  "MAC": {
+    "Keyword": "mac",
+    "Datatype": "Int64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "minor allele count",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "ValidRange": [
+      0,
+      2147483647
+    ]
+  },
+  "EAC": {
+    "Keyword": "eac",
+    "Datatype": "Int64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "effect allele count",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "ValidRange": [
+      0,
+      2147483647
+    ]
+  },
+  "NEAC": {
+    "Keyword": "neac",
+    "Datatype": "Int64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "non-effect allele count",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "ValidRange": [
+      0,
+      2147483647
+    ]
+  },
   "N_EFF": {
     "Keyword": "neff",
     "Datatype": "float64",
@@ -697,6 +900,20 @@
     "Description": "nearest gene symbol",
     "Note": "-"
   },
+  "GENEID": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "gene ID",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
   "CIS/TRANS": {
     "Keyword": "",
     "Datatype": "string",
@@ -716,6 +933,32 @@
       "Int64"
     ],
     "Description": "distance to nearest known variants",
+    "Note": "-"
+  },
+  "DISTANCE_TO_START": {
+    "Keyword": "",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64"
+    ],
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "Description": "distance to start position",
+    "Note": "-"
+  },
+  "DISTANCE_TO_END": {
+    "Keyword": "",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64"
+    ],
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "Description": "distance to end position",
     "Note": "-"
   },
   "LOCATION_OF_KNOWN": {
@@ -832,10 +1075,25 @@
       "Int32",
       "int"
     ],
-    "Description": "credible sets index",
+    "Description": "the index of credible set for a locus",
     "Note": "-",
     "ValidDtypesPolars": [
       "Int64"
+    ]
+  },
+  "CS_CATEGORY": {
+    "Keyword": "cs_category",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object",
+      "category"
+    ],
+    "Description": "which group the analysis belongs to, like EAS or EUR",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
     ]
   },
   "N_SNP": {
@@ -895,6 +1153,36 @@
       "category"
     ],
     "Description": "test type",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "TRAIT": {
+    "Keyword": "trait",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object",
+      "category"
+    ],
+    "Description": "trait name",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "ANCESTRY": {
+    "Keyword": "ancestry",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object",
+      "category"
+    ],
+    "Description": "ancestry or population group",
     "Note": "-",
     "ValidDtypesPolars": [
       "String"

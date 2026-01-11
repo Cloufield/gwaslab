@@ -119,7 +119,8 @@ from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_run_magma import _run_magma
 from gwaslab.util.util_ex_run_prscs import _run_prscs
 from gwaslab.util.util_ex_run_scdrs import _run_scdrs
-from gwaslab.util.util_ex_run_susie import _get_cs_lead, _run_susie_rss
+from gwaslab.util.rwrapper.util_ex_run_susie import _get_cs_lead, _run_susie_rss
+from gwaslab.util.rwrapper.util_ex_run_susie2 import _run_susie_rss as _run_susie_rss2
 
 # ----- Utility: Fine-mapping ABF -----
 from gwaslab.util.util_abf_finemapping import _abf_finemapping, _make_cs
@@ -134,7 +135,7 @@ from gwaslab.bd.bd_common_data import (
     get_number_to_chr,
 )
 from gwaslab.bd.bd_get_hapmap3 import _get_hapmap3
-from gwaslab.bd.bd_path_manager import _path
+from gwaslab.util.general.util_path_manager import _path
 
 # ----- Visualization -----
 from gwaslab.viz.viz_plot_associations import _plot_associations
@@ -150,6 +151,7 @@ from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
 from gwaslab.viz.viz_plot_ld_block import plot_ld_block as _plot_ld_block
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
+from gwaslab.viz.viz_aux_panel import Panel
 
 # ----- Downstream Analysis -----
 from gwaslab.downstream.ds_result_manager import DownstreamResultManager
@@ -1312,6 +1314,37 @@ class Sumstats():
         fig, ax = _plot_ld_block(**params)
         return fig
 
+    def Panel(self, panel_type: str, **kwargs: Any) -> Panel:
+        """
+        Create a Panel object with this Sumstats object's data.
+        
+        Works like the Panel class constructor, but automatically passes self.data
+        to the sumstats parameter for panel types that require it (e.g., "region", "ld_block").
+        
+        Parameters
+        ----------
+        panel_type : str
+            Type of panel ("track", "arc", "ld_block", "region")
+        **kwargs
+            Panel-specific parameters
+        
+        Returns
+        -------
+        Panel
+            Panel object that can be used with plot_panels
+        
+        Examples
+        --------
+        >>> mysumstats = gl.Sumstats("data.txt.gz")
+        >>> panel1 = mysumstats.Panel("region", region=(1, 1000000, 2000000), vcf_path="ld.vcf.gz")
+        >>> panel2 = mysumstats.Panel("track", track_path="genes.gtf", region=(1, 1000000, 2000000))
+        >>> gl.plot_panels([panel1, panel2])
+        """
+        # Automatically pass self.data to sumstats for panel types that need it
+        if panel_type in ["region", "ld_block"]:
+            kwargs["insumstats"] = self.data
+        return Panel(panel_type, **kwargs)
+
     @add_doc(_plot_effect)
     def plot_effect(self, **kwargs: Any) -> None:
         _plot_effect(self, **self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))
@@ -1578,6 +1611,38 @@ class Sumstats():
         self.pipcs=_run_susie_rss(self, self.finemapping["path"], **kwargs)
         self.finemapping["pipcs"] = self.pipcs
         #self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
+    
+    def run_susie_rss2(self,**kwargs):
+        """
+        Run finemapping using SuSieR from command line using the RScriptRunner framework.
+        
+        This is an improved version that uses the centralized RScriptRunner for better
+        error handling, timeout support, and robust execution.
+        
+        Args:
+            **kwargs: Arguments passed to _run_susie_rss2, including:
+                - r: Path to Rscript executable (default: "Rscript")
+                - mode: Mode for susie_rss ("z" or "bs", default: "bs")
+                - out: Output directory (default: None)
+                - max_iter: Maximum iterations (default: 100)
+                - min_abs_corr: Minimum absolute correlation (default: 0.5)
+                - refine: Refine parameter (default: "FALSE")
+                - L: Number of effects (default: 10)
+                - fillldna: Fill NA values in LD matrix (default: True)
+                - n: Sample size (default: None)
+                - delete: Delete output files after reading (default: False)
+                - susie_kwargs: Additional kwargs for susie_rss (default: "")
+                - timeout: Timeout for R script execution in seconds (default: None)
+                - verbose: Verbose logging (default: True)
+                - show_diagnostic: Display diagnostic image using matplotlib if found (default: True)
+        
+        Returns:
+            None (results stored in self.pipcs and self.finemapping["pipcs"])
+        """
+        kwargs = remove_overlapping_kwargs(kwargs, {"log"})
+        verbose = kwargs.pop("verbose", self.verbose)
+        self.pipcs=_run_susie_rss2(self, self.finemapping["path"], log=self.log, verbose=verbose, **kwargs)
+        self.finemapping["pipcs"] = self.pipcs
     
     def get_cs_lead(self,**kwargs):
         return _get_cs_lead(self.pipcs,**kwargs)

@@ -373,14 +373,28 @@ def _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=Log(), ver
         # Calculate how much ax_pos moved down
         pos_change = original_pos_y0 - new_pos_bottom
         
-        # Move ax_ld_block down by the same amount to maintain relative position with ax_pos
-        # This ensures ax_ld_block stays the same distance below ax_pos
-        new_ld_bottom = original_ld_y0 - pos_change
+        # Add a small gap between ax_pos and ax_ld_block (e.g., 0.01 of figure height)
+        fig_height = fig.get_figheight()
+        gap_between_pos_ld = 0.1 / fig_height  # Small gap in figure coordinates
+        
+        # Move ax_ld_block down by the same amount plus a small gap to create space between ax_pos and ax_ld_block
+        # This ensures ax_ld_block stays the same distance below ax_pos with a slight increase
+        new_ld_bottom = original_ld_y0 - pos_change - gap_between_pos_ld
         ax_ld_block.set_position([pos_ld.x0, new_ld_bottom, pos_ld.width, pos_ld.height])
         
         log.write(f"Adjusted spacing: ax_pos moved down by {pos_change:.4f}, ax_ld_block moved down by {pos_change:.4f}", verbose=verbose)
     else:
         log.write(f"Current gap: {current_gap:.4f} >= Required: {required_space:.4f}, No adjustment needed", verbose=verbose)
+        # Still add a small gap between ax_pos and ax_ld_block even when no adjustment is needed
+        fig_height = fig.get_figheight()
+        gap_between_pos_ld = 0.03 / fig_height  # Small gap in figure coordinates
+        pos_pos = ax_pos.get_position()
+        pos_ld = ax_ld_block.get_position()
+        # Calculate current gap between ax_pos bottom and ax_ld_block top
+        current_pos_ld_gap = pos_ld.y1 - pos_pos.y0
+        # Move ax_ld_block down slightly to increase the gap
+        new_ld_bottom = pos_ld.y0 - gap_between_pos_ld
+        ax_ld_block.set_position([pos_ld.x0, new_ld_bottom, pos_ld.width, pos_ld.height])
 
 
 def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family="Arial", ax3=None, log=Log(), verbose=True):
@@ -626,15 +640,15 @@ def _process_layout(mode, figax, fig_kwargs, mqqratio, region_hspace, ld_block=F
                 # Update figsize based on entire figure (with caps to prevent oversized figures)
                 fig_kwargs["figsize"] = (base_fig_width, new_fig_height)
                 
-                # Create subplots: ax1, ax3, ax_pos share x-axis, ax_ld_block does not
+                # Create subplots: ax1, ax3, ax_pos do not share x-axis, ax_ld_block does not
                 fig = plt.figure(**fig_kwargs)
                 # Start with default hspace, will be adjusted after plotting
                 gs = fig.add_gridspec(4, 1, height_ratios=[mqqratio, 1, pos_bar_ratio, ld_block_height_ratio], hspace=region_hspace)
                 
-                # ax1, ax3, ax_pos share x-axis
+                # ax1, ax3, ax_pos do not share x-axis
                 ax1 = fig.add_subplot(gs[0])
-                ax3 = fig.add_subplot(gs[1], sharex=ax1)
-                ax_pos = fig.add_subplot(gs[2], sharex=ax1)
+                ax3 = fig.add_subplot(gs[1])
+                ax_pos = fig.add_subplot(gs[2])
                 # ax_ld_block does NOT share x-axis (uses its own rank-based coordinate system)
                 ax_ld_block = fig.add_subplot(gs[3])
                 
@@ -644,7 +658,7 @@ def _process_layout(mode, figax, fig_kwargs, mqqratio, region_hspace, ld_block=F
                 
                 # Note: Spacing will be adjusted after plotting to ensure ax3 has room for tick labels
             else:
-                fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
+                fig, (ax1, ax3) = plt.subplots(2, 1, sharex=False, 
                     gridspec_kw={'height_ratios': [mqqratio, 1]}, **fig_kwargs)
                 ax_ld_block = None
             ax2 = None

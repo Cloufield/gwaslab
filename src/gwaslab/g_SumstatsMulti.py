@@ -12,7 +12,7 @@ from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_input_type import _get_id_column
 from gwaslab.g_Sumstats_polars import Sumstatsp
 
-from gwaslab.bd.bd_path_manager import _path
+from gwaslab.util.general.util_path_manager import _path
 
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm.hm_casting import _align_with_mold
@@ -36,15 +36,15 @@ from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_fix_sumstats import _process_build
 
 from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
-from gwaslab.util.util_ex_run_coloc import _run_coloc_susie
+from gwaslab.util.rwrapper.util_ex_run_coloc import _run_coloc_susie
 from gwaslab.util.util_in_filter_value import _filter_values
-from gwaslab.util.util_ex_run_2samplemr import _run_two_sample_mr
+from gwaslab.util.rwrapper.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.util.util_ex_match_ldmatrix import tofinemapping_m
-from gwaslab.util.util_ex_run_mesusie import _run_mesusie
+from gwaslab.util.rwrapper.util_ex_run_mesusie import _run_mesusie
 from gwaslab.util.util_in_meta import meta_analyze_multi
-from gwaslab.util.util_ex_run_hyprcoloc import _run_hyprcoloc
+from gwaslab.util.rwrapper.util_ex_run_hyprcoloc import _run_hyprcoloc
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_in_fill_data import _get_multi_min
 from gwaslab.util.util_ex_run_mtag import _run_mtag

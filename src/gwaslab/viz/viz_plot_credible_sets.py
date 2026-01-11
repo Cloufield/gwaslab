@@ -9,6 +9,7 @@ from gwaslab.io.io_process_kwargs import _extract_kwargs
 from gwaslab.util.util_in_filter_value import _filter_region
 from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
 from gwaslab.viz.viz_aux_style_options import set_plot_style
+from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_plot_mqqplot import _process_xlabel, _process_xtick
 
 def _plot_cs(pipcs_raw,
@@ -28,6 +29,10 @@ def _plot_cs(pipcs_raw,
             font_family = "Arial",
             legend_title="Credible set",
             fig_kwargs=None,
+            save=None,
+            save_kwargs=None,
+            title=None,
+            title_kwargs=None,
             log=Log(),
             verbose=True,
             **kwargs):
@@ -46,12 +51,17 @@ def _plot_cs(pipcs_raw,
         style = set_plot_style(
                 plot="plot_pipcs",
                 fig_kwargs=fig_kwargs,
+                save_kwargs=save_kwargs,
+                save=save,
+                title_kwargs=title_kwargs,
                 fontsize=fontsize,
                 fontfamily=font_family,
                 verbose=verbose,
                 log=log,
         )
         fig_kwargs = style["fig_kwargs"]
+        save_kwargs = style.get("save_kwargs", {})
+        title_kwargs = style.get("title_kwargs", {})
         fontsize = style["fontsize"]
         font_family = style["font_family"]
         scatter_kwargs =   _extract_kwargs("scatter", dict(), locals())
@@ -101,6 +111,12 @@ def _plot_cs(pipcs_raw,
                 cs_category_dic = pipcs.loc[~pipcs[cs_category].isna(), [cs, cs_category]].drop_duplicates().set_index(cs).to_dict()
                 
 
+        # Handle both integer and list/tuple marker_size
+        if isinstance(marker_size, (list, tuple)):
+            marker_s = marker_size[1]
+        else:
+            marker_s = marker_size
+        
         plot = sns.scatterplot(data=pipcs,
                         x="i",
                         y=pip,
@@ -108,7 +124,7 @@ def _plot_cs(pipcs_raw,
                         edgecolor=edgecolor,
                         palette=palette, 
                         style=cs,
-                        s=marker_size[1],
+                        s=marker_s,
                         ax=ax,
                         **scatter_kwargs)
         
@@ -153,5 +169,19 @@ def _plot_cs(pipcs_raw,
                   title_fontproperties={"size":fontsize,"family":font_family},
                   prop={"size":fontsize,"family":font_family},
                   frameon=False)
+
+        # Add title if provided
+        if title is not None:
+            title_fontsize = title_kwargs.get("fontsize", fontsize + 3)
+            title_fontfamily = title_kwargs.get("family", font_family)
+            title_pad = title_kwargs.get("pad", 1.08)
+            fig.suptitle(title, 
+                        fontsize=title_fontsize,
+                        family=title_fontfamily,
+                        y=title_pad,
+                        **{k: v for k, v in title_kwargs.items() if k not in ["fontsize", "family", "pad"]})
+
+        # Save figure if requested
+        save_figure(fig=fig, save=save, keyword="pipcs", save_kwargs=save_kwargs, log=log, verbose=verbose)
 
         return fig, log

@@ -61,7 +61,7 @@ gl.plot_ld_block(
     xlabel="Genomic position",
     title=None,
     cbar=True,
-    cbar_label="LD (r²)",
+    cbar_label="LD $\\mathregular{r^2}$ with variant",
     cbar_kwargs=None,
     fig_kwargs=None,
     save=None,
@@ -124,7 +124,7 @@ gl.plot_ld_block(
 | Parameter | DataType | Description | Default |
 |-----------|----------|-------------|---------|
 | `cbar` | `bool` | Whether to draw a colorbar | `True` |
-| `cbar_label` | `str` | Label for the colorbar | `"LD (r²)"` |
+| `cbar_label` | `str` | Label for the colorbar | `"LD $\\mathregular{r^2}$ with variant"` |
 | `cbar_kwargs` | `dict` | Additional arguments for colorbar | `None` |
 
 ### Annotation Parameters
@@ -264,7 +264,7 @@ gl.plot_ld_block(
     vmin=0.0,  # Minimum LD value to display
     vmax=0.8,  # Maximum LD value to display (focus on high LD)
     cbar=True,
-    cbar_label="LD r² (0-0.8)",
+    cbar_label="LD $\\mathregular{r^2}$ with variant",
     save="ld_block_custom_cmap.png"
 )
 ```

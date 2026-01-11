@@ -21,7 +21,7 @@ from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_plot_mqqplot import _process_highlight
 
-def _plot_trumpet(mysumstats,
+def _plot_trumpet(insumstats,
                 snpid="SNPID",
                 mode="q",
                 chrom="CHR",
@@ -220,8 +220,11 @@ def _plot_trumpet(mysumstats,
     """
     
     # Extract dataframe if Sumstats object is passed
-    if hasattr(mysumstats, 'data') and not isinstance(mysumstats, pd.DataFrame):
-        mysumstats = mysumstats.data
+    if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
+        insumstats = insumstats.data
+    
+    # Create working copy to preserve original (plotting functions should not modify input)
+    mysumstats = insumstats.copy()
     
     #Checking columns#################################################################################################################
     matplotlib.rc('font', family=font_family)

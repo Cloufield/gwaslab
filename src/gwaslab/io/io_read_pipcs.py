@@ -2,6 +2,7 @@ import pandas as pd
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
+from gwaslab.qc.qc_fix_sumstats import _fix_chr, _fix_pos
 import re
 import os
 
@@ -57,6 +58,17 @@ def _read_pipcs(data_or_dataframe,
         "variable_prob":"PIP",
         "variable":"N_SNP"
     })
+
+    # Fix CHR and POS columns using standard gwaslab functions
+    # This ensures proper formatting and prevents errors when plotting
+    # Use skip_status=True to avoid issues with STATUS column (NAType errors)
+    if "CHR" in pipcs.columns:
+        log.write(" -Fixing CHR column...", verbose=verbose)
+        pipcs = _fix_chr(pipcs, chrom="CHR", remove=True, skip_status=True, verbose=verbose, log=log)
+    
+    if "POS" in pipcs.columns:
+        log.write(" -Fixing POS column...", verbose=verbose)
+        pipcs = _fix_pos(pipcs, pos="POS", remove=True, skip_status=True, verbose=verbose, log=log)
 
     log.write(" -Current pipcs Dataframe shape :",len(pipcs)," x ", len(pipcs.columns),verbose=verbose) 
     

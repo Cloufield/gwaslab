@@ -269,7 +269,11 @@ def set_plot_style(
     save_kwargs["dpi"] = dpi
 
     if "s" not in scatter_kwargs and marker_size is not None:
-        scatter_kwargs["s"] = marker_size[1]
+        # Handle both integer and list/tuple marker_size
+        if isinstance(marker_size, (list, tuple)):
+            scatter_kwargs["s"] = marker_size[1]
+        else:
+            scatter_kwargs["s"] = marker_size
     if marker is not None:
         scatter_kwargs.setdefault("marker", marker)
     if markeredgecolor is not None:

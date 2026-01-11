@@ -16,10 +16,11 @@ from gwaslab.util.util_in_calculate_power import get_power
 from gwaslab.util.util_in_calculate_power import get_beta
 from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.util.util_ex_process_h5 import process_vcf_to_hfd5
-from gwaslab.util.util_ex_run_susie import _run_susie_rss as run_susie_rss
+from gwaslab.util.rwrapper.util_ex_run_susie import _run_susie_rss as run_susie_rss
 from gwaslab.util.util_in_meta import meta_analyze
 from gwaslab.util.util_in_fill_data import rank_based_int
-from gwaslab.util.util_in_simulate import simulate_sumstats
+from gwaslab.util.util_in_simulate import simulate_sumstats_region
+from gwaslab.util.util_in_simulate import simulate_sumstats_global
 
 from gwaslab.io.io_read_ldsc import read_ldsc
 from gwaslab.io.io_read_ldsc import read_popcorn

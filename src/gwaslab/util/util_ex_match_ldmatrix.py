@@ -58,6 +58,119 @@ def tofinemapping_m(
     verbose: bool = True,
     **kwargs: Any
 ) -> Tuple[Optional[str], pd.DataFrame, str]:
+    """
+    Prepare data for multi-study fine-mapping by matching sumstats with LD reference files
+    and extracting LD matrices for specified loci.
+    
+    This function is designed for fine-mapping analyses involving multiple studies (typically two).
+    It processes significant loci, matches variants between sumstats and LD reference files,
+    extracts LD matrices for each study, and exports the necessary files for downstream
+    fine-mapping tools (e.g., mesusie, coloc).
+    
+    The function handles:
+    - Automatic extraction of significant loci if not provided
+    - Matching variants between sumstats and LD reference files by CHR, POS, and alleles
+    - Handling allele flips between reference and sumstats
+    - Extracting LD matrices from pre-computed LD files for each study
+    - Exporting SNP lists, LD matrices, and locus-specific sumstats files
+    
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics dataframe with columns: SNPID, CHR, POS, EA, NEA, and study-specific
+        columns (e.g., BETA_1, SE_1, Z_1, BETA_2, SE_2, Z_2).
+    studies : Optional[List[str]], optional
+        List of study names (typically 2 studies). Defaults to None.
+    group : Optional[str], optional
+        Group identifier for output file naming. Defaults to None.
+    ld_paths : Optional[List[str]], optional
+        List of paths to pre-computed LD matrix files (one per study). Defaults to None.
+    ld_types : Optional[List[str]], optional
+        List of LD matrix file types. Defaults to None.
+    ld_maps : Optional[List[str]], optional
+        List of paths to LD map files (variant annotation files matching LD matrices,
+        one per study). Defaults to None.
+    ld_map_dics : Optional[List[Dict[str, str]]], optional
+        List of dictionaries mapping column names in LD map files to standard names.
+        Defaults to None.
+    bfile : Optional[str], optional
+        Path to PLINK binary files (bfile prefix). Not used when ld_paths are provided.
+        Defaults to None.
+    vcf : Optional[str], optional
+        Path to VCF file. Not used when ld_paths are provided. Defaults to None.
+    locus : Optional[Tuple[int, int]], optional
+        Single locus as (CHR, POS) tuple. Defaults to None.
+    loci : Optional[List[str]], optional
+        List of lead variant SNPIDs to process. If None, significant loci are auto-extracted.
+        Defaults to None.
+    loci_chrpos : Optional[List[Tuple[int, int]]], optional
+        List of loci as (CHR, POS) tuples. Defaults to None.
+    out : str, optional
+        Output directory path. Defaults to "./".
+    plink : str, optional
+        Path to plink executable. Defaults to "plink".
+    plink2 : str, optional
+        Path to plink2 executable. Defaults to "plink2".
+    windowsizekb : int, optional
+        Window size in kilobases around each lead variant for extracting variants.
+        Defaults to 1000.
+    threads : int, optional
+        Number of threads for parallel processing. Defaults to 1.
+    mode : str, optional
+        Processing mode. Defaults to "r".
+    exclude_hla : bool, optional
+        Whether to exclude HLA region variants. Defaults to False.
+    getlead_kwargs : Optional[Dict[str, Any]], optional
+        Additional keyword arguments for lead variant extraction. Defaults to None.
+    memory : Optional[int], optional
+        Memory limit in MB. Defaults to None.
+    overwrite : bool, optional
+        Whether to overwrite existing output files. Defaults to False.
+    log : Log, optional
+        Log object for recording progress. Defaults to Log().
+    suffixes : Optional[List[str]], optional
+        List of suffixes for study-specific columns (e.g., ["_1", "_2"]).
+        If None, defaults to [""]. Defaults to None.
+    ld_map_kwargs : Optional[Dict[str, Any]], optional
+        Additional keyword arguments for loading LD map files. Defaults to None.
+    extra_plink_option : str, optional
+        Additional options to pass to PLINK commands. Defaults to "".
+    verbose : bool, optional
+        Whether to print verbose output. Defaults to True.
+    **kwargs : Any
+        Additional keyword arguments (not currently used).
+    
+    Returns
+    -------
+    Tuple[Optional[str], pd.DataFrame, str]
+        A tuple containing:
+        - output_file_list_path (Optional[str]): Path to the file list CSV, or None if no
+          loci were processed successfully.
+        - output_file_list (pd.DataFrame): DataFrame with columns: SNPID, SNPID_LIST,
+          LD_R_MATRIX, LOCUS_SUMSTATS, LOCUS, SUBSTUDY, STUDY, GROUP. Each row represents
+          one study-locus combination.
+        - plink_log (str): PLINK log output (empty string if PLINK was not used).
+    
+    Notes
+    -----
+    - This function processes exactly 2 studies (as indicated by `for i in range(2)` loops).
+    - The function requires pre-computed LD matrices and LD map files for each study.
+    - Variants are matched by CHR, POS, and alleles. Allele flips are automatically detected
+      and handled by negating the corresponding LD matrix entries.
+    - Output files are named with pattern: {group}_{nstudy}_{lead_snpid}_{windowsizekb}kb.*
+    
+    Examples
+    --------
+    >>> filelist_path, filelist_df, plink_log = tofinemapping_m(
+    ...     sumstats=sumstats_df,
+    ...     studies=["Study1", "Study2"],
+    ...     group="my_analysis",
+    ...     ld_paths=["/path/to/study1.ld.txt", "/path/to/study2.ld.txt"],
+    ...     ld_maps=["/path/to/study1.map", "/path/to/study2.map"],
+    ...     windowsizekb=500,
+    ...     out="./finemapping_output"
+    ... )
+    """
     
     ############################################################################################
     if suffixes is None:

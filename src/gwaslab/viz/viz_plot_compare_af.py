@@ -8,7 +8,7 @@ from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 ################################################################################################################################
-def plotdaf(sumstats,
+def plotdaf(insumstats,
              eaf="EAF",
              daf="DAF",
              raf="RAF",
@@ -37,8 +37,11 @@ def plotdaf(sumstats,
            ):
     
     # Extract dataframe if Sumstats object is passed
-    if hasattr(sumstats, 'data') and not isinstance(sumstats, pd.DataFrame):
-        sumstats = sumstats.data
+    if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
+        insumstats = insumstats.data
+    
+    # Create working copy to preserve original (plotting functions should not modify input)
+    sumstats = insumstats.copy()
     
     if font_kwargs is None:
         font_kwargs={'family':'sans','fontname':'Arial','fontsize':8}

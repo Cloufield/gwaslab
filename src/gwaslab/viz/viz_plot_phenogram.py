@@ -15,7 +15,7 @@ from adjustText import adjust_text
 
 
 def _plot_phenogram(
-    mysumstats,
+    insumstats,
     snpid: str = "SNPID",
     chrom: str = "CHR",
     pos: str = "POS",
@@ -98,11 +98,12 @@ def _plot_phenogram(
     
     log.write("Start to create phenogram plot...", verbose=verbose)
     
-    # Get sumstats data
-    if hasattr(mysumstats, 'data'):
-        sumstats = mysumstats.data
-    else:
-        sumstats = mysumstats
+    # Extract dataframe if Sumstats object is passed
+    if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
+        insumstats = insumstats.data
+    
+    # Create working copy to preserve original (plotting functions should not modify input)
+    sumstats = insumstats.copy()
     
     # Get leads from sumstats
     log.write(" -Extracting lead variants...", verbose=verbose)

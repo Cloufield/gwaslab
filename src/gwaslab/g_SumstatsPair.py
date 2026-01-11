@@ -25,13 +25,13 @@ from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 
 from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
-from gwaslab.util.util_ex_run_coloc import _run_coloc_susie
-from gwaslab.util.util_ex_run_ccgwas import _run_ccgwas
-from gwaslab.util.util_ex_run_2samplemr import _run_two_sample_mr
+from gwaslab.util.rwrapper.util_ex_run_coloc import _run_coloc_susie
+from gwaslab.util.rwrapper.util_ex_run_ccgwas import _run_ccgwas
+from gwaslab.util.rwrapper.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.util.util_ex_match_ldmatrix import tofinemapping_m
-from gwaslab.util.util_ex_run_mesusie import _run_mesusie
+from gwaslab.util.rwrapper.util_ex_run_mesusie import _run_mesusie
 from gwaslab.util.util_in_filter_value import _filter_values
 
 from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq

@@ -511,7 +511,7 @@ def _plot_regional(
         
         # rebase i to region[1] : the i value when POS=0
         gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
-        
+
         lead_snp_ys = []
         lead_snp_is = []
         lead_snp_is_colors = []
@@ -561,7 +561,9 @@ def _plot_regional(
         if "r" in mode:
             if gtf_path is not None: 
                 ax3.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
+                ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
                 ax3.set_xticklabels(region_ticks,rotation=45)
+                ax1.set_xticklabels([],rotation=45)
             
             if region_grid==True:
                 for i in np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step):
@@ -574,6 +576,8 @@ def _plot_regional(
                     ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
                     ax3.axvline(x=lead_snp_i, zorder=2,**region_lead_grid_line)
 
+            ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
+            ax3.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         else:
             # set x ticks m plot
             ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))

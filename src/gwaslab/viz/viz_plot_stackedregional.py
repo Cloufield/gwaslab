@@ -30,7 +30,6 @@ from gwaslab.viz.viz_aux_quickfix import (
     _get_largenumber,
     _quick_add_tchrpos,
     _quick_assign_highlight_hue_pair,
-    _quick_assign_i,
     _quick_assign_i_with_rank,
     _quick_assign_marker_relative_size,
     _quick_extract_snp_in_region,

@@ -1212,7 +1212,7 @@
         "vmax": 1.0,
         "xlabel": "Genomic position",
         "cbar": true,
-        "cbar_label": "LD (r²)",
+        "cbar_label": "LD $\\mathregular{r^2}$ with variant",
         "fontsize": 10,
         "font_family": "Arial",
         "region_step": 21,

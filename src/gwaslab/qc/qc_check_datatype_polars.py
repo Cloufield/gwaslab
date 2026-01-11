@@ -247,4 +247,3 @@ def check_datatype_for_cols_polars(
             raise ValueError("Please fix dtypes using Sumstatsp methods (fix_chr, fix_pos, fix_allele, fix_id) for: {}. If statistics columns are present, consider Sumstatsp.check_sanity().".format(",".join(failed)))
     
     return None
-

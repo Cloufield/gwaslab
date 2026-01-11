@@ -423,7 +423,12 @@ def _plot_position_bar(
     
     # Set x-axis limits based on actual positions (only if not shared)
     # In regional mode, xlim is set by shared x-axis
-    if not (hasattr(ax_pos, '_shared_axes') and 'x' in ax_pos._shared_axes):
+    #if not (hasattr(ax_pos, '_shared_axes') and 'x' in ax_pos._shared_axes):
+    #    padding = pos_range * 0.02 if pos_range > 0 else (pos_max * 0.01 if pos_max > 0 else 1)
+    if region is not None:
+        ax_pos.set_xlim(region[1], region[2])
+    else:
+        # Use actual positions range with padding
         padding = pos_range * 0.02 if pos_range > 0 else (pos_max * 0.01 if pos_max > 0 else 1)
         ax_pos.set_xlim(pos_min - padding, pos_max + padding)
     ax_pos.set_ylim(0, 0.05)
@@ -1070,7 +1075,7 @@ def plot_ld_block(
     xlabel: str = "Genomic position",
     title: Optional[str] = None,
     cbar: bool = True,
-    cbar_label: str = "LD (r²)",
+    cbar_label: str = "LD $\\mathregular{r^2}$",
     cbar_kwargs: Optional[dict] = None,
     fig_kwargs: Optional[dict] = None,
     save: Optional[Union[bool, str]] = None,
@@ -1149,7 +1154,7 @@ def plot_ld_block(
     cbar : bool, optional
         Whether to draw a colorbar. Default: True.
     cbar_label : str, optional
-        Label for the colorbar. Default: "LD (r²)".
+        Label for the colorbar. Default: "LD $\\mathregular{r^2}$".
     cbar_kwargs : dict, optional
         Additional arguments for colorbar. Default: None.
     fig_kwargs : dict, optional

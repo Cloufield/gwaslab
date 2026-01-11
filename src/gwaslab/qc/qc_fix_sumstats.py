@@ -814,7 +814,7 @@ def _convert_sex_chromosomes_to_numeric(sumstats, fixable_indices,
         check_dtype=False,
         fix=False
 )
-def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", status: str = "STATUS", add_prefix: str = "", remove: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
+def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", status: str = "STATUS", add_prefix: str = "", remove: bool = False, verbose: bool = True, skip_status: bool = False, log: Log = Log()) -> pd.DataFrame:
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
     
@@ -837,6 +837,9 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
         If True, remove records with invalid or unrecognized chromosome labels.
     verbose : bool, default False
         If True, print progress or diagnostic messages.
+    skip_status : bool, default False
+        If True, skip updating the STATUS column. Useful when STATUS column has issues
+        or when STATUS column is not needed.
 
     Returns
     -------
@@ -889,7 +892,11 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
     # If all chromosomes are already numeric, skip extraction
     if is_chr_fixed.sum() == len(sumstats):
         log.write(" -All CHR are already fixed...", verbose=verbose)
-        sumstats.loc[is_chr_fixed, status] = vchange_status(sumstats.loc[is_chr_fixed, status], 4, "986", "520")
+        if not skip_status and status in sumstats.columns:
+            try:
+                sumstats.loc[is_chr_fixed, status] = vchange_status(sumstats.loc[is_chr_fixed, status], 4, "986", "520")
+            except Exception:
+                pass  # Skip status update if it fails
     else:
         # ========================================================================
         # Step 4: Extract and fix chromosome notations
@@ -930,14 +937,18 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
         # ========================================================================
         # Step 7: Update status codes
         # ========================================================================
-        sumstats.loc[is_chr_fixed, status] = vchange_status(sumstats.loc[is_chr_fixed, status], 4, "986", "520")
-        if len(is_chr_fixable.index) > 0:
-            sumstats.loc[is_chr_fixable.index, status] = vchange_status(
-                sumstats.loc[is_chr_fixable.index, status], 4, "986", "520"
-            )
-            sumstats.loc[is_chr_invalid.index, status] = vchange_status(
-                sumstats.loc[is_chr_invalid.index, status], 4, "986", "743"
-            )
+        if not skip_status and status in sumstats.columns:
+            try:
+                sumstats.loc[is_chr_fixed, status] = vchange_status(sumstats.loc[is_chr_fixed, status], 4, "986", "520")
+                if len(is_chr_fixable.index) > 0:
+                    sumstats.loc[is_chr_fixable.index, status] = vchange_status(
+                        sumstats.loc[is_chr_fixable.index, status], 4, "986", "520"
+                    )
+                    sumstats.loc[is_chr_invalid.index, status] = vchange_status(
+                        sumstats.loc[is_chr_invalid.index, status], 4, "986", "743"
+                    )
+            except Exception:
+                pass  # Skip status update if it fails
         
         # ========================================================================
         # Step 8: Remove invalid chromosomes if requested
@@ -1008,7 +1019,7 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
         check_dtype=False,
         fix=False
 )
-def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", status: str = "STATUS", remove: bool = False, verbose: bool = True, lower_limit: int = 0, upper_limit: Optional[int] = None, limit: int = 250000000, log: Log = Log()) -> pd.DataFrame:
+def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", status: str = "STATUS", remove: bool = False, verbose: bool = True, lower_limit: int = 0, upper_limit: Optional[int] = None, limit: int = 250000000, skip_status: bool = False, log: Log = Log()) -> pd.DataFrame:
     '''
     Standardize and validate genomic base-pair positions.
     
@@ -1031,6 +1042,9 @@ def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", st
         Maximum acceptable genomic position.
     limit : int, default 250000000
         Default upper limit applied when `upper_limit` is not provided.
+    skip_status : bool, default False
+        If True, skip updating the STATUS column. Useful when STATUS column has issues
+        or when STATUS column is not needed.
 
     Returns
     -------
@@ -1084,8 +1098,12 @@ def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", st
     is_pos_invalid = (~is_pos_na) & (~is_pos_fixed)
     
     # Update status codes for fixed and invalid positions
-    sumstats.loc[is_pos_fixed, status] = vchange_status(sumstats.loc[is_pos_fixed, status], 4, "975", "630")
-    sumstats.loc[is_pos_invalid, status] = vchange_status(sumstats.loc[is_pos_invalid, status], 4, "975", "842")
+    if not skip_status and status in sumstats.columns:
+        try:
+            sumstats.loc[is_pos_fixed, status] = vchange_status(sumstats.loc[is_pos_fixed, status], 4, "975", "630")
+            sumstats.loc[is_pos_invalid, status] = vchange_status(sumstats.loc[is_pos_invalid, status], 4, "975", "842")
+        except Exception:
+            pass  # Skip status update if it fails
     
     # Remove outliers outside the specified bounds
     log.write(" -Position bound:({} , {:,})".format(lower_limit, upper_limit), verbose=verbose)

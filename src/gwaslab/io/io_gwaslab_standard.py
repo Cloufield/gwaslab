@@ -619,7 +619,7 @@ def load_gsf(
         sumstats_obj.meta = _init_meta()
     
     # Initialize other required attributes
-    from gwaslab.bd.bd_path_manager import _path
+    from gwaslab.util.general.util_path_manager import _path
     from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
     from gwaslab.info.g_version import _show_version
     

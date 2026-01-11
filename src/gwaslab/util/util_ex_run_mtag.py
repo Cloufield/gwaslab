@@ -5,7 +5,7 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
-from gwaslab.bd.bd_path_manager import _path
+from gwaslab.util.general.util_path_manager import _path
 
 if TYPE_CHECKING:
     from gwaslab.g_SumstatsMulti import SumstatsMulti
