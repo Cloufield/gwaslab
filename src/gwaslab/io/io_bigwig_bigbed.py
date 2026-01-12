@@ -34,12 +34,7 @@ try:
     PYBigWig_AVAILABLE = True
 except ImportError:
     PYBigWig_AVAILABLE = False
-    import warnings
-    warnings.warn(
-        "pyBigWig not available. Install pyBigWig for bigWig/bigBed support: "
-        "pip install pybigwig",
-        UserWarning
-    )
+    # Warning suppressed - pyBigWig is optional and only needed for bigWig/bigBed support
 
 
 def _find_matching_chromosome(

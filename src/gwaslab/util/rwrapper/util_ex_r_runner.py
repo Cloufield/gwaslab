@@ -45,7 +45,7 @@ class RScriptRunner:
         self,
         r: str = "Rscript",
         log: Optional[Log] = None,
-        timeout: Optional[float] = None,
+        timeout: Optional[float] = 86400,  # 24 hours in seconds
         temp_dir: Optional[str] = None,
         cleanup: bool = True
     ):
@@ -55,7 +55,7 @@ class RScriptRunner:
         Args:
             r: Path to Rscript executable (default: "Rscript")
             log: Log instance for logging (default: None, creates new Log)
-            timeout: Default timeout in seconds (default: None, no timeout)
+            timeout: Default timeout in seconds (default: 86400, 24 hours)
             temp_dir: Directory for temporary files (default: None, uses system temp)
             cleanup: Whether to clean up temp files after execution (default: True)
         """

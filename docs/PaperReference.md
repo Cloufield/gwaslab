@@ -58,7 +58,11 @@ This document lists all academic papers referenced in GWASLab, including methods
 
 ### MESuSiE (Multivariate Extension of SuSiE)
 
-**Rossen, J., Shi, H., Strober, B. J., Pasaniuc, B., & Price, A. L.** (2023). MESuSiE enables scalable and powerful multi-ancestry fine-mapping of causal variants in genome-wide association studies. *Nature Genetics*, 55(12), 2177-2188.
+**Gao, B., & Zhou, X.** (2024). MESuSiE enables scalable and powerful multi-ancestry fine-mapping of causal variants in genome-wide association studies. *Nature genetics*, 56(1), 170-179.
+
+### MultiSuSiE (Multi-ancestry SuSiE)
+
+**Rossen, J., Shi, H., Strober, B. J., Zhang, M. J., Kanai, M., McCaw, Z. R., ... & Price, A. L.** (2026). MultiSuSiE improves multi-ancestry fine-mapping in All of Us whole-genome sequencing data. *Nature Genetics*, 1-10.
 
 ### coloc (Colocalization Analysis)
 

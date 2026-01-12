@@ -74,6 +74,7 @@ GWASLab includes implementations of several analysis tools in the `extension/` d
 |-----------|--------|---------|-------|
 | **LDSC (LD Score Regression)** | Included in `gwaslab/extension/ldsc/` | GPL-3.0 | Based on LD Score regression methodology. Code included in GWASLab repository. |
 | **PRS-CS (Polygenic Risk Score - Continuous Shrinkage)** | Included in `gwaslab/extension/prscs/` | MIT | PRS-CS implementation included in GWASLab. Original reference: Ge et al., Nature Communications, 10:1776, 2019. |
+| **MultiSuSiE (Multi-ancestry SuSiE)** | Included in `gwaslab/extension/multisusie/` | GPL-3.0 | MultiSuSiE implementation included in GWASLab. Original reference: Rossen et al., Nature Genetics, 2026. Source: https://github.com/jordanero/MultiSuSiE |
 
 ### Optional External Tools (Runtime Dependencies)
 
@@ -86,7 +87,7 @@ The following external command-line tools are used by various `util_ex_*` functi
 | **coloc** | `util_ex_run_coloc` | GPL | Colocalization analysis for shared genetic associations |
 | **hyprcoloc** | `util_ex_run_hyprcoloc` | GPL-2.0-or-later | Hierarchical Bayesian colocalization analysis |
 | **TwoSampleMR** | `util_ex_run_2samplemr` | MIT | Mendelian Randomization using two-sample summary data |
-| **MESuSiE** | `util_ex_run_mesusie` | GPL-2.0-or-later | Multivariate extension of SuSiE for fine-mapping |
+| **MESuSiE** | `util_ex_run_mesusie` | GPL (>= 2) | Multivariate extension of SuSiE for fine-mapping. R package by borangao. Original reference: Gao & Zhou, Nature Genetics, 2024. |
 | **PLINK/PLINK2** | `util_ex_run_clumping`, `util_ex_calculate_ldmatrix`, `util_ex_process_ref` | GPL-3.0 | PLINK whole genome association analysis toolset |
 | **BCFtools** | `hm_assign_rsid`, `util_ex_process_h5` | MIT/Expat License | Variant calling and manipulation utilities. Part of samtools/htslib |
 | **MAGMA** | `util_ex_run_magma` | GPL v3.0 (v1.0 only); Proprietary (v1.01+, free for academic use) | Multi-marker Analysis of GenoMic Annotation. Original v1.0 is GPL v3.0; subsequent versions use standard copyright |
@@ -96,7 +97,8 @@ The following external command-line tools are used by various `util_ex_*` functi
 **Note on R Packages**: 
 - **susieR** uses a BSD-style license (permissive, GPL-3.0 compatible)
 - **coloc** uses GPL license (GPL-3.0 compatible)
-- **hyprcoloc, MESuSiE** are licensed under GPL-2.0-or-later (GPL-3.0 compatible)
+- **hyprcoloc** is licensed under GPL-2.0-or-later (GPL-3.0 compatible)
+- **MESuSiE** is licensed under GPL (>= 2), equivalent to GPL-2.0-or-later (GPL-3.0 compatible)
 - **TwoSampleMR** uses MIT license (permissive, GPL-3.0 compatible)
 - These packages are called via R subprocess calls and are not included in the GWASLab codebase
 
@@ -126,7 +128,9 @@ All dependencies use permissive licenses (BSD-3-Clause, MIT, Apache-2.0, PSF) th
 - **Apache-2.0**: pyarrow, requests (permissive)
 - **PSF**: matplotlib (permissive, GPL-compatible)
 - **GPL**: coloc (copyleft, GPL-3.0 compatible)
-- **GPL-2.0-or-later**: hyprcoloc, MESuSiE (copyleft, GPL-3.0 compatible)
+- **GPL-2.0-or-later**: hyprcoloc (copyleft, GPL-3.0 compatible)
+- **GPL (>= 2)**: MESuSiE (copyleft, GPL-3.0 compatible, equivalent to GPL-2.0-or-later)
+- **GPL-3.0**: MultiSuSiE, LDSC (copyleft, GPL-3.0 compatible)
 - **GPL v3.0 (v1.0 only) / Proprietary**: MAGMA (v1.0 is GPL v3.0; later versions are proprietary)
 
 ### Important Notes

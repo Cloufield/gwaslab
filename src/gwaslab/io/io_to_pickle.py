@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Union
 import pickle
 import os
 import gc
@@ -19,8 +19,11 @@ except ImportError:
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
+    from gwaslab.g_SumstatsPair import SumstatsPair
+    from gwaslab.g_SumstatsMulti import SumstatsMulti
 
 def dump_pickle(glsumstats: 'Sumstats', path: str = "~/mysumstats.pickle", overwrite: bool = False) -> None:
+    path = os.path.expanduser(path)
     glsumstats.log.write("Start to dump the Sumstats Object.")
     if overwrite==False and os.path.exists(path):
         glsumstats.log.write(" -File exists. Skipping. If you want to overwrite, please use overwrite=True.")
@@ -30,28 +33,104 @@ def dump_pickle(glsumstats: 'Sumstats', path: str = "~/mysumstats.pickle", overw
             pickle.dump(glsumstats, file)
     glsumstats.log.write("Finished dumping.")
 
-def load_pickle(path: str) -> 'Sumstats':
-    if os.path.exists(path):
+def dump_pickle_pair(glsumpair: 'SumstatsPair', path: str = "~/mysumpair.pickle", overwrite: bool = False) -> None:
+    path = os.path.expanduser(path)
+    glsumpair.log.write("Start to dump the SumstatsPair Object.")
+    if overwrite==False and os.path.exists(path):
+        glsumpair.log.write(" -File exists. Skipping. If you want to overwrite, please use overwrite=True.")
+    else:
+        with open(path, 'wb') as file:
+            glsumpair.log.write(" -Dump the SumstatsPair Object to : {}".format(path))
+            pickle.dump(glsumpair, file)
+    glsumpair.log.write("Finished dumping.")
+
+def dump_pickle_multi(glsummulti: 'SumstatsMulti', path: str = "~/mysummulti.pickle", overwrite: bool = False) -> None:
+    path = os.path.expanduser(path)
+    glsummulti.log.write("Start to dump the SumstatsMulti Object.")
+    if overwrite==False and os.path.exists(path):
+        glsummulti.log.write(" -File exists. Skipping. If you want to overwrite, please use overwrite=True.")
+    else:
+        with open(path, 'wb') as file:
+            glsummulti.log.write(" -Dump the SumstatsMulti Object to : {}".format(path))
+            pickle.dump(glsummulti, file)
+    glsummulti.log.write("Finished dumping.")
+
+def load_pickle(path: str) -> Optional[Union['Sumstats', 'SumstatsPair', 'SumstatsMulti']]:
+    """
+    Load a previously saved GWASLab object from a pickle file.
+    
+    Automatically detects and loads Sumstats, SumstatsPair, or SumstatsMulti objects.
+    
+    Parameters
+    ----------
+    path : str
+        File path to the pickle file. Supports `~` for home directory expansion.
+    
+    Returns
+    -------
+    Optional[Union[Sumstats, SumstatsPair, SumstatsMulti]]
+        The loaded GWASLab object (type is automatically detected).
+        Returns None if the file does not exist.
+    """
+    path = os.path.expanduser(path)
+    
+    if not os.path.exists(path):
+        Log().write("File not exists : ", path)
+        return None
+    
+    try:
+        # Try loading with current module structure
+        with open(path, 'rb') as file:
+            obj = pickle.load(file)
+            
+            # Detect object type and log appropriately
+            obj_type = type(obj).__name__
+            if obj_type == 'SumstatsPair':
+                obj.log.write("Loaded dumped SumstatsPair object created using gwaslab>=v3.4.32")
+                obj.log.write("Loaded dumped SumstatsPair object from : {}".format(path))
+            elif obj_type == 'SumstatsMulti':
+                obj.log.write("Loaded dumped SumstatsMulti object created using gwaslab>=v3.4.32")
+                obj.log.write("Loaded dumped SumstatsMulti object from : {}".format(path))
+            else:
+                # Default to Sumstats for backward compatibility
+                obj.log.write("Loaded dumped Sumstats object created using gwaslab>=v3.4.32")
+                obj.log.write("Loaded dumped Sumstats object from : {}".format(path))
+            
+            return obj
+            
+    except Exception as e:
+        # Try with legacy module structure for backward compatibility
         try:
-            with open(path, 'rb') as file:
-                glsumstats =  pickle.load(file)
-                glsumstats.log.write("Loaded dumped Sumstats object created using gwaslab>=v3.4.32")    
-                glsumstats.log.write("Loaded dumped Sumstats object from : ", path)
-                return glsumstats
-        except:
             sys.modules['gwaslab.Sumstats'] = g_Sumstats
             sys.modules['gwaslab.Log'] = g_Log
             
             with open(path, 'rb') as file:
-                glsumstats =  pickle.load(file)
-                glsumstats.log.write("Loaded dumped Sumstats object created using gwaslab<v3.4.32")    
-                glsumstats.log.write("Loaded dumped Sumstats object from : ", path)
-                return glsumstats
-    else:
-        Log().write("File not exists : ", path)
+                obj = pickle.load(file)
+                
+                # Detect object type and log appropriately
+                obj_type = type(obj).__name__
+                if obj_type == 'SumstatsPair':
+                    obj.log.write("Loaded dumped SumstatsPair object created using gwaslab<v3.4.32")
+                    obj.log.write("Loaded dumped SumstatsPair object from : {}".format(path))
+                elif obj_type == 'SumstatsMulti':
+                    obj.log.write("Loaded dumped SumstatsMulti object created using gwaslab<v3.4.32")
+                    obj.log.write("Loaded dumped SumstatsMulti object from : {}".format(path))
+                else:
+                    # Default to Sumstats for backward compatibility
+                    obj.log.write("Loaded dumped Sumstats object created using gwaslab<v3.4.32")
+                    obj.log.write("Loaded dumped Sumstats object from : {}".format(path))
+                
+                return obj
+        except Exception as e2:
+            # If both attempts fail, raise the original error
+            Log().write("Error loading pickle file {}: {}".format(path, str(e)))
+            raise e
 
 def load_data_from_pickle(path: str, usecols: Optional[List[str]] = None) -> pd.DataFrame:
-    data = load_pickle(path).data
+    obj = load_pickle(path)
+    if obj is None:
+        raise FileNotFoundError("Pickle file not found: {}".format(path))
+    data = obj.data
     existing_cols = []
     if usecols is not None:
         for i in usecols:

@@ -29,7 +29,8 @@ def _merge_mold_with_sumstats_by_chrposp(
     merge_mode: str = "full",
     merge_by_id: bool = False,
     verbose: bool = True,
-    return_not_matched_mold: bool = False
+    return_not_matched_mold: bool = False,
+    keep_all_variants: bool = True
 ) -> Union[pl.DataFrame, Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]]:
     
     log.write("Start to merge sumstats...", verbose=verbose)
@@ -118,7 +119,8 @@ def _merge_mold_with_sumstats_by_chrposp(
         mold_sumstats = mold.join(sumstats, on=["SNPID","CHR","POS"], how=merge_mode, suffix="_", coalesce=True)
 
 
-    if merge_mode=="full":
+    # Handle outer merge (full in polars) - copy SNP info for unmatched variants
+    if merge_mode=="full" or keep_all_variants:
         is_temp_na = mold_sumstats["EA_1"].is_null()
         log.write(" -Detected {} variants not in the template...".format(sum(is_temp_na)), verbose=verbose)
 
@@ -190,9 +192,12 @@ def _merge_mold_with_sumstats_by_chrposp(
         mold_sumstats = mold_sumstats.unique(subset=["SNPID","CHR","POS"])
         log.write(" -After merging by SNPID, CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
 
-    mold_sumstats = _keep_variants_with_same_allele_setp(mold_sumstats,suffixes=suffixes)
-
-    log.write(" -Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
+    # Only filter by allele set if not keeping all variants (for additional validation)
+    if not keep_all_variants:
+        mold_sumstats = _keep_variants_with_same_allele_setp(mold_sumstats,suffixes=suffixes)
+        log.write(" -Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
+    else:
+        log.write(" -Keeping all variants (including unmatched):{}".format(len(mold_sumstats)), verbose=verbose)
     
     return mold_sumstats
 
@@ -219,7 +224,8 @@ def _align_with_moldp(
     sumstats: pl.DataFrame,
     log: Log = Log(),
     verbose: bool = True,
-    suffixes: Tuple[str, str] = ("_MOLD","")
+    suffixes: Tuple[str, str] = ("_MOLD",""),
+    keep_all_variants: bool = True
 ) -> pl.DataFrame:
     
     ea1="EA"+suffixes[0]
@@ -229,12 +235,28 @@ def _align_with_moldp(
     status1="STATUS"+suffixes[0]
     status2="STATUS"+suffixes[1]
 
-    is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
-    is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
+    # When keeping all variants, some rows may have missing alleles
+    if keep_all_variants:
+        # Only process rows where both sets of alleles are present
+        has_both_alleles = (
+            sumstats[ea1].is_not_null() & 
+            sumstats[nea1].is_not_null() & 
+            sumstats[ea2].is_not_null() & 
+            sumstats[nea2].is_not_null()
+        )
+        is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1]) & has_both_alleles
+        is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1]) & has_both_alleles
+    else:
+        is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
+        is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
     
     log.write(" -Aligning alleles with reference: ", verbose=verbose)
     log.write("  -Perfect match: {}".format(sum(is_perfect_match)), verbose=verbose)
     log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
+    if keep_all_variants:
+        unmatched_count = sum(~has_both_alleles) if keep_all_variants else 0
+        if unmatched_count > 0:
+            log.write("  -Variants with missing alleles (kept as-is): {}".format(unmatched_count), verbose=verbose)
     
     log.write("  -For perfect match: copy STATUS from reference...", verbose=verbose)
 

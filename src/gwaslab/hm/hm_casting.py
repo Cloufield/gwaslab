@@ -27,7 +27,8 @@ def _merge_mold_with_sumstats_by_chrpos(
     suffixes: Tuple[str, str] = ("_MOLD",""),
     merge_mode: str = "inner",
     verbose: bool = True,
-    return_not_matched_mold: bool = False
+    return_not_matched_mold: bool = False,
+    keep_all_variants: bool = True
 ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     import pandas as pd
     # Handle both DataFrame and Sumstats object
@@ -71,8 +72,48 @@ def _merge_mold_with_sumstats_by_chrpos(
     #   mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
     #   sumstats["_IDENTIFIER_FOR_VARIANT2"] = range(len(sumstats))
 
-    # mold sumffix + mold 
-    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how=merge_mode,suffixes=suffixes)
+    # Create allele set identifiers for matching by CHR:POS:allele_set
+    # This prevents cartesian product when multiple variants exist at same position
+    ea1="EA"+suffixes[0]
+    nea1="NEA"+suffixes[0]
+    
+    # Create allele set for mold (sumstats1) - sorted alleles to handle flips
+    # Check for both suffixed and unsuffixed column names (mold may already have suffixes)
+    if all(col in mold.columns for col in [ea1, nea1]):
+        # Use suffixed columns (already renamed)
+        ea1_str = mold[ea1].astype(str).replace('nan', '')
+        nea1_str = mold[nea1].astype(str).replace('nan', '')
+        mold["_ASET"] = pd.Series([
+            ":".join(sorted([e, n])) if e and n else ""
+            for e, n in zip(ea1_str, nea1_str)
+        ], index=mold.index)
+    elif all(col in mold.columns for col in ["EA", "NEA"]):
+        # Use unsuffixed columns (not yet renamed)
+        ea1_str = mold["EA"].astype(str).replace('nan', '')
+        nea1_str = mold["NEA"].astype(str).replace('nan', '')
+        mold["_ASET"] = pd.Series([
+            ":".join(sorted([e, n])) if e and n else ""
+            for e, n in zip(ea1_str, nea1_str)
+        ], index=mold.index)
+    else:
+        mold["_ASET"] = ""
+    
+    # Create allele set for sumstats (sumstats2) - always use unsuffixed columns
+    if all(col in sumstats.columns for col in ["EA", "NEA"]):
+        ea2_str = sumstats["EA"].astype(str).replace('nan', '')
+        nea2_str = sumstats["NEA"].astype(str).replace('nan', '')
+        sumstats["_ASET"] = pd.Series([
+            ":".join(sorted([e, n])) if e and n else ""
+            for e, n in zip(ea2_str, nea2_str)
+        ], index=sumstats.index)
+    else:
+        sumstats["_ASET"] = ""
+    
+    # Merge by CHR, POS, and allele set to avoid cartesian product
+    # This ensures we only match variants with the same allele set (perfect or flipped match)
+    # Use outer merge if keep_all_variants or merge_mode is outer, otherwise use specified merge_mode
+    actual_merge_mode = "outer" if (keep_all_variants or merge_mode == "outer") else merge_mode
+    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS","_ASET"], how=actual_merge_mode, suffixes=suffixes)
 
     if merge_mode=="outer":
         is_temp_na = mold_sumstats["EA_1"].isna()
@@ -96,11 +137,19 @@ def _merge_mold_with_sumstats_by_chrpos(
         mold_sumstats.loc[is_temp_na_2, ["EA","NEA"]] = mold_sumstats.loc[is_temp_na_2, ["EA_1","NEA_1"]].values
         mold_sumstats = mold_sumstats.drop(columns=["_SNPID_RIGHT"])
 
-    log.write(" -After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
+    log.write(" -After merging by CHR, POS, and allele set:{}".format(len(mold_sumstats)), verbose=verbose)
     
-    mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,suffixes=suffixes)
-
-    log.write(" -Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
+    # Clean up temporary _ASET column
+    mold_sumstats = mold_sumstats.drop(columns=["_ASET"], errors='ignore')
+    
+    # Only filter by allele set if not keeping all variants (for additional validation)
+    if not keep_all_variants:
+        mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,suffixes=suffixes)
+        log.write(" -Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
+    else:
+        # When keeping all variants, outer merge already includes all variants
+        # Variants with matching allele sets are matched, others have NA on one side
+        log.write(" -Keeping all variants:{}".format(len(mold_sumstats)), verbose=verbose)
     
     #if ref_path is not None:
     #    # match removed sumstats
@@ -155,7 +204,8 @@ def _align_with_mold(
     sumstats: pd.DataFrame,
     log: Log = Log(),
     verbose: bool = True,
-    suffixes: Tuple[str, str] = ("_MOLD","")
+    suffixes: Tuple[str, str] = ("_MOLD",""),
+    keep_all_variants: bool = True
 ) -> pd.DataFrame:
     
     ea1="EA"+suffixes[0]
@@ -165,21 +215,41 @@ def _align_with_mold(
     status1="STATUS"+suffixes[0]
     status2="STATUS"+suffixes[1]
 
-    is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
-    is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
+    # Check if all required columns exist
+    required_cols = [ea1, nea1, ea2, nea2]
+    missing_cols = [col for col in required_cols if col not in sumstats.columns]
+    if missing_cols:
+        log.write(" -Warning: Missing columns for allele alignment: {}".format(missing_cols), verbose=verbose)
+        return sumstats
+
+    # When keeping all variants, some rows may have missing alleles
+    if keep_all_variants:
+        # Only process rows where both sets of alleles are present
+        has_both_alleles = sumstats[ea1].notna() & sumstats[nea1].notna() & sumstats[ea2].notna() & sumstats[nea2].notna()
+        is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1]) & has_both_alleles
+        is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1]) & has_both_alleles
+    else:
+        is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
+        is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
     
     log.write(" -Aligning alleles with reference: ", verbose=verbose)
     log.write("  -Perfect match: {}".format(sum(is_perfect_match)), verbose=verbose)
     log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
+    if keep_all_variants:
+        unmatched_count = sum(~has_both_alleles) if keep_all_variants else 0
+        if unmatched_count > 0:
+            log.write("  -Variants with missing alleles (kept as-is): {}".format(unmatched_count), verbose=verbose)
     
     # Ensure status columns are integer type before assignment
-    sumstats = ensure_status_int(sumstats, status2)
+    if status2 in sumstats.columns:
+        sumstats = ensure_status_int(sumstats, status2)
     
-    log.write("  -For perfect match: copy STATUS from reference...", verbose=verbose)
-    sumstats.loc[is_perfect_match,status2] = copy_status(sumstats.loc[is_perfect_match,status1], sumstats.loc[is_perfect_match,status2],6)
-    
-    log.write("  -For Flipped match: convert STATUS xxxxx[456789]x to xxxxx3x...", verbose=verbose)
-    sumstats.loc[is_flipped_match,status2] = vchange_status(sumstats.loc[is_flipped_match,status2],6,"456789","333333")
+    if status1 in sumstats.columns and status2 in sumstats.columns:
+        log.write("  -For perfect match: copy STATUS from reference...", verbose=verbose)
+        sumstats.loc[is_perfect_match,status2] = copy_status(sumstats.loc[is_perfect_match,status1], sumstats.loc[is_perfect_match,status2],6)
+        
+        log.write("  -For Flipped match: convert STATUS xxxxx[456789]x to xxxxx3x...", verbose=verbose)
+        sumstats.loc[is_flipped_match,status2] = vchange_status(sumstats.loc[is_flipped_match,status2],6,"456789","333333")
     
     return sumstats
 

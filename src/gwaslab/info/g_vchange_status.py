@@ -39,18 +39,55 @@ def _normalize_to_integer_series(status: Union[int, pd.Series, List[int]]) -> pd
     Returns:
     --------
     pd.Series
-        Integer Series with status codes
+        Integer Series with status codes (Int64 if NaN values present, int64 otherwise)
     """
     if isinstance(status, pd.Series):
         if status.dtype in INTEGER_DTYPES:
             return status
         elif status.dtype.name == 'category':
-            # Convert categorical to string first, then to integer
-            return status.astype(str).astype(int)
+            # Convert categorical to string first, then to nullable integer
+            # Check if there are NaN values
+            status_str = status.astype(str)
+            has_na = status_str.isin(['nan', 'NaN', '<NA>', 'None']).any() or status.isna().any()
+            if has_na:
+                return status_str.replace(['nan', 'NaN', '<NA>', 'None'], pd.NA).astype('Int64')
+            else:
+                return status_str.astype('Int64')
         else:
-            return status.astype(int)
+            # Check if there are NaN or non-finite values
+            has_na = status.isna().any()
+            # Check for non-finite values (inf, -inf, NaN) in numeric types
+            has_non_finite = False
+            if pd.api.types.is_numeric_dtype(status):
+                import numpy as np
+                try:
+                    # Check if any values are non-finite
+                    has_non_finite = not np.isfinite(status).all()
+                except (TypeError, ValueError):
+                    # If check fails, assume we might have non-finite values
+                    has_non_finite = True
+            
+            if has_na or has_non_finite:
+                # Use nullable integer type to preserve NaN values
+                return status.astype('Int64')
+            else:
+                # No NaN values, can use regular int
+                try:
+                    return status.astype(int)
+                except (ValueError, TypeError, pd.errors.IntCastingNaNError):
+                    # Fallback to nullable integer if conversion fails
+                    return status.astype('Int64')
     else:
-        return pd.Series(status).astype(int)
+        # For non-Series input, convert to Series first
+        status_series = pd.Series(status)
+        has_na = status_series.isna().any()
+        if has_na:
+            return status_series.astype('Int64')
+        else:
+            try:
+                return status_series.astype(int)
+            except (ValueError, TypeError, pd.errors.IntCastingNaNError):
+                return status_series.astype('Int64')
 
 
 def ensure_status_int(sumstats: pd.DataFrame, status_col: str = "STATUS") -> pd.DataFrame:
@@ -208,10 +245,18 @@ def status_match(status: Union[int, pd.Series], digit: int, to_match: Union[int,
     middle = (status_int // power_right) % 10
     
     if len(to_match) == 1:
-        return middle == to_match[0]
+        result = middle == to_match[0]
+        # Ensure NaN values in status result in False (not NaN) in the boolean result
+        if isinstance(result, pd.Series):
+            result = result.fillna(False)
+        return result
     else:
         to_match_set = set(to_match) if not isinstance(to_match, set) else to_match
-        return middle.isin(to_match_set)
+        result = middle.isin(to_match_set)
+        # Ensure NaN values in status result in False (not NaN) in the boolean result
+        if isinstance(result, pd.Series):
+            result = result.fillna(False)
+        return result
 
 
 def vchange_status(status: Union[int, pd.Series], digit: int, before: Union[str, List[str]], after: Union[str, List[str]]) -> Union[int, pd.Series]:
@@ -487,8 +532,8 @@ def match_status(status: Union[int, pd.Series, List[int]], pattern: str, na: boo
         # Try to convert to integer, fall back to string matching if fails
         try:
             status_int = status_str.astype(int)
-        except (ValueError, TypeError):
-            # Fall back to string matching for non-numeric values
+        except (ValueError, TypeError, pd.errors.IntCastingNaNError):
+            # Fall back to string matching for non-numeric values or NaN
             status_str = status_str.str.zfill(STATUS_CODE_LENGTH)
             pat = f"^{pattern}$"
             return status_str.str.match(pat, na=na)

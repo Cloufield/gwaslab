@@ -1643,11 +1643,10 @@ def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], regio
                 raise ValueError(f"Invalid region format. Expected list/tuple [chr, start, end] or string. Error: {e}")
         
         # Filter variants in the normalized region
-        log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region_start, region_end), verbose=verbose)
-        
         in_region_snp = (sumstats[chrom] == region_chr) & (sumstats[pos] < region_end) & (sumstats[pos] > region_start)
-        
-        log.write(" -Extract SNPs in specified regions: " + str(sum(in_region_snp)), verbose=verbose)
+        n_in_region = sum(in_region_snp)
+        if verbose and n_in_region > 0:
+            log.write(" -Filtered to region chr{}:{}-{} ({} variants)".format(region_chr, region_start, region_end, n_in_region), verbose=verbose)
         sumstats = sumstats.loc[in_region_snp, :]
         return sumstats.copy()
     

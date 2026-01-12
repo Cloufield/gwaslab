@@ -348,7 +348,8 @@ def _load_ld_matrix(
         r_matrix = sparse.load_npz(path).toarray()
     if fmt == "txt":
         log.write("   -Loading LD matrix from text file...",verbose=verbose)
-        r_matrix = np.loadtxt(path)
+        r_matrix = np.loadtxt(path, delimiter="\t")
+        log.write("   -LD matrix shape : {}".format(r_matrix.shape), verbose=verbose)
 
     if if_add_T==True:
         log.write("   -Transforming LD matrix by adding its transpose...",verbose=verbose)
@@ -357,7 +358,105 @@ def _load_ld_matrix(
         log.write("   -Transforming LD matrix by squaring all elements...",verbose=verbose)
         r_matrix = np.power(r_matrix,2)
     return r_matrix
-    
+
+####################################################################################################
+# LD Map Format Specification
+####################################################################################################
+"""
+LD Map Format in GWASLab
+========================
+
+The LD map is a variant annotation file that provides information about variants in the LD reference
+matrix. It is used to match variants between summary statistics and the LD matrix by genomic position
+and alleles.
+
+Required Columns:
+-----------------
+The LD map must contain the following information (column names can be customized):
+
+1. **SNPID** (default: "rsid"): Variant identifier (e.g., rsID or CHR:POS:REF:ALT format)
+2. **CHR** (default: "chromosome"): Chromosome number (integer or string, e.g., 1, 2, "chr1", "chr2")
+3. **POS** (default: "position"): Genomic position (integer, 1-based)
+4. **EA** (default: "allele2"): Effect allele / Alternative allele (single nucleotide, e.g., "A", "T", "G", "C")
+5. **NEA** (default: "allele1"): Non-effect allele / Reference allele (single nucleotide, e.g., "A", "T", "G", "C")
+
+Note: The default mapping assumes "allele1" is the reference allele and "allele2" is the alternative allele.
+This follows the convention where allele1 is typically the reference allele in PLINK BIM files.
+
+File Format:
+------------
+- **Separator**: Default is whitespace (`\s+`), but can be customized via `ld_map_kwargs`
+- **File type**: Text file (tab-delimited, space-delimited, or comma-delimited)
+- **Header**: Can have header row (column names) or be headerless
+- **Encoding**: UTF-8 or ASCII
+
+Column Mapping:
+---------------
+After loading, columns are renamed to standard GWASLab internal names:
+- SNPID → SNPID_bim
+- CHR → CHR
+- POS → POS
+- EA → EA_bim
+- NEA → NEA_bim
+
+The "_bim" suffix indicates these are from the LD reference (similar to PLINK BIM file format).
+
+Custom Column Names:
+-------------------
+You can specify custom column names in two ways:
+
+1. **Dictionary mapping** (recommended):
+   ```python
+   ld_map_rename_dic = {
+       "SNPID": "variant_id",
+       "CHR": "chr",
+       "POS": "pos",
+       "EA": "alt_allele",
+       "NEA": "ref_allele"
+   }
+   ```
+
+2. **List of column names** (in order: SNPID, CHR, POS, NEA, EA):
+   ```python
+   ld_map_rename_dic = ["variant_id", "chr", "pos", "ref_allele", "alt_allele"]
+   ```
+
+Usage with LD Matrix:
+---------------------
+The LD map must correspond exactly to the LD matrix:
+- Each row in the LD map corresponds to one row/column in the LD matrix
+- The order of variants in the LD map must match the order in the LD matrix
+- The `_INDEX_BIM` column (added automatically) stores the row index in the LD matrix (0-based)
+
+Example LD Map File:
+--------------------
+```
+rsid    chromosome    position    allele1    allele2
+rs123   1            1000000      A          G
+rs456   1            2000000      T          C
+rs789   2            500000       G          A
+```
+
+Or without header (using custom column names):
+```
+rs123   1    1000000    A    G
+rs456   1    2000000    T    C
+rs789   2    500000     G    A
+```
+
+Matching with Summary Statistics:
+---------------------------------
+Variants are matched between the LD map and summary statistics by:
+1. **CHR and POS**: Exact match on chromosome and position
+2. **Alleles**: Either perfect match (EA==EA_bim & NEA==NEA_bim) or flipped match (EA==NEA_bim & NEA==EA_bim)
+3. Flipped variants are marked with `_FLIPPED=True` and their LD values are negated
+
+See Also:
+---------
+- `_load_ld_matrix`: Loads the corresponding LD matrix file
+- `_merge_ld_map_with_sumstats`: Matches LD map with summary statistics
+"""
+
 def _load_ld_map(
     path: str,
     snpid: str = "rsid",
@@ -368,6 +467,47 @@ def _load_ld_map(
     ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
     **ld_map_kwargs: Any
 ) -> pd.DataFrame:
+    """
+    Load LD map file (variant annotation file for LD matrix).
+    
+    The LD map provides variant information (CHR, POS, EA, NEA) that corresponds to the LD matrix.
+    Each row in the LD map corresponds to one row/column in the LD matrix.
+    
+    Parameters
+    ----------
+    path : str
+        Path to the LD map file (text file).
+    snpid : str, optional
+        Column name for variant ID. Defaults to "rsid".
+    chrom : str, optional
+        Column name for chromosome. Defaults to "chromosome".
+    pos : str, optional
+        Column name for position. Defaults to "position".
+    ref : str, optional
+        Column name for reference allele (NEA). Defaults to "allele1".
+    alt : str, optional
+        Column name for alternative allele (EA). Defaults to "allele2".
+    ld_map_rename_dic : Optional[Union[Dict[str, str], List[str]]], optional
+        Custom column name mapping. Can be:
+        - Dict: {"SNPID": "col1", "CHR": "col2", "POS": "col3", "NEA": "col4", "EA": "col5"}
+        - List: [SNPID_col, CHR_col, POS_col, NEA_col, EA_col] (in that order)
+        Defaults to None (uses default column names).
+    **ld_map_kwargs : Any
+        Additional arguments passed to `pd.read_csv()` (e.g., `sep`, `header`, `usecols`).
+        Default separator is whitespace (`\s+`).
+    
+    Returns
+    -------
+    pd.DataFrame
+        LD map DataFrame with columns: SNPID_bim, CHR, POS, EA_bim, NEA_bim.
+        The `_INDEX_BIM` column is added automatically to store the row index in the LD matrix.
+    
+    Notes
+    -----
+    - The LD map must have the same number of rows as the LD matrix has rows/columns.
+    - Variant order in the LD map must match the order in the LD matrix.
+    - See module docstring above for detailed format specification.
+    """
     
     if ld_map_rename_dic is not None:
         if type(ld_map_rename_dic) is dict:

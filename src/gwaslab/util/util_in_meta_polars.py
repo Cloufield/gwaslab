@@ -66,62 +66,72 @@ def meta_analyze_polars(
         
         # Calculate weight (inverse variance)
         weight = 1 / (pl.col(se) ** 2)
-        beta_is_null = pl.col(beta).is_null()
+        
+        # Define valid study contribution mask
+        # A study is valid if all required fields are present and SE > 0
+        valid = (
+            pl.col(beta).is_not_null() &
+            pl.col(se).is_not_null() & (pl.col(se) > 0) &
+            pl.col(n).is_not_null() &
+            pl.col(eaf).is_not_null()
+        )
         
         # Accumulate statistics in a single with_columns call for better performance
         sumstats_multi = sumstats_multi.with_columns([
             # N: sum of sample sizes
-            pl.when(beta_is_null)
-            .then(pl.col("N"))
-            .otherwise(pl.col("N") + pl.col(n))
+            pl.when(valid)
+            .then(pl.col("N") + pl.col(n))
+            .otherwise(pl.col("N"))
             .alias("N"),
             
-            # DOF: degrees of freedom (number of studies with data)
-            pl.when(beta_is_null)
-            .then(pl.col("DOF"))
-            .otherwise(pl.col("DOF") + 1)
+            # DOF: degrees of freedom (df = k - 1, where k is number of studies with data)
+            # Initialized to -1, so DOF = k - 1 after adding 1 for each valid study
+            pl.when(valid)
+            .then(pl.col("DOF") + 1)
+            .otherwise(pl.col("DOF"))
             .alias("DOF"),
             
             # _BETA2W_SUM: sum of beta^2 * weight
-            pl.when(beta_is_null)
-            .then(pl.col("_BETA2W_SUM"))
-            .otherwise(pl.col("_BETA2W_SUM") + pl.col(beta) ** 2 * weight)
+            pl.when(valid)
+            .then(pl.col("_BETA2W_SUM") + pl.col(beta) ** 2 * weight)
+            .otherwise(pl.col("_BETA2W_SUM"))
             .alias("_BETA2W_SUM"),
             
             # _BETAW_SUM: sum of beta * weight
-            pl.when(beta_is_null)
-            .then(pl.col("_BETAW_SUM"))
-            .otherwise(pl.col("_BETAW_SUM") + pl.col(beta) * weight)
+            pl.when(valid)
+            .then(pl.col("_BETAW_SUM") + pl.col(beta) * weight)
+            .otherwise(pl.col("_BETAW_SUM"))
             .alias("_BETAW_SUM"),
             
             # _W_SUM: sum of weights
-            pl.when(beta_is_null)
-            .then(pl.col("_W_SUM"))
-            .otherwise(pl.col("_W_SUM") + weight)
+            pl.when(valid)
+            .then(pl.col("_W_SUM") + weight)
+            .otherwise(pl.col("_W_SUM"))
             .alias("_W_SUM"),
             
-            # _W2_SUM: sum of squared cumulative weights (for random effects)
-            # Note: This accumulates (sum(w))^2 at each step, used in tau^2 calculation
-            pl.when(beta_is_null)
-            .then(pl.col("_W2_SUM"))
-            .otherwise(pl.col("_W2_SUM") + pl.col("_W_SUM") ** 2)
+            # _W2_SUM: sum of squared individual weights (for random effects)
+            # Correct: W2 = sum(w_i^2) where w_i = 1/SE_i^2
+            # This is used in tau^2 calculation: tau^2 = (Q - DOF) / (W - W2/W)
+            pl.when(valid)
+            .then(pl.col("_W2_SUM") + weight ** 2)
+            .otherwise(pl.col("_W2_SUM"))
             .alias("_W2_SUM"),
             
             # _EA_N: sum of N * EAF (effect allele count)
-            pl.when(beta_is_null)
-            .then(pl.col("_EA_N"))
-            .otherwise(pl.col("_EA_N") + pl.col(n) * pl.col(eaf))
+            pl.when(valid)
+            .then(pl.col("_EA_N") + pl.col(n) * pl.col(eaf))
+            .otherwise(pl.col("_EA_N"))
             .alias("_EA_N"),
             
             # _NEA_N: sum of N * (1 - EAF) (non-effect allele count)
-            pl.when(beta_is_null)
-            .then(pl.col("_NEA_N"))
-            .otherwise(pl.col("_NEA_N") + pl.col(n) * (1 - pl.col(eaf)))
+            pl.when(valid)
+            .then(pl.col("_NEA_N") + pl.col(n) * (1 - pl.col(eaf)))
+            .otherwise(pl.col("_NEA_N"))
             .alias("_NEA_N"),
             
             # DIRECTION: build direction string based on beta sign
-            # Order matters: check null first, then < 0, > 0, == 0
-            pl.when(beta_is_null)
+            # Order matters: check valid first, then < 0, > 0, == 0
+            pl.when(~valid)
             .then(pl.col("DIRECTION") + "?")
             .when(pl.col(beta) < 0)
             .then(pl.col("DIRECTION") + "-")
@@ -157,8 +167,12 @@ def meta_analyze_polars(
     
     # Calculate heterogeneity statistics (P_HET and I2)
     # I2: I-squared statistic for heterogeneity
+    # I2 = max(0, (Q - df) / Q) when Q > 0, else 0
     sumstats_multi = sumstats_multi.with_columns([
-        ((pl.col("Q") - pl.col("DOF")) / pl.col("Q")).alias("I2"),
+        pl.when(pl.col("Q") <= 0)
+        .then(pl.lit(0.0))
+        .otherwise((pl.col("Q") - pl.col("DOF")) / pl.col("Q"))
+        .alias("I2"),
     ]).with_columns([
         pl.when(pl.col("I2") < 0)
         .then(pl.lit(0.0))
@@ -188,9 +202,15 @@ def meta_analyze_polars(
     if random_effects:
         log.write(" -Computing random effects model...")
         
-        # Calculate tau^2 (between-study variance)
+        # Calculate tau^2 (between-study variance) using DerSimonian-Laird estimator
+        # tau^2 = max(0, (Q - df) / C) where C = W - W2/W
+        # Guard against division by zero or negative denominator
+        C = pl.col("_W_SUM") - (pl.col("_W2_SUM") / pl.col("_W_SUM"))
         sumstats_multi = sumstats_multi.with_columns([
-            ((pl.col("Q") - pl.col("DOF")) / (pl.col("_W_SUM") - (pl.col("_W2_SUM") / pl.col("_W_SUM")))).alias("_R2"),
+            pl.when((C <= 0) | (pl.col("Q") <= pl.col("DOF")))
+            .then(pl.lit(0.0))
+            .otherwise((pl.col("Q") - pl.col("DOF")) / C)
+            .alias("_R2"),
         ]).with_columns([
             pl.when(pl.col("_R2") < 0)
             .then(pl.lit(0.0))
@@ -210,20 +230,25 @@ def meta_analyze_polars(
         for i in range(nstudy):
             beta = f"BETA_{i+1}"
             se = f"SE_{i+1}"
-            beta_is_null = pl.col(beta).is_null()
+            
+            # Use same valid mask as fixed effects
+            valid = (
+                pl.col(beta).is_not_null() &
+                pl.col(se).is_not_null() & (pl.col(se) > 0)
+            )
             
             # Weight for random effects: 1 / (SE^2 + tau^2)
             weight_r = 1 / (pl.col(se) ** 2 + pl.col("_R2"))
             
             sumstats_multi = sumstats_multi.with_columns([
-                pl.when(beta_is_null)
-                .then(pl.col("_BETAW_SUM_R"))
-                .otherwise(pl.col("_BETAW_SUM_R") + pl.col(beta) * weight_r)
+                pl.when(valid)
+                .then(pl.col("_BETAW_SUM_R") + pl.col(beta) * weight_r)
+                .otherwise(pl.col("_BETAW_SUM_R"))
                 .alias("_BETAW_SUM_R"),
                 
-                pl.when(beta_is_null)
-                .then(pl.col("_W_SUM_R"))
-                .otherwise(pl.col("_W_SUM_R") + weight_r)
+                pl.when(valid)
+                .then(pl.col("_W_SUM_R") + weight_r)
+                .otherwise(pl.col("_W_SUM_R"))
                 .alias("_W_SUM_R"),
             ])
 

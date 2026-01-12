@@ -415,6 +415,82 @@ class TestSumstatsPair(unittest.TestCase):
         self.assertEqual(sp.ns[0], 2000)
         self.assertEqual(sp.ns[1], 3000)
 
+    def test_keep_all_variants_multiple_at_same_position(self):
+        """Test keep_all_variants=True with multiple variants at same CHR:POS"""
+        # sumstats1: two variants at position 1:3367351
+        df1 = pd.DataFrame({
+            "SNPID": ["1:3367351:T:C", "1:3367351:T:TTACTTCAGCCCTTCACCTAGGAC"],
+            "CHR": [1, 1],
+            "POS": [3367351, 3367351],
+            "EA": ["C", "TTACTTCAGCCCTTCACCTAGGAC"],
+            "NEA": ["T", "T"],
+            "STATUS": [9960099, 9960399],
+            "EAF": [0.11, 0.13],
+            "BETA": [-0.00240, -0.00052],
+            "SE": [0.0087, 0.0076],
+            "P": [0.78, 0.95],
+            "N": [150000, 150000],
+        })
+        
+        # sumstats2: one variant at position 1:3367351 (matches second variant from sumstats1, flipped)
+        df2 = pd.DataFrame({
+            "SNPID": ["1:3367351_T_TTACTTCAGCCCTTCACCTAGGAC"],
+            "CHR": [1],
+            "POS": [3367351],
+            "EA": ["T"],
+            "NEA": ["TTACTTCAGCCCTTCACCTAGGAC"],
+            "STATUS": [9960399],
+            "EAF": [0.8994],
+            "BETA": [-0.0024],
+            "SE": [0.0151],
+            "P": [0.8726],
+            "N": [50000],
+        })
+        
+        s1 = make_sumstats(df1, study_name="Study1")
+        s2 = make_sumstats(df2, study_name="Study2")
+        
+        # Test with keep_all_variants=True
+        sp = SumstatsPair(s1, s2, keep_all_variants=True, verbose=False)
+        
+        # Should have:
+        # 1. The matched variant (sumstats1 variant 2 with sumstats2 variant - flipped match)
+        # 2. The unmatched variant from sumstats1 (variant 1 - C/T)
+        # 3. The unmatched variant from sumstats2 should be represented in the matched row
+        # So we expect at least 2 rows (matched + unmatched from sumstats1)
+        
+        # After merging, EA_1/NEA_1 are renamed to EA/NEA, and EA/NEA from sumstats2 are dropped
+        # Check that we have the matched variant (EA should be from sumstats1, BETA_2 from sumstats2)
+        matched = sp.data[
+            (sp.data["CHR"] == 1) & 
+            (sp.data["POS"] == 3367351) &
+            (sp.data["EA"] == "TTACTTCAGCCCTTCACCTAGGAC") &
+            (sp.data["NEA"] == "T") &
+            (sp.data["BETA_2"].notna())  # Should have data from sumstats2
+        ]
+        self.assertGreater(len(matched), 0, "Should have matched variant")
+        
+        # Check that unmatched variant from sumstats1 is present (should have NA for sumstats2 columns)
+        unmatched = sp.data[
+            (sp.data["CHR"] == 1) & 
+            (sp.data["POS"] == 3367351) &
+            (sp.data["EA"] == "C") &
+            (sp.data["NEA"] == "T")
+        ]
+        self.assertGreater(len(unmatched), 0, "Should have unmatched variant from sumstats1")
+        
+        # Verify no cartesian product - should not have C/T from sumstats1 incorrectly matched with T/TTACTTCAGCCCTTCACCTAGGAC from sumstats2
+        # (that would be an incorrect match - alleles don't match)
+        # The unmatched C/T variant should have NA for all sumstats2 columns
+        incorrect_match = sp.data[
+            (sp.data["CHR"] == 1) & 
+            (sp.data["POS"] == 3367351) &
+            (sp.data["EA"] == "C") &
+            (sp.data["NEA"] == "T") &
+            (sp.data["BETA_2"].notna())  # Should be NA for unmatched variant
+        ]
+        self.assertEqual(len(incorrect_match), 0, "Should not have incorrect allele match (C/T with T/TTACTTCAGCCCTTCACCTAGGAC)")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -58,7 +58,7 @@ class TestRScriptRunner(unittest.TestCase):
         runner = RScriptRunner(r="Rscript", log=self.log)
         self.assertEqual(runner.r, "Rscript")
         self.assertIsNotNone(runner.log)
-        self.assertIsNone(runner.timeout)
+        self.assertEqual(runner.timeout, 86400)  # Default timeout is 24 hours
         self.assertTrue(runner.cleanup)
     
     def test_create_temp_r_script(self):
@@ -212,7 +212,7 @@ class TestRScriptRunner(unittest.TestCase):
         mock_run.side_effect = subprocess.TimeoutExpired("Rscript", 30)
         
         result = self.runner.execute(
-            script_content="Sys.sleep(100)",
+            script_content="Sys.sleep(40)",
             expected_outputs=[],
             temp_prefix="test",
             timeout=30

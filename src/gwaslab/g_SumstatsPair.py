@@ -31,8 +31,10 @@ from gwaslab.util.rwrapper.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.util.util_ex_match_ldmatrix import tofinemapping_m
-from gwaslab.util.rwrapper.util_ex_run_mesusie import _run_mesusie
+from gwaslab.util.rwrapper.util_ex_run_mesusie2 import _run_mesusie
+from gwaslab.util.util_ex_run_multisusie import _run_multisusie_rss
 from gwaslab.util.util_in_filter_value import _filter_values
+from gwaslab.util.util_in_meta import meta_analyze_multi
 
 from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
@@ -41,6 +43,7 @@ from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload
+from gwaslab.io.io_to_pickle import dump_pickle_pair
 from gwaslab.io.io_read_pipcs import _read_pipcs
 
 class SumstatsPair( ):
@@ -50,6 +53,7 @@ class SumstatsPair( ):
         sumstatsObject2: 'Sumstats', 
         study: Optional[str] = None, 
         suffixes: Tuple[str, str] = ("_1","_2"), 
+        keep_all_variants: bool = True,
         verbose: bool = True
     ) -> None:
         
@@ -58,153 +62,188 @@ class SumstatsPair( ):
         if not isinstance(sumstatsObject2, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #2.")
         
-        self.meta = _init_meta(object="SumstatsPair") 
+        # Initialize metadata and basic attributes
+        self.meta = _init_meta(object="SumstatsPair")
         self.id = id(self)
         self.tmp_path = f"./{self.id}"
-
-        if sumstatsObject1.meta["gwaslab"]["study_name"]!=sumstatsObject2.meta["gwaslab"]["study_name"]:
-            self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
-            self.study_names = [sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"]]
-        else:
-            self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"]+"1", sumstatsObject2.meta["gwaslab"]["study_name"]+"2")
-            self.study_names = [sumstatsObject1.meta["gwaslab"]["study_name"]+"1", sumstatsObject2.meta["gwaslab"]["study_name"]+"2"]
-        
-        self.meta["gwaslab"]["objects"] =  dict()
-        self.meta["gwaslab"]["objects"][0] = sumstatsObject1.meta
-        self.meta["gwaslab"]["objects"][1] = sumstatsObject2.meta
-
-        #self.meta["gwaslab"]["study_name"] = self.study_name
-        self.meta["gwaslab"]["group_name"] = self.study_name
-        
-        self.ldsc =  dict()
-        self.ldsc[0] = sumstatsObject1.ldsc_h2
-        self.ldsc[1] = sumstatsObject2.ldsc_h2
-        self.ldsc_rg = sumstatsObject1.ldsc_rg
-
-
-        self.snp_info_cols = []
-        self.stats_cols =[]
-        self.stats_cols2 =[]
-        self.other_cols =[]
-        self.other_cols2 =[]
+        self.suffixes = suffixes
         self.log = Log()
         self.viz_params = VizParamsManager()
         load_viz_config(self.viz_params)
-        self.suffixes = suffixes
-        self.colocalization=pd.DataFrame()
+
+        # Set study names
+        study_name1 = sumstatsObject1.meta["gwaslab"]["study_name"]
+        study_name2 = sumstatsObject2.meta["gwaslab"]["study_name"]
         
+        if study_name1 != study_name2:
+            self.study_name = f"{study_name1}_{study_name2}"
+            self.study_names = [study_name1, study_name2]
+        else:
+            self.study_name = f"{study_name1}1_{study_name2}2"
+            self.study_names = [f"{study_name1}1", f"{study_name2}2"]
+        
+        self.meta["gwaslab"]["objects"] = {0: sumstatsObject1.meta, 1: sumstatsObject2.meta}
+        self.meta["gwaslab"]["group_name"] = self.study_name
+        
+        # Initialize LDSC data
+        self.ldsc = {0: sumstatsObject1.ldsc_h2, 1: sumstatsObject2.ldsc_h2}
+        self.ldsc_rg = sumstatsObject1.ldsc_rg
+
+        # Initialize column lists
+        self.snp_info_cols = []
+        self.stats_cols = []
+        self.stats_cols2 = []
+        self.other_cols = []
+        self.other_cols2 = []
+        
+        # Initialize result containers
+        self.colocalization = pd.DataFrame()
         self.sumstats1 = pd.DataFrame()
         self.sumstats2 = pd.DataFrame()
         self.ns = None
-        
-        # TwosampleMR
-        self.mr =dict()
-        
-        # clumping
-        self.clumps =dict()
-        
-        # MESuSiE
-        self.mesusie = dict()
+        self.mr = {}
+        self.clumps = {}
+        self.mesusie = {}
         self.mesusie_res = pd.DataFrame()
-        
-        # Coloc and Coloc SuSiE 
-        self.coloc = dict()
+        self.multisusie = {}
+        self.multisusie_res = pd.DataFrame()
+        self.coloc = {}
         self.coloc_susie_res = pd.DataFrame()
 
-        self.log.write( "Start to create SumstatsPair object..." )
-        self.log.write( " -Checking sumstats 1..." , verbose=verbose)
+        # Validate and check sumstats
+        self.log.write("Start to create SumstatsPair object...")
+        self.log.write(" -Checking sumstats 1...", verbose=verbose)
         check_datatype(sumstatsObject1.data, log=self.log, verbose=verbose)
-        check_dataframe_shape(sumstats=sumstatsObject1.data, 
-                        log=self.log, 
-                        verbose=verbose)
+        check_dataframe_shape(sumstats=sumstatsObject1.data, log=self.log, verbose=verbose)
         
-        self.log.write( " -Checking sumstats 2..." , verbose=verbose)
+        self.log.write(" -Checking sumstats 2...", verbose=verbose)
         check_datatype(sumstatsObject2.data, log=self.log, verbose=verbose)
-        check_dataframe_shape(sumstats=sumstatsObject2.data, 
-                                log=self.log, 
-                                verbose=verbose)
+        check_dataframe_shape(sumstats=sumstatsObject2.data, log=self.log, verbose=verbose)
 
-        for i in sumstatsObject1.data.columns:
-            if i in _get_headers(mode="info"):
-                # extract SNP info columns from sumstats1
-                self.snp_info_cols.append(i)
-            elif i in _get_headers(mode="stats"):
-                self.stats_cols.append(i)
+        # Classify columns from sumstats1
+        info_headers = _get_headers(mode="info")
+        stats_headers = _get_headers(mode="stats")
+        
+        for col in sumstatsObject1.data.columns:
+            if col in info_headers:
+                self.snp_info_cols.append(col)
+            elif col in stats_headers:
+                self.stats_cols.append(col)
             else:
-                self.other_cols.append(i)
+                self.other_cols.append(col)
 
-        for i in sumstatsObject2.data.columns:
-            if i in _get_headers(mode="info"):
-                continue
-            elif i in _get_headers(mode="stats"):
-                self.stats_cols2.append(i)
-            else:
-                self.other_cols2.append(i)           
+        # Classify columns from sumstats2 (skip info columns)
+        for col in sumstatsObject2.data.columns:
+            if col in stats_headers:
+                self.stats_cols2.append(col)
+            elif col not in info_headers:
+                self.other_cols2.append(col)
         
-        self.log.write( " -Variant Info columns: {}".format(self.snp_info_cols) , verbose=verbose)
-        self.log.write( " -Variant statistics columns: {}".format(self.stats_cols) , verbose=verbose)
-        self.log.write( " -Sumstats1 other columns: {}".format(self.other_cols) , verbose=verbose)
-        self.log.write( " -Sumstats2 other columns: {}".format(self.other_cols2) , verbose=verbose)
+        self.log.write(f" -Variant Info columns: {self.snp_info_cols}", verbose=verbose)
+        self.log.write(f" -Variant statistics columns: {self.stats_cols}", verbose=verbose)
+        self.log.write(f" -Sumstats1 other columns: {self.other_cols}", verbose=verbose)
+        self.log.write(f" -Sumstats2 other columns: {self.other_cols2}", verbose=verbose)
         
+        # Add temporary index columns for tracking
         sumstatsObject1.data["_RAW_INDEX_1"] = range(len(sumstatsObject1.data))
         sumstatsObject2.data["_RAW_INDEX_2"] = range(len(sumstatsObject2.data))
-        # extract only info and stats cols
-        self.data = sumstatsObject1.data
         
-        #rename with _1
-        self.data = self.data.rename(columns={"EA":"EA_1","NEA":"NEA_1"})
-        self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.stats_cols})
-        self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.other_cols})
+        # Prepare data from sumstats1 with suffixes
+        self.data = sumstatsObject1.data.copy()
+        rename_dict = {
+            "EA": "EA_1",
+            "NEA": "NEA_1",
+            **{col: col + suffixes[0] for col in self.stats_cols},
+            **{col: col + suffixes[0] for col in self.other_cols}
+        }
+        self.data = self.data.rename(columns=rename_dict)
 
-        self.data, self.sumstats1, self.sumstats2 = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
+        # Merge with sumstats2
+        self.data, self.sumstats1, self.sumstats2 = self._merge_two_sumstats(
+            sumstatsObject2, suffixes=suffixes, keep_all_variants=keep_all_variants, verbose=verbose
+        )
 
-        if "N{}".format(self.suffixes[0]) in self.data.columns and "N{}".format(self.suffixes[1]) in self.data.columns:
-            n1 = int(floor(self.data["N{}".format(self.suffixes[0])].mean()))
-            n2 = int(floor(self.data["N{}".format(self.suffixes[1])].mean()))
-            self.ns=(n1, n2)
+        # Calculate sample sizes
+        n_col1 = f"N{suffixes[0]}"
+        n_col2 = f"N{suffixes[1]}"
+        if n_col1 in self.data.columns and n_col2 in self.data.columns:
+            # Use skipna=True to handle NA values (from keep_all_variants=True)
+            n1_mean = self.data[n_col1].mean(skipna=True)
+            n2_mean = self.data[n_col2].mean(skipna=True)
+            # Check if mean is valid (not NaN)
+            if pd.notna(n1_mean) and pd.notna(n2_mean):
+                n1 = int(floor(n1_mean))
+                n2 = int(floor(n2_mean))
+                self.ns = (n1, n2)
+            else:
+                self.ns = None
         else:
             self.ns = None
+        
+        # Clean up temporary index columns
         sumstatsObject1.data = sumstatsObject1.data.drop(columns=["_RAW_INDEX_1"])
         sumstatsObject2.data = sumstatsObject2.data.drop(columns=["_RAW_INDEX_2"])
 
     def _merge_two_sumstats(
         self, 
         sumstatsObject2: 'Sumstats', 
-        threshold: float = 0.2, 
-        verbose: bool = True,
-        windowsizeb: int = 10, 
-        ref_path: Optional[str] = None,
-        suffixes: Tuple[str, str] = ("_1","_2")
+        suffixes: Tuple[str, str] = ("_1","_2"),
+        keep_all_variants: bool = True,
+        verbose: bool = True
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-
-        # sumstats1 with suffix _1, sumstats2 with no suffix
-        molded_sumstats, sumstats1, sumstats2 = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
-                                                    sumstats_or_dataframe=sumstatsObject2.data, 
-                                                    log=self.log,
-                                                    verbose=verbose,
-                                                    stats_cols1 = self.stats_cols,
-                                                    stats_cols2 = self.stats_cols2,
-                                                    suffixes=(suffixes[0],""),
-                                                    return_not_matched_mold = True)
-
-        molded_sumstats = _align_with_mold(molded_sumstats, log=self.log, verbose=verbose,suffixes=(suffixes[0],""))
+        suffix1 = suffixes[0]
         
-        # flip sumstats2 statistics
+        # Determine merge mode: use "outer" to keep all variants if requested
+        merge_mode = "outer" if keep_all_variants else "inner"
+        
+        # Merge by chromosome and position (sumstats1 has suffix _1, sumstats2 has no suffix yet)
+        molded_sumstats, sumstats1, sumstats2 = _merge_mold_with_sumstats_by_chrpos(
+            mold=self.data,
+            sumstats_or_dataframe=sumstatsObject2.data,
+            log=self.log,
+            verbose=verbose,
+            stats_cols1=self.stats_cols,
+            stats_cols2=self.stats_cols2,
+            suffixes=(suffix1, ""),
+            merge_mode=merge_mode,
+            return_not_matched_mold=True,
+            keep_all_variants=keep_all_variants
+        )
+        
+        # Align alleles between the two sumstats (only for variants present in both)
+        molded_sumstats = _align_with_mold(
+            molded_sumstats, 
+            log=self.log, 
+            verbose=verbose,
+            suffixes=(suffix1, ""),
+            keep_all_variants=keep_all_variants
+        )
+        
+        # Flip sumstats2 statistics when alleles are flipped (only for variants present in both)
         molded_sumstats = _flip_allele_stats(molded_sumstats, log=self.log, verbose=verbose)
         
-        # drop sumstats2 EA NEA
-        molded_sumstats = molded_sumstats.drop(columns=["EA","NEA"])
+        # Drop sumstats2 EA/NEA columns and rename sumstats1 EA/NEA to standard names
+        molded_sumstats = molded_sumstats.drop(columns=["EA", "NEA"], errors='ignore')
+        molded_sumstats = molded_sumstats.rename(columns={"EA_1": "EA", "NEA_1": "NEA"})
         
-        # rename sumstats1 EA NEA
-        molded_sumstats = molded_sumstats.rename(columns={"EA_1":"EA","NEA_1":"NEA"})
-        
-        if not set(self.stats_cols2) == set(self.stats_cols):
+        # Fill missing columns if sumstats2 doesn't have all the same stats columns
+        if set(self.stats_cols2) != set(self.stats_cols):
             cols_to_fill = set(self.stats_cols).difference(set(self.stats_cols2))
-            molded_sumstats = _fill_missing_columns(molded_sumstats, cols_to_fill, log=self.log, verbose=verbose)
+            molded_sumstats = _fill_missing_columns(
+                molded_sumstats, cols_to_fill, log=self.log, verbose=verbose
+            )
 
-        # rename sumstast2 with _2
-        molded_sumstats = _renaming_cols(molded_sumstats, self.stats_cols + self.other_cols2, log=self.log, verbose=verbose, suffixes=suffixes)
+        # Apply suffix _2 to sumstats2 columns
+        cols_to_rename = self.stats_cols + self.other_cols2
+        molded_sumstats = _renaming_cols(
+            molded_sumstats, 
+            cols_to_rename, 
+            log=self.log, 
+            verbose=verbose, 
+            suffixes=suffixes
+        )
         
+        # Sort columns in standard order
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log)
         
         return molded_sumstats, sumstats1, sumstats2
@@ -225,11 +264,34 @@ class SumstatsPair( ):
                                                                                               **kwargs)
         
     def run_mesusie(self, **kwargs: Any) -> None:
-        prefix = _run_mesusie(self.mesusie["path"],log=self.log,ncols=self.ns,**kwargs)
-        self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
-                                   prefix, 
-                                   studie_names = self.study_name,
-                                   group=self.meta["gwaslab"]["group_name"])
+        # Run MESuSiE using new framework (returns DataFrame directly, processing done internally)
+        self.mesusie_res = _run_mesusie(
+            self.mesusie["path"],
+            log=self.log,
+            ncols=self.ns,
+            reference_data=self.data,
+            group_name=self.meta["gwaslab"]["group_name"],
+            study_name=self.study_name,
+            **kwargs
+        )
+    
+    def run_multisusie_rss(self, **kwargs: Any) -> None:
+        if "path" not in self.mesusie or self.mesusie["path"] is None:
+            self.log.warning(" -MESuSiE filelist not found. Please run to_mesusie() first.", 
+                           verbose=kwargs.get("verbose", True))
+            self.multisusie_res = pd.DataFrame()
+            return
+        
+        # Run MultiSuSiE using filepath from to_mesusie (processing done internally)
+        self.multisusie_res = _run_multisusie_rss(
+            filepath=self.mesusie["path"],
+            log=self.log,
+            population_sizes=self.ns,
+            reference_data=self.data,
+            group_name=self.meta["gwaslab"]["group_name"],
+            study_name=self.study_name,
+            **kwargs
+        )
     
     def run_ccgwas(self, **kwargs: Any) -> None:
          _run_ccgwas(self.data, 
@@ -256,6 +318,9 @@ class SumstatsPair( ):
         outcome2 = self.study_names[1]
         _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**kwargs)
 
+    def run_meta_analysis(self, **kwargs: Any) -> Any:
+        return meta_analyze_multi(self.data, nstudy=2, log=self.log, **kwargs)
+
     def extract_with_ld_proxy(self, **arg: Any) -> pd.DataFrame:
         return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)
 
@@ -279,6 +344,8 @@ class SumstatsPair( ):
         objects = [df1, df2]
         if isinstance(self.mesusie_res, pd.DataFrame) and "PIP" in self.mesusie_res.columns:
             objects.append(self.mesusie_res)
+        if isinstance(self.multisusie_res, pd.DataFrame) and "PIP" in self.multisusie_res.columns:
+            objects.append(self.multisusie_res)
 
         if "vcfs" not in kwargs or kwargs.get("vcfs") is None:
             kwargs["vcfs"] = [None]
@@ -312,6 +379,9 @@ class SumstatsPair( ):
                      ylabel="Effect Allele Frequency in Sumstats 2",
                      **params)
 
+    def to_pickle(self, path: str = "~/mysumpair.pickle", overwrite: bool = False) -> None:
+        dump_pickle_pair(self, path=path, overwrite=overwrite)
+
     def offload(self) -> None:
         # Only offload if data exists (skip if already offloaded)
         if hasattr(self, 'data') and self.data is not None:
@@ -320,12 +390,4 @@ class SumstatsPair( ):
             gc.collect()
 
     def reload(self, delete_files: Optional[List[str]] = None) -> None:
-        """
-        Reload data from temporary pickle file.
-        
-        Parameters
-        ----------
-        delete_files : list of str, optional
-            Additional files to delete after successful reload
-        """
         self.data = _reload(self.tmp_path, self.log, delete_files=delete_files)

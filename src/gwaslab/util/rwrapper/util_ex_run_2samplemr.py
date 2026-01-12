@@ -1,6 +1,4 @@
-import subprocess
 import os
-import gc
 import pandas as pd
 import numpy as np
 from typing import TYPE_CHECKING, Optional, List, Tuple, Any, Union
@@ -12,8 +10,18 @@ from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
+from gwaslab.util.rwrapper.util_ex_r_runner import RScriptRunner
+from gwaslab.util.general.util_ex_result_manager import ResultManager
+from gwaslab.qc.qc_decorator import with_logging
 
 
+@with_logging(
+    start_to_msg="run MR using twosampleMR from command line",
+    finished_msg="running MR using twosampleMR from command line",
+    start_cols=["SNPID", "CHR", "POS", "EA", "NEA"],
+    start_function=".run_two_sample_mr()",
+    check_tools=["r", "r:TwoSampleMR"]
+)
 def _run_two_sample_mr(
     sumstatspair_object: 'SumstatsPair',
     r: str,
@@ -38,7 +46,6 @@ def _run_two_sample_mr(
     log: Log = Log()
 ) -> None:
 
-    log.write(" Start to run MR using twosampleMR from command line:")
     if methods is None:
         methods = ["mr_ivw","mr_simple_mode","mr_weighted_median","mr_egger_regression","mr_ivw_mre", "mr_weighted_mode"]
         methods_string = '"{}"'.format('","'.join(methods))
@@ -73,22 +80,33 @@ def _run_two_sample_mr(
     log = _checking_r_version(r, log)
     #log = _check_susie_version(r,log)       
 
-    r_log=""
-
     cols_for_trait1, cols_for_trait2 = _sort_columns_to_load(sumstatspair)
     cols_for_trait1_script = _cols_list_to_r_script(cols_for_trait1)
     cols_for_trait2_script = _cols_list_to_r_script(cols_for_trait2)
     
-    # Clumping       
+    # Initialize runners and managers
+    runner = RScriptRunner(
+        r=r,
+        log=log,
+        timeout=None,
+        temp_dir=out,
+        cleanup=True
+    )
+    result_manager = ResultManager(log=log)
 
-    prefix = "{exposure}_{outcome}_{memory_id}".format(exposure = exposure1, outcome= outcome2, memory_id = id(sumstatspair))
-    prefix = "{}{}".format(out.rstrip('/') + "/",prefix)
-    temp_sumstats_path = "{out}twosample_mr_{exposure}_{outcome}_{memory_id}.csv.gz".format(out=out.rstrip('/') + "/",
-                                                                                               exposure = exposure1, 
-                                                                                               outcome= outcome2, 
-                                                                                               memory_id = id(sumstatspair))
-    if len(sumstatspair)>0:
-        sumstatspair.to_csv(temp_sumstats_path ,index=None)
+    # Prepare output paths
+    memory_id = id(sumstatspair)
+    prefix = "{exposure}_{outcome}_{memory_id}".format(exposure=exposure1, outcome=outcome2, memory_id=memory_id)
+    prefix = "{}{}".format(out.rstrip('/') + "/", prefix)
+    temp_sumstats_path = "{out}twosample_mr_{exposure}_{outcome}_{memory_id}.csv.gz".format(
+        out=out.rstrip('/') + "/",
+        exposure=exposure1, 
+        outcome=outcome2, 
+        memory_id=memory_id
+    )
+    
+    if len(sumstatspair) > 0:
+        sumstatspair.to_csv(temp_sumstats_path, index=None)
     else:
         return 0
     ###
@@ -184,37 +202,64 @@ def _run_two_sample_mr(
         directionality_test = directionality_test_script
     )
         
-    temp_r_script_path = "{}_{}_{}_{}_gwaslab_2smr_temp.R".format(out.rstrip('/') + "/",
-                                                                  exposure1,
-                                                                  outcome2,
-                                                                  id(sumstatspair))
-    with open(temp_r_script_path,"w") as file:
-            file.write(rscript)
-
-    script_run_r = "{} {}".format(r, temp_r_script_path)
+    # Prepare expected output files
+    expected_outputs = [
+        "{}.mr".format(prefix),
+        "{}.pleiotropy".format(prefix),
+        "{}.heterogeneity".format(prefix),
+        "{}.singlesnp".format(prefix),
+        "{}.leaveoneout".format(prefix),
+        "{}.directionality".format(prefix)
+    ]
+    
+    # Execute R script
+    log.write(" Running TwoSampleMR from command line...")
+    result = runner.execute(
+        script_content=rscript,
+        expected_outputs=expected_outputs,
+        temp_prefix=f"twosamplemr_{exposure1}_{outcome2}",
+        temp_suffix=".R",
+        timeout=None,
+        verbose=True,
+        working_dir=out.rstrip('/') + "/"
+    )
+    
+    # Trace result
+    result_manager.trace(
+        result=result,
+        identifier=f"{exposure1}_{outcome2}",
+        parameters={
+            "exposure": exposure1,
+            "outcome": outcome2,
+            "methods": methods,
+            "clump": clump,
+            "f_check": f_check
+        }
+    )
+    
+    # Process results
+    if result.success:
+        # Read output files from result
+        for suffix in ["mr", "pleiotropy", "heterogeneity", "singlesnp", "leaveoneout", "directionality"]:
+            expected_file = "{}.{}".format(prefix, suffix)
+            if expected_file in result.output_files:
+                try:
+                    sumstatspair_object.mr[suffix] = pd.read_csv(result.output_files[expected_file])
+                except Exception as e:
+                    log.warning(f"Error reading {suffix} output: {str(e)}")
         
-    try:
-        log.write(" Running TwoSampleMR from command line...")
-        output = subprocess.check_output(script_run_r, stderr=subprocess.STDOUT, shell=True,text=True)
-        #plink_process = subprocess.Popen("exec "+script_run_r, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
-        #output1,output2 = plink_process.communicate()
-        #output= output1 + output2+ "\n"
-        #plink_process.kill()
-        log.write(output)
-        r_log+= output + "\n"
-        os.remove(temp_r_script_path)
-        try:
-            for suffix in ["mr","pleiotropy","heterogeneity","singlesnp","leaveoneout","directionality"]:
-                sumstatspair_object.mr[suffix] = pd.read_csv("{}.{}".format(prefix,suffix))
-        except:
-            pass     
-        sumstatspair_object.mr["r_log"] = r_log
-    except subprocess.CalledProcessError as e:
-        log.write(" Error!")
+        # Store R log
+        sumstatspair_object.mr["r_log"] = result.output
+    else:
+        log.write(" Error during TwoSampleMR execution!")
+        if result.errors:
+            for error in result.errors:
+                log.warning(f"  - {error}")
+        log.write(" R script content:")
         log.write(rscript)
-        log.write(e.output)
-        os.remove(temp_r_script_path)
-    log.write(" Finished running MR using twosampleMR from command line.")
+        if result.output:
+            log.write(" R output:")
+            log.write(result.output)
 
 
 

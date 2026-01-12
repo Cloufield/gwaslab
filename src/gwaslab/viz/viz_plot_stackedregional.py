@@ -125,9 +125,21 @@ def plot_stacked_mqq(   objects,
     for each_object in objects:
         if type(each_object) is Sumstats:
             if "P" in each_object.data.columns or "MLOG10P" in each_object.data.columns:
+                # Check if empty after region filtering
+                if region is not None and "CHR" in each_object.data.columns and "POS" in each_object.data.columns:
+                    filtered_data = _filter_region(each_object.data, region=region, log=log, verbose=False)
+                    if len(filtered_data) == 0:
+                        log.write(f" -Skipping object: no variants in region {region}", verbose=verbose)
+                        continue
                 sumstats_list.append(each_object.data)
                 pm.append("m")
         if type(each_object) is pd.DataFrame:
+            # Check if empty after region filtering
+            if region is not None and "CHR" in each_object.columns and "POS" in each_object.columns:
+                filtered_data = _filter_region(each_object, region=region, log=log, verbose=False)
+                if len(filtered_data) == 0:
+                    log.write(f" -Skipping object: no variants in region {region}", verbose=verbose)
+                    continue
             if "PIP" in each_object.columns:
                 sumstats_list.append(each_object)
                 pm.append("pip")
