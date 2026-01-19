@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 )
 def _infer_ancestry(
     sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
-    ancestry_af: Optional[str] = None,
+    ancestry_af: str,
     build: Optional[str] = None,
     log: Log = Log(),
     verbose: bool = True
@@ -31,8 +31,8 @@ def _infer_ancestry(
     ----------
     sumstats_or_dataframe : Sumstats or pd.DataFrame
         Sumstats object or DataFrame to process.
-    ancestry_af : str, optional
-        Path to allele frequency file. If None, uses 1kg_hm3_hg19_eaf for build 19 or 1kg_hm3_hg38_eaf for build 38. Default is None.
+    ancestry_af : str
+        Path to allele frequency file. Can be a file path or a key like "1kg_hm3_hg19_eaf" or "1kg_hm3_hg38_eaf".
     build : str, optional
         Genome build version. Options are "19" or "38". Default is "19".
     verbose : bool, optional
@@ -55,18 +55,23 @@ def _infer_ancestry(
     else:
         sumstats = sumstats_or_dataframe.data
 
-    if ancestry_af is None:
-        if build=="19":
-            ancestry_af = get_path("1kg_hm3_hg19_eaf")
-        elif build=="38":
-            ancestry_af = get_path("1kg_hm3_hg38_eaf")
-    else:
-        if ancestry_af =="1kg_hm3_hg19_eaf":
-            ancestry_af = get_path("1kg_hm3_hg19_eaf")
-        elif ancestry_af =="1kg_hm3_hg38_eaf":
-            ancestry_af = get_path("1kg_hm3_hg38_eaf")
-    if ancestry_af is None:
-        raise ValueError("Please pass valid allele frequency table by ancestry file!")
+    # Store original keyword for error message
+    original_keyword = None
+    if ancestry_af == "1kg_hm3_hg19_eaf":
+        original_keyword = "1kg_hm3_hg19_eaf"
+        ancestry_af = get_path("1kg_hm3_hg19_eaf", log=log, verbose=verbose)
+    elif ancestry_af == "1kg_hm3_hg38_eaf":
+        original_keyword = "1kg_hm3_hg38_eaf"
+        ancestry_af = get_path("1kg_hm3_hg38_eaf", log=log, verbose=verbose)
+    
+    if ancestry_af is None or ancestry_af is False:
+        if original_keyword:
+            raise ValueError(
+                f"Reference file '{original_keyword}' not found. "
+                f"Please download it first using: gl.download_ref('{original_keyword}')"
+            )
+        else:
+            raise ValueError("Please pass valid allele frequency table by ancestry file!")
     
     ##start function with col checking##########################################################
 
