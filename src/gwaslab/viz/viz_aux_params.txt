@@ -2236,6 +2236,17 @@
       "ctx_defaults": {},
       "add_to_docstring": true
     },
+    "show_ld_score": {
+      "plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r"
+      ],
+      "desc": "Enable LD score annotation and links in regional plots. When True, calculates LD scores for ref variants (sum of r² values with all other variants in the region) and annotates ref variants with these scores. Also draws links from each variant to ref variants, colored based on LD categories with transparency scaled by LD value. LD score is defined as l_j = Σ(r²_{j,k}) for all k ≠ j. Requires vcf_path or ld_path to be specified.",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": true
+    },
     "legend1": {
       "plots": [
         "plot_daf"

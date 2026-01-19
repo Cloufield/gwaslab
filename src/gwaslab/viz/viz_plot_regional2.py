@@ -87,6 +87,7 @@ def _plot_regional(
     ld_link_alpha_scale=0.2,
     ld_link_linewidth=1.0,
     ld_link_sig_level=None,
+    show_ld_score=False,
     sig_level=5e-8,
     verbose=True,
     log=Log()
@@ -396,12 +397,15 @@ def _plot_regional(
         region_title_kwargs.update(explicit_region_title)
     region_title_kwargs = region_title_kwargs
 
+    # Initialize lead_ids for LD score annotation
+    lead_ids = []
+
     if (region is not None) :
         # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
     # x axix: use i to plot (there is a gap between i and pos) 
     # if regional plot : pinpoint lead , add color bar ##################################################
         # pinpoint lead
-        lead_ids = []
+        lead_ids = []  # Reset for this region
         
         for index, region_ref_single in enumerate(region_ref):
             ax1, lead_id_single = _pinpoint_lead(sumstats = sumstats,
@@ -497,6 +501,42 @@ def _plot_regional(
             link_alpha_scale=ld_link_alpha_scale,
             link_linewidth=ld_link_linewidth,
             sig_level=ld_link_sig_level,
+            log=log,
+            verbose=verbose
+        )
+    
+    ## LD score annotation and links ##################################################       
+    if (region is not None) and show_ld_score and ((vcf_path is not None) or (ld_path is not None)):
+        # Get reference panel sample size from VCF if available
+        vcf_n_samples = None
+        if vcf_path is not None:
+            try:
+                # Load VCF to get sample count (only need header/sample info)
+                # Auto-detect vcf_chr_dict if not provided
+                vcf_chr_dict_local, tabix_local = prepare_vcf_context(vcf_path, None, log, verbose)
+                # Read a minimal VCF to get sample count
+                ref_genotype_sample = read_vcf(vcf_path, 
+                                             region=vcf_chr_dict_local[region[0]]+":"+str(region[1])+"-"+str(region[1]+1),
+                                             tabix=tabix_local)
+                if ref_genotype_sample is not None and "calldata/GT" in ref_genotype_sample:
+                    # Get number of samples from genotype array shape: (n_variants, n_samples, ploidy)
+                    vcf_n_samples = ref_genotype_sample["calldata/GT"].shape[1]
+                    log.write(f" -Reference panel sample size (from VCF): {vcf_n_samples}", verbose=verbose)
+            except Exception as e:
+                log.warning(f"Could not determine VCF sample size: {e}. Using raw r² values.", verbose=verbose)
+        
+        ax1 = _plot_ld_score_annotation(
+            ax=ax1,
+            sumstats=sumstats,
+            region_ref=region_ref,
+            lead_ids=lead_ids,
+            region_ld_threshold=region_ld_threshold,
+            region_ld_colors=region_ld_colors,
+            palette=palette,
+            link_alpha_scale=ld_link_alpha_scale,
+            link_linewidth=ld_link_linewidth,
+            pos=pos,
+            vcf_n_samples=vcf_n_samples,
             log=log,
             verbose=verbose
         )
@@ -914,6 +954,206 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
 
     cbar = axins1
     return ax1, cbar
+
+# -############################################################################################################################################################################
+def _plot_ld_score_annotation(
+    ax,
+    sumstats,
+    region_ref,
+    lead_ids,
+    region_ld_threshold,
+    region_ld_colors,
+    palette,
+    link_alpha_scale,
+    link_linewidth,
+    pos,
+    vcf_n_samples=None,
+    log=Log(),
+    verbose=True
+):
+    """
+    Annotate ref variants with LD scores and draw links from each variant to ref variants.
+    
+    LD score is calculated using the LDSC unbiased estimator: 
+    l_j = Σ[r²_{j,k} - (1-r²_{j,k})/(n-2)] for all k ≠ j, where r²_{j,k} is the squared 
+    correlation (linkage disequilibrium) between ref variant j and variant k, and n is the 
+    reference panel sample size (from VCF). If VCF sample size is not available, uses raw 
+    r² values: l_j = Σ(r²_{j,k}).
+    
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        Axes to plot on
+    sumstats : pandas.DataFrame
+        Summary statistics with LD information (RSQ_0, RSQ_1, etc.)
+        RSQ columns contain r² values between each variant and the corresponding ref variant
+    region_ref : list
+        List of reference variant identifiers
+    lead_ids : list
+        List of lead variant indices in sumstats
+    region_ld_threshold : list
+        LD r² thresholds for color categories
+    region_ld_colors : list
+        Colors for each LD category
+    palette : dict
+        Color palette dictionary
+    link_alpha_scale : float
+        Scaling factor for line transparency
+    link_linewidth : float
+        Line width for links
+    pos : str
+        Column name for position
+    vcf_n_samples : int, optional
+        Reference panel sample size from VCF. If provided and > 2, applies LDSC bias correction.
+    log : gwaslab.Log
+        Logging object
+    verbose : bool
+        Whether to show progress
+    
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+        Modified axes
+    """
+    log.write("Adding LD score annotations and links...", verbose=verbose)
+    
+    # Use region_ld_colors if provided, otherwise extract from palette, otherwise use default
+    if region_ld_colors is not None and isinstance(region_ld_colors, list):
+        region_ld_colors_for_link = region_ld_colors
+    elif palette is not None and isinstance(palette, dict):
+        # Extract colors from palette dictionary
+        sorted_keys = sorted([k for k in palette.keys() if isinstance(k, (int, float)) and k >= 100 and k < 200])
+        if sorted_keys and len(sorted_keys) >= len(region_ld_threshold) + 3:
+            region_ld_colors_for_link = [palette[k] for k in sorted_keys]
+        else:
+            region_ld_colors_for_link = ["#E4E4E4", "#020080", "#86CEF9", "#24FF02", "#FDA400", "#FF0000", "#FF0000"]
+    else:
+        region_ld_colors_for_link = ["#E4E4E4", "#020080", "#86CEF9", "#24FF02", "#FDA400", "#FF0000", "#FF0000"]
+    
+    # Ensure we have enough colors
+    min_colors_needed = len(region_ld_threshold) + 3
+    if len(region_ld_colors_for_link) < min_colors_needed:
+        region_ld_colors_for_link = region_ld_colors_for_link + [region_ld_colors_for_link[-1]] * (min_colors_needed - len(region_ld_colors_for_link))
+    
+    region_ld_colors = region_ld_colors_for_link
+    
+    # Function to get color index based on LD value
+    def get_ld_color_index(ld_value):
+        """Get color index for LD value based on thresholds."""
+        if pd.isna(ld_value) or ld_value <= 0:
+            return 0
+        for idx in range(len(region_ld_threshold) - 1, -1, -1):
+            threshold = region_ld_threshold[idx]
+            if ld_value > threshold:
+                return idx + 2
+        return 1
+    
+    # Process each reference variant
+    for ref_n, (region_ref_single, lead_id) in enumerate(zip(region_ref, lead_ids)):
+        if lead_id is None:
+            continue
+        
+        rsq_col = "RSQ_{}".format(ref_n)
+        
+        # Check if RSQ column exists
+        if rsq_col not in sumstats.columns:
+            log.warning(f"RSQ column {rsq_col} not found. Skipping LD score annotation for ref variant {ref_n}.", verbose=verbose)
+            continue
+        
+        # Get ref variant position and y-coordinate
+        ref_x = sumstats.loc[lead_id, "i"]
+        ref_y = sumstats.loc[lead_id, "scaled_P"]
+        
+        # Calculate LD score for ref variant: sum of bias-corrected r² values with all other variants
+        # LD score l_j = Σ[r²_{j,k} - (1-r²_{j,k})/(n-2)] for all k ≠ j (LDSC unbiased estimator)
+        # Exclude the ref variant itself (which would be r²=1.0) and NaN/zero values
+        rsq_values = sumstats[rsq_col].copy()
+        # Exclude the ref variant itself and invalid values
+        rsq_values_excluding_ref = rsq_values.drop(lead_id)
+        rsq_values_excluding_ref = rsq_values_excluding_ref.dropna()
+        rsq_values_excluding_ref = rsq_values_excluding_ref[rsq_values_excluding_ref > 0]
+        
+        # Apply LDSC bias correction using reference panel sample size from VCF
+        if vcf_n_samples is not None and vcf_n_samples > 2:
+            # LDSC unbiased estimator: r²_unbiased = r² - (1-r²)/(n-2)
+            # where n is the reference panel sample size
+            denom = vcf_n_samples - 2
+            # Apply bias correction to each r² value
+            rsq_unbiased = rsq_values_excluding_ref - (1 - rsq_values_excluding_ref) / denom
+            # Calculate LD score as sum of bias-corrected r² values
+            ld_score_value = rsq_unbiased.sum()
+        else:
+            # No VCF sample size available, use raw r² values
+            if vcf_n_samples is None:
+                log.warning("Reference panel sample size not available. Using raw r² values without bias correction.", verbose=verbose)
+            else:
+                log.warning(f"Reference panel sample size ({vcf_n_samples}) <= 2. Using raw r² values without bias correction.", verbose=verbose)
+            ld_score_value = rsq_values_excluding_ref.sum()
+        
+        # Get ref variant name for annotation
+        if "SNPID" in sumstats.columns:
+            ref_name = sumstats.loc[lead_id, "SNPID"]
+        elif "rsID" in sumstats.columns:
+            ref_name = sumstats.loc[lead_id, "rsID"]
+        else:
+            ref_name = f"chr{sumstats.loc[lead_id, 'CHR']}:{sumstats.loc[lead_id, pos]}"
+        
+        # Format LD score for display with academic notation and SNP ID
+        # LD score formula: l_j = Σ(r²_{j,k}) for all k ≠ j
+        ld_score_text = f"{ref_name}\n$l_j = {ld_score_value:.2f}$"
+        
+        # Calculate offset to position annotation above the marker
+        # Get the y-axis range to determine appropriate offset
+        y_range = ax.get_ylim()[1] - ax.get_ylim()[0]
+        # Use 2% of y-axis range as vertical offset
+        y_offset = y_range * 0.02
+        
+        # Add text annotation showing LD score above the marker
+        ax.text(ref_x, ref_y + y_offset, ld_score_text, 
+                ha='center', va='bottom', 
+                fontsize=11, 
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.9, edgecolor='black', linewidth=1),
+                zorder=10)
+        
+        # Draw links from each variant to the ref variant
+        line_count = 0
+        for idx, row in sumstats.iterrows():
+            # Skip the ref variant itself
+            if idx == lead_id:
+                continue
+            
+            # Get LD score for this variant with ref variant
+            ld_score = row[rsq_col]
+            
+            # Skip if LD score is NaN or 0
+            if pd.isna(ld_score) or ld_score <= 0:
+                continue
+            
+            # Get variant position and y-coordinate
+            var_x = row["i"]
+            var_y = row["scaled_P"]
+            
+            # Get color based on LD category
+            color_idx = get_ld_color_index(ld_score)
+            if color_idx < len(region_ld_colors):
+                line_color = region_ld_colors[color_idx]
+            else:
+                line_color = region_ld_colors[-1]
+            
+            # Alpha based on LD value
+            alpha = min(ld_score * link_alpha_scale, 1.0)
+            
+            # Draw line from variant to ref variant
+            ax.plot([var_x, ref_x], [var_y, ref_y], 
+                   color=line_color, 
+                   alpha=alpha, 
+                   linewidth=link_linewidth, 
+                   zorder=1)
+            line_count += 1
+        
+        log.write(f"Plotted {line_count} links to ref variant {ref_n} ({ref_name}), LD score = {ld_score_value:.2f}", verbose=verbose)
+    
+    return ax
 
 # -############################################################################################################################################################################
 def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim, rr_ylabel=True):

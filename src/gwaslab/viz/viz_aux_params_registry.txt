@@ -627,6 +627,7 @@
         "ld_link_alpha_scale",
         "ld_link_linewidth",
         "ld_link_sig_level",
+        "show_ld_score",
         "log",
         "maf_bin_colors",
         "maf_bins",
@@ -807,6 +808,7 @@
         "ld_link_alpha_scale": 0.2,
         "ld_link_linewidth": 1.0,
         "ld_link_sig_level": null,
+        "show_ld_score": false,
         "maf_bin_colors": [
           "#f0ad4e",
           "#5cb85c",
