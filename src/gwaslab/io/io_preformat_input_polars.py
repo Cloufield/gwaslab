@@ -299,30 +299,57 @@ def preformatp(sumstats,
 
     if len(include)>0:
     # extract only specified keys
-        usecols_new =[]
+        # Build mapping from gwaslab standard name to all possible original column names
+        standard_to_original = {}
+        for orig_col, std_name in rename_dictionary.items():
+            if std_name not in standard_to_original:
+                standard_to_original[std_name] = []
+            standard_to_original[std_name].append(orig_col)
+        
+        usecols_new = []
+        usecols_set = set(usecols)
         for i in include:
-            # rename_dictionary: sumstats to gwaslab
-            for k, v in rename_dictionary.items():
-                if i == v:
-                    # get list of sumstats header
-                    usecols_new.append(k)
-        usecols_valid =[]
-        for i in usecols_new:
-            if i in usecols:
-                usecols_valid.append(i)
+            found = False
+            # Check if include value matches a gwaslab standard name
+            if i in standard_to_original:
+                # Check all original columns that map to this standard name
+                for orig_col in standard_to_original[i]:
+                    if orig_col in usecols_set:
+                        usecols_new.append(orig_col)
+                        found = True
+            # Also check if include value directly matches an original column name
+            if not found and i in usecols_set:
+                usecols_new.append(i)
+        # Remove duplicates while preserving order
+        seen = set()
+        usecols_valid = [x for x in usecols_new if not (x in seen or seen.add(x))]
         log.write(f' -Include columns :{",".join(usecols_valid)}' ,verbose=verbose)
         usecols = usecols_valid
 
     if len(exclude)>0:
     # exclude specified keys
-        exclude_cols =[]
+        # Build mapping from gwaslab standard name to all possible original column names
+        standard_to_original = {}
+        for orig_col, std_name in rename_dictionary.items():
+            if std_name not in standard_to_original:
+                standard_to_original[std_name] = []
+            standard_to_original[std_name].append(orig_col)
+        
+        exclude_cols = set()
+        usecols_set = set(usecols)
         for i in exclude:
-            # rename_dictionary: sumstats to gwaslab
-            for k, v in rename_dictionary.items():
-                if i == v:
-                    # get list of sumstats header
-                    exclude_cols.append(k)
-        log.write(f' -Exclude columns :{",".join(exclude_cols)}' ,verbose=verbose)
+            found = False
+            # Check if exclude value matches a gwaslab standard name
+            if i in standard_to_original:
+                # Check all original columns that map to this standard name
+                for orig_col in standard_to_original[i]:
+                    if orig_col in usecols_set:
+                        exclude_cols.add(orig_col)
+                        found = True
+            # Also check if exclude value directly matches an original column name
+            if not found and i in usecols_set:
+                exclude_cols.add(i)
+        log.write(f' -Exclude columns :{",".join(sorted(exclude_cols))}' ,verbose=verbose)
         for i in exclude_cols:
             if i in usecols:
                 usecols.remove(i)
@@ -443,7 +470,10 @@ def preformatp(sumstats,
     log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns),verbose=verbose) 
     
     ## renaming  #####################################################################################
-    sumstats = sumstats.rename(rename_dictionary)
+    # Filter rename_dictionary to only include columns that exist in the dataframe
+    # This prevents errors when formatbook has mappings for columns not in the file
+    available_rename_dict = {k: v for k, v in rename_dictionary.items() if k in sumstats.columns}
+    sumstats = sumstats.rename(available_rename_dict)
 
     ## if n was provided as int #####################################################################################
     if type(n) is int:

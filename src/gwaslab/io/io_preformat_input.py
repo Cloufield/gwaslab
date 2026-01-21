@@ -227,25 +227,84 @@ def _build_column_mappings(*, column_params=None, rename_dictionary=None, usecol
 
 
 def _apply_column_filters(*, include=None, exclude=None, usecols=None, rename_dictionary=None, log=None, verbose=False):
-    """Apply include/exclude filters to column list."""
-    if include:
-        # Create reverse mapping for faster lookup
-        reverse_rename = {v: k for k, v in rename_dictionary.items()}
-        usecols_new = [reverse_rename.get(i) for i in include if i in reverse_rename]
-        # Use set intersection for faster filtering
-        usecols_set = set(usecols)
-        usecols_valid = [i for i in usecols_new if i in usecols_set]
-        log.write(f' -Include columns :{",".join(usecols_valid)}', verbose=verbose)
-        usecols = usecols_valid
+    """
+    Apply include/exclude filters to column list.
     
+    The exclude/include parameters can accept either:
+    - Gwaslab standard column names (e.g., "INFO", "BETA", "P")
+    - Original column names from the file (e.g., "Rsq", "BETA", "P")
+    
+    Parameters
+    ----------
+    include : list, optional
+        Columns to include. Can be standard names or original column names.
+    exclude : list, optional
+        Columns to exclude. Can be standard names or original column names.
+    usecols : list
+        List of original column names currently selected for loading.
+    rename_dictionary : dict
+        Maps original column names to gwaslab standard names (e.g., {"Rsq": "INFO"}).
+    log : Log
+        Logging object.
+    verbose : bool
+        Verbose flag.
+    
+    Returns
+    -------
+    list
+        Filtered list of column names to use.
+    """
+    # Build mapping from gwaslab standard name to all possible original column names
+    # This handles cases where multiple original columns map to the same standard name
+    # (e.g., "Rsq", "R2", "r2" all map to "INFO")
+    standard_to_original = {}
+    for original_col, standard_name in rename_dictionary.items():
+        if standard_name not in standard_to_original:
+            standard_to_original[standard_name] = []
+        standard_to_original[standard_name].append(original_col)
+    
+    usecols_set = set(usecols)
+    
+    def _find_matching_columns(column_names):
+        """
+        Find all original column names that match the given column names.
+        
+        For each name in column_names:
+        1. If it's a standard name, find all original columns that map to it
+        2. If it's an original column name, use it directly
+        """
+        matching_cols = []
+        for col_name in column_names:
+            found_any = False
+            
+            # Check if it's a gwaslab standard name
+            if col_name in standard_to_original:
+                # Find all original columns that map to this standard name
+                for original_col in standard_to_original[col_name]:
+                    if original_col in usecols_set:
+                        matching_cols.append(original_col)
+                        found_any = True
+            
+            # Also check if it directly matches an original column name
+            if not found_any and col_name in usecols_set:
+                matching_cols.append(col_name)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        return [col for col in matching_cols if not (col in seen or seen.add(col))]
+    
+    # Apply include filter: keep only specified columns
+    if include:
+        included_cols = _find_matching_columns(include)
+        log.write(f' -Include columns :{",".join(included_cols)}', verbose=verbose)
+        usecols = included_cols
+    
+    # Apply exclude filter: remove specified columns
     if exclude:
-        # Create reverse mapping for faster lookup
-        reverse_rename = {v: k for k, v in rename_dictionary.items()}
-        exclude_cols = [reverse_rename.get(i) for i in exclude if i in reverse_rename]
-        log.write(f' -Exclude columns :{",".join(exclude_cols)}', verbose=verbose)
-        # Use set for faster removal
-        exclude_set = set(exclude_cols)
-        usecols = [i for i in usecols if i not in exclude_set]
+        excluded_cols = _find_matching_columns(exclude)
+        log.write(f' -Exclude columns :{",".join(excluded_cols)}', verbose=verbose)
+        excluded_set = set(excluded_cols)
+        usecols = [col for col in usecols if col not in excluded_set]
     
     return usecols
 

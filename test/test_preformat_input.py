@@ -1161,6 +1161,300 @@ class TestPreformatWorkflowAndPriority(unittest.TestCase):
         self.assertEqual(len(result_path), len(result_df))
 
 
+class TestExcludeIncludeWithStandardNames(unittest.TestCase):
+    """Test exclude/include functionality with standard names and original column names"""
+    
+    def setUp(self):
+        self.raw_dir = os.path.join(os.path.dirname(__file__), "raw")
+        # Create a test file with Rsq column that maps to INFO
+        self.test_file = os.path.join(self.raw_dir, "test_rsq_info.tsv")
+        
+        # Create test data with Rsq column (which maps to INFO in formatbook)
+        test_data = """CHR\tPOS\tEA\tNEA\tRsq\tBETA\tSE\tP\tSNP
+1\t1000\tA\tG\t0.95\t0.1\t0.01\t1e-5\trs1
+1\t2000\tT\tC\t0.92\t0.2\t0.02\t1e-6\trs2
+1\t3000\tG\tA\t0.98\t0.15\t0.015\t1e-7\trs3"""
+        
+        os.makedirs(self.raw_dir, exist_ok=True)
+        with open(self.test_file, 'w') as f:
+            f.write(test_data)
+    
+    def tearDown(self):
+        if os.path.exists(self.test_file):
+            os.remove(self.test_file)
+    
+    def test_exclude_info_using_standard_name_with_auto_format(self):
+        """Test excluding INFO column using standard name 'INFO' when original column is 'Rsq'"""
+        result = _preformat(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            exclude=["INFO"],  # Using standard name
+            verbose=False
+        )
+        
+        # Should have other columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("SE", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have INFO column (Rsq was excluded)
+        self.assertNotIn("INFO", result.columns)
+    
+    def test_exclude_info_using_original_column_name_with_auto_format(self):
+        """Test excluding INFO column using original column name 'Rsq'"""
+        result = _preformat(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            exclude=["Rsq"],  # Using original column name
+            verbose=False
+        )
+        
+        # Should have other columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        
+        # Should NOT have INFO column (Rsq was excluded)
+        self.assertNotIn("INFO", result.columns)
+    
+    def test_include_with_standard_names_with_auto_format(self):
+        """Test including columns using standard names"""
+        result = _preformat(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            include=["CHR", "POS", "EA", "NEA", "BETA", "P"],  # Using standard names
+            verbose=False
+        )
+        
+        # Should only have included columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("EA", result.columns)
+        self.assertIn("NEA", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have excluded columns
+        self.assertNotIn("SE", result.columns)
+        self.assertNotIn("INFO", result.columns)
+    
+    def test_exclude_multiple_columns_with_standard_names(self):
+        """Test excluding multiple columns using standard names"""
+        result = _preformat(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            exclude=["INFO", "SE"],  # Exclude both using standard names
+            verbose=False
+        )
+        
+        # Should have basic columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have excluded columns
+        self.assertNotIn("INFO", result.columns)
+        self.assertNotIn("SE", result.columns)
+    
+    def test_include_then_exclude_with_standard_names(self):
+        """Test include then exclude with standard names"""
+        result = _preformat(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            include=["CHR", "POS", "BETA", "SE", "INFO", "P"],
+            exclude=["INFO"],  # Exclude INFO from the included set
+            verbose=False
+        )
+        
+        # Should have included columns except excluded
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("SE", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have excluded column
+        self.assertNotIn("INFO", result.columns)
+        
+        # Should NOT have columns not in include list
+        self.assertNotIn("EA", result.columns)
+        self.assertNotIn("NEA", result.columns)
+
+
+class TestExcludeIncludeWithStandardNamesPolars(unittest.TestCase):
+    """Test exclude/include functionality with polars engine"""
+    
+    def setUp(self):
+        self.raw_dir = os.path.join(os.path.dirname(__file__), "raw")
+        # Create a test file with Rsq column that maps to INFO
+        self.test_file = os.path.join(self.raw_dir, "test_rsq_info_polars.tsv")
+        
+        # Create test data with Rsq column (which maps to INFO in formatbook)
+        test_data = """CHR\tPOS\tEA\tNEA\tRsq\tBETA\tSE\tP\tSNP
+1\t1000\tA\tG\t0.95\t0.1\t0.01\t1e-5\trs1
+1\t2000\tT\tC\t0.92\t0.2\t0.02\t1e-6\trs2
+1\t3000\tG\tA\t0.98\t0.15\t0.015\t1e-7\trs3"""
+        
+        os.makedirs(self.raw_dir, exist_ok=True)
+        with open(self.test_file, 'w') as f:
+            f.write(test_data)
+    
+    def tearDown(self):
+        if os.path.exists(self.test_file):
+            os.remove(self.test_file)
+    
+    def test_exclude_info_using_standard_name_with_auto_format_polars(self):
+        """Test excluding INFO column using standard name 'INFO' with polars"""
+        result = preformatp(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            exclude=["INFO"],  # Using standard name
+            verbose=False
+        )
+        
+        # Should have other columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("SE", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have INFO column (Rsq was excluded)
+        self.assertNotIn("INFO", result.columns)
+    
+    def test_exclude_info_using_original_column_name_with_auto_format_polars(self):
+        """Test excluding INFO column using original column name 'Rsq' with polars"""
+        result = preformatp(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            exclude=["Rsq"],  # Using original column name
+            verbose=False
+        )
+        
+        # Should have other columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        
+        # Should NOT have INFO column (Rsq was excluded)
+        self.assertNotIn("INFO", result.columns)
+    
+    def test_include_with_standard_names_with_auto_format_polars(self):
+        """Test including columns using standard names with polars"""
+        result = preformatp(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            include=["CHR", "POS", "EA", "NEA", "BETA", "P"],  # Using standard names
+            verbose=False
+        )
+        
+        # Should only have included columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("EA", result.columns)
+        self.assertIn("NEA", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have excluded columns
+        self.assertNotIn("SE", result.columns)
+        self.assertNotIn("INFO", result.columns)
+    
+    def test_exclude_multiple_columns_with_standard_names_polars(self):
+        """Test excluding multiple columns using standard names with polars"""
+        result = preformatp(
+            sumstats=self.test_file,
+            fmt="auto",
+            rsid="SNP",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            beta="BETA",
+            se="SE",
+            p="P",
+            exclude=["INFO", "SE"],  # Exclude both using standard names
+            verbose=False
+        )
+        
+        # Should have basic columns
+        self.assertIn("CHR", result.columns)
+        self.assertIn("POS", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("P", result.columns)
+        
+        # Should NOT have excluded columns
+        self.assertNotIn("INFO", result.columns)
+        self.assertNotIn("SE", result.columns)
+
+
 if __name__ == "__main__":
     unittest.main()
 
