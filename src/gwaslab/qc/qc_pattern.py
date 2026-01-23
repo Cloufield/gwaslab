@@ -28,6 +28,6 @@ CHR_PATTERN_EXTRACT = r'^(chr)?(\d{1,3}|[XYM]|MT)$'
 SNPID_PATTERN_CONTAINS = r'[:_-]?\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+[:_-]?'
 
 
-FLAGS=re.IGNORECASE|re.ASCII
+FLAGS=re.IGNORECASE
 CHR_PREFIX_PATTERN = r'^chr'
 SNPID_SEP_PATTERN = r'[_-]'

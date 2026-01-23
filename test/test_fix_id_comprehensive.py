@@ -505,6 +505,317 @@ class TestFixIDComprehensive(unittest.TestCase):
         self.assertEqual(gl.data.loc[0, 'POS'], 12345)
         # Separator should be standardized
         self.assertTrue(':' in gl.data.loc[0, 'SNPID'])
+    
+    def test_qc_pattern_snpid_pattern_extract_direct(self):
+        """Directly test SNPID_PATTERN_EXTRACT from qc_pattern.py with FLAGS."""
+        from gwaslab.qc.qc_pattern import SNPID_PATTERN_EXTRACT, FLAGS
+        
+        test_cases = [
+            ('1:12345:A:G', True),      # Standard format, uppercase
+            ('2:23456:a:g', True),      # Lowercase alleles
+            ('3:34567:AtCg:GcTa', True),  # Mixed case alleles
+            ('chr4:45678:T:C', True),   # With chr prefix, uppercase
+            ('CHR5:56789:t:c', True),   # With CHR prefix, lowercase alleles
+            ('ChR6:67890:G:A', True),   # Mixed case chr prefix
+            ('7_78901_A_G', True),      # Underscore separator
+            ('8-89012-a-g', True),      # Dash separator, lowercase
+            ('9:90123:ATCG:GCAT', True), # Multiple base alleles
+            ('invalid', False),         # Invalid format
+            ('1:123', False),           # Missing alleles
+        ]
+        
+        data = pd.DataFrame({
+            'SNPID': [case[0] for case in test_cases]
+        })
+        
+        # Test that str.match works with FLAGS (should not raise ValueError)
+        try:
+            matches = data['SNPID'].str.match(SNPID_PATTERN_EXTRACT, flags=FLAGS, na=False)
+            # Verify matches are correct
+            for i, (_, expected) in enumerate(test_cases):
+                self.assertEqual(matches.iloc[i], expected, 
+                               f"Pattern match failed for: {test_cases[i][0]}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_snpid_pattern_extract_extract_direct(self):
+        """Directly test SNPID_PATTERN_EXTRACT extraction from qc_pattern.py."""
+        from gwaslab.qc.qc_pattern import SNPID_PATTERN_EXTRACT, FLAGS
+        
+        test_cases = [
+            ('1:12345:A:G', {'CHR': '1', 'POS': '12345', 'NEA': 'A', 'EA': 'G'}),
+            ('chr2:23456:T:C', {'CHR': '2', 'POS': '23456', 'NEA': 'T', 'EA': 'C'}),
+            ('CHR3:34567:a:g', {'CHR': '3', 'POS': '34567', 'NEA': 'a', 'EA': 'g'}),
+            ('4_45678_ATCG_GCAT', {'CHR': '4', 'POS': '45678', 'NEA': 'ATCG', 'EA': 'GCAT'}),
+        ]
+        
+        data = pd.DataFrame({
+            'SNPID': [case[0] for case in test_cases]
+        })
+        
+        # Test that str.extract works with FLAGS
+        try:
+            extracted = data['SNPID'].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
+            for i, (_, expected) in enumerate(test_cases):
+                for key, value in expected.items():
+                    if key == 'CHR_PREFIX':
+                        continue  # May be empty
+                    self.assertEqual(str(extracted.loc[i, key]), value,
+                                   f"Extraction failed for {key} in: {test_cases[i][0]}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_snpid_pattern_strip_direct(self):
+        """Directly test SNPID_PATTERN_STRIP from qc_pattern.py."""
+        from gwaslab.qc.qc_pattern import SNPID_PATTERN_STRIP, FLAGS
+        
+        test_cases = [
+            ('1:12345:A:G', True),
+            ('chr2:23456:T:C', True),
+            ('CHR3:34567:a:g', True),
+            ('4_45678_ATCG_GCAT', True),
+            ('5-56789-atcg-gcat', True),
+        ]
+        
+        data = pd.DataFrame({
+            'SNPID': [case[0] for case in test_cases]
+        })
+        
+        try:
+            matches = data['SNPID'].str.match(SNPID_PATTERN_STRIP, flags=FLAGS, na=False)
+            for i, (_, expected) in enumerate(test_cases):
+                self.assertEqual(matches.iloc[i], expected)
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_rsid_pattern_direct(self):
+        """Directly test RSID_PATTERN from qc_pattern.py with case-insensitive matching."""
+        from gwaslab.qc.qc_pattern import RSID_PATTERN, FLAGS
+        
+        test_cases = [
+            ('rs123456', True),     # Lowercase
+            ('RS789012', True),     # Uppercase (should match with IGNORECASE)
+            ('Rs345678', True),     # Mixed case
+            ('rS901234', True),     # Mixed case
+            ('1:12345:A:G', False), # SNPID format
+            ('invalid', False),     # Invalid
+        ]
+        
+        data = pd.DataFrame({
+            'rsID': [case[0] for case in test_cases]
+        })
+        
+        try:
+            matches = data['rsID'].str.match(RSID_PATTERN, flags=FLAGS, na=False)
+            for i, (_, expected) in enumerate(test_cases):
+                self.assertEqual(matches.iloc[i], expected,
+                               f"RSID pattern match failed for: {test_cases[i][0]}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_chr_pattern_extract_direct(self):
+        """Directly test CHR_PATTERN_EXTRACT from qc_pattern.py."""
+        from gwaslab.qc.qc_pattern import CHR_PATTERN_EXTRACT, FLAGS
+        
+        test_cases = [
+            ('1', True),
+            ('chr1', True),
+            ('CHR2', True),
+            ('ChR3', True),
+            ('X', True),
+            ('chrX', True),
+            ('MT', True),
+            ('chrMT', True),
+            ('invalid', False),
+        ]
+        
+        data = pd.DataFrame({
+            'CHR': [case[0] for case in test_cases]
+        })
+        
+        try:
+            matches = data['CHR'].str.match(CHR_PATTERN_EXTRACT, flags=FLAGS, na=False)
+            for i, (_, expected) in enumerate(test_cases):
+                self.assertEqual(matches.iloc[i], expected,
+                               f"CHR pattern match failed for: {test_cases[i][0]}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_flags_large_dataset_direct(self):
+        """Test FLAGS with a large dataset using pandas str operations directly."""
+        from gwaslab.qc.qc_pattern import SNPID_PATTERN_EXTRACT, FLAGS
+        
+        # Create a large dataset with mixed case
+        n_rows = 1000
+        snpids = [
+            f'{i % 22 + 1}:{1000000 + i}:{"ATCG"[i % 4]}:{"GCAT"[i % 4]}'
+            if i % 2 == 0
+            else f'{(i % 22 + 1)}:{1000000 + i}:{"atcg"[i % 4]}:{"gcat"[i % 4]}'
+            for i in range(n_rows)
+        ]
+        
+        data = pd.DataFrame({'SNPID': snpids})
+        
+        # Should not raise ValueError about ASCII/UNICODE flags
+        try:
+            matches = data['SNPID'].str.match(SNPID_PATTERN_EXTRACT, flags=FLAGS, na=False)
+            self.assertEqual(len(matches), n_rows)
+            # All should match (they're all valid SNPID formats)
+            self.assertTrue(matches.all(), "All SNPIDs should match the pattern")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected with large dataset: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_chr_prefix_pattern_direct(self):
+        """Directly test CHR_PREFIX_PATTERN from qc_pattern.py."""
+        from gwaslab.qc.qc_pattern import CHR_PREFIX_PATTERN, FLAGS
+        
+        test_cases = [
+            ('chr1:12345:A:G', True),   # Lowercase
+            ('CHR2:23456:T:C', True),   # Uppercase
+            ('ChR3:34567:G:C', True),   # Mixed case
+            ('1:12345:A:G', False),     # No prefix
+        ]
+        
+        data = pd.DataFrame({
+            'SNPID': [case[0] for case in test_cases]
+        })
+        
+        try:
+            matches = data['SNPID'].str.match(CHR_PREFIX_PATTERN, flags=FLAGS, na=False)
+            for i, (_, expected) in enumerate(test_cases):
+                self.assertEqual(matches.iloc[i], expected,
+                               f"CHR prefix pattern match failed for: {test_cases[i][0]}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_snpid_sep_pattern_direct(self):
+        """Directly test SNPID_SEP_PATTERN from qc_pattern.py."""
+        from gwaslab.qc.qc_pattern import SNPID_SEP_PATTERN, FLAGS
+        
+        test_cases = [
+            ('1_12345_A_G', True),      # Underscore
+            ('2-23456-T-C', True),      # Dash
+            ('3:34567:G:C', False),     # Colon (not in pattern)
+        ]
+        
+        data = pd.DataFrame({
+            'SNPID': [case[0] for case in test_cases]
+        })
+        
+        try:
+            # Test if separators are found (using contains or search)
+            has_sep = data['SNPID'].str.contains(SNPID_SEP_PATTERN, flags=FLAGS, na=False, regex=True)
+            for i, (_, expected) in enumerate(test_cases):
+                self.assertEqual(has_sep.iloc[i], expected,
+                               f"SNPID separator pattern failed for: {test_cases[i][0]}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_flags_compatibility(self):
+        """Test that FLAGS can be used with re.compile directly without conflicts."""
+        from gwaslab.qc.qc_pattern import SNPID_PATTERN_EXTRACT, FLAGS
+        import re
+        
+        # Test direct compilation
+        try:
+            compiled = re.compile(SNPID_PATTERN_EXTRACT, flags=FLAGS)
+            # Test matching
+            test_strings = ['1:12345:A:G', 'chr2:23456:a:g', 'CHR3:34567:AtCg:GcTa']
+            for test_str in test_strings:
+                match = compiled.match(test_str)
+                self.assertIsNotNone(match, f"Pattern should match: {test_str}")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict in re.compile: {e}")
+            else:
+                raise
+    
+    def test_qc_pattern_flags_version_compatibility(self):
+        """
+        Test FLAGS compatibility across different scenarios.
+        
+        This test documents the ASCII/UNICODE flag conflict issue:
+        - The error "ASCII and UNICODE flags are incompatible" occurs when both flags are set
+        - Python 3.x uses UNICODE by default for regex patterns
+        - Some pandas versions or conditions might internally add UNICODE flag
+        - Using only re.IGNORECASE avoids this conflict while maintaining case-insensitive matching
+        """
+        import pandas as pd
+        import re
+        import sys
+        from gwaslab.qc.qc_pattern import SNPID_PATTERN_EXTRACT, FLAGS
+        
+        # Document environment
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        pandas_version = pd.__version__
+        
+        # Verify FLAGS doesn't include ASCII (which would conflict with potential UNICODE)
+        # FLAGS should be re.IGNORECASE only
+        self.assertEqual(FLAGS, re.IGNORECASE, 
+                        "FLAGS should only contain re.IGNORECASE to avoid ASCII/UNICODE conflict")
+        
+        # Test that ASCII | UNICODE would fail (documenting the issue)
+        try:
+            bad_flags = re.ASCII | re.UNICODE
+            re.compile(r'^test$', bad_flags)
+            self.fail("ASCII | UNICODE should raise ValueError")
+        except ValueError as e:
+            self.assertIn("ASCII and UNICODE flags are incompatible", str(e),
+                         "Should detect the incompatible flags error")
+        
+        # Test that current FLAGS works with pandas
+        test_data = pd.DataFrame({
+            'SNPID': ['1:12345:A:G', 'chr2:23456:a:g', 'CHR3:34567:AtCg:GcTa']
+        })
+        
+        # Should work without errors
+        try:
+            matches = test_data['SNPID'].str.match(SNPID_PATTERN_EXTRACT, flags=FLAGS, na=False)
+            self.assertTrue(matches.all(), "All test SNPIDs should match")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict detected with pandas {pandas_version}: {e}\n"
+                         f"This indicates pandas is adding UNICODE flag internally.")
+            else:
+                raise
+        
+        # Test with string dtype (might behave differently)
+        test_data_str = pd.DataFrame({
+            'SNPID': pd.Series(['1:12345:A:G', 'chr2:23456:a:g'], dtype='string')
+        })
+        
+        try:
+            matches_str = test_data_str['SNPID'].str.match(SNPID_PATTERN_EXTRACT, flags=FLAGS, na=False)
+            self.assertTrue(matches_str.all(), "All test SNPIDs should match with string dtype")
+        except ValueError as e:
+            if "ASCII and UNICODE flags are incompatible" in str(e):
+                self.fail(f"FLAGS conflict with string dtype (pandas {pandas_version}): {e}")
+            else:
+                raise
 
 
 if __name__ == '__main__':

@@ -1328,9 +1328,11 @@ class TestExcludeIncludeWithStandardNamesPolars(unittest.TestCase):
     """Test exclude/include functionality with polars engine"""
     
     def setUp(self):
+        import tempfile
         self.raw_dir = os.path.join(os.path.dirname(__file__), "raw")
         # Create a test file with Rsq column that maps to INFO
-        self.test_file = os.path.join(self.raw_dir, "test_rsq_info_polars.tsv")
+        # Use a unique filename to avoid conflicts in parallel test execution
+        self.test_file = os.path.join(self.raw_dir, f"test_rsq_info_polars_{os.getpid()}.tsv")
         
         # Create test data with Rsq column (which maps to INFO in formatbook)
         test_data = """CHR\tPOS\tEA\tNEA\tRsq\tBETA\tSE\tP\tSNP
@@ -1339,8 +1341,12 @@ class TestExcludeIncludeWithStandardNamesPolars(unittest.TestCase):
 1\t3000\tG\tA\t0.98\t0.15\t0.015\t1e-7\trs3"""
         
         os.makedirs(self.raw_dir, exist_ok=True)
+        # Ensure file is created and written
         with open(self.test_file, 'w') as f:
             f.write(test_data)
+        # Verify file exists
+        if not os.path.exists(self.test_file):
+            raise RuntimeError(f"Failed to create test file: {self.test_file}")
     
     def tearDown(self):
         if os.path.exists(self.test_file):

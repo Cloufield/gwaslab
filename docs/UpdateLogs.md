@@ -1,5 +1,12 @@
 # Update Logs
 
+# v4.0.5 20260123
+
+- Fixed regex flag incompatibility: resolved `ValueError: ASCII and UNICODE flags are incompatible` error in `qc_pattern.py` by removing `re.ASCII` from `FLAGS` constant
+- Updated pandas version constraint: set pandas version to `<=2.3.3` in `pyproject.toml`
+- Added `io_bedpe` module for BEDPE file format support
+- Enhanced meta-analysis functionality with improved parameter handling
+
 # v4.0.4 20260104
 
 - Added new visualization function: `plot_ld_block()` for plotting LD (linkage disequilibrium) matrices as 45°-rotated inverted triangles, supporting both standalone mode and integration with regional plots
