@@ -427,7 +427,7 @@ class TestRelatedPlots(unittest.TestCase):
         self.assertGreaterEqual(len(fig.axes), 1)
 
     def test_plot_regional_via_mqqplot(self):
-        # Test regional plot via mqqplot in mode="r" with consistent minimal kwargs
+        # Test single-reference regional plot via mqqplot in mode="r" with consistent minimal kwargs
         row = self.df.iloc[0]
         chr_ = int(row["CHR"])
         pos_ = int(row["POS"])
@@ -436,11 +436,40 @@ class TestRelatedPlots(unittest.TestCase):
             self.df,
             mode="r",
             region=region,
-            region_ref=[row["SNPID"], None],
-            region_ld_colors=["#1f77b4", "#ff7f0e", "#2ca02c"],
-            region_ld_colors_m=["#1f77b4", "#ff7f0e"],
+            region_ref=[row["SNPID"]],
+            region_ld_colors=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"],
             region_ld_threshold=[0.2, 0.4, 0.6],
-            region_marker_shapes=["o", "s"],
+            region_marker_shapes=["o", "^"],
+            region_grid=False,
+            region_protein_coding=False,
+            region_recombination=False,
+            gtf_path=None,
+            rr_path=None,
+            region_grid_line={},
+            region_lead_grid=False,
+            region_lead_grid_line={},
+            verbose=False,
+        )
+        self.assertIsInstance(log, Log)
+
+    def test_plot_regional_via_mqqplot_multi_ref(self):
+        # Test multi-reference regional plot via mqqplot in mode="r"
+        # This reproduces the bug where region_ref_second creates multi-reference mode
+        row1 = self.df.iloc[0]
+        row2 = self.df.iloc[1]
+        chr_ = int(row1["CHR"])
+        pos_ = int(row1["POS"])
+        region = [chr_, max(1, pos_ - 5000), pos_ + 5000]
+        fig, log = _mqqplot(
+            self.df,
+            mode="r",
+            region=region,
+            region_ref=None,  # None becomes [None] then [None, row2["SNPID"]]
+            region_ref_second=row2["SNPID"],
+            region_ld_colors=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"],
+            region_ld_colors_m=["#1f77b4", "#d62728"],
+            region_ld_threshold=[0.2, 0.4, 0.6],
+            region_marker_shapes=["o", "^", "s"],
             region_grid=False,
             region_protein_coding=False,
             region_recombination=False,

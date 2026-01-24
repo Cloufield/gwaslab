@@ -35,13 +35,11 @@ def draw_manhattan_panel(
 
     marker_size = (marker_size[0], marker_size[1])
     highlight_i = pd.DataFrame()
-    to_plot = None
 
     if len(highlight) > 0:
-        to_plot = sumstats
         log.write(" -Creating background plot...", verbose=verbose)
         sns.scatterplot(
-            data=to_plot,
+            data=sumstats,
             x='i',
             y='scaled_P',
             hue='chr_hue',
@@ -61,7 +59,7 @@ def draw_manhattan_panel(
             for i, highlight_set in enumerate(highlight):
                 log.write(" -Highlighting set {} target loci...".format(i + 1), verbose=verbose)
                 sns.scatterplot(
-                    data=to_plot.loc[to_plot["HUE"] == i],
+                    data=sumstats.loc[sumstats["HUE"] == i],
                     x='i',
                     y='scaled_P',
                     hue="HUE",
@@ -76,7 +74,7 @@ def draw_manhattan_panel(
                     edgecolor=edgecolor,
                     **scatter_kwargs,
                 )
-            highlight_i = to_plot.loc[~to_plot["HUE"].isna(), "i"].values
+            highlight_i = sumstats.loc[~sumstats["HUE"].isna(), "i"].values
         else:
             log.write(" -Highlighting target loci...", verbose=verbose)
             # Ensure highlight_color is a single color value, not a list
@@ -85,7 +83,7 @@ def draw_manhattan_panel(
             else:
                 highlight_color_single = highlight_color
             sns.scatterplot(
-                data=to_plot.loc[to_plot["HUE"] == 0],
+                data=sumstats.loc[sumstats["HUE"] == 0],
                 x='i',
                 y='scaled_P',
                 hue="HUE",
@@ -101,23 +99,23 @@ def draw_manhattan_panel(
                 **scatter_kwargs,
             )
             if highlight_chrpos is False:
-                highlight_i = to_plot.loc[to_plot[snpid].isin(highlight), "i"].values
+                highlight_i = sumstats.loc[sumstats[snpid].isin(highlight), "i"].values
             else:
                 highlight_i = []
     else:
         if density_color is True:
             hue = "DENSITY_hue"
             s = "DENSITY"
-            to_plot = sumstats.sort_values("DENSITY")
-            to_plot["DENSITY_hue"] = to_plot["DENSITY"].astype("float")
+            density_plot_data = sumstats.sort_values("DENSITY")
+            density_plot_data["DENSITY_hue"] = density_plot_data["DENSITY"].astype("float")
             if density_range is None:
-                density_range = (to_plot["DENSITY"].min(), to_plot["DENSITY"].max())
+                density_range = (density_plot_data["DENSITY"].min(), density_plot_data["DENSITY"].max())
             if type(density_trange) is list:
                 density_trange = tuple(density_trange)
             if type(density_range) is list:
                 density_range = tuple(density_range)
             sns.scatterplot(
-                data=to_plot.loc[to_plot["DENSITY"] <= density_threshold, :],
+                data=density_plot_data.loc[density_plot_data["DENSITY"] <= density_threshold, :],
                 x='i',
                 y='scaled_P',
                 hue=hue,
@@ -134,7 +132,7 @@ def draw_manhattan_panel(
                 **scatter_kwargs,
             )
             sns.scatterplot(
-                data=to_plot.loc[to_plot["DENSITY"] > density_threshold, :],
+                data=density_plot_data.loc[density_plot_data["DENSITY"] > density_threshold, :],
                 x='i',
                 y='scaled_P',
                 hue=hue,
@@ -151,26 +149,21 @@ def draw_manhattan_panel(
                 **scatter_kwargs,
             )
         else:
-            s = "s"
-            hue = 'chr_hue'
-            hue_norm = None
-            to_plot = sumstats
             log.write(" -Creating background plot...", verbose=verbose)
             sns.scatterplot(
-                data=to_plot,
+                data=sumstats,
                 x='i',
                 y='scaled_P',
-                hue=hue,
+                hue='chr_hue',
                 palette=palette,
                 legend=legend,
                 style=style,
-                size=s,
+                size="s",
                 sizes=marker_size,
-                hue_norm=hue_norm,
                 linewidth=linewidth,
-                edgecolor=edgecolor,
                 zorder=2,
                 ax=ax1,
+                edgecolor=edgecolor,
                 **scatter_kwargs,
             )
 

@@ -143,7 +143,9 @@ def _plot_regional(
     region_ld_legend : bool, optional,default=True
         Whether to show LD legend in regional plot.
     region_ld_colors : list, optional,default=["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
-        Colors for LD levels in regional plot.
+        Colors for LD levels in regional plot. Maps to r² categories: missing data, low LD (r²<0.2),
+        moderate LD (0.2-0.4), medium LD (0.4-0.6), high LD (0.6-0.8), very high LD (≥0.8),
+        and reference variant highlighting.
     region_ld_colors_m : list, optional, default=["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
         Colors for multi-lead variant regional plots.
     region_recombination : bool,optional, default=True
@@ -651,13 +653,95 @@ def regional_mode_setup(
     region_marker_shapes,
     region_ld_colors_m,
     region_ld_threshold,
-    chrom,
-    pos,
     vcf_path,
     ld_path,
     log=Log(),
     verbose=True,
 ):
+    """
+    Set up regional plotting parameters and filter data for regional association plots.
+
+    This function configures the color palette, markers, and data filtering for regional
+    plots. It handles LD-based coloring and ensures the reference variant is properly
+    excluded from the main scatter plot when in single-reference mode.
+
+    For single-reference regional plots, the reference variant is removed from the main
+    Manhattan plot data (to_plot) so it can be highlighted separately as a pinpoint marker.
+    When region_ref[0] is None, the lead variant (highest -log10(P)) is automatically
+    selected and hidden. When region_ref contains a specific variant, that variant is
+    found and hidden from the main plot.
+
+    LD Color and Marker System:
+    ---------------------------
+    The function creates a mapping system where variants are colored and shaped based
+    on their LD relationship to the reference variant(s).
+
+    Single-Reference Mode (len(region_ref) == 1):
+    - region_ld_colors: List of colors for LD categories (e.g., ['red', 'orange', 'yellow', 'blue'])
+    - region_marker_shapes: List of marker shapes (e.g., ['o', '^', 's', 'D'] for circle, triangle, square, diamond)
+    - palette: Maps LD values to colors (100+i -> region_ld_colors[i])
+    - markers: Maps SHAPE values to marker shapes (1 -> 'o', 2 -> '^')
+    - Variants get SHAPE=1 (circle) by default, reference variant gets SHAPE=2 (triangle)
+
+    Multi-Reference Mode (len(region_ref) > 1):
+    - region_ld_colors_m: List of colors, one per reference variant
+    - region_marker_shapes: Extended to provide unique shapes for each reference
+    - palette: Complex mapping with (ref_index+1)*100 + ld_level -> color
+    - markers: Extended markers dict with shapes for each reference variant
+    - Each reference variant gets a distinct color gradient and marker shape
+
+    LD Thresholds:
+    - region_ld_threshold: LD (r²) cutoffs for color categorization
+    - Example: [0.2, 0.4, 0.6, 0.8] creates 5 LD categories
+    - Variants are assigned to categories based on their r² with reference variant(s)
+
+    Data Filtering:
+    - to_plot: Filtered DataFrame with reference variant removed (single-reference mode only)
+    - Reference variants are plotted separately as pinpoint markers with distinct styling
+    - This prevents visual overlap and ensures clear highlighting of reference variants
+
+    Parameters
+    ----------
+    sumstats : pandas.DataFrame
+        Summary statistics DataFrame containing variant data with processed P-values.
+    region_ref : list
+        List of reference variant identifiers. For single-reference mode, the first
+        element determines which variant to highlight. Can contain None for automatic
+        lead variant detection.
+    region_ld_colors : list
+        Color palette for LD categories in single-reference regional plots.
+    region_marker_shapes : list
+        Marker shapes for different LD categories and reference variants.
+    region_ld_colors_m : list
+        Color palettes for multi-reference regional plots.
+    region_ld_threshold : list
+        LD (r²) thresholds for color categorization.
+    vcf_path : str or None
+        Path to VCF file for LD calculations.
+    ld_path : str or None
+        Path to pre-computed LD file.
+    log : gwaslab.Log
+        Logging object for recording messages.
+    verbose : bool
+        Whether to print progress messages.
+
+    Returns
+    -------
+    legend : dict or None
+        Legend configuration for the plot.
+    linewidth : int
+        Line width for plot elements.
+    palette : dict
+        Color mapping for LD categories.
+    style : str
+        Column name for marker style mapping.
+    markers : dict
+        Marker shape mapping for LD categories.
+    to_plot : pandas.DataFrame
+        Filtered DataFrame with reference variants removed from main scatter plot.
+    edgecolor : str
+        Edge color for markers.
+    """
     legend = None
     linewidth = 1
     style = None
@@ -687,7 +771,7 @@ def regional_mode_setup(
             output_hex_colors = []
             for i in range(len(rgba)):
                 output_hex_colors.append(to_hex(rgba[i]))
-                region_ld_colors_single = [region_ld_colors[0]] + output_hex_colors + [output_hex_colors[-1]]
+                region_ld_colors_single = [colorgroup] + output_hex_colors + [output_hex_colors[-1]]
             region_color_maps.append(region_ld_colors_single)
         for i, hex_colors in enumerate(region_color_maps):
             for j, hex_color in enumerate(hex_colors):
@@ -695,6 +779,17 @@ def regional_mode_setup(
         edgecolor = "none"
         markers = {(i + 1): m for i, m in enumerate(region_marker_shapes[: len(region_ref)])}
         style = "SHAPE"
+        # For multi-reference mode, hide all reference variants from main plot
+        ids_to_hide = []
+        for ref in region_ref:
+            if ref is not None:
+                id_to_hide = _get_lead_id(sumstats, [ref], log=log, verbose=verbose)
+                if id_to_hide is not None:
+                    ids_to_hide.append(id_to_hide)
+        if len(ids_to_hide) > 0:
+            to_plot = sumstats.drop(ids_to_hide, axis=0)
+        else:
+            to_plot = sumstats
     return legend, linewidth, palette, style, markers, to_plot, edgecolor
 
 # + ###########################################################################################################################################################################
@@ -1212,7 +1307,7 @@ def _plot_gene_track(
     # load gtf
     log.write(" -Loading gtf files from:" + gtf_path, verbose=verbose)
     uniq_gene_region,exons = process_gtf(   gtf_path = gtf_path ,
-                                            region = region, 
+                                            region = region,
                                             region_flank_factor = region_flank_factor,
                                             build=build,
                                             region_protein_coding=region_protein_coding,
@@ -1271,13 +1366,13 @@ def _plot_gene_track(
         
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
                     (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=gene_line_width,solid_capstyle="butt")
-        
+
         # plot gene name
         if row["end"] >= region[2]:
             #right side
             texts_to_adjust_right.append(ax3.text(x=gene_track_start_i+region[2],
                     y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points,family=track_font_family))
-            
+
         elif row["start"] <= region[1] :
             #left side
             texts_to_adjust_left.append(ax3.text(x=gene_track_start_i+region[1],
@@ -1297,7 +1392,7 @@ def _plot_gene_track(
                     exon_color = region_lead_grid_line["color"]  
                 else:
                     exon_color="#020080" 
-            elif gene_track_start_i+row["starts"] > sig_gene_left and gene_track_start_i+row["end"] < sig_gene_right:
+            elif gene_track_start_i+row["start"] > sig_gene_left and gene_track_start_i+row["end"] < sig_gene_right:
                 exon_color = region_lead_grid_line["color"]  
             else:
                 exon_color="#020080"
@@ -1603,7 +1698,13 @@ def process_gtf(gtf_path,
     # extract gene
     #genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
     genes_1mb["gene"] = genes_1mb["gene_id"]
-    
+
+    # filter out genes with no name
+    n_genes_before = len(genes_1mb)
+    genes_1mb = genes_1mb[genes_1mb["name"].notna()]
+    n_genes_after = len(genes_1mb)
+    if n_genes_before != n_genes_after:
+        log.write(f"  -Filtered out {n_genes_before - n_genes_after} genes with missing names ({n_genes_before} -> {n_genes_after})", verbose=verbose)
 
     # extract protein coding gene
     if region_protein_coding is True:
@@ -1620,7 +1721,7 @@ def process_gtf(gtf_path,
     ## get all record with 2nd column == gene
     #uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
     uniq_gene_region = genes_1mb.loc[genes_1mb["feature"]=="gene",:].copy()
-    
+
     ## extract region + flank
     flank = region_flank_factor * (region[2] - region[1])
     

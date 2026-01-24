@@ -1,5 +1,11 @@
 # Update Logs
 
+# v4.0.6 20260124
+
+- Fixed TypeError in regional plot gene track: filtered out genes with None names from `uniq_gene_region` in `process_gtf()` function to prevent concatenation errors when creating gene annotations
+- Added logging for gene filtering: reports how many genes were filtered out due to missing names
+- Fixed regional plot lead variant hiding: properly excludes lead variant from main Manhattan scatter plot while displaying it as pinpoint marker
+
 # v4.0.5 20260123
 
 - Fixed regex flag incompatibility: resolved `ValueError: ASCII and UNICODE flags are incompatible` error in `qc_pattern.py` by removing `re.ASCII` from `FLAGS` constant

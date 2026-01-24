@@ -1185,8 +1185,6 @@ def _mqqplot(insumstats,
                 region_marker_shapes=region_marker_shapes,
                 region_ld_colors_m=region_ld_colors_m,
                 region_ld_threshold=region_ld_threshold,
-                chrom=chrom,
-                pos=pos,
                 vcf_path=vcf_path,
                 ld_path=ld_path,
                 log=log,
@@ -1195,9 +1193,10 @@ def _mqqplot(insumstats,
             scatter_kwargs["markers"] = markers
 
         # Step 8: Create Manhattan panel
+        manhattan_data = to_plot if "r" in mode else sumstats
         highlight_i = draw_manhattan_panel(
             ax1=ax1,
-            sumstats=sumstats,
+            sumstats=manhattan_data,
             snpid=snpid,
             palette=palette,
             marker_size=marker_size,
