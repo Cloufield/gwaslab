@@ -354,7 +354,7 @@ class SumstatsPair( ):
         if "region_ld_colors" not in kwargs or kwargs.get("region_ld_colors") is None:
             kwargs["region_ld_colors"] = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
         if "region_marker_shapes" not in kwargs or kwargs.get("region_marker_shapes") is None:
-            kwargs["region_marker_shapes"] = ['o','^','s','D','*','P','X','h','8']
+            kwargs["region_marker_shapes"] = ['X', 'o', '^', 's', 'D', '*', 'P',  'h', '8']
         if "titles" not in kwargs:
             kwargs["titles"] = self.study_names
 

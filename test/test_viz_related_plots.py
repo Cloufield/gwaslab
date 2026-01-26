@@ -439,7 +439,7 @@ class TestRelatedPlots(unittest.TestCase):
             region_ref=[row["SNPID"]],
             region_ld_colors=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"],
             region_ld_threshold=[0.2, 0.4, 0.6],
-            region_marker_shapes=["o", "^"],
+            region_marker_shapes=["X", "o", "^"],
             region_grid=False,
             region_protein_coding=False,
             region_recombination=False,

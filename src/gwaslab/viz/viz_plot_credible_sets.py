@@ -66,7 +66,7 @@ def _plot_cs(pipcs_raw,
         font_family = style["font_family"]
         scatter_kwargs =   _extract_kwargs("scatter", dict(), locals())
 
-        region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
+        region_marker_shapes = ['X', 'o', '^', 's', 'D', '*', 'P',  'h', '8']
         region_ld_colors_m = ["grey","#E51819","green","#F07818","#AD5691","yellow","purple"]
         
         if region is not None:

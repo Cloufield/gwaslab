@@ -886,13 +886,13 @@
         },
         "region_legend_marker": true,
         "region_marker_shapes": [
+          "X",
           "o",
           "^",
           "s",
           "D",
           "*",
           "P",
-          "X",
           "h",
           "8"
         ],
@@ -1027,13 +1027,13 @@
           "purple"
         ],
         "region_marker_shapes": [
+          "X",
           "o",
           "^",
           "s",
           "D",
           "*",
           "P",
-          "X",
           "h",
           "8"
         ],

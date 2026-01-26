@@ -154,8 +154,9 @@ def _plot_regional(
         Flanking factor for regional plot.
     region_anno_bbox_kwargs : dict, optional,default={"ec":"None","fc":"None"}
         Bounding box arguments for regional plot annotations.
-    region_marker_shapes : list, optional,default=['o', '^','s','D','*','P','X','h','8']
-        Shapes for markers in regional plot. First one, the shape for non-reference variants, the second one is for the first reference variants and so on.
+    region_marker_shapes : list, optional,default=['X', 'o', '^', 's', 'D', '*', 'P',  'h', '8']
+        Shapes for markers in regional plot. First one (index 0) is for variants with missing LD, 
+        the second one (index 1) is for variants with LD, the third one (index 2) is for the first reference variant, and so on.
     region_legend_marker : bool, optional,default=True
         Whether to show marker legend in regional plot.
     region_ref_alias : dict, optional
@@ -678,16 +679,16 @@ def regional_mode_setup(
 
     Single-Reference Mode (len(region_ref) == 1):
     - region_ld_colors: List of colors for LD categories (e.g., ['red', 'orange', 'yellow', 'blue'])
-    - region_marker_shapes: List of marker shapes (e.g., ['o', '^', 's', 'D'] for circle, triangle, square, diamond)
+    - region_marker_shapes: List of marker shapes (e.g., ['x', 'o', '^', 's'] for missing LD, circle, triangle, square)
     - palette: Maps LD values to colors (100+i -> region_ld_colors[i])
-    - markers: Maps SHAPE values to marker shapes (1 -> 'o', 2 -> '^')
-    - Variants get SHAPE=1 (circle) by default, reference variant gets SHAPE=2 (triangle)
+    - markers: Maps SHAPE values to marker shapes (0 -> region_marker_shapes[0] for missing LD, 1 -> region_marker_shapes[1] for variants with LD, 2 -> region_marker_shapes[2] for reference variant)
+    - Variants with missing LD get SHAPE=0, variants with LD get SHAPE=1, reference variant gets SHAPE=2
 
     Multi-Reference Mode (len(region_ref) > 1):
     - region_ld_colors_m: List of colors, one per reference variant
     - region_marker_shapes: Extended to provide unique shapes for each reference
     - palette: Complex mapping with (ref_index+1)*100 + ld_level -> color
-    - markers: Extended markers dict with shapes for each reference variant
+    - markers: Maps SHAPE values to marker shapes (0 -> region_marker_shapes[0] for missing LD, 1+ -> region_marker_shapes[1+] for variants with LD for each reference)
     - Each reference variant gets a distinct color gradient and marker shape
 
     LD Thresholds:
@@ -749,11 +750,12 @@ def regional_mode_setup(
     to_plot = None
     if vcf_path is None and ld_path is None:
         sumstats["LD"] = 100
-        sumstats["SHAPE"] = 1
+        sumstats["SHAPE"] = 0  # Missing LD uses marker index 0 (region_marker_shapes[0])
     sumstats["chr_hue"] = sumstats["LD"]
     if len(region_ref) == 1:
         palette = {100 + i: region_ld_colors[i] for i in range(len(region_ld_colors))}
-        markers = {(i + 1): m for i, m in enumerate(region_marker_shapes[:2])}
+        # markers[0] for missing LD, markers[1] for variants with LD, markers[2] for reference variant
+        markers = {0: region_marker_shapes[0], 1: region_marker_shapes[1], 2: region_marker_shapes[2]}
         if region_ref[0] is None:
             id_to_hide = sumstats["scaled_P"].idxmax()
             to_plot = sumstats.drop(id_to_hide, axis=0)
@@ -779,7 +781,9 @@ def regional_mode_setup(
         # Add key 0 for variants with missing LD for all references
         #palette[0] = region_ld_colors[0]  # Use missing LD color
         edgecolor = "none"
-        markers = {(i + 1): m for i, m in enumerate(region_marker_shapes[: len(region_ref)])}
+        # markers[0] for missing LD, markers[1+] for variants with LD for each reference
+        markers = {0: region_marker_shapes[0]}
+        markers.update({(i + 1): m for i, m in enumerate(region_marker_shapes[1:1+len(region_ref)])})
         style = "SHAPE"
         # For multi-reference mode, hide all reference variants from main plot
         ids_to_hide = []
@@ -898,11 +902,11 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, mark
     
     if lead_id is not None:
         if region_ref_total_n <2:
-            # single-ref mode: just use SHAPE
-            marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]]
+            # single-ref mode: SHAPE maps directly to marker index (0=missing LD, 1=with LD, 2=reference)
+            marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]+1]
         else:
-            # multi-ref mode: just use SHAPE - 1
-            marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]-1]
+            # multi-ref mode: SHAPE maps directly to marker index (0=missing LD, 1+=with LD for each ref)
+            marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]]
 
     if lead_id is not None:
         ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
@@ -1015,12 +1019,12 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
             y= (0.1 + 0.2 * group_index)
             
             if len(region_ref) <2:
-                # single-ref mode
-                marker = region_marker_shapes[group_index+1]
+                # single-ref mode: reference variant uses marker index 2
+                marker = region_marker_shapes[2]
                 c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)]
             else:
-                # multi-ref mode
-                marker = region_marker_shapes[group_index]
+                # multi-ref mode: reference variants use marker index 1, 2, etc.
+                marker = region_marker_shapes[group_index+1]
                 c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)-1]
             
             # ([x0,y0][x1,y1])
@@ -1577,6 +1581,7 @@ def process_vcf(sumstats,
         if lead_id is not None:
             sumstats.loc[lead_id, final_shape_col] +=1 
 
+    # Update SHAPE for variants with LD
     for i in range(len(region_ref)):
         ld_single = "LD_{}".format(i)
         current_rsq = "RSQ_{}".format(i)
@@ -1587,6 +1592,10 @@ def process_vcf(sumstats,
         sumstats.loc[a_ngt_b, final_shape_col] = i + 1
     
     sumstats = sumstats.dropna(subset=[pos,nea,ea])
+
+    # Set SHAPE=0 for variants with missing LD (no valid RSQ data)
+    missing_ld_mask = (sumstats[final_rsq_col] == 0.0) & (sumstats[final_shape_col] == 1)
+    sumstats.loc[missing_ld_mask, final_shape_col] = 0
     ####################################################################################################
     log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return sumstats

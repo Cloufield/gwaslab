@@ -426,7 +426,7 @@ def _mqqplot(insumstats,
         Bounding box arguments for region annotations. Default is {'ec': 'None', 'fc': 'None'}.
     region_marker_shapes : list, optional
         Marker shapes for different LD bins. 
-        Default is ['o', '^', 's', 'D', '*', 'P', 'X', 'h', '8'].
+        Default is ['X', 'o', '^', 's', 'D', '*', 'P',  'h', '8'].
     region_legend_marker : bool, default=True
         Whether to show marker legend in regional plot.
     vcf_path : str, optional

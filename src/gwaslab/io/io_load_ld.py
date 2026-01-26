@@ -286,6 +286,7 @@ def process_ld(
         if lead_id is not None:
             sumstats.loc[lead_id, final_shape_col] +=1 
 
+    # Update SHAPE for variants with LD
     for i in range(len(region_ref)):
         ld_single = "LD_{}".format(i)
         current_rsq = "RSQ_{}".format(i)
@@ -297,6 +298,10 @@ def process_ld(
     
     sumstats = sumstats.dropna(subset=[pos,nea,ea])
 
+    # Set SHAPE=0 for variants with missing LD (no valid RSQ data)
+    missing_ld_mask = (sumstats[final_rsq_col] == 0.0) & (sumstats[final_shape_col] == 1)
+    sumstats.loc[missing_ld_mask, final_shape_col] = 0
+    
     ####################################################################################################
     log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return sumstats

@@ -3337,15 +3337,15 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Marker shapes for multi-lead",
+      "desc": "Marker shapes for regional plots. Index 0: variants with missing LD, index 1: variants with LD, index 2+: reference variants",
       "default": [
+        "X",
         "o",
         "^",
         "s",
         "D",
         "*",
         "P",
-        "X",
         "h",
         "8"
       ],
