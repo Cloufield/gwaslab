@@ -771,11 +771,13 @@ def regional_mode_setup(
             output_hex_colors = []
             for i in range(len(rgba)):
                 output_hex_colors.append(to_hex(rgba[i]))
-                region_ld_colors_single = [colorgroup] + output_hex_colors + [output_hex_colors[-1]]
+                region_ld_colors_single = [region_ld_colors[0]] + output_hex_colors + [output_hex_colors[-1]]
             region_color_maps.append(region_ld_colors_single)
         for i, hex_colors in enumerate(region_color_maps):
             for j, hex_color in enumerate(hex_colors):
                 palette[(i + 1) * 100 + j] = hex_color
+        # Add key 0 for variants with missing LD for all references
+        #palette[0] = region_ld_colors[0]  # Use missing LD color
         edgecolor = "none"
         markers = {(i + 1): m for i, m in enumerate(region_marker_shapes[: len(region_ref)])}
         style = "SHAPE"

@@ -52,8 +52,10 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
         
         if itr % 100 == 0:
             log.write('--- iter-' + str(itr) + ' ---')
-        elif itr % 100 > 2:
+        elif itr % 100 > 2 and itr % 100 != 99:
             log.write('-', end="", show_time=False)
+        elif itr % 100 == 99:
+            log.write('-', show_time=False)
         elif itr % 100 ==2:
             log.write('-', end="")
 
@@ -64,10 +66,14 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
                 continue
             else:
                 idx_blk = range(mm,mm+blk_size[kk])
-                dinvt = ld_blk[kk]+np.diag(1.0/psi[idx_blk].to_series())
+                dinvt = ld_blk[kk]+np.diag(1.0/psi[idx_blk].T[0])
+ 
                 dinvt_chol = linalg.cholesky(dinvt)
+
                 beta_tmp = linalg.solve_triangular(dinvt_chol, beta_mrg[idx_blk], trans='T') + np.sqrt(sigma/n)*random.randn(len(idx_blk),1)
+     
                 beta[idx_blk] = linalg.solve_triangular(dinvt_chol, beta_tmp, trans='N')
+
                 quad += np.dot(np.dot(beta[idx_blk].T, dinvt), beta[idx_blk])
                 mm += blk_size[kk]
 

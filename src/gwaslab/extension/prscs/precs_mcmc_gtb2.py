@@ -68,16 +68,14 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
         
         if itr % 100 == 0:
             log.write('--- iter-' + str(itr) + ' ---')
-        elif itr % 100 > 2:
+        elif itr % 100 > 2 and itr % 100 != 99:
             log.write('-', end="", show_time=False)
+        elif itr % 100 == 99:
+            log.write('-', show_time=False)
         elif itr % 100 ==2:
             log.write('-', end="")
 
         mm = 0; quad = 0.0
-        
-        # Pre-compute sqrt(sigma/n) once per iteration for efficiency
-        sqrt_sigma_n = np.sqrt(sigma / n)
-
         for kk in range(n_blk):
             if blk_size[kk] == 0:
                 continue
@@ -92,30 +90,24 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
             # Original: dinvt = ld_blk[kk] + np.diag(1.0/psi[idx_blk].T[0])
             dinvt = ld_blk[kk].copy()  # Copy to avoid modifying original
             psi_blk = psi[idx_blk, 0]  # Extract 1D array efficiently
-            # Protect against division by zero
-            psi_inv = np.reciprocal(np.maximum(psi_blk, 1e-12))
+            psi_inv = np.reciprocal(psi_blk)
             # Add to diagonal using diag_indices (more efficient than creating full diagonal matrix)
             diag_idx = np.diag_indices(blk_len)
             dinvt[diag_idx] += psi_inv
-            
             # Cholesky decomposition
-            dinvt_chol = linalg.cholesky(dinvt, check_finite=False)
+            dinvt_chol = linalg.cholesky(dinvt)
             
-            # Sample beta for this block
-            beta_mrg_blk = beta_mrg[idx_blk]
-            # Solve: dinvt_chol^T * x = beta_mrg_blk
-            beta_tmp = linalg.solve_triangular(dinvt_chol, beta_mrg_blk, trans='T')
-            # Add noise (vectorized)
-            beta_tmp += sqrt_sigma_n * random.randn(blk_len, 1)
-            # Solve: dinvt_chol * beta = beta_tmp
+            beta_tmp = linalg.solve_triangular(dinvt_chol, beta_mrg[idx_blk], trans='T') + np.sqrt(sigma/n)*random.randn(blk_len,1)
+ 
             beta[idx_blk] = linalg.solve_triangular(dinvt_chol, beta_tmp, trans='N')
-            
+
             # Compute quadratic form: beta^T * dinvt * beta
             # Original: quad += np.dot(np.dot(beta[idx_blk].T, dinvt), beta[idx_blk])
             # Optimized: use einsum for better performance (vectorized)
             beta_blk = beta[idx_blk, 0]  # Extract 1D array
+
             quad += np.einsum('i,ij,j', beta_blk, dinvt, beta_blk)
-            
+
             mm += blk_len
 
         # Update sigma - use vectorized sum operations

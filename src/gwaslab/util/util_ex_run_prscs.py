@@ -30,6 +30,9 @@ import gwaslab.extension.prscs.prscs_gigrnd as gigrnd
 if TYPE_CHECKING:
     from gwaslab.info.g_Log import Log
 
+# Fixed seed value to use when seed is None
+DEFAULT_SEED = 123
+
 
 def _process_chromosome(args):
     """
@@ -78,9 +81,9 @@ def _process_chromosome(args):
 
     # Adjust seed for this chromosome to ensure reproducibility
     # Each chromosome gets a different seed offset
-    chrom_seed = None
-    if param_dict['seed'] is not None:
-        chrom_seed = param_dict['seed'] + seed_offset
+    # Use fixed default seed if seed is None
+    base_seed = param_dict['seed'] if param_dict['seed'] is not None else DEFAULT_SEED
+    chrom_seed = base_seed + seed_offset
 
     # Use optimized mcmc2 if requested, otherwise use original mcmc
     if mcmc2:
@@ -183,9 +186,9 @@ def _run_prscs(
             ld_blk, blk_size = parse_genet.parse_ldblk(ref_dir, sst_dict, int(chrom), log)
 
             # Adjust seed for this chromosome
-            chrom_seed = None
-            if seed is not None:
-                chrom_seed = seed + idx * 1000
+            # Use fixed default seed if seed is None
+            base_seed = seed if seed is not None else DEFAULT_SEED
+            chrom_seed = base_seed + idx * 1000
 
             # Use optimized mcmc2 if requested, otherwise use original mcmc
             if mcmc2:

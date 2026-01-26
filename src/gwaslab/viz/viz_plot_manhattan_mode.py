@@ -30,6 +30,7 @@ def draw_manhattan_panel(
     log=Log(),
     verbose=True,
 ):
+
     explicit = {"edgecolor", "edgecolors", "linewidth", "ax", "palette", "hue", "data", "legend", "style", "size", "sizes", "zorder", "s"}
     scatter_kwargs = {k: v for k, v in scatter_kwargs.items() if k not in explicit}
 
