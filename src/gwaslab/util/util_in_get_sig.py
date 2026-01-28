@@ -1045,7 +1045,8 @@ def _get_novel(
 
     # When build is hg19, liftover to hg38 first (GWAS catalog and downstream steps use hg38)
     processed_build = _process_build(build, log=log, verbose=False)
-    if processed_build == "19":
+    
+    if processed_build == "19" and efo != False:
         from gwaslab.hm.hm_liftover_v2 import _liftover_variant
         log.write(" -Sumstats build is hg19; lifting over to hg38 for GWAS catalog / novelty check...", verbose=verbose)
         insumstats = _liftover_variant(
