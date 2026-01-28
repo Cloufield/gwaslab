@@ -793,7 +793,14 @@ class VizParamsManager:
         return compiled_registry
     
     def _merge_compiled_registry(self, compiled_registry, merge):
-        """Merge compiled registry into main registry."""
+        """Merge compiled registry into main registry.
+
+        Note: compiled defaults overwrite existing registry defaults for the same key.
+        If a plot's registry entry sets a non-empty default (e.g. err_kwargs for
+        plot_effect) and the args file has a global default (e.g. {}), use
+        ctx_defaults for that plot in the args file to restore the desired value
+        after this merge (ctx_defaults are applied in load_viz_config step 4).
+        """
         for registry_key, compiled_data in compiled_registry.items():
             if merge and registry_key in self._registry:
                 entry = self._registry[registry_key]

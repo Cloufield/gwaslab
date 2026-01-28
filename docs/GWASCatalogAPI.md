@@ -102,21 +102,27 @@ variants = client.get_variants(rs_id="rs1050316")
 
 #### `get_known_variants_for_trait()`
 
-A specialized method for retrieving known variants from GWAS Catalog for use with `get_novel()`. This method handles MONDO to EFO conversion, extracts CHR/POS from locations, and returns data in the format expected by `get_novel()`.
+A specialized method for retrieving known variants from GWAS Catalog for use with `get_novel()`. It extracts CHR/POS from API locations and returns data in the format expected by `get_novel()`.
 
 ```python
 # Get known variants for a trait (supports EFO ID, MONDO ID, or trait name)
 known_variants = client.get_known_variants_for_trait(
     efo="EFO_0001360",  # or "MONDO_0005148" or "type 2 diabetes mellitus"
     sig_level=5e-8,
+    show_child_traits=True,
+    use_cache=True,
+    cache_dir="./",
     verbose=True
 )
 ```
 
 **Parameters:**
 
-- `efo` (str): EFO trait ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"), or trait name (e.g., "type 2 diabetes mellitus")
+- `efo` (str): EFO ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"), or trait name (e.g., "type 2 diabetes mellitus"). EFO and MONDO are sent as `efo_id`; trait names as `efo_trait`.
 - `sig_level` (float): P-value threshold for filtering associations (default: 5e-8)
+- `show_child_traits` (bool): If True, include child traits in results (default: True). Used for both API v2 and legacy fallback.
+- `use_cache` (bool): Use cached GWAS Catalog data when available (default: True)
+- `cache_dir` (str): Directory for cache files (default: "./")
 - `verbose` (bool): Whether to print log messages (default: True)
 
 **Returns:**
@@ -124,11 +130,12 @@ known_variants = client.get_known_variants_for_trait(
 - `pandas.DataFrame`: DataFrame with columns: SNPID, CHR, POS, P, BETA, SE, OR, TRAIT, REPORT_GENENAME, PUBMEDID, AUTHOR, STUDY
 
 **Features:**
-- Automatically converts MONDO IDs to EFO IDs when possible
-- Falls back to trait names if EFO ID is not available
-- Extracts CHR and POS from the `locations` field in API responses
-- Handles pagination automatically with reduced logging verbosity
-- Falls back to old API v1 for MONDO IDs if API v2 doesn't return results
+- EFO and MONDO IDs are sent as `efo_id`; trait names as `efo_trait`. No MONDO→EFO lookup is performed.
+- Extracts CHR and POS from the `locations` field in API responses.
+- Handles pagination automatically with reduced logging verbosity.
+- If API v2 returns an error (e.g. 500), retries with minimal parameters (`efo_id`/`efo_trait` and `show_child_traits` only), then sorts by p-value client-side.
+- Falls back to the legacy API for MONDO or when v2 fails; the legacy path respects `show_child_traits`, `use_cache`, and `cache_dir`.
+- Caching: v2 uses `GWASCatalog_v2_{efo}_associationsByTraitSummary_text_{date}_{suffix}.json`; legacy uses `GWASCatalog_{efo}_associationsByTraitSummary_text_{date}_childTrue.json` (or `childFalse`) in `cache_dir`.
 
 ## Sumstats Integration
 
@@ -284,10 +291,7 @@ The API v2 returns genomic coordinates in a `locations` field (e.g., `['12:11180
 
 ### MONDO ID Support
 
-The API v2 primarily uses EFO IDs for traits. GWASLab automatically handles MONDO IDs by:
-1. Looking up the trait information to find the corresponding EFO ID
-2. Using the trait name as a fallback if EFO ID is not available
-3. Falling back to the old API v1 if API v2 doesn't return results for MONDO IDs
+MONDO IDs are passed to the API like EFO IDs (using the `efo_id` parameter); no MONDO→EFO lookup is performed. If the API v2 request fails (e.g. returns 500), GWASLab retries with minimal parameters (`efo_id` or `efo_trait` and `show_child_traits` only), then sorts by p-value client-side. If v2 still yields no data, it falls back to the legacy API (v1), which respects `show_child_traits`, `use_cache`, and `cache_dir`.
 
 ### Logging and Performance
 

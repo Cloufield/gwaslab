@@ -1246,7 +1246,14 @@
       ],
       "desc": "Errorbar styling kwargs",
       "default": {},
-      "ctx_defaults": {},
+      "ctx_defaults": {
+        "plot_effect": {
+          "ecolor": "#cccccc",
+          "linewidth": 0,
+          "zorder": 90,
+          "elinewidth": 1
+        }
+      },
       "add_to_docstring": false
     },
     "expected_min_mlog10p": {
@@ -1563,7 +1570,7 @@
       ],
       "desc": "Grouping column for axes",
       "default": "CIS/TRANS",
-      "ctx_defaults": {},
+      "ctx_defaults": {"plot_effect":null},
       "add_to_docstring": false
     },
     "gtf_chr_dict": {

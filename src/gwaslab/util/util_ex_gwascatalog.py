@@ -19,9 +19,20 @@ def find_efo_cache(efo: str, path: str) -> Union[str, bool]:
         start_to_msg="retrieve data from GWASCatalog",
         finished_msg="retrieving data from GWASCatalog"
 )
+def find_efo_cache_with_child(efo: str, path: str, show_child_traits: bool) -> Union[str, bool]:
+    """Find cache file for efo and show_child_traits (legacy API)."""
+    suffix = "childTrue" if show_child_traits else "childFalse"
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if efo in file and suffix in file and "associationsByTraitSummary" in file:
+                return os.path.join(root, file)
+    return False
+
+
 def gwascatalog_trait(efo: str,
                       source: str = "NCBI",
                       sig_level: float = 5e-8,
+                      show_child_traits: bool = True,
                       use_cache: bool = True,
                       cache_dir: str = "./",
                       verbose: bool = True,
@@ -34,13 +45,15 @@ def gwascatalog_trait(efo: str,
     
     if use_cache==True:
         log.write("searching cache in : {}".format(cache_dir))
-        cache = find_efo_cache(efo, cache_dir)
-        if cache==False:
-            log.write(" -Cache not found for {}... Downloading from GWASCatalog...".format(cache), verbose=verbose)
+        cache = find_efo_cache_with_child(efo, cache_dir, show_child_traits)
+        if cache is False:
+            cache = find_efo_cache(efo, cache_dir)  # backward compat: no suffix
+        if cache is False:
+            log.write(" -Cache not found for {}... Downloading from GWASCatalog...".format(efo), verbose=verbose)
     else:
         cache = False
 
-    if cache==False:
+    if cache is False:
         #log.write(" -Please make sure your sumstats is based on GRCh38...", verbose=verbose)
         log.write(" -Requesting (GET) trait information through the GWASCatalog API...", verbose=verbose)
         log.write(" -EFO trait api: "+ base_url, verbose=verbose)
@@ -56,7 +69,8 @@ def gwascatalog_trait(efo: str,
         log.write(" -Trait Name:",api_response["trait"], verbose=verbose)
         log.write(" -Trait URL:",api_response["uri"], verbose=verbose) 
             
-        base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo+"/associations?projection=associationByEfoTrait"    
+        child_param = "true" if show_child_traits else "false"
+        base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo+"/associations?projection=associationByEfoTrait&show_child_traits="+child_param
         log.write(" -Requesting (GET) GWAS associations through the GWASCatalog API...", verbose=verbose)
         log.write(" -associationsByTraitSummary API: "+ base_url, verbose=verbose)   
         log.write(" -Note: this step might take a while...", verbose=verbose)   
@@ -75,7 +89,8 @@ def gwascatalog_trait(efo: str,
 
         now = datetime.now() # current date and time
         datestring = now.strftime("%Y%m%d")
-        json_path = cache_dir + "GWASCatalog_{}_associationsByTraitSummary_text_{}.json".format(efo, datestring)
+        child_suffix = "childTrue" if show_child_traits else "childFalse"
+        json_path = cache_dir + "GWASCatalog_{}_associationsByTraitSummary_text_{}_{}.json".format(efo, datestring, child_suffix)
         
         try:
             log.write(" -Saving json to: {} ...".format(json_path), verbose=verbose) 

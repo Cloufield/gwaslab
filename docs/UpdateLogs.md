@@ -1,5 +1,15 @@
 # Update Logs
 
+# v4.0.7 20260128
+
+- Fixed `get_novel()` TypeError (wrong argument name for `_get_sig()`)
+- `get_novel()`: when `build="19"`, liftover to hg38 first; queries and results use hg38
+- `get_novel()`: added `show_child_traits` (default True); `use_cache` and `cache_dir` now work when using `efo`
+- `get_novel()`: `efo` accepts EFO IDs, MONDO IDs, or trait names; lists may mix them (e.g. `['coffee consumption','MONDO_0004247','EFO_0004330']`)
+- GWAS Catalog: MONDO used as `efo_id` (no lookup); v2 JSON cache; retry with minimal params on 500; legacy fallback honors `show_child_traits` and cache options
+- Docs: ExtractNovel (Caching), utility_get_lead_novel, GWASCatalogAPI
+- Tests: `get_novel()` with `known=` (DataFrame/path), no live API
+
 # v4.0.6 20260124
 
 - Fixed TypeError in regional plot gene track: filtered out genes with None names from `uniq_gene_region` in `process_gtf()` function to prevent concatenation errors when creating gene annotations

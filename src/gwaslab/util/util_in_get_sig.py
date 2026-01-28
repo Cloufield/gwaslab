@@ -878,6 +878,9 @@ def _get_known_variants_from_gwascatalog(
     client: Any, 
     efo: str, 
     sig_level: float = 5e-8, 
+    show_child_traits: bool = True,
+    use_cache: bool = True,
+    cache_dir: str = "./",
     verbose: bool = True, 
     log: Log = Log()
 ) -> pd.DataFrame:
@@ -896,6 +899,12 @@ def _get_known_variants_from_gwascatalog(
         or trait name (e.g., "duodenal ulcer")
     sig_level : float
         P-value threshold for filtering associations
+    show_child_traits : bool
+        If True, include child traits in GWAS Catalog results (default: True)
+    use_cache : bool
+        If True, use cache when falling back to legacy GWAS Catalog API (default: True)
+    cache_dir : str
+        Directory for cache files when using legacy API (default: "./")
     verbose : bool
         Whether to print log messages
     log : Log
@@ -908,7 +917,10 @@ def _get_known_variants_from_gwascatalog(
     """
     
     # Delegate to the client method which handles all GWAS Catalog API logic
-    knownsig = client.get_known_variants_for_trait(efo=efo, sig_level=sig_level, verbose=verbose)
+    knownsig = client.get_known_variants_for_trait(
+        efo=efo, sig_level=sig_level, show_child_traits=show_child_traits,
+        use_cache=use_cache, cache_dir=cache_dir, verbose=verbose
+    )
     
     if len(knownsig) == 0:
         return pd.DataFrame()
@@ -962,6 +974,7 @@ def _get_novel(
     source: str = "ensembl",
     gwascatalog_source: str = "NCBI",
     output_known: bool = False,
+    show_child_traits: bool = True,
     verbose: bool = True
 ) -> pd.DataFrame:
     """
@@ -978,7 +991,8 @@ def _get_novel(
     known : pd.DataFrame or str, optional
         DataFrame or path to file containing known variants with CHR/POS columns
     efo : str or list, optional
-        EFO trait(s) for querying GWAS catalog
+        EFO ID(s), MONDO ID(s), or trait name(s) for querying GWAS Catalog. A list
+        may mix formats, e.g. efo=['coffee consumption', 'MONDO_0004247', 'EFO_0004330'].
     only_novel : bool, default=False
         If True, return only novel variants
     group_key : str, optional
@@ -989,6 +1003,8 @@ def _get_novel(
         Window size (kb) for lead variant identification
     windowsizekb_for_novel : int, default=1000
         Distance threshold (kb) to define novelty
+    show_child_traits : bool, default=True
+        If True, include child traits in GWAS Catalog results when querying by efo
 
     Returns
     -------
@@ -1000,13 +1016,18 @@ def _get_novel(
 
     Notes
     -----
+    When build is hg19/GRCh37, coordinates are first lifted over to hg38, then the same
+    steps are run. GWAS catalog and novelty checks use hg38; returned coordinates are
+    in hg38 in that case.
+
     The function performs multiple steps:
-    1. Data validation and preprocessing
-    2. Retrieval of known variants from GWAS catalog or user input
-    3. Coordinate conversion and helper column creation (TCHR+POS)
-    4. Distance calculations between variants
-    5. Novelty determination based on distance threshold
-    6. Grouped comparisons when group_key is provided
+    1. Optional liftover from hg19 to hg38 when build is hg19
+    2. Data validation and preprocessing
+    3. Retrieval of known variants from GWAS catalog or user input
+    4. Coordinate conversion and helper column creation (TCHR+POS)
+    5. Distance calculations between variants
+    6. Novelty determination based on distance threshold
+    7. Grouped comparisons when group_key is provided
 
     When no significant variants are found, returns None after logging a message.
     """
@@ -1022,8 +1043,26 @@ def _get_novel(
     else:
         variant_id = "rsID"
 
+    # When build is hg19, liftover to hg38 first (GWAS catalog and downstream steps use hg38)
+    processed_build = _process_build(build, log=log, verbose=False)
+    if processed_build == "19":
+        from gwaslab.hm.hm_liftover_v2 import _liftover_variant
+        log.write(" -Sumstats build is hg19; lifting over to hg38 for GWAS catalog / novelty check...", verbose=verbose)
+        insumstats = _liftover_variant(
+            insumstats,
+            from_build="19",
+            to_build="38",
+            chrom=chrom,
+            pos=pos,
+            filter_by_status=False,
+            remove=True,
+            log=log,
+            verbose=verbose,
+        )
+        build = "38"
+
     if if_get_lead == True:
-        allsig = _get_sig(insumstats=insumstats,
+        allsig = _get_sig(insumstats_or_dataframe=insumstats,
             variant_id=variant_id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
             xymt=xymt,anno=anno,build=build,wc_correction=wc_correction, source=source,verbose=verbose)
     else:
@@ -1044,6 +1083,9 @@ def _get_novel(
                 client=client,
                 efo=efo,
                 sig_level=sig_level,
+                show_child_traits=show_child_traits,
+                use_cache=use_cache,
+                cache_dir=cache_dir,
                 verbose=verbose,
                 log=log
             )
@@ -1056,6 +1098,9 @@ def _get_novel(
                     client=client,
                     efo=single_efo,
                     sig_level=sig_level,
+                    show_child_traits=show_child_traits,
+                    use_cache=use_cache,
+                    cache_dir=cache_dir,
                     verbose=verbose,
                     log=log
                 )

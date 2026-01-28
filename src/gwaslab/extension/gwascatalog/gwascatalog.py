@@ -8,12 +8,23 @@ API Documentation: https://www.ebi.ac.uk/gwas/rest/api/v2/docs/reference
 Based on sample notebook examples from the GWAS Catalog API documentation.
 """
 
+import os
+import hashlib
 import requests
 import pandas as pd
 import json
 import time
+from datetime import datetime
 from typing import Optional, Dict, List, Any, Union
 from gwaslab.info.g_Log import Log
+
+
+def _v2_cache_path(cache_dir: str, efo: str, sig_level: float, show_child_traits: bool) -> str:
+    """Path for API v2 known-variants cache file, consistent with legacy JSON naming."""
+    datestring = datetime.now().strftime("%Y%m%d")
+    suffix = hashlib.md5("{}_{}".format(sig_level, show_child_traits).encode("utf-8")).hexdigest()[:8]
+    name = "GWASCatalog_v2_{}_associationsByTraitSummary_text_{}_{}.json".format(efo, datestring, suffix)
+    return os.path.join(cache_dir, name)
 
 
 class GWASCatalogClient:
@@ -290,6 +301,7 @@ class GWASCatalogClient:
     def get_associations(
         self,
         efo_trait: Optional[str] = None,
+        efo_id: Optional[str] = None,
         rs_id: Optional[str] = None,
         accession_id: Optional[str] = None,
         sort: Optional[str] = None,
@@ -306,7 +318,9 @@ class GWASCatalogClient:
         Parameters
         ----------
         efo_trait : str, optional
-            EFO trait name to filter associations
+            EFO trait name/description to filter associations (free text)
+        efo_id : str, optional
+            EFO trait identifier to filter associations (e.g. "EFO_0001360")
         rs_id : str, optional
             Variant rsID to filter associations (e.g., "rs1050316")
         accession_id : str, optional
@@ -338,6 +352,8 @@ class GWASCatalogClient:
         
         if efo_trait:
             params["efo_trait"] = efo_trait
+        if efo_id:
+            params["efo_id"] = efo_id
         if rs_id:
             params["rs_id"] = rs_id
         if accession_id:
@@ -731,21 +747,32 @@ class GWASCatalogClient:
         self,
         efo: str,
         sig_level: float = 5e-8,
+        show_child_traits: bool = True,
+        use_cache: bool = True,
+        cache_dir: str = "./",
         verbose: bool = True
     ) -> pd.DataFrame:
         """
         Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
         
-        This method handles MONDO to EFO conversion, retrieves associations,
-        and returns them in the format expected by _get_novel.
+        Retrieves associations and returns them in the format expected by _get_novel.
+        EFO and MONDO identifiers are sent via the API's efo_id parameter; trait
+        names use efo_trait.
         
         Parameters
         ----------
         efo : str
-            EFO trait ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"),
-            or trait name (e.g., "duodenal ulcer")
+            EFO ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"), or
+            trait name (e.g., "type 2 diabetes mellitus"). EFO and MONDO use
+            efo_id; names use efo_trait.
         sig_level : float
             P-value threshold for filtering associations (default: 5e-8)
+        show_child_traits : bool
+            If True, include child traits in results (default: True)
+        use_cache : bool
+            If True, use cache for API v2 results and when falling back to legacy API (default: True)
+        cache_dir : str
+            Directory for cache files; v2 cache uses ``GWASCatalog_v2_{efo}_associationsByTraitSummary_text_{date}_{suffix}.json`` (default: "./")
         verbose : bool
             Whether to print log messages (default: True)
             
@@ -757,68 +784,50 @@ class GWASCatalogClient:
         """
         self.log.write(" -Querying GWAS Catalog API v2 for trait: {}...".format(efo), verbose=verbose)
         
-        try:
-            # For MONDO IDs, first get the trait info to find EFO ID
-            efo_to_use = efo
-            trait_name_to_use = None
-            
-            if efo.startswith("MONDO_"):
-                self.log.write(" -MONDO ID detected, looking up EFO equivalent...", verbose=verbose)
+        if use_cache:
+            p = _v2_cache_path(cache_dir, efo, sig_level, show_child_traits)
+            if os.path.isfile(p):
                 try:
-                    trait_info = self.get_trait(efo)
-                    if trait_info:
-                        if verbose:
-                            self.log.write(" -Trait info keys: {}".format(list(trait_info.keys())[:10]), verbose=verbose)
-                        
-                        # Try to get EFO ID from various possible fields
-                        efo_id = None
-                        if 'shortForm' in trait_info and trait_info['shortForm']:
-                            efo_id = trait_info['shortForm']
-                        elif 'id' in trait_info and trait_info['id']:
-                            if trait_info['id'].startswith('EFO_'):
-                                efo_id = trait_info['id']
-                            elif 'EFO_' in str(trait_info['id']):
-                                # Extract EFO from ID string
-                                parts = str(trait_info['id']).split('EFO_')
-                                if len(parts) > 1:
-                                    efo_id = 'EFO_' + parts[1].split('/')[0].split('_')[0]
-                        
-                        # Also try URI
-                        if not efo_id and 'uri' in trait_info and trait_info['uri']:
-                            uri = str(trait_info['uri'])
-                            if 'EFO_' in uri:
-                                parts = uri.split('EFO_')
-                                if len(parts) > 1:
-                                    efo_id = 'EFO_' + parts[1].split('/')[0].split('_')[0]
-                        
-                        # Get trait name as fallback
-                        if 'trait' in trait_info:
-                            trait_name_to_use = trait_info['trait']
-                        
-                        if efo_id and efo_id.startswith('EFO_'):
-                            efo_to_use = efo_id
-                            self.log.write(" -Found EFO ID: {} for MONDO ID: {}".format(efo_id, efo), verbose=verbose)
-                        elif trait_name_to_use:
-                            self.log.write(" -Using trait name '{}' instead of ID for MONDO: {}".format(trait_name_to_use, efo), verbose=verbose)
-                            efo_to_use = trait_name_to_use
-                        else:
-                            self.log.write(" -Warning: Could not extract EFO ID or trait name. Trying MONDO ID directly...", verbose=verbose)
-                    else:
-                        self.log.write(" -Warning: Could not retrieve trait info for MONDO ID. Trying directly...", verbose=verbose)
-                except Exception as e:
-                    self.log.write(" -Warning: Error looking up trait info: {}. Trying MONDO ID directly...".format(str(e)), verbose=verbose)
+                    df = pd.read_json(p, orient="split")
+                    if isinstance(df, pd.DataFrame):
+                        self.log.write(" -Loaded {} variants from cache: {}".format(len(df), p), verbose=verbose)
+                        return df
+                except Exception:
+                    pass
+        
+        try:
+            # Get associations from API v2: use efo_id for EFO or MONDO identifiers, efo_trait for names
+            if efo.startswith("EFO_") or efo.startswith("MONDO_"):
+                associations_df = self.get_associations(efo_id=efo, get_all=True, sort="p_value", direction="asc", show_child_traits=show_child_traits)
+            else:
+                associations_df = self.get_associations(efo_trait=efo, get_all=True, sort="p_value", direction="asc", show_child_traits=show_child_traits)
             
-            # Get associations from API v2 using the EFO ID or trait name
-            associations_df = self.get_associations(efo_trait=efo_to_use, get_all=True, sort="p_value", direction="asc")
+            # Fallback: API v2 can return 500 when sort/direction/size/page are sent. Retry with efo_id/efo_trait + show_child_traits only.
+            if not isinstance(associations_df, pd.DataFrame) or len(associations_df) == 0:
+                self.log.write(" -Retrying with efo_id/efo_trait and show_child_traits only (server may have returned 500)...", verbose=verbose)
+                params = {"efo_id": efo, "show_child_traits": show_child_traits} if (efo.startswith("EFO_") or efo.startswith("MONDO_")) else {"efo_trait": efo, "show_child_traits": show_child_traits}
+                data = self._make_request("/v2/associations", params=params)
+                if data and "_embedded" in data and "associations" in data["_embedded"]:
+                    items = data["_embedded"]["associations"]
+                    associations_df = self._associations_to_dataframe(items)
+                    if len(associations_df) > 0:
+                        for pcol in ["p_value", "pvalue", "p"]:
+                            if pcol in associations_df.columns:
+                                associations_df[pcol] = pd.to_numeric(associations_df[pcol], errors="coerce")
+                                associations_df = associations_df.sort_values(by=pcol, ascending=True).reset_index(drop=True)
+                                break
+                else:
+                    associations_df = pd.DataFrame()
             
-            # If no results and we tried a converted EFO ID, try the original MONDO ID with old API
+            # If no results for MONDO, try legacy API v1 as fallback
             if (not isinstance(associations_df, pd.DataFrame) or len(associations_df) == 0) and efo.startswith("MONDO_"):
                 self.log.write(" -No results from API v2, falling back to old API v1 for MONDO ID...", verbose=verbose)
                 # Fallback to old API which supports MONDO IDs directly
                 try:
                     from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
-                    known_Sumstats = gwascatalog_trait(efo, source="NCBI", sig_level=sig_level, 
-                                                       use_cache=True, cache_dir="./", 
+                    known_Sumstats = gwascatalog_trait(efo, source="NCBI", sig_level=sig_level,
+                                                       show_child_traits=show_child_traits,
+                                                       use_cache=use_cache, cache_dir=cache_dir,
                                                        verbose=verbose, log=self.log)
                     if known_Sumstats and hasattr(known_Sumstats, 'data') and len(known_Sumstats.data) > 0:
                         self.log.write(" -Retrieved {} variants using old API v1".format(len(known_Sumstats.data)), verbose=verbose)
@@ -828,6 +837,12 @@ class GWASCatalogClient:
             
             if not isinstance(associations_df, pd.DataFrame) or len(associations_df) == 0:
                 self.log.write(" -No associations found for trait: {}".format(efo), verbose=verbose)
+                if use_cache:
+                    try:
+                        os.makedirs(cache_dir, exist_ok=True)
+                        pd.DataFrame().to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split")
+                    except Exception:
+                        pass
                 return pd.DataFrame()
             
             self.log.write(" -Retrieved {} associations from API".format(len(associations_df)), verbose=verbose)
@@ -852,6 +867,12 @@ class GWASCatalogClient:
                 self.log.write(" -Warning: No p-value column found, skipping p-value filter", verbose=verbose)
             
             if len(associations_df) == 0:
+                if use_cache:
+                    try:
+                        os.makedirs(cache_dir, exist_ok=True)
+                        pd.DataFrame().to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split")
+                    except Exception:
+                        pass
                 return pd.DataFrame()
             
             # Extract CHR and POS from locations and build records
@@ -1051,10 +1072,22 @@ class GWASCatalogClient:
                 self.log.write(" -Skipped {} associations without valid CHR/POS".format(skipped_no_location), verbose=verbose)
             
             if len(records) == 0:
+                if use_cache:
+                    try:
+                        os.makedirs(cache_dir, exist_ok=True)
+                        pd.DataFrame().to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split")
+                    except Exception:
+                        pass
                 return pd.DataFrame()
             
             result_df = pd.DataFrame(records)
             self.log.write(" -Successfully extracted {} variants with CHR/POS".format(len(result_df)), verbose=verbose)
+            if use_cache:
+                try:
+                    os.makedirs(cache_dir, exist_ok=True)
+                    result_df.to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split", date_format="iso")
+                except Exception:
+                    pass
             return result_df
             
         except Exception as e:
@@ -1062,8 +1095,9 @@ class GWASCatalogClient:
             # Fallback to old API
             try:
                 from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
-                known_Sumstats = gwascatalog_trait(efo, source="NCBI", sig_level=sig_level, 
-                                                   use_cache=True, cache_dir="./", 
+                known_Sumstats = gwascatalog_trait(efo, source="NCBI", sig_level=sig_level,
+                                                   show_child_traits=show_child_traits,
+                                                   use_cache=use_cache, cache_dir=cache_dir,
                                                    verbose=verbose, log=self.log)
                 if known_Sumstats and hasattr(known_Sumstats, 'data') and len(known_Sumstats.data) > 0:
                     self.log.write(" -Retrieved {} variants using old API v1".format(len(known_Sumstats.data)), verbose=verbose)
