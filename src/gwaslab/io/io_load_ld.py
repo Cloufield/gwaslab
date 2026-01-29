@@ -232,10 +232,9 @@ def process_ld(
                 lead_snpid[0]= int(lead_snpid[0])
                 lead_series = pd.Series(lead_snpid)
 
-        # if lead pos is available: 
-        if sumstats.loc[lead_id, "REFINDEX"] is not None:
-            lead_snp_ref_index = sumstats.loc[lead_id, "REFINDEX"]
-
+        # if lead pos is available (and lead SNP is in reference; REFINDEX can be NaN if not matched):
+        lead_snp_ref_index = sumstats.loc[lead_id, "REFINDEX"] if lead_id is not None else np.nan
+        if pd.notna(lead_snp_ref_index):
             is_matched = ~sumstats["REFINDEX"].isna()
 
             ref_index = sumstats.loc[is_matched,"REFINDEX"].astype("Int64")
