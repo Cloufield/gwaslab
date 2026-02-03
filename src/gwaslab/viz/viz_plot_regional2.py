@@ -1677,9 +1677,7 @@ def process_gtf(gtf_path,
     else:
         # if user-provided gtf
         log.write(f"  -Loading user-provided GTF file: {gtf_path}", verbose=verbose)
-        #gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#", low_memory=False,dtype={0:"string"})
-        # Filter by chromosome early for speed
-        gtf = read_gtf(gtf_path, chrom=gtf_chr_dict[region[0]])
+        gtf = read_gtf(gtf_path, chrom=to_query_chrom)
 
     # filter in region
     genes_1mb = gtf.loc[(gtf["seqname"]==to_query_chrom)&(gtf["start"]<region[2])&(gtf["end"]>region[1]),:].copy()

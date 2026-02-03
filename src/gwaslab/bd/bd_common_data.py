@@ -478,58 +478,86 @@ def get_formats_list() -> List[str]:
 # Module-level cache for recombination rate data
 _RECOMBINATION_RATE_CACHE = {}
 
+
+def _recombination_chrom_candidates(chrom: Union[str, int]) -> List[str]:
+    """Return filename chrom candidates to try for recombination map (supports both 23 and X, etc.)."""
+    if isinstance(chrom, str) and chrom.isdigit():
+        c = int(chrom)
+    else:
+        c = chrom
+    if c in (23, "X", "x"):
+        return ["23", "X"]
+    if c in (24, "Y", "y"):
+        return ["24", "Y"]
+    if c in (25, "MT", "M", "mt", "m"):
+        return ["25", "MT"]
+    return [str(chrom)]
+
+
 def get_recombination_rate(chrom: Union[str, int], build: str = "19") -> pd.DataFrame:
     """
     Retrieve recombination rate data for a specific chromosome and genome build.
     
     Results are cached for faster subsequent access.
+    For chr X/Y/MT, tries both numeric (chr23, chr24, chr25) and name (chrX, chrY, chrMT) filenames.
     
     Parameters:
-    chrom (str or int): Chromosome number to retrieve recombination data for
+    chrom (str or int): Chromosome number or name (e.g. 23 or "X" for chr X)
     build (str): Genome build version ('19' or '38') to use
     
     Returns:
     pandas.DataFrame: Recombination rate data with columns 'Rate(cM/Mb)' and 'Position(bp)'
                      Returns empty DataFrame if build is not supported or data is unavailable
     """
-    # Create cache key
     cache_key = f"{build}_{chrom}"
     
     # Check cache first
     if cache_key in _RECOMBINATION_RATE_CACHE:
         return _RECOMBINATION_RATE_CACHE[cache_key].copy()
-    
     #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
-    if build=="19":
-        data_path =  options.paths["data_directory"] + 'recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
-        if path.exists(data_path):
-            recombination_rate = pd.read_csv(data_path,sep="\t")
-        else:
-            if not path.exists(options.paths["data_directory"] + 'recombination/hg19/'):
-                os.makedirs(options.paths["data_directory"] + 'recombination/hg19/')
-            download_ref("recombination_hg19",directory = options.paths["data_directory"] + 'recombination/hg19/')
-            file = tarfile.open(options.paths["data_directory"]+'recombination/hg19/recombination_hg19.tar.gz')
-            file.extractall(options.paths["data_directory"]+'recombination/hg19/')
-            file.close()
-            recombination_rate = pd.read_csv(data_path,sep="\t")
-    elif build=="38":
-        data_path =  options.paths["data_directory"] + 'recombination/hg38/genetic_map_GRCh38_chr'+str(chrom)+'.txt.gz'
-        if path.exists(data_path):
-            recombination_rate = pd.read_csv(data_path,sep="\t")
-        else:
-            if not path.exists( options.paths["data_directory"] + 'recombination/hg38/'):
-                os.makedirs( options.paths["data_directory"] + 'recombination/hg38/')
-            download_ref("recombination_hg38",directory = options.paths["data_directory"]+'recombination/hg38/')
-            file = tarfile.open(options.paths["data_directory"]+'recombination/hg38/recombination_hg38.tar.gz')
-            file.extractall(options.paths["data_directory"]+'recombination/hg38/')
-            file.close()
-            recombination_rate = pd.read_csv(data_path,sep="\t")
+
+    candidates = _recombination_chrom_candidates(chrom)
+    recombination_rate = None
+
+    if build == "19":
+        base = options.paths["data_directory"] + "recombination/hg19/"
+        prefix, suffix = "genetic_map_GRCh37_chr", ".txt.gz"
+    elif build == "38":
+        base = options.paths["data_directory"] + "recombination/hg38/"
+        prefix, suffix = "genetic_map_GRCh38_chr", ".txt.gz"
     else:
-        recombination_rate = pd.DataFrame(columns=["Rate(cM/Mb)","Position(bp)"])
-    
-    # Cache the result for future use
+        recombination_rate = pd.DataFrame(columns=["Rate(cM/Mb)", "Position(bp)"])
+        _RECOMBINATION_RATE_CACHE[cache_key] = recombination_rate.copy()
+        return recombination_rate
+
+    for c in candidates:
+        data_path = base + prefix + c + suffix
+        if path.exists(data_path):
+            recombination_rate = pd.read_csv(data_path, sep="\t")
+            break
+
+    if recombination_rate is None:
+        if build == "19":
+            if not path.exists(base):
+                os.makedirs(base)
+            download_ref("recombination_hg19", directory=base)
+            with tarfile.open(base + "recombination_hg19.tar.gz") as tf:
+                tf.extractall(base)
+        else:
+            if not path.exists(base):
+                os.makedirs(base)
+            download_ref("recombination_hg38", directory=base)
+            with tarfile.open(base + "recombination_hg38.tar.gz") as tf:
+                tf.extractall(base)
+        for c in candidates:
+            data_path = base + prefix + c + suffix
+            if path.exists(data_path):
+                recombination_rate = pd.read_csv(data_path, sep="\t")
+                break
+        if recombination_rate is None:
+            recombination_rate = pd.DataFrame(columns=["Rate(cM/Mb)", "Position(bp)"])
+
     _RECOMBINATION_RATE_CACHE[cache_key] = recombination_rate.copy()
-    
     return recombination_rate
 ####################################################################################################################
 def get_chain(from_build: str = "19", to_build: str = "38") -> str:    

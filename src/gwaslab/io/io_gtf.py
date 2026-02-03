@@ -280,7 +280,13 @@ def read_gtf(
         df = df.select(available_cols)
     
     # Convert to pandas for compatibility
-    return df.to_pandas()
+    result = df.to_pandas()
+    # Convert seqname from numeric ("23"/"24"/"25") to "X"/"Y"/"MT" so it matches gtf_chr_dict
+    if len(result) > 0 and "seqname" in result.columns:
+        mapper = ChromosomeMapper()
+        mapper.detect_sumstats_format(result["seqname"])
+        result["seqname"] = mapper.to_string(result["seqname"]).astype(str)
+    return result
 
 
 def read_gtf_file(gtf_path):
@@ -327,14 +333,11 @@ def get_gtf(chrom, build="19", source="ensembl", if_return_path=False):
         If if_return_path is False: GTF data for the specified chromosome
         If if_return_path is True: tuple of (GTF data, file path)
     """
-    # Create cache key
     cache_key = f"{build}_{source}_{chrom}"
     
-    # Check cache first
     if cache_key in _GTF_CACHE:
         gtf = _GTF_CACHE[cache_key].copy()
         if if_return_path:
-            # Return cached path if available, otherwise None
             data_path = _GTF_PATH_CACHE.get(cache_key, None)
             return gtf, data_path
         return gtf
@@ -345,10 +348,9 @@ def get_gtf(chrom, build="19", source="ensembl", if_return_path=False):
     if source == "ensembl":
         if build == "19":
             data_path = check_and_download("ensembl_hg19_gtf")
-            # Filter by chromosome early for speed
             gtf = read_gtf(
                 data_path,
-                chrom=str(chrom),  # Early filtering by chromosome
+                chrom=str(chrom),
                 usecols=[
                     "seqname",
                     "start",
@@ -362,10 +364,9 @@ def get_gtf(chrom, build="19", source="ensembl", if_return_path=False):
             )
         if build == "38":
             data_path = check_and_download("ensembl_hg38_gtf")
-            # Filter by chromosome early for speed
             gtf = read_gtf(
                 data_path,
-                chrom=str(chrom),  # Early filtering by chromosome
+                chrom=str(chrom),
                 usecols=[
                     "seqname",
                     "start",
@@ -439,7 +440,6 @@ def get_gtf(chrom, build="19", source="ensembl", if_return_path=False):
             ]
         )
     
-    # Cache the result for future use
     _GTF_CACHE[cache_key] = gtf.copy()
     if data_path is not None:
         _GTF_PATH_CACHE[cache_key] = data_path

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy.stats as ss
 import gzip
+import glob
 import os
 import re
 import gc
@@ -72,9 +73,13 @@ def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbos
     if fmt == "auto" and sumstats_path is not None and isinstance(sumstats_path, str):
         from gwaslab.bd.bd_sumstats_formats import read_header_and_rows
         
-        # Handle "@" pattern for multi-chromosome files
+        # Handle glob pattern (e.g. trait_*.txt) and "@" pattern for multi-chromosome files
         detection_path = sumstats_path
-        if "@" in sumstats_path:
+        if "*" in sumstats_path or "?" in sumstats_path:
+            expanded = sorted(glob.glob(sumstats_path))
+            if expanded:
+                detection_path = expanded[0]
+        elif "@" in sumstats_path:
             # Try to find the first matching file
             dirname = os.path.dirname(sumstats_path)
             basename = os.path.basename(sumstats_path)
@@ -332,20 +337,23 @@ def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_nu
                              usecols=None, dtype_dictionary=None, readargs=None, rename_dictionary=None,
                              chrom_pat=None, snpid_pat=None, log=None, verbose=False):
     """Load sumstats from file path(s)."""
-    if "@" in inpath:
-        # Load multiple chromosome files
-        log.write("Start to initialize gl.Sumstats from files with pattern :" + inpath, verbose=verbose)
+    if inpath_chr_list:
+        # Load multiple files (glob pattern or @ chromosome pattern)
+        add_file_column = "*" in inpath or "?" in inpath  # only for glob, not for @
+        log.write("Start to initialize gl.Sumstats from {} file(s) :".format(len(inpath_chr_list)) + inpath, verbose=verbose)
         sumstats_chr_list = []
         for i in inpath_chr_list:
-            log.write(" -Loading:" + i)
+            log.write(" -Loading:" + i, verbose=verbose)
             skip_rows = _get_skip_rows(i)
             readargs_copy = readargs.copy()
             readargs_copy["skiprows"] = skip_rows
             explicit = {"usecols", "dtype_dictionary"}
             readargs_copy = {k: v for k, v in readargs_copy.items() if k not in explicit}
             sumstats_chr = pd.read_table(i, usecols=set(usecols), dtype=dtype_dictionary, **readargs_copy)
+            if add_file_column:
+                sumstats_chr["FILE"] = i
             sumstats_chr_list.append(sumstats_chr)
-        log.write(" -Merging sumstats for chromosomes:", ",".join(inpath_chr_num_list), verbose=verbose)
+        log.write(" -Merging sumstats from {} file(s)".format(len(inpath_chr_list)), verbose=verbose)
         sumstats = pd.concat(sumstats_chr_list, axis=0, ignore_index=True)
         del sumstats_chr_list
         gc.collect()
@@ -357,19 +365,21 @@ def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_nu
         log.write("Start to initialize gl.Sumstats from file :" + inpath, verbose=verbose)
         
         if chrom_pat is not None:
-            return _load_single_chr(
+            sumstats = _load_single_chr(
                 inpath=inpath, usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs,
                 rename_dictionary=rename_dictionary, chrom_pat=chrom_pat, log=log, verbose=verbose
             )
         elif snpid_pat is not None:
-            return _load_variants_with_pattern(
+            sumstats = _load_variants_with_pattern(
                 inpath=inpath, usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs,
                 rename_dictionary=rename_dictionary, snpid_pat=snpid_pat, log=log, verbose=verbose
             )
         else:
             explicit = {"usecols", "dtype_dictionary"}
             readargs = {k: v for k, v in readargs.items() if k not in explicit}
-            return pd.read_table(inpath, usecols=set(usecols), dtype=dtype_dictionary, **readargs)
+            sumstats = pd.read_table(inpath, usecols=set(usecols), dtype=dtype_dictionary, **readargs)
+        sumstats["FILE"] = inpath
+        return sumstats
 
 
 def _load_sumstats_from_dataframe(*, sumstats=None, dtype_dictionary=None, rename_dictionary=None, log=None, verbose=False):
@@ -1060,6 +1070,22 @@ def _process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verb
     format_cols = None
     inpath_chr_list = None
     inpath_chr_num_list = None
+
+    # Handle glob pattern (e.g. trait_*.txt) to load multiple files
+    if "*" in inpath or "?" in inpath:
+        expanded = sorted(glob.glob(inpath))
+        if not expanded:
+            raise FileNotFoundError("No files match pattern: {}".format(inpath))
+        log.write(" -Detected glob pattern: loading {} matching file(s)...".format(len(expanded)), verbose=verbose)
+        inpath_chr_list = expanded
+        inpath_chr_num_list = [os.path.basename(p) for p in expanded]
+        readargs_header = _get_readargs_header(inpath=inpath_chr_list[0], readargs=readargs)
+        row_one = pd.read_table(inpath_chr_list[0], **readargs_header)
+        raw_cols = row_one.columns
+        if fmt == "vcf":
+            format_cols = list(row_one["FORMAT"].str.split(":"))[0]
+            raw_cols = meta_data["format_fixed"] + [raw_cols[9]] + format_cols
+        return format_cols, raw_cols, inpath_chr_list, inpath_chr_num_list
 
     if "@" in inpath:
         log.write(" -Detected @ in path: load sumstats by each chromosome...",verbose=verbose)

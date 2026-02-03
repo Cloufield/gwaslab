@@ -260,6 +260,9 @@ class TestPreformatInputWithAtSymbol(unittest.TestCase):
         # Check that we have data from multiple chromosomes
         unique_chrs = result["CHR"].unique()
         self.assertGreaterEqual(len(unique_chrs), 1)
+
+        # @ pattern must NOT add FILE column
+        self.assertNotIn("FILE", result.columns)
     
     def test_load_with_at_symbol_polars(self):
         """Test loading chromosome-split files using @ symbol with polars"""
@@ -281,6 +284,97 @@ class TestPreformatInputWithAtSymbol(unittest.TestCase):
         self.assertGreater(result.height, 0)
         self.assertIn("CHR", result.columns)
         self.assertIn("POS", result.columns)
+
+
+class TestPreformatInputGlobAndFileColumn(unittest.TestCase):
+    """Test cases for glob pattern loading and FILE column (single file and glob add FILE; @ does not)."""
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def _write_sumstats_tsv(self, path, n_rows=3):
+        rows = []
+        for i in range(n_rows):
+            rows.append({
+                "CHR": 1,
+                "POS": 1000 + i,
+                "EA": "A",
+                "NEA": "G",
+                "EAF": 0.2,
+                "BETA": 0.1,
+                "SE": 0.01,
+                "P": 0.001,
+                "SNPID": f"1:{1000 + i}_A_G"
+            })
+        pd.DataFrame(rows).to_csv(path, sep="\t", index=False)
+
+    def tearDown(self):
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+
+    def test_single_file_adds_file_column(self):
+        """Loading from a single file path adds FILE column with that path."""
+        path = os.path.join(self.temp_dir, "single.tsv")
+        self._write_sumstats_tsv(path)
+        result = _preformat(
+            sumstats=path,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            snpid="SNPID",
+            eaf="EAF",
+            beta="BETA",
+            se="SE",
+            p="P",
+            verbose=False
+        )
+        self.assertIn("FILE", result.columns)
+        self.assertEqual(result["FILE"].iloc[0], path)
+        self.assertTrue((result["FILE"] == path).all())
+
+    def test_glob_pattern_loads_multiple_files_and_adds_file_column(self):
+        """Loading with glob (e.g. trait_*.txt) merges files and adds FILE with source path per row."""
+        path1 = os.path.join(self.temp_dir, "trait_1.txt")
+        path2 = os.path.join(self.temp_dir, "trait_2.txt")
+        self._write_sumstats_tsv(path1, n_rows=2)
+        self._write_sumstats_tsv(path2, n_rows=2)
+        glob_path = os.path.join(self.temp_dir, "trait_*.txt")
+        result = _preformat(
+            sumstats=glob_path,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            snpid="SNPID",
+            eaf="EAF",
+            beta="BETA",
+            se="SE",
+            p="P",
+            verbose=False
+        )
+        self.assertIn("FILE", result.columns)
+        self.assertEqual(len(result), 4)
+        file_values = result["FILE"].unique()
+        self.assertEqual(len(file_values), 2)
+        self.assertIn(path1, file_values)
+        self.assertIn(path2, file_values)
+        self.assertEqual((result["FILE"] == path1).sum(), 2)
+        self.assertEqual((result["FILE"] == path2).sum(), 2)
+
+    def test_glob_pattern_no_match_raises(self):
+        """Glob pattern with no matching files raises an error (FileNotFoundError or ValueError)."""
+        glob_path = os.path.join(self.temp_dir, "nonexistent_*.tsv")
+        with self.assertRaises((FileNotFoundError, ValueError)):
+            _preformat(
+                sumstats=glob_path,
+                chrom="CHR",
+                pos="POS",
+                ea="EA",
+                nea="NEA",
+                snpid="SNPID",
+                verbose=False
+            )
 
 
 class TestPreformatInputFormats(unittest.TestCase):

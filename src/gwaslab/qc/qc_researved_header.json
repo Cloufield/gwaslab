@@ -89,6 +89,20 @@
       "Int64"
     ]
   },
+  "FILE": {
+    "Keyword": "file",
+    "Datatype": "string",
+    "Category": "info",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "source file path",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
   "EA": {
     "Keyword": "ea",
     "Datatype": "category",
