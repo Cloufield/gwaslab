@@ -440,9 +440,9 @@ def _mqqplot(insumstats,
     ld_fmt : str, default='npz'
         Format of LD file ('npz', 'txt', etc.). Default is 'npz'.
     ld_if_square : bool, default=False
-        Whether LD matrix is square format.
+        Whether to square each element of the LD matrix (convert r to r²).
     ld_if_add_T : bool, default=False
-        Whether to transpose LD matrix.
+        Whether to add the transpose to the LD matrix (symmetrize: r + r.T).
     ld_map_rename_dic : dict, optional
         Dictionary for renaming LD map columns. Default is None.
     ld_map_kwargs : dict, optional

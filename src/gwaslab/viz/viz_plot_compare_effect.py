@@ -728,7 +728,9 @@ def align_alleles(sig_list_merged, label, mode, log, verbose):
     log.write(" -Aligning "+label[1]+" EA with "+label[0]+" EA ...", verbose=verbose)
     cols = ["EA_1", "EA_2", "NEA_1", "NEA_2"]
     sig_list_merged[cols] = sig_list_merged[cols].astype("string")
-    mismatch = sig_list_merged["EA_1"] != sig_list_merged["EA_2"]
+    # Only treat as mismatch when both alleles are non-NA and different (avoids TypeError on NA)
+    both_valid = sig_list_merged["EA_1"].notna() & sig_list_merged["EA_2"].notna()
+    mismatch = both_valid & (sig_list_merged["EA_1"] != sig_list_merged["EA_2"])
     if mode in ("beta", "BETA", "Beta"):
         sig_list_merged["EA_2_aligned"] = np.where(mismatch, sig_list_merged["NEA_2"], sig_list_merged["EA_2"])
         sig_list_merged["NEA_2_aligned"] = np.where(mismatch, sig_list_merged["EA_2"], sig_list_merged["NEA_2"])
@@ -762,14 +764,19 @@ def align_alleles(sig_list_merged, label, mode, log, verbose):
 #########################################################################################################################
 
 def check_allele_match(sig_list_merged, allele_match, label, log,verbose):
-    # checking effect allele matching
-    nonmatch = np.nansum(sig_list_merged["EA_1"] != sig_list_merged["EA_2_aligned"])
+    # checking effect allele matching (count only definite mismatches; NA comparisons are not counted)
+    both_valid = sig_list_merged["EA_1"].notna() & sig_list_merged["EA_2_aligned"].notna()
+    mismatch = (sig_list_merged["EA_1"] != sig_list_merged["EA_2_aligned"]).fillna(False)
+    nonmatch = (both_valid & mismatch).sum()
     log.write(" -Aligned all EAs in {} with EAs in {} ...".format(label[1],label[0]), verbose=verbose)
     if nonmatch>0:
         log.warning("Alleles for {} variants do not match...".format(nonmatch))
     if allele_match==True:
         if nonmatch>0:
-            sig_list_merged = sig_list_merged.loc[sig_list_merged["EA_1"] == sig_list_merged["EA_2_aligned"]]
+            # keep rows where EAs match or either allele is NA
+            keep = ((sig_list_merged["EA_1"] == sig_list_merged["EA_2_aligned"]).fillna(False)
+                    | sig_list_merged["EA_1"].isna() | sig_list_merged["EA_2_aligned"].isna())
+            sig_list_merged = sig_list_merged.loc[keep]
         else:
             log.write(" -No variants with EA not matching...", verbose=verbose)
     return sig_list_merged
@@ -992,17 +999,29 @@ def configure_regression_line(is_reg,
     if len(sig_list_merged)<3: is_reg=False
     if is_reg is True:
         if mode=="beta" or mode=="BETA" or mode=="Beta":
-            reg = ss.linregress(sig_list_merged["EFFECT_1"],sig_list_merged["EFFECT_2_aligned"])
-            
+            x_col, y_col = "EFFECT_1", "EFFECT_2_aligned"
+        else:
+            x_col, y_col = "OR_1", "OR_2_aligned"
+        valid = sig_list_merged[x_col].notna() & sig_list_merged[y_col].notna()
+        x_vals = sig_list_merged.loc[valid, x_col].values
+        y_vals = sig_list_merged.loc[valid, y_col].values
+        n_valid = len(x_vals)
+        if n_valid >= 3:
+            reg = ss.linregress(x_vals, y_vals)
+        else:
+            reg = (np.nan, np.nan, np.nan, np.nan, np.nan)
+            if n_valid > 0:
+                log.write(" -Too few valid pairs for regression (need ≥3, got {}). Skipping regression stats.".format(n_valid), verbose=verbose)
+
+        if mode=="beta" or mode=="BETA" or mode=="Beta":
             # estimate se for r
-            if r_se==True:
+            if r_se==True and n_valid >= 3:
                 log.write(" -Estimating SE for rsq using Jackknife method.", verbose=verbose)
                 r_se_jackknife = scatter_jackknife_r(sig_list_merged, x="EFFECT_1", y="EFFECT_2_aligned", log=log, verbose=verbose)
                 r_se_jackknife_string = " ({:.2f})".format(r_se_jackknife)
             else:
                 r_se_jackknife_string= ""
         else:
-            reg = ss.linregress(sig_list_merged["OR_1"],sig_list_merged["OR_2_aligned"])
             r_se_jackknife_string= ""
 
         #### calculate p values based on selected value , default = 0 
@@ -1017,10 +1036,10 @@ def configure_regression_line(is_reg,
         log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]), verbose=verbose)
         log.write(" -Peason correlation coefficient =  ", "{:.2f}".format(reg[2]), verbose=verbose)
         log.write(" -r2 =  ", "{:.2f}".format(reg[2]**2), verbose=verbose)
-        if r_se==True:
+        if r_se==True and n_valid >= 3 and (mode=="beta" or mode=="BETA" or mode=="Beta"):
             log.write(" -R se (jackknife) = {:.2e}".format(r_se_jackknife), verbose=verbose)
 
-        if reg[0] > 0:
+        if np.isfinite(reg[0]) and reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
             if is_45_helper_line is True:
                 _create_helper_line(ax, reg[0], is_45_helper_line, helper_line_kwargs)
@@ -1051,7 +1070,7 @@ def configure_regression_line(is_reg,
                 reg_string = "$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2)
                 ax.text(0.98,0.02,
                         reg_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
-        else:
+        elif np.isfinite(reg[0]):
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
                 _create_helper_line(ax, reg[0], is_45_helper_line, helper_line_kwargs)
@@ -1087,10 +1106,11 @@ def configure_regression_line(is_reg,
         else:
             middle = sig_list_merged["OR_1"].mean()
         
-        if mode=="beta" or mode=="BETA" or mode=="Beta":
-            _create_reg_line(ax, reg, reg_xmin=0)
-        else:
-            _create_reg_line(ax, reg, reg_xmin=1)
+        if np.isfinite(reg[0]):
+            if mode=="beta" or mode=="BETA" or mode=="Beta":
+                _create_reg_line(ax, reg, reg_xmin=0)
+            else:
+                _create_reg_line(ax, reg, reg_xmin=1)
     return ax
 
 
