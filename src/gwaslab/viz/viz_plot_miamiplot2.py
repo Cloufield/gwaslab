@@ -79,10 +79,36 @@ def plot_miami2(
           save=None,
           save_kwargs=None,
           figax=None,
+          build=None,
           log=Log(),
           **mqq_kwargs
           ):
     log.write("Start to create miami plot {}:".format(_get_version()), verbose=verbose)
+    
+    # Auto-detect build from Sumstats objects if not provided
+    if build is None:
+        build1 = None
+        build2 = None
+        
+        # Extract build from both Sumstats objects
+        if isinstance(path1, Sumstats) and hasattr(path1, 'build'):
+            build1 = path1.build
+        if isinstance(path2, Sumstats) and hasattr(path2, 'build'):
+            build2 = path2.build
+        
+        # Check consistency and set build
+        if build1 is not None and build2 is not None:
+            if build1 != build2:
+                raise ValueError("Build version mismatch: sumstats1={}, sumstats2={}. Please ensure both sumstats use the same genome build.".format(build1, build2))
+            build = build1
+            log.write(" -Auto-detected build from sumstats: {}".format(build), verbose=verbose)
+        elif build1 is not None:
+            build = build1
+            log.write(" -Auto-detected build from sumstats1: {}".format(build), verbose=verbose)
+        elif build2 is not None:
+            build = build2
+            log.write(" -Auto-detected build from sumstats2: {}".format(build), verbose=verbose)
+    
     ## figuring arguments ###########################################################################################################
     # figure columns to use (auto-detect scaled)
     if scaled is True:
@@ -282,6 +308,7 @@ def plot_miami2(
                     _invert=False,
                     _if_quick_qc=False,
                     font_family=font_family,
+                    build=build,
                     **mqq_kwargs1
                     )
     log.write("Finished creating Manhattan plot for sumstats1".format(_get_version()), verbose=verbose)
@@ -302,6 +329,7 @@ def plot_miami2(
                        _invert=True,
                       _if_quick_qc=False,
                       font_family=font_family,
+                      build=build,
                      **mqq_kwargs2)
     log.write("Finished creating Manhattan plot for sumstats2".format(_get_version()), verbose=verbose)
     

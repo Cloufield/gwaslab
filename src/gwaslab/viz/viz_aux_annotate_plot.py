@@ -265,14 +265,16 @@ def annotate_single(
             
             ################################################################################################################################
             # annotation alias
+            # Handle None anno_alias by treating it as empty dict
+            _anno_alias = anno_alias if anno_alias is not None else {}
             if anno==True:
-                if row[snpid] in anno_alias.keys():
-                    annotation_text = anno_alias[row[snpid]]
+                if row[snpid] in _anno_alias.keys():
+                    annotation_text = _anno_alias[row[snpid]]
                 else:
                     annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
             elif anno:
-                if row[snpid] in anno_alias.keys():
-                    annotation_text = anno_alias[row[snpid]]
+                if row[snpid] in _anno_alias.keys():
+                    annotation_text = _anno_alias[row[snpid]]
                 else:
                     annotation_text=row["Annotation"]
             
@@ -549,9 +551,11 @@ def annotate_pair(
                         anno_fixed_arm_length_factor = ax.transData.transform((skip,anno_fixed_arm_length))[1]-ax.transData.transform((skip,0))[1] 
                         armB_length_in_pixel = anno_fixed_arm_length_factor
                     
+                    # Handle None anno_alias by treating it as empty dict
+                    _anno_alias = anno_alias if anno_alias is not None else {}
                     if anno==True:
-                        if row[snpid] in anno_alias.keys():
-                            annotation_text = anno_alias[row[snpid]]
+                        if row[snpid] in _anno_alias.keys():
+                            annotation_text = _anno_alias[row[snpid]]
                         else:
                             annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
                     elif anno == "GENENAME":

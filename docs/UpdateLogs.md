@@ -1,5 +1,14 @@
 # Update Logs
 
+# v4.0.8 20260204
+
+- Fixed `plot_miami2()` build version not being passed to underlying `_mqqplot()` function: now correctly displays genome build (e.g., GRCh38/hg38) instead of defaulting to hg19
+- Added `build` parameter to `plot_miami2()`: auto-detects from Sumstats objects if not provided
+- Added build consistency check in `plot_miami2()`: raises `ValueError` when sumstats1 and sumstats2 have different genome builds
+- Fixed `AttributeError` when `anno_alias=None` in annotation functions: added defensive null check
+- Added annotation parameters to `plot_miami2()`: `anno_alias`, `anno_d`, `anno_kwargs`, `anno_style`, `anno_fontsize`, `anno_adjust`
+- Fixed handling of chrX in `read_gtf()`
+
 # v4.0.7 20260128
 
 - Fixed `get_novel()` TypeError (wrong argument name for `_get_sig()`)

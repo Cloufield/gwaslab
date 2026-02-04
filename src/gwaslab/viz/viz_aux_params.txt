@@ -179,6 +179,7 @@
     "anno_adjust": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -195,6 +196,7 @@
     "anno_alias": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -211,6 +213,7 @@
     "anno_d": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -252,6 +255,7 @@
     "anno_fontsize": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -431,6 +435,7 @@
     "anno_style": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
