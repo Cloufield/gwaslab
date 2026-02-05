@@ -1,20 +1,20 @@
-SNPID	FILE	STATUS	CHR	POS	NEA	EA
-1:1066403:T:C	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	1066403	T	C
-1:1163266:G:A	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	1163266	G	A
-1:1213224:T:A	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	1213224	T	A
-1:3066761:A:T	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	3066761	A	T
-1:3997271:T:TTTTA	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	3997271	T	TTTTA
-1:3997271:<CN0>:<CN1>	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9989999				
-1:4007705:TC:T	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	4007705	TC	T
-1:5164281:A:AAGAG	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	5164281	A	AAGAG
-1:12799025:C:CCT	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	12799025	C	CCT
-1:19323015:T:A	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	19323015	T	A
-1:22841855:A:T	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	1	22841855	A	T
-3:183629306:T:TTCTC	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	3	183629306	T	TTCTC
-4:99731866:G:C	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	4	99731866	G	C
-8:89935201:C:G	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	8	89935201	C	G
-X:4206466:G:C	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	X	4206466	G	C
-X:5053229:A:T	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	X	5053229	A	T
-Y:5053229:A:T	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	Y	5053229	A	T
-X:5053229:A:T	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	X	5053229	A	T
-6_ALT:99731866:G:C	/home/yunye/work/gwaslab/test/raw/fixid.tsv	9969999	6_ALT	99731866	G	C
+SNPID	STATUS	CHR	POS	NEA	EA
+1:1066403:T:C	9969999	1	1066403	T	C
+1:1163266:G:A	9969999	1	1163266	G	A
+1:1213224:T:A	9969999	1	1213224	T	A
+1:3066761:A:T	9969999	1	3066761	A	T
+1:3997271:T:TTTTA	9969999	1	3997271	T	TTTTA
+1:3997271:<CN0>:<CN1>	9989999				
+1:4007705:TC:T	9969999	1	4007705	TC	T
+1:5164281:A:AAGAG	9969999	1	5164281	A	AAGAG
+1:12799025:C:CCT	9969999	1	12799025	C	CCT
+1:19323015:T:A	9969999	1	19323015	T	A
+1:22841855:A:T	9969999	1	22841855	A	T
+3:183629306:T:TTCTC	9969999	3	183629306	T	TTCTC
+4:99731866:G:C	9969999	4	99731866	G	C
+8:89935201:C:G	9969999	8	89935201	C	G
+X:4206466:G:C	9969999	X	4206466	G	C
+X:5053229:A:T	9969999	X	5053229	A	T
+Y:5053229:A:T	9969999	Y	5053229	A	T
+X:5053229:A:T	9969999	X	5053229	A	T
+6_ALT:99731866:G:C	9969999	6_ALT	99731866	G	C

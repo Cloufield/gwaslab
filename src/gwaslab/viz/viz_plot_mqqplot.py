@@ -23,6 +23,7 @@ from gwaslab.qc.qc_build import _process_build
 from gwaslab.util.util_in_filter_value import _filter_region
 from gwaslab.util.util_in_get_sig import _get_sig, _anno_gene
 from gwaslab.viz.viz_aux_annotate_plot import annotate_single
+from gwaslab.viz.viz_aux_reposition_text import _get_highest_y_pixels
 from gwaslab.viz.viz_aux_quickfix import _cut
 from gwaslab.viz.viz_aux_quickfix import _jagged_y
 from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
@@ -1473,22 +1474,6 @@ def _mqqplot(insumstats,
             verbose=verbose,
         )
 
-        if mtitle and anno and to_annotate is not None and len(to_annotate) > 0:
-            pad = (ax1.transData.transform((skip, mtitle_pad * maxy))[1] - ax1.transData.transform((skip, maxy)))[1]
-            _ax_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
-            if "family" not in _ax_title_kwargs:
-                _ax_title_kwargs["family"] = font_family
-            if "fontsize" not in _ax_title_kwargs:
-                _ax_title_kwargs["fontsize"] = title_fontsize
-            ax1.set_title(mtitle, pad=pad, **_ax_title_kwargs)
-        elif mtitle:
-            _ax_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
-            if "family" not in _ax_title_kwargs:
-                _ax_title_kwargs["family"] = font_family
-            if "fontsize" not in _ax_title_kwargs:
-                _ax_title_kwargs["fontsize"] = title_fontsize
-            ax1.set_title(mtitle, **_ax_title_kwargs)
-
         # Y axis jagged
         if jagged==True:
             ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid,log=log, verbose=verbose)
@@ -1502,25 +1487,6 @@ def _mqqplot(insumstats,
                 ax2.set_ylim(ylim)
         
         ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log = log, verbose=verbose)
-
-    # Titles 
-    has_annotations = ("m" in mode or "r" in mode) and anno and to_annotate is not None and len(to_annotate) > 0
-    if title and has_annotations:
-        _fig_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
-        if "family" not in _fig_title_kwargs:
-            _fig_title_kwargs["family"] = font_family
-        if "fontsize" not in _fig_title_kwargs:
-            _fig_title_kwargs["fontsize"] = title_fontsize
-        fig.suptitle(title, x=0.5, y=title_pad, **_fig_title_kwargs)
-    else:
-        title_pad = title_pad -0.05
-        _fig_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
-        if "family" not in _fig_title_kwargs:
-            _fig_title_kwargs["family"] = font_family
-        if "fontsize" not in _fig_title_kwargs:
-            _fig_title_kwargs["fontsize"] = title_fontsize
-        fig.suptitle(title, x=0.5, y=title_pad, **_fig_title_kwargs)
-
     # Step 11: Add QQ panel if specified #########################################################################################################
     if "qq" in mode:
         # ax2 qqplot
@@ -1603,8 +1569,86 @@ def _mqqplot(insumstats,
             _invert=_invert,
         )
 
+    # Step 12.5: Add titles (after annotations so we can position above all content)
+    if title or mtitle or qtitle:
+        # Ensure all content (including annotations) is rendered
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        
+        _title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
+        if "family" not in _title_kwargs:
+            _title_kwargs["family"] = font_family
+        if "fontsize" not in _title_kwargs:
+            _title_kwargs["fontsize"] = title_fontsize
+        
+        # Calculate pad_points for both mtitle and qtitle to ensure consistent y positioning
+        pad_points_m = 5  # default padding
+        pad_points_q = 5  # default padding
+        
+        if mtitle and ax1 is not None:
+            try:
+                highest_y_pixels = _get_highest_y_pixels(ax1, renderer, fig)
+                ax1_pos = ax1.get_position()
+                ax1_top_pixels = ax1_pos.y1 * fig.get_figheight() * fig.dpi
+                content_extends_above = max(0, highest_y_pixels - ax1_top_pixels)
+                pad_points_m = content_extends_above * 72 / fig.dpi + 5
+            except Exception:
+                pass
+        
+        if qtitle and ax2 is not None:
+            try:
+                highest_y_pixels = _get_highest_y_pixels(ax2, renderer, fig)
+                ax2_pos = ax2.get_position()
+                ax2_top_pixels = ax2_pos.y1 * fig.get_figheight() * fig.dpi
+                content_extends_above = max(0, highest_y_pixels - ax2_top_pixels)
+                pad_points_q = content_extends_above * 72 / fig.dpi + 5
+            except Exception:
+                pass
+        
+        # Use the maximum pad to ensure both titles are at the same y level
+        if mtitle and qtitle:
+            pad_points = max(pad_points_m, pad_points_q)
+        elif mtitle:
+            pad_points = pad_points_m
+        else:
+            pad_points = pad_points_q
+        
+        # Add mtitle (Manhattan/axes title) - positioned above ax1 content
+        if mtitle and ax1 is not None:
+            try:
+                ax1.set_title(mtitle, pad=pad_points, **_title_kwargs)
+            except Exception:
+                ax1.set_title(mtitle, **_title_kwargs)
+        
+        # Add qtitle (QQ plot title) - positioned at same y level as mtitle
+        if qtitle and ax2 is not None:
+            try:
+                ax2.set_title(qtitle, pad=pad_points, **_title_kwargs)
+            except Exception:
+                ax2.set_title(qtitle, **_title_kwargs)
+        
+        # Add figure-level title - positioned above all content
+        if title:
+            # Find the highest point of any content in the figure
+            highest_y_pixels = 0
+            for ax in fig.get_axes():
+                try:
+                    ax_highest = _get_highest_y_pixels(ax, renderer, fig)
+                    highest_y_pixels = max(highest_y_pixels, ax_highest)
+                except Exception:
+                    pass
+            
+            # Convert pixels to figure coordinates
+            fig_height_pixels = fig.get_figheight() * fig.dpi
+            highest_y_fig = highest_y_pixels / fig_height_pixels
+            
+            # Add padding above the highest content (in figure coordinates)
+            padding = 0.04  # 4% of figure height
+            title_y = highest_y_fig + padding  # Don't cap - let title go above figure if needed
+            
+            fig.suptitle(title, x=0.5, y=title_y, **_title_kwargs)
     
-    # Step 12.5: Adjust spacing for ax3 tick labels (if ld_block is enabled)
+    # Step 12.6: Adjust spacing for ax3 tick labels (if ld_block is enabled)
     # This must happen after all plots are done but before saving
     if ld_block_enabled and ax_pos is not None and ax_ld_block is not None:
         _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=log, verbose=verbose)

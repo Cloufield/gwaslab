@@ -367,9 +367,9 @@ def load_fasta_filtered(
     path : str
         Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
     chromlist_set : set
-        Set of valid chromosome identifiers
+        Set of valid chromosome identifiers (supposed to be integers)
     chroms_in_sumstats_set : set
-        Set of chromosomes present in the summary statistics
+        Set of chromosomes (supposed to be integers) present in the summary statistics
     mapper : ChromosomeMapper, optional
         ChromosomeMapper instance to use for chromosome name conversion.
         If not provided, creates a default mapper.

@@ -216,10 +216,7 @@ def _plot_qq(
         ax2.set_xticklabels(xlabels,fontsize=fontsize,family=font_family)
 
     ax2.tick_params(axis='both', which='both', labelsize=fontsize,labelfontfamily=font_family)
-    #
-    if qtitle:
-        pad=(ax2.transData.transform((skip, qtitle_pad*maxy))[1]-ax2.transData.transform((skip, maxy)))[1]
-        ax2.set_title(qtitle,fontsize=title_fontsize,pad=pad,family=font_family)
+    # Note: qtitle is set in viz_plot_mqqplot.py to align with mtitle positioning
 
     log.write("Finished creating QQ plot successfully!",verbose=verbose)
     

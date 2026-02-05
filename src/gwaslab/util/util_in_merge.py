@@ -12,7 +12,56 @@ if TYPE_CHECKING:
         finished_msg="initializing gl.SumstatsSet"
 )
 def _extract_variant(variant_set: Union[List[str], List[List[Union[int, float]]], Set[str]], sumstats_dic: Dict[str, 'Sumstats'], log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
+    """
+    Extract specified variants from multiple Sumstats objects and combine them into a single DataFrame.
+
+    This function searches for variants across multiple GWAS summary statistics datasets
+    and returns a combined DataFrame containing the matched variants with a "STUDY" column
+    indicating the source dataset.
+
+    Parameters
+    ----------
+    variant_set : Union[List[str], List[List[Union[int, float]]], Set[str]]
+        A collection of variants to extract. Can be specified as:
+        - List of SNPID strings (e.g., ["rs12345", "rs67890"])
+        - List of [chromosome, position] pairs (e.g., [[1, 12345], [2, 67890]])
+        - Set of SNPID strings
+        - Variant strings in format "chr1:12345:A:T" (parsed for CHR:POS matching)
+    sumstats_dic : Dict[str, Sumstats]
+        A dictionary mapping study names (keys) to Sumstats objects (values).
+    log : Log, optional
+        A Log object for recording messages. Defaults to a new Log instance.
+    verbose : bool, optional
+        Whether to print log messages. Defaults to True.
+
+    Returns
+    -------
+    pd.DataFrame
+        A combined DataFrame containing the extracted variants from all studies.
+        Includes columns:
+        - "STUDY": The study name (key from sumstats_dic)
+        - Standard columns if available: "SNPID", "EA", "NEA", "CHR", "POS",
+          "BETA", "SE", "P", "MLOG10P", "EAF", "MAF", "STATUS"
+
+    Notes
+    -----
+    Variant matching is performed using the following logic:
+    - If variant is a list-like (e.g., [chrom, pos]): matches by CHR and POS columns
+    - If variant is a string: matches by exact SNPID match
+    - String variants matching the pattern "chr1:12345:A:T" (with optional "chr" prefix,
+      using ":", "_", or "-" as separators) are also matched by CHR and POS
+
+    Examples
+    --------
+    >>> # Extract variants by SNPID
+    >>> result = _extract_variant(["rs12345", "rs67890"], {"study1": sumstats1, "study2": sumstats2})
     
+    >>> # Extract variants by chromosome and position
+    >>> result = _extract_variant([[1, 12345], [2, 67890]], {"study1": sumstats1})
+    
+    >>> # Extract variants using variant ID format
+    >>> result = _extract_variant(["chr1:12345:A:T"], {"study1": sumstats1})
+    """
     combined = pd.DataFrame()
     for key, sumstats_gls in sumstats_dic.items():
         log.write(" -{} : {}".format(key, sumstats_gls), verbose=verbose)

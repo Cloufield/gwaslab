@@ -4,6 +4,7 @@
 
 - Added parameters to `plot_miami2()`: sig line colors, annotation arm/arrow, cut/jagged line, highlight, Y-axis, and X-axis parameters from `plot_mqq()`
 - Fixed `check_ref()` not loading FASTA records when sumstats uses numeric CHR (1, 2, 3) but reference FASTA uses chr-prefixed names (chr1, chr2, chr3): now strips "chr" prefix before chromosome conversion
+- Fixed `plot_mqq()` title positioning: titles now dynamically position above all content including rotated annotations, with improved handling for string rotation values, mathtext, and various text alignments
 
 # v4.0.9 20260205
 
