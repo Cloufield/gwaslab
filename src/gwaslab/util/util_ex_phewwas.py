@@ -380,13 +380,13 @@ def _normalize_association_columns(df: pd.DataFrame) -> pd.DataFrame:
         beta_col = 'beta'
     
     if beta_col:
-        # Convert to numeric, handling string values
-        df[beta_col] = pd.to_numeric(df[beta_col], errors='coerce')
-        
-        # If still has non-numeric values (object dtype), try extracting from strings
+        # First check if values are strings that need parsing (e.g., "0.5526137 unit increase")
+        # Apply _extract_numeric_from_string BEFORE pd.to_numeric to handle direction keywords
         if df[beta_col].dtype == 'object':
             df[beta_col] = df[beta_col].apply(_extract_numeric_from_string)
-            df[beta_col] = pd.to_numeric(df[beta_col], errors='coerce')
+        
+        # Convert to numeric
+        df[beta_col] = pd.to_numeric(df[beta_col], errors='coerce')
         
         # Ensure we have betaNum column (rename if needed)
         if beta_col != 'betaNum':
@@ -485,10 +485,11 @@ def _extract_associations(
         
         if len(assoc_raw) > 0:
             assoc_gcv2 = _transform_to_gcv2_format(assoc_raw, columns=gcv2_columns)
+            log.write(f"Transformed {len(assoc_gcv2)} associations to GCV2 format", verbose=verbose)
             
-            # Merge with sumstats on rsID
+            # Merge with sumstats on rsID for summary (one row per variant)
             if rsid in sumstats.columns and 'rsID_GCV2' in assoc_gcv2.columns:
-                # Group by rsID to handle multiple associations per variant (take first)
+                # Group by rsID to handle multiple associations per variant (take first) for merged summary
                 assoc_grouped = assoc_gcv2.groupby('rsID_GCV2').first().reset_index()
                 
                 # Merge GCV2 columns with sumstats
@@ -502,8 +503,9 @@ def _extract_associations(
                 )
                 # Remove duplicate columns if any
                 merged = merged.loc[:, ~merged.columns.str.endswith('_dup')]
-                log.write(f"Merged {len(merged)} variants with GWAS Catalog associations", verbose=verbose)
-                return merged, merged  # Return same for both full and summary
+                log.write(f"Merged {len(merged)} variants with GWAS Catalog associations (summary: first per variant)", verbose=verbose)
+                # Return ALL associations as full, merged as summary
+                return assoc_gcv2, merged
             else:
                 log.warning("Cannot merge: rsID column mismatch", verbose=verbose)
                 return assoc_gcv2, assoc_gcv2
@@ -1046,17 +1048,19 @@ def _parse_range(x: str) -> float:
 
 def _extract_numeric_from_string(value: Any) -> Optional[float]:
     """
-    Extract numeric value from string that may contain units.
+    Extract numeric value from string that may contain units and direction.
     
     Parameters
     ----------
     value : Any
-        Value that might be a string like "0.0441029 unit increase" or a number
+        Value that might be a string like "0.0441029 unit increase" or 
+        "0.5526137 unit decrease" or a number
         
     Returns
     -------
     Optional[float]
-        Numeric value or None if extraction fails
+        Numeric value or None if extraction fails.
+        For strings containing "decrease", the value is negated.
     """
     if pd.isna(value) or value is None:
         return None
@@ -1065,15 +1069,20 @@ def _extract_numeric_from_string(value: Any) -> Optional[float]:
     if isinstance(value, (int, float, np.number)):
         return float(value)
     
-    # If string, try to extract number
+    # If string, try to extract number and direction
     if isinstance(value, str):
-        # Remove common unit words and extract first number
         import re
         # Match pattern: optional sign, digits, optional decimal point, digits
         match = re.search(r'([+-]?\d+\.?\d*)', value)
         if match:
             try:
-                return float(match.group(1))
+                numeric_value = float(match.group(1))
+                # Check for "decrease" keyword (case insensitive) to determine sign
+                if 'decrease' in value.lower():
+                    numeric_value = -abs(numeric_value)
+                elif 'increase' in value.lower():
+                    numeric_value = abs(numeric_value)
+                return numeric_value
             except (ValueError, AttributeError):
                 pass
     
@@ -1083,6 +1092,9 @@ def _extract_numeric_from_string(value: Any) -> Optional[float]:
 def _ensure_numeric_beta(df: pd.DataFrame, beta_col: str = "Beta") -> pd.DataFrame:
     """
     Ensure Beta column is numeric, extracting numbers from strings if needed.
+    
+    Handles strings like "0.5526137 unit increase" or "0.5526137 unit decrease"
+    by extracting the numeric value and applying the appropriate sign.
     
     Parameters
     ----------
@@ -1103,15 +1115,11 @@ def _ensure_numeric_beta(df: pd.DataFrame, beta_col: str = "Beta") -> pd.DataFra
     
     # Check if column contains strings
     if df[beta_col].dtype == 'object':
-        # Try to convert to numeric first
+        # Apply _extract_numeric_from_string FIRST to handle strings like "0.5 unit increase/decrease"
+        # This must be done before pd.to_numeric to preserve the original string content
+        df[beta_col] = df[beta_col].apply(_extract_numeric_from_string)
+        # Convert to numeric
         df[beta_col] = pd.to_numeric(df[beta_col], errors='coerce')
-        
-        # For remaining non-numeric values, try to extract numbers
-        mask = df[beta_col].isna()
-        if mask.any():
-            df.loc[mask, beta_col] = df.loc[mask, beta_col].apply(_extract_numeric_from_string)
-            # Convert to numeric again
-            df[beta_col] = pd.to_numeric(df[beta_col], errors='coerce')
     
     return df
 

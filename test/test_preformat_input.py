@@ -312,8 +312,8 @@ class TestPreformatInputGlobAndFileColumn(unittest.TestCase):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
-    def test_single_file_adds_file_column(self):
-        """Loading from a single file path adds FILE column with that path."""
+    def test_single_file_no_file_column(self):
+        """Loading from a single file path does NOT add FILE column."""
         path = os.path.join(self.temp_dir, "single.tsv")
         self._write_sumstats_tsv(path)
         result = _preformat(
@@ -329,9 +329,7 @@ class TestPreformatInputGlobAndFileColumn(unittest.TestCase):
             p="P",
             verbose=False
         )
-        self.assertIn("FILE", result.columns)
-        self.assertEqual(result["FILE"].iloc[0], path)
-        self.assertTrue((result["FILE"] == path).all())
+        self.assertNotIn("FILE", result.columns)
 
     def test_glob_pattern_loads_multiple_files_and_adds_file_column(self):
         """Loading with glob (e.g. trait_*.txt) merges files and adds FILE with source path per row."""

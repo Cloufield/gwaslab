@@ -239,6 +239,7 @@
     "anno_fixed_arm_length": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -274,6 +275,7 @@
     "anno_gtf_path": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -290,6 +292,7 @@
     "anno_height": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -416,6 +419,7 @@
     "anno_source": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -465,6 +469,7 @@
     "anno_xshift": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -491,6 +496,7 @@
     "arm_offset": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -507,6 +513,7 @@
     "arm_scale": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -526,6 +533,7 @@
     "arm_scale_d": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -542,6 +550,7 @@
     "arrow_kwargs": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -960,6 +969,7 @@
     "cut_line_color": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -974,6 +984,7 @@
     "cut_log": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -989,6 +1000,7 @@
     "cutfactor": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -1681,6 +1693,7 @@
     },
     "highlight_anno_kwargs": {
       "plots": [
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -1728,6 +1741,7 @@
     "highlight_lim": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -1743,6 +1757,7 @@
     "highlight_lim_mode": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -1919,6 +1934,7 @@
     "jagged": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -1933,6 +1949,7 @@
     "jagged_len": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -1947,6 +1964,7 @@
     "jagged_wid": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -3511,6 +3529,7 @@
     "repel_force": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -3877,6 +3896,7 @@
     "sig_line_color": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4095,13 +4115,14 @@
     "suggestive_sig_line_color": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Suggestive significance line color",
       "default": "grey",
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4571,6 +4592,7 @@
     "xpad": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4586,6 +4608,7 @@
     "xpadl": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4601,6 +4624,7 @@
     "xpadr": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4627,6 +4651,7 @@
       "plots": [
         "plot_gwheatmap",
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4705,6 +4730,7 @@
     "xtight": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4777,6 +4803,7 @@
     "ylabels": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4820,6 +4847,7 @@
     "ystep": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -4835,6 +4863,7 @@
     "ytick3": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",

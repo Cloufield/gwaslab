@@ -398,30 +398,32 @@ def load_fasta_filtered(
                     # Filter during loading - avoid creating FastaRecord if not needed
                     record_chr = title.strip()
                     
+                    # Strip chr prefix if present (handles chr1, Chr1, CHR1 -> 1)
+                    record_chr_stripped = record_chr
+                    if record_chr_stripped.lower().startswith('chr'):
+                        record_chr_stripped = record_chr_stripped[3:]
+                    
                     # Use mapper to convert to numeric format
                     try:
                         if mapper._sumstats_format is None:
-                            mapper.detect_sumstats_format(pd.Series([record_chr]))
-                        i = mapper.to_numeric(record_chr)
+                            mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                        i = mapper.to_numeric(record_chr_stripped)
+                        # Check if conversion failed (returned pd.NA)
+                        if pd.isna(i):
+                            # Try uppercase version for sex chromosomes (X, Y, MT)
+                            record_chr_upper = record_chr_stripped.upper()
+                            i = mapper.to_numeric(record_chr_upper)
                         if isinstance(i, str):
                             try:
                                 i = int(i)
                             except ValueError:
                                 pass
                     except (KeyError, ValueError, AttributeError):
-                        # Fallback: try stripping chr prefix
-                        record_chr_stripped = record_chr.strip("chrCHR").upper()
+                        # Fallback: try direct parsing
                         try:
-                            if mapper._sumstats_format is None:
-                                mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
-                            i = mapper.to_numeric(record_chr_stripped)
-                            if isinstance(i, str):
-                                try:
-                                    i = int(i)
-                                except ValueError:
-                                    pass
-                        except (KeyError, ValueError, AttributeError):
-                            i = record_chr_stripped
+                            i = int(record_chr_stripped)
+                        except ValueError:
+                            i = record_chr_stripped.upper()
                     
                     # Only create FastaRecord if it passes filters
                     if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -459,30 +461,32 @@ def load_fasta_filtered(
                     # Filter during loading - avoid creating FastaRecord if not needed
                     record_chr = title.strip()
                     
+                    # Strip chr prefix if present (handles chr1, Chr1, CHR1 -> 1)
+                    record_chr_stripped = record_chr
+                    if record_chr_stripped.lower().startswith('chr'):
+                        record_chr_stripped = record_chr_stripped[3:]
+                    
                     # Use mapper to convert to numeric format
                     try:
                         if mapper._sumstats_format is None:
-                            mapper.detect_sumstats_format(pd.Series([record_chr]))
-                        i = mapper.to_numeric(record_chr)
+                            mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                        i = mapper.to_numeric(record_chr_stripped)
+                        # Check if conversion failed (returned pd.NA)
+                        if pd.isna(i):
+                            # Try uppercase version for sex chromosomes (X, Y, MT)
+                            record_chr_upper = record_chr_stripped.upper()
+                            i = mapper.to_numeric(record_chr_upper)
                         if isinstance(i, str):
                             try:
                                 i = int(i)
                             except ValueError:
                                 pass
                     except (KeyError, ValueError, AttributeError):
-                        # Fallback: try stripping chr prefix
-                        record_chr_stripped = record_chr.strip("chrCHR").upper()
+                        # Fallback: try direct parsing
                         try:
-                            if mapper._sumstats_format is None:
-                                mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
-                            i = mapper.to_numeric(record_chr_stripped)
-                            if isinstance(i, str):
-                                try:
-                                    i = int(i)
-                                except ValueError:
-                                    pass
-                        except (KeyError, ValueError, AttributeError):
-                            i = record_chr_stripped
+                            i = int(record_chr_stripped)
+                        except ValueError:
+                            i = record_chr_stripped.upper()
                     
                     # Only create FastaRecord if it passes filters
                     if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -500,30 +504,32 @@ def load_fasta_filtered(
             sequence = "".join(lines).replace(" ", "").replace("\r", "")
             record_chr = title.strip()
             
+            # Strip chr prefix if present (handles chr1, Chr1, CHR1 -> 1)
+            record_chr_stripped = record_chr
+            if record_chr_stripped.lower().startswith('chr'):
+                record_chr_stripped = record_chr_stripped[3:]
+            
             # Use mapper to convert to numeric format
             try:
                 if mapper._sumstats_format is None:
-                    mapper.detect_sumstats_format(pd.Series([record_chr]))
-                i = mapper.to_numeric(record_chr)
+                    mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
+                i = mapper.to_numeric(record_chr_stripped)
+                # Check if conversion failed (returned pd.NA)
+                if pd.isna(i):
+                    # Try uppercase version for sex chromosomes (X, Y, MT)
+                    record_chr_upper = record_chr_stripped.upper()
+                    i = mapper.to_numeric(record_chr_upper)
                 if isinstance(i, str):
                     try:
                         i = int(i)
                     except ValueError:
                         pass
             except (KeyError, ValueError, AttributeError):
-                # Fallback: try stripping chr prefix
-                record_chr_stripped = record_chr.strip("chrCHR").upper()
+                # Fallback: try direct parsing
                 try:
-                    if mapper._sumstats_format is None:
-                        mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
-                    i = mapper.to_numeric(record_chr_stripped)
-                    if isinstance(i, str):
-                        try:
-                            i = int(i)
-                        except ValueError:
-                            pass
-                except (KeyError, ValueError, AttributeError):
-                    i = record_chr_stripped
+                    i = int(record_chr_stripped)
+                except ValueError:
+                    i = record_chr_stripped.upper()
             
             if (i in chromlist_set) and (i in chroms_in_sumstats_set):
                 log.write(record_chr, " ", end="", show_time=False, verbose=verbose)
@@ -723,34 +729,22 @@ def load_and_build_fasta_records(
                     # Try to extract chromosome identifier from title
                     record_chr = title.strip()
                     
-                    # Use mapper to convert to numeric format (sumstats format)
+                    # Strip chr prefix if present (e.g., "chr1" -> "1")
+                    record_chr_stripped = record_chr
+                    if record_chr_stripped.lower().startswith('chr'):
+                        record_chr_stripped = record_chr_stripped[3:]
+                    
+                    # Use mapper to convert to numeric format
                     try:
-                        # Detect format if not already detected
-                        if mapper._sumstats_format is None:
-                            mapper.detect_sumstats_format(pd.Series([record_chr]))
-                        i = mapper.to_numeric(record_chr)
+                        i = mapper.to_numeric(record_chr_stripped)
                         # Ensure it's numeric for comparison
                         if isinstance(i, str):
-                            # Try to convert to numeric if it's a string number
                             try:
                                 i = int(i)
                             except ValueError:
                                 pass
                     except (KeyError, ValueError, AttributeError):
-                        # Fallback: try stripping chr prefix and mapping
-                        record_chr_stripped = record_chr.strip("chrCHR").upper()
-                        try:
-                            if mapper._sumstats_format is None:
-                                mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
-                            i = mapper.to_numeric(record_chr_stripped)
-                            if isinstance(i, str):
-                                try:
-                                    i = int(i)
-                                except ValueError:
-                                    pass
-                        except (KeyError, ValueError, AttributeError):
-                            # Last resort: use as-is
-                            i = record_chr_stripped
+                        i = record_chr_stripped
                     
                     # Only process if it passes filters
                     if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -800,30 +794,21 @@ def load_and_build_fasta_records(
                         # Get chromosome name from FASTA title
                         record_chr = title.strip()
                         
+                        # Strip chr prefix if present (e.g., "chr1" -> "1")
+                        record_chr_stripped = record_chr
+                        if record_chr_stripped.lower().startswith('chr'):
+                            record_chr_stripped = record_chr_stripped[3:]
+                        
                         # Use mapper to convert to numeric format
                         try:
-                            if mapper._sumstats_format is None:
-                                mapper.detect_sumstats_format(pd.Series([record_chr]))
-                            i = mapper.to_numeric(record_chr)
+                            i = mapper.to_numeric(record_chr_stripped)
                             if isinstance(i, str):
                                 try:
                                     i = int(i)
                                 except ValueError:
                                     pass
                         except (KeyError, ValueError, AttributeError):
-                            # Fallback: try stripping chr prefix
-                            record_chr_stripped = record_chr.strip("chrCHR").upper()
-                            try:
-                                if mapper._sumstats_format is None:
-                                    mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
-                                i = mapper.to_numeric(record_chr_stripped)
-                                if isinstance(i, str):
-                                    try:
-                                        i = int(i)
-                                    except ValueError:
-                                        pass
-                            except (KeyError, ValueError, AttributeError):
-                                i = record_chr_stripped
+                            i = record_chr_stripped
                         
                         # Only process if it passes filters
                         if (i in chromlist_set) and (i in chroms_in_sumstats_set):
@@ -848,30 +833,21 @@ def load_and_build_fasta_records(
                 sequence = "".join(lines).replace(" ", "").replace("\r", "")
                 record_chr = title.strip()
                 
+                # Strip chr prefix if present (e.g., "chr1" -> "1")
+                record_chr_stripped = record_chr
+                if record_chr_stripped.lower().startswith('chr'):
+                    record_chr_stripped = record_chr_stripped[3:]
+                
                 # Use mapper to convert to numeric format
                 try:
-                    if mapper._sumstats_format is None:
-                        mapper.detect_sumstats_format(pd.Series([record_chr]))
-                    i = mapper.to_numeric(record_chr)
+                    i = mapper.to_numeric(record_chr_stripped)
                     if isinstance(i, str):
                         try:
                             i = int(i)
                         except ValueError:
                             pass
                 except (KeyError, ValueError, AttributeError):
-                    # Fallback: try stripping chr prefix
-                    record_chr_stripped = record_chr.strip("chrCHR").upper()
-                    try:
-                        if mapper._sumstats_format is None:
-                            mapper.detect_sumstats_format(pd.Series([record_chr_stripped]))
-                        i = mapper.to_numeric(record_chr_stripped)
-                        if isinstance(i, str):
-                            try:
-                                i = int(i)
-                            except ValueError:
-                                pass
-                    except (KeyError, ValueError, AttributeError):
-                        i = record_chr_stripped
+                    i = record_chr_stripped
                 
                 if (i in chromlist_set) and (i in chroms_in_sumstats_set):
                     log.write(record_chr, " ", end="", show_time=False, verbose=verbose)

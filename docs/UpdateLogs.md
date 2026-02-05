@@ -1,5 +1,10 @@
 # Update Logs
 
+# v4.1.0 20260205
+
+- Added parameters to `plot_miami2()`: sig line colors, annotation arm/arrow, cut/jagged line, highlight, Y-axis, and X-axis parameters from `plot_mqq()`
+- Fixed `check_ref()` not loading FASTA records when sumstats uses numeric CHR (1, 2, 3) but reference FASTA uses chr-prefixed names (chr1, chr2, chr3): now strips "chr" prefix before chromosome conversion
+
 # v4.0.9 20260205
 
 - Fixed `anno_sig_level` and `sig_level` parameter support for `plot_miami2()`: allows setting independent significance threshold for annotation extraction in Miami plots

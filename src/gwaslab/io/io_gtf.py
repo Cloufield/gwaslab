@@ -96,16 +96,22 @@ def read_gtf(
     # Read GTF file with Polars (much faster than pandas)
     # Read all columns as strings first to handle invalid values
     # Use infer_schema_length=0 to prevent type inference and read everything as string
-    df = pl.read_csv(
-        filepath_or_buffer,
-        separator="\t",
-        has_header=False,
-        comment_prefix="#",
-        new_columns=REQUIRED_COLUMNS,
-        null_values=".",  # Only '.' is null, 'X' is valid chromosome name
-        try_parse_dates=False,
-        infer_schema_length=0,  # Don't infer types, read everything as string
-    )
+    try:
+        df = pl.read_csv(
+            filepath_or_buffer,
+            separator="\t",
+            has_header=False,
+            comment_prefix="#",
+            new_columns=REQUIRED_COLUMNS,
+            null_values=".",  # Only '.' is null, 'X' is valid chromosome name
+            try_parse_dates=False,
+            infer_schema_length=0,  # Don't infer types, read everything as string
+        )
+    except pl.exceptions.NoDataError:
+        # Handle empty GTF files (e.g., only comments or completely empty)
+        if usecols is not None:
+            return pd.DataFrame(columns=usecols)
+        return pd.DataFrame(columns=REQUIRED_COLUMNS)
     
     if len(df) == 0:
         if usecols is not None:

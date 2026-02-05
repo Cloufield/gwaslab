@@ -380,7 +380,8 @@ def _plot_position_bar(
     show_xticks: bool = True,
     region_step: int = 21,
     xlabel: Optional[str] = None,
-    region: Optional[Tuple[Union[int, str], int, int]] = None
+    region: Optional[Tuple[Union[int, str], int, int]] = None,
+    position_bar_bg: bool = True
 ) -> None:
     """
     Plot a position bar showing actual chromosome positions.
@@ -406,6 +407,8 @@ def _plot_position_bar(
         Label for x-axis. If None, will be set based on region if provided. Default: None.
     region : tuple, optional
         Region specification (chromosome, start, end). If provided, xlabel will include chromosome number. Default: None.
+    position_bar_bg : bool
+        Whether to show the gray background bar. Default: True.
     """
     n = len(ranks)
     
@@ -415,8 +418,9 @@ def _plot_position_bar(
     pos_range = pos_max - pos_min
     
     # Plot the position bar as a horizontal line/bar spanning the actual position range
-    bar_height = 0.1
-    ax_pos.barh(0, width=pos_range, left=pos_min, height=bar_height, color='gray', alpha=0.3)
+    if position_bar_bg:
+        bar_height = 0.1
+        ax_pos.barh(0, width=pos_range, left=pos_min, height=bar_height, color='gray', alpha=0.3)
     
     # Add vertical lines at ALL variant positions (using actual positions) that fill ylim(0, 0.05)
     ax_pos.vlines(actual_positions, 0, 0.05, colors='black', linewidth=1, zorder=3)
@@ -919,6 +923,15 @@ def _annotate_ld_block_left_side(
     else:
         final_fontsize = fontsize
     
+    # Extract tick_length and offset from ld_block_anno_kwargs if provided
+    if ld_block_anno_kwargs is not None:
+        if 'tick_length' in ld_block_anno_kwargs:
+            tick_length = ld_block_anno_kwargs['tick_length']
+            tick_len_data = tick_length * y_range
+        if 'offset' in ld_block_anno_kwargs:
+            offset = ld_block_anno_kwargs['offset']
+            u_offset = -offset * x_range
+    
     # Prepare default text kwargs
     default_text_kwargs = {
         'ha': 'right',  # Right alignment so right end is aligned
@@ -929,9 +942,12 @@ def _annotate_ld_block_left_side(
         'zorder': 10  # High zorder to appear on top
     }
     
-    # Update with user-provided kwargs if any
+    # Update with user-provided kwargs if any (excluding non-text params)
     if ld_block_anno_kwargs is not None:
-        default_text_kwargs.update(ld_block_anno_kwargs)
+        # Filter out non-text parameters
+        non_text_params = {'tick_length', 'offset'}
+        text_kwargs = {k: v for k, v in ld_block_anno_kwargs.items() if k not in non_text_params}
+        default_text_kwargs.update(text_kwargs)
     
     # Annotate each variant along the left edge of the triangle (only those in annotate_mask)
     for i in range(n):
@@ -957,8 +973,9 @@ def _annotate_ld_block_left_side(
         u_text = u_pos + u_offset
         
         # Draw tick mark extending from left edge to the left (perpendicular to edge)
-        # Tick extends along the perpendicular direction
-        tick_end_u = u_pos + u_offset * 0.3  # Tick extends 30% of the way to text
+        # Tick extends along the perpendicular direction, length controlled by tick_length
+        # tick_len_data is in y-range units, convert to u-coordinate offset
+        tick_end_u = u_pos - tick_len_data  # Negative to extend leftward
         # Keep V_negated the same for horizontal tick (perpendicular to left edge)
         ax.plot([u_pos, tick_end_u], [v_negated_pos, v_negated_pos], 
                 color=color, linewidth=0.8, zorder=9, clip_on=False)
@@ -1094,6 +1111,7 @@ def plot_ld_block(
     ld_block_anno_kwargs: Optional[dict] = None,
     ld_block_anno_set: Optional[Union[list, set, np.ndarray]] = None,
     ld_block_anno_max_rows: int = 100,
+    position_bar_bg: bool = True,
     log: Log = Log(),
     verbose: bool = True,
     **kwargs
@@ -1195,6 +1213,8 @@ def plot_ld_block(
     ld_block_anno_max_rows : int, optional
         Maximum number of variants to annotate. If the number of variants to annotate exceeds this limit,
         annotations will be skipped. Default: 100.
+    position_bar_bg : bool, optional
+        Whether to show the gray background bar in the position bar. Default: True.
     log : Log, optional
         Logger instance. Default: Log().
     verbose : bool, optional
@@ -1546,7 +1566,8 @@ def plot_ld_block(
                 show_xticks=True,
                 region_step=region_step,
                 xlabel=xlabel,
-                region=region
+                region=region,
+                position_bar_bg=position_bar_bg
             )
             
             # Add annotation lines for all variants
@@ -1582,7 +1603,8 @@ def plot_ld_block(
                 show_xticks=False,
                 region_step=region_step,
                 xlabel=xlabel,
-                region=region
+                region=region,
+                position_bar_bg=position_bar_bg
             )
             
             # Add annotation lines
