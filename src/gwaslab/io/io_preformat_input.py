@@ -378,7 +378,6 @@ def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_nu
             explicit = {"usecols", "dtype_dictionary"}
             readargs = {k: v for k, v in readargs.items() if k not in explicit}
             sumstats = pd.read_table(inpath, usecols=set(usecols), dtype=dtype_dictionary, **readargs)
-        sumstats["FILE"] = inpath
         return sumstats
 
 

@@ -1,5 +1,9 @@
 # Update Logs
 
+# v4.0.9 20260205
+
+- Fixed `anno_sig_level` and `sig_level` parameter support for `plot_miami2()`: allows setting independent significance threshold for annotation extraction in Miami plots
+
 # v4.0.8 20260204
 
 - Fixed `plot_miami2()` build version not being passed to underlying `_mqqplot()` function: now correctly displays genome build (e.g., GRCh38/hg38) instead of defaulting to hg19

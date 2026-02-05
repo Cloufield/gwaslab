@@ -3816,6 +3816,7 @@
       "plots": [
         "compare_effect",
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -3832,16 +3833,17 @@
     "anno_sig_level": {
       "plots": [
         "plot_manhattan",
+        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Significance level for extracting lead variants to annotate. Can be set independently from sig_level.",
       "default": 5e-08,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": true
     },
     "sig_levels": {
       "plots": [

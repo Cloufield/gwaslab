@@ -148,6 +148,8 @@
         "highlight_windowkb",
         "pinpoint",
         "pinpoint_color",
+        "sig_level",
+        "anno_sig_level",
         "sig_line",
         "suggestive_sig_line",
         "suggestive_sig_level",
