@@ -1269,6 +1269,10 @@
           "linewidth": 0,
           "zorder": 90,
           "elinewidth": 1
+        },
+        "compare_effect": {
+          "ecolor": "#cccccc",
+          "elinewidth": 1
         }
       },
       "add_to_docstring": false

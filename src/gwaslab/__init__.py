@@ -27,6 +27,7 @@ from gwaslab.io.io_to_pickle import dump_pickle
 from gwaslab.io.io_to_pickle import load_pickle
 from gwaslab.io.io_gwaslab_standard import load_gsf
 from gwaslab.io.io_read_tabular import _read_tabular as read_tabular
+from gwaslab.io.io_gtf import read_gtf
 
 from gwaslab.viz.viz_plot_compare_effect import compare_effect as _compare_effect
 from gwaslab.viz.viz_plot_forestplot import plot_forest as _plot_forest
