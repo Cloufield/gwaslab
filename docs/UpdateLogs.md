@@ -1,5 +1,9 @@
 # Update Logs
 
+# v4.1.1 20260208
+
+- Fixed `plot_miami2()` highlight/pinpoint/annotation not working: auto-detect `id1`/`id2` (SNPID/rsID) from Sumstats objects when not explicitly specified, so that SNP ID columns are included in the merged data for variant matching
+
 # v4.1.0 20260205
 
 - Added parameters to `plot_miami2()`: sig line colors, annotation arm/arrow, cut/jagged line, highlight, Y-axis, and X-axis parameters from `plot_mqq()`

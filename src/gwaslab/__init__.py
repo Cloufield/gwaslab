@@ -23,11 +23,24 @@ from gwaslab.util.util_in_simulate import simulate_sumstats_global
 
 from gwaslab.io.io_read_ldsc import read_ldsc
 from gwaslab.io.io_read_ldsc import read_popcorn
+from gwaslab.io.io_read_ldsc import read_greml
 from gwaslab.io.io_to_pickle import dump_pickle
 from gwaslab.io.io_to_pickle import load_pickle
 from gwaslab.io.io_gwaslab_standard import load_gsf
 from gwaslab.io.io_read_tabular import _read_tabular as read_tabular
+from gwaslab.io.io_read_tabular import read_bim
+from gwaslab.io.io_read_tabular import read_fam
+from gwaslab.io.io_read_tabular import read_psam
+from gwaslab.io.io_read_tabular import read_pvar
+from gwaslab.io.io_read_tabular import read_bgen_sample
 from gwaslab.io.io_gtf import read_gtf
+from gwaslab.io.io_gtf import read_gtf_file
+from gwaslab.io.io_bigwig_bigbed import read_bigwig
+from gwaslab.io.io_bigwig_bigbed import read_bigwig_intervals
+from gwaslab.io.io_bigwig_bigbed import read_bigwig_stats
+from gwaslab.io.io_bigwig_bigbed import read_bigbed
+from gwaslab.io.io_bedpe import read_bedpe
+from gwaslab.io.io_ucsc_bed import read_bed
 
 from gwaslab.viz.viz_plot_compare_effect import compare_effect as _compare_effect
 from gwaslab.viz.viz_plot_forestplot import plot_forest as _plot_forest

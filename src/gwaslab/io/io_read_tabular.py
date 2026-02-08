@@ -25,7 +25,12 @@ def _read_tabular(path: str, fmt: str, **kwargs: Any) -> pd.DataFrame:
             load_kwargs_dict["comment"] = meta_data["format_comment"]
 
     if "format_header" in meta_data and "header" not in kwargs:
-        load_kwargs_dict["header"] = meta_data["format_header"]
+        if meta_data["format_header"] is True:
+            load_kwargs_dict["header"] = "infer"
+        elif meta_data["format_header"] is False:
+            load_kwargs_dict["header"] = None
+        else:
+            load_kwargs_dict["header"] = meta_data["format_header"]
 
     if "format_na" in meta_data and "na_values" not in kwargs:
         if  meta_data["format_na"] is not None:    

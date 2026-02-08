@@ -135,6 +135,22 @@ def plot_miami2(
     if cols2 is None:
         cols2 = ["CHR","POS","MLOG10P" if scaled2 else "P"]
 
+    # Auto-detect id1/id2 from Sumstats objects when not specified
+    # This is needed for features like highlight, pinpoint, and annotation
+    # that require SNP IDs to match variants by rsID/SNPID
+    if id1 is None and isinstance(path1, Sumstats):
+        for col in ["SNPID", "rsID"]:
+            if col in path1.data.columns:
+                id1 = col
+                log.write(" -Auto-detected id1='{}' from sumstats1".format(col), verbose=verbose)
+                break
+    if id2 is None and isinstance(path2, Sumstats):
+        for col in ["SNPID", "rsID"]:
+            if col in path2.data.columns:
+                id2 = col
+                log.write(" -Auto-detected id2='{}' from sumstats2".format(col), verbose=verbose)
+                break
+
     if id1 is not None:
         cols1.append(id1)
     if id2 is not None:
