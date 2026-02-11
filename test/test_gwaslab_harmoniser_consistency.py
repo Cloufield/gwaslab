@@ -17,7 +17,7 @@ import tempfile
 import os
 import sys
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import List, Tuple
 
 # Ensure we use the latest source code, not the installed package
 # Add the source directory to the beginning of sys.path
@@ -30,97 +30,6 @@ if _source_dir.exists() and str(_source_dir) not in sys.path:
     modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('gwaslab')]
     for m in modules_to_remove:
         del sys.modules[m]
-
-# Import mapping function
-def extract_status_digit(status: int, digit: int) -> int:
-    """Extract a specific digit from a 7-digit status code."""
-    power = 10 ** (7 - digit)
-    return (status // power) % 10
-
-def map_gwaslab_to_hm_code(status: int, ea: Optional[str] = None, nea: Optional[str] = None, 
-                          vcf_ref: Optional[str] = None, vcf_alt: Optional[str] = None) -> Optional[int]:
-    """
-    Map GWASLab 7-digit status code to hm_code.
-    
-    For palindromic reverse strand variants (digit_7=2), the mapping depends on whether
-    alleles were flipped during harmonization. If EA/allele information is provided,
-    it will be used to determine the correct mapping.
-    """
-    digit_4 = extract_status_digit(status, 4)
-    digit_6 = extract_status_digit(status, 6)
-    digit_7 = extract_status_digit(status, 7)
-    
-    if digit_4 == 9:
-        return 14
-    if digit_6 == 9 or digit_7 == 9:
-        return 14
-    if digit_6 == 8:
-        return 15
-    
-    if digit_7 != 0:
-        if digit_7 == 8 and digit_6 != 8:
-            return 17
-        if digit_7 == 7:
-            return 18
-        if digit_7 == 7 or digit_7 == 8:
-            return 9
-        
-        if digit_7 == 1:
-            if digit_6 == 0:
-                return 1
-            elif digit_6 == 1:
-                return 2
-        if digit_7 == 2:
-            # For reverse strand palindromic, check if alleles were flipped
-            # The harmoniser checks if EA matches REF (flipped) or ALT (not flipped)
-            if ea is not None and vcf_ref is not None and vcf_alt is not None:
-                # If EA matches REF, alleles were flipped → hm_code=4
-                if ea == vcf_ref:
-                    return 4
-                # If EA matches ALT, alleles not flipped → hm_code=3
-                elif ea == vcf_alt:
-                    return 3
-            # Fallback: use digit_6 (but this may be incorrect if flip occurred)
-            if digit_6 == 0:
-                return 3  # Default assumption: not flipped
-            elif digit_6 == 1:
-                return 4  # Explicitly flipped
-            elif digit_6 == 2:
-                return 4  # Reverse complementary fixed (also flipped)
-        if digit_7 == 5:
-            if digit_6 == 0:
-                return 5
-            elif digit_6 == 3:
-                return 6
-            elif digit_6 == 4:
-                return 7
-            elif digit_6 == 5:
-                return 8
-        if digit_7 == 3:
-            if digit_6 == 0:
-                return 10
-            elif digit_6 == 1:
-                return 11
-            elif digit_6 == 2 or digit_6 == 4:
-                return 12
-        if digit_7 == 4:
-            return 11
-        if digit_7 == 6:
-            if digit_6 == 0 or digit_6 == 1 or digit_6 == 3:
-                return 11
-            elif digit_6 == 5:
-                return 13
-    else:
-        if digit_6 == 0:
-            return 10
-        elif digit_6 == 1 or digit_6 == 3:
-            return 11
-        elif digit_6 == 2 or digit_6 == 4:
-            return 12
-        elif digit_6 == 5:
-            return 13
-    
-    return None
 
 def create_toy_vcf(vcf_file: str):
     """Create a toy VCF file with various test variants."""
@@ -175,7 +84,7 @@ def create_toy_sumstats(sumstats_file: str):
     
     # Create test cases covering different harmonization scenarios
     # Define variants with FASTA reference alleles
-    # FASTA REF at each position: 1000=A, 2000=C, 3000=G, 4000=T, 5000=A, 6000=G, 7000=A, 8000=G, 9000=A, 10000=A, 20000=A
+    # FASTA REF at each position: 1000=A, 2000=C, 3000=G, 4000=T, 5000=A, 6000=G, 7000=A, 8000=G, 9000=A, 10000=A, 20000=A, 21000=A, 22000=A
     # Format: (SNPID, CHR, POS, EA, NEA, EAF, BETA, SE, P)
     # IMPORTANT: NEA must always match FASTA REF for proper alignment
     # When swapping EA/NEA to align NEA with REF, EAF must be flipped: EAF_new = 1 - EAF_old
@@ -200,8 +109,13 @@ def create_toy_sumstats(sumstats_file: str):
         ("1:9000_A_T", 1, 9000, "T", "A", 0.55, 0.1, 0.01, 1e-5),  # NEA=A matches REF=A ✓ (EAF: 0.45→0.55)
         # Case 10: Indel (NEA matches REF)
         ("1:10000_A_AT", 1, 10000, "AT", "A", 0.3, 0.1, 0.01, 1e-5),  # NEA=A matches REF=A ✓
-        # Case 11: Variant not in VCF (NEA matches REF)
+        # Case 11: Non-palindromic variant not in VCF (NEA matches REF)
         ("1:20000_A_G", 1, 20000, "G", "A", 0.3, 0.1, 0.01, 1e-5),  # NEA=A matches REF=A ✓
+        # Case 12: Palindromic A/T variant not in VCF (NEA matches REF, low MAF for inference)
+        ("1:21000_A_T", 1, 21000, "T", "A", 0.25, 0.1, 0.01, 1e-5),  # NEA=A matches REF=A ✓
+        # Case 13: Indel not in VCF, both alleles on ref (indistinguishable, needs VCF AF to resolve)
+        # FASTA has "AT" at pos 22000-22001, so NEA=A matches ref AND EA=AT matches ref → digit 6=6
+        ("1:22000_A_AT", 1, 22000, "AT", "A", 0.3, 0.1, 0.01, 1e-5),  # Both alleles on ref ✓
     ]
     
     df = pd.DataFrame(sumstats, columns=[
@@ -351,40 +265,6 @@ def compare_results(df_gwaslab: pd.DataFrame, df_harmoniser: pd.DataFrame):
         else:
             df_harmoniser['key'] = pd.Series('', index=df_harmoniser.index)
     
-    # Map GWASLab STATUS to hm_code
-    # For palindromic reverse strand variants (digit_7=2), check EA vs REF/ALT
-    # The harmoniser checks: after reverse complement, if EA == REF → hm_code=4, else hm_code=3
-    # For palindromic A/T or G/C, reverse complement is just swapping alleles
-    def map_with_allele_check(row):
-        status = row.get('STATUS', 0)
-        digit_7 = extract_status_digit(status, 7)
-        
-        # For reverse strand palindromic (digit_7=2), use EA vs REF/ALT to determine correct mapping
-        if digit_7 == 2:
-            ea_gwaslab = row.get('EA', None)
-            nea_gwaslab = row.get('NEA', None)
-            # Get VCF REF/ALT from harmoniser output
-            # After harmonization: NEA = VCF REF, EA = VCF ALT
-            key = row.get('key', '')
-            if key and key in df_harmoniser['key'].values:
-                harm_row = df_harmoniser[df_harmoniser['key'] == key].iloc[0]
-                vcf_ref = harm_row.get('hm_other_allele', harm_row.get('NEA', None))  # NEA after harmonization = VCF REF
-                vcf_alt = harm_row.get('hm_effect_allele', harm_row.get('EA', None))  # EA after harmonization = VCF ALT
-                if ea_gwaslab is not None and nea_gwaslab is not None and vcf_ref is not None:
-                    # The harmoniser takes reverse complement (swap for palindromic), then checks if EA == REF
-                    # After swap: EA becomes NEA, NEA becomes EA
-                    # So if NEA (which becomes EA after swap) matches REF → hm_code=4
-                    if nea_gwaslab == vcf_ref:
-                        return 4
-                    # If EA matches ALT (which becomes EA after swap) → hm_code=3
-                    elif vcf_alt is not None and ea_gwaslab == vcf_alt:
-                        return 3
-        
-        # For all other cases, use standard mapping
-        return map_gwaslab_to_hm_code(status)
-    
-    df_gwaslab['mapped_hm_code'] = df_gwaslab.apply(map_with_allele_check, axis=1)
-    
     # Debug: print keys to understand matching issue
     print(f"\nDebug - Matching keys (CHR:POS):")
     print(f"GWASLab keys (first 5): {df_gwaslab['key'].head().tolist()}")
@@ -470,11 +350,6 @@ def compare_results(df_gwaslab: pd.DataFrame, df_harmoniser: pd.DataFrame):
             comparison_dict[col_name] = merged[col_name]
         else:
             comparison_dict[col_name] = pd.Series(None, index=merged.index, dtype=object)
-    
-    if 'mapped_hm_code' in merged.columns:
-        comparison_dict['mapped_hm_code'] = merged['mapped_hm_code']
-    else:
-        comparison_dict['mapped_hm_code'] = pd.Series(None, index=merged.index, dtype=object)
     
     # Harmoniser columns - try multiple possible column names
     if 'hm_effect_allele' in merged.columns:
@@ -564,14 +439,6 @@ def compare_results(df_gwaslab: pd.DataFrame, df_harmoniser: pd.DataFrame):
         comparison_dict['BETA_match']
     )
     
-    # Also keep hm_code comparison for reference
-    mapped_hm = comparison_dict['mapped_hm_code']
-    harmoniser_hm = comparison_dict['hm_code']
-    if isinstance(mapped_hm, pd.Series) and isinstance(harmoniser_hm, pd.Series):
-        comparison_dict['hm_code_match'] = (mapped_hm == harmoniser_hm) | (mapped_hm.isna() & harmoniser_hm.isna())
-    else:
-        comparison_dict['hm_code_match'] = mapped_hm == harmoniser_hm
-    
     comparison = pd.DataFrame(comparison_dict)
     
     # Print results
@@ -593,7 +460,6 @@ def compare_results(df_gwaslab: pd.DataFrame, df_harmoniser: pd.DataFrame):
     eaf_matched = comparison['EAF_match'].sum()
     beta_matched = comparison['BETA_match'].sum()
     results_matched = comparison['results_match'].sum()
-    hm_code_matched = comparison['hm_code_match'].sum()
     
     print(f"\n" + "=" * 120)
     print("Summary - Result Comparisons:")
@@ -603,7 +469,6 @@ def compare_results(df_gwaslab: pd.DataFrame, df_harmoniser: pd.DataFrame):
     print(f"  EAF matches: {eaf_matched} ({eaf_matched/total*100:.1f}%)")
     print(f"  BETA matches: {beta_matched} ({beta_matched/total*100:.1f}%)")
     print(f"  All results match (EA, NEA, EAF, BETA): {results_matched} ({results_matched/total*100:.1f}%)")
-    print(f"  hm_code matches: {hm_code_matched} ({hm_code_matched/total*100:.1f}%)")
     print("=" * 120)
     
     # Show mismatches in results
@@ -652,7 +517,7 @@ def main():
         with open(fasta_file, 'w') as f:
             f.write(">1\n")
             # Create sequence with actual bases at variant positions
-            # Positions: 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000
+            # Positions: 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 21000, 22000
             sequence = ['N'] * 25000
             # Set reference alleles at variant positions
             sequence[999] = 'A'   # pos 1000: ref A
@@ -665,7 +530,10 @@ def main():
             sequence[7999] = 'G'  # pos 8000: ref G (palindromic)
             sequence[8999] = 'A'  # pos 9000: ref A (palindromic)
             sequence[9999] = 'A'  # pos 10000: ref A (indel)
-            sequence[19999] = 'A' # pos 20000: ref A (not in VCF)
+            sequence[19999] = 'A' # pos 20000: ref A (non-palindromic, not in VCF)
+            sequence[20999] = 'A' # pos 21000: ref A (palindromic A/T, not in VCF)
+            sequence[21999] = 'A' # pos 22000: ref A (indel, not in VCF)
+            sequence[22000] = 'T' # pos 22001: ref T (so both NEA=A and EA=AT match ref → indistinguishable indel)
             f.write(''.join(sequence) + '\n')
         
         # Run GWASLab
