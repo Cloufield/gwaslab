@@ -539,7 +539,7 @@ def _mqqplot(insumstats,
         Fixed arm length for annotations. Default is None.
     anno_source : str, default='ensembl'
         Source for gene name annotations.
-    anno_gtf_path : str, optional
+    anno_gtf_path : str, optional, default=None
         Path to GTF file for annotations when anno is 'GENENAME'. 
         If None, auto-detected (preferred). Default is None.
     anno_adjust : bool, default=False
