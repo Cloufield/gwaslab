@@ -1379,7 +1379,7 @@
         },
         "plot_mqq:qq": {
           "figsize": [
-            15,
+            5,
             5
           ],
           "dpi": 200
@@ -3676,6 +3676,7 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
+        "plot_qq:qq",
         "plot_pipcs",
         "plot_region:r",
         "plot_rg",
@@ -3701,6 +3702,7 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
+        "plot_qq:qq",
         "plot_pipcs",
         "plot_region:r",
         "plot_rg",

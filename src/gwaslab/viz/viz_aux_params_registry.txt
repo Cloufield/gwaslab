@@ -1178,6 +1178,8 @@
         "font_family",
         "fig_kwargs",
         "figax",
+        "save",
+        "save_kwargs",
         "log",
         "verbose"
       ],

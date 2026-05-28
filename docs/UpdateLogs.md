@@ -1,5 +1,14 @@
 # Update Logs
 
+# v4.1.7 20260528
+
+- CLI: `--plot qq` now uses `plot_mqq(mode="qq")` (same path as manhattan/mqq) so shared plot options (`--sig-level`, `--ylim`, `--highlight`, `--out`) apply consistently
+- CLI docs: processing execution order and early-exit rules for `--plot` / `--get`; clarify harmonization `basic_check` default (`not --qc` unless `--basic-check` / `--no-basic-check` is set)
+- Package: expose `gwaslab.__version__` from `gwaslab_info()`
+- Viz params: QQ default figsize 5×5; register `plot_qq:qq` in viz aux registry with `save` / `save_kwargs`
+- README: link to [gwaslab-skills](https://github.com/Cloufield/gwaslab-skills) agent library and install notes
+- CLI tests: `--plot qq` routing and `__version__` consistency
+
 # v4.1.6 20260416
 
 - Fixed stacked regional plot regressions: preserved bottom x-axis tick labels in region mode with shared x-axis and made duplicate LD-legend removal panel-specific so the first panel legend is retained.

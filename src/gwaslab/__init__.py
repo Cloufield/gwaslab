@@ -8,6 +8,7 @@ from gwaslab.g_SumstatsPair import SumstatsPair
 from gwaslab.g_SumstatsMulti import SumstatsMulti
 from gwaslab.g_SumstatsSet import SumstatsSet
 from gwaslab.info.g_version import _show_version as show_version
+from gwaslab.info.g_version import gwaslab_info
 
 from gwaslab.util.util_in_convert_h2 import h2_obs_to_liab
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
@@ -87,6 +88,8 @@ from gwaslab.qc.qc_reserved_headers import researved_header
 from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 from gwaslab.view.view_report import generate_qc_report
+
+__version__ = gwaslab_info()["version"]
 
 
 _viz_params = VizParamsManager()

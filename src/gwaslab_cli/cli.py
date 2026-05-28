@@ -879,7 +879,7 @@ Examples:
         if args.plot == "manhattan":
             s.plot_mqq(mode="m", **plot_common_kwargs)
         elif args.plot == "qq":
-            s.plot_qq(save=args.output, verbose=not args.quiet)
+            s.plot_mqq(mode="qq", **plot_common_kwargs)
         elif args.plot == "mqq":
             s.plot_mqq(mode="mqq", **plot_common_kwargs)
         elif args.plot == "regional":

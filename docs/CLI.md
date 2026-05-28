@@ -215,10 +215,6 @@ Many other flags (`--fix-chr`, `--fix-chr-pos`, variant filters, `--get`, `--plo
 | `--sig-level-extract` | P-value threshold for `--get` operations | `5e-8` |
 | `--windowsizekb` | Window size (kb) for `--get lead` | `500` |
 
-## Processing Options
-
-When multiple flags are used in one command, the CLI applies steps in this order: optional **`fix_*`** flags → **`--qc`** / remove / dedup / normalize → **`--filter-region`** → **variant filters** (`--extract` / `--exclude` / BED / `--chr` / MAF / MAC / `--snps-only` / `--min-info`) → harmonization → assign-rsid → rsid-to-chrpos → infer-build → liftover → plot (if any) → **`--get`** (if set) → **`to_format`** output. See `gwaslab --help` for the authoritative list.
-
 ### Quality Control (QC)
 
 Perform quality control on sumstats using `basic_check()`:
@@ -335,7 +331,7 @@ gwaslab --input sumstats.tsv --fmt auto \
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--harmonize` | Perform harmonization | False |
-| `--basic-check` | Run basic QC in harmonization | True |
+| `--basic-check` | Force basic QC in harmonization | `True` when explicitly set |
 | `--no-basic-check` | Skip basic QC in harmonization | - |
 | `--ref-seq` | Reference sequence file (FASTA) for allele flipping | None |
 | `--ref-rsid-tsv` | Reference rsID HDF5 file (legacy name, accepts HDF5 path) | None |
@@ -345,6 +341,8 @@ gwaslab --input sumstats.tsv --fmt auto \
 | `--ref-maf-threshold` | MAF threshold for reference | 0.4 |
 | `--maf-threshold` | MAF threshold for sumstats | 0.40 |
 | `--sweep-mode` | Use sweep mode for large datasets | False |
+
+Default behavior when neither `--basic-check` nor `--no-basic-check` is provided: harmonization uses `basic_check = not --qc` (i.e., it runs basic check by default unless `--qc` was already run in the same command).
 
 ### Infer Build
 
@@ -720,6 +718,34 @@ For detailed documentation on specific functions, see:
 - [Harmonization](Harmonization.md)
 - [Format](Format.md)
 - [Standardization](Standardization.md)
+
+## Processing Options
+
+### Execution Order
+
+When multiple flags are provided in a single command, GWASLab executes operations in the following order:
+
+1. **Optional fixes**: `--fix-chr`, `--fix-pos`, `--fix-chr-pos`, `--fix-chr-pos-allele`, `--fix-allele`, `--fix-id`
+2. **QC**: `--qc`, `--remove`, `--remove-dup`, `--normalize`
+3. **Region filter**: `--filter-region`
+4. **Variant filters**: `--extract`, `--exclude`, `--extract-bed`, `--exclude-bed`, `--chr`, `--maf`, `--max-maf`, `--mac`, `--snps-only`, `--min-info`
+5. **Harmonization**: `--harmonize` (and related `--ref-*` options)
+6. **rsID assignment**: `--assign-rsid`
+7. **rsID to CHR:POS conversion**: `--rsid-to-chrpos`
+8. **Build inference**: `--infer-build`
+9. **Liftover**: `--liftover`
+10. **Plotting**: `--plot`
+11. **Association extraction**: `--get`
+12. **Final export**: `to_format` output (`--out` / `--output` with `--to-fmt`)
+
+### Early-Exit Rules
+
+- `--plot` writes the requested figure and exits immediately.  
+  If `--plot` is present, `--get` and final `to_format` export are not executed in that run.
+- `--get` writes extraction results and exits immediately.  
+  If `--get` is present, final `to_format` export is not executed in that run.
+
+For exact runtime behavior, always verify with `gwaslab --help`.
 
 ## Supported Formats
 

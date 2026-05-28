@@ -403,7 +403,7 @@ def test_extract_lead_writes_tsv(tmp_path: Path) -> None:
     assert len(text.splitlines()) >= 1
 
 
-def test_plot_qq_cli_calls_plot_qq(
+def test_plot_qq_cli_calls_plot_mqq(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     from unittest.mock import MagicMock
@@ -424,8 +424,10 @@ def test_plot_qq_cli_calls_plot_qq(
             "--quiet",
         ]
     )
-    fake.plot_qq.assert_called_once()
-    assert fake.plot_qq.call_args.kwargs.get("save") == str(png)
+    fake.plot_mqq.assert_called_once()
+    kw = fake.plot_mqq.call_args.kwargs
+    assert kw.get("mode") == "qq"
+    assert kw.get("save") == str(png)
 
 
 def test_liftover_writes_output(tmp_path: Path) -> None:
