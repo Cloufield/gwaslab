@@ -45,44 +45,31 @@ The function returns a string indicating the closest ancestry (e.g., "EUR", "EAS
 
 ## Reference Data
 
-The function uses built-in reference datasets derived from the 1000 Genomes Project:
+The function uses 1000 Genomes HapMap3 allele-frequency panels. Resolution order:
 
-### Default Reference Files
+1. **Downloaded full panel** in `~/.gwaslab/` (if you ran `download_ref("1kg_hm3_hg19_eaf")` or `..._hg38_eaf`)
+2. **Builtin core panel** shipped with gwaslab (offline, no download)
 
-- **`1kg_hm3_hg19_eaf`** (for build="19"): HapMap3 allele frequency file for hg19/GRCh37
-  - File: `PAN.hapmap3.hg19.EAF.tsv.gz`
-  - Contains allele frequencies for HapMap3 SNPs from 1000 Genomes Project Phase 3 data
-  - Provides population-specific allele frequencies for 26 populations across 5 super-populations
-  - Genome build: GRCh37/hg19
+### Builtin core panel (default when not downloaded)
 
-- **`1kg_hm3_hg38_eaf`** (for build="38"): HapMap3 allele frequency file for hg38/GRCh38
-  - File: `PAN.hapmap3.hg38.EAF.tsv.gz`
-  - Contains allele frequencies for HapMap3 SNPs from 1000 Genomes Project 30x data
-  - Provides population-specific allele frequencies for 26 populations across 5 super-populations
-  - Genome build: GRCh38/hg38
+- Files: `PAN.hapmap3.hg19.EAF.core.tsv.gz` and `PAN.hapmap3.hg38.EAF.core.tsv.gz` (~30,000 variants each)
+- **Combined package size**: under **5 MB** for both builds
+- **Selection**: MAF 0.05–0.95, then top variants by max pairwise Fst among EUR/EAS/AMR/SAS/AFR (same algorithm applied per build)
+- Sufficient for typical ancestry inference; use the full panel for maximum overlap
 
-### Reference Data Characteristics
+### Optional full panel (download)
 
-- **SNP Set**: HapMap3 SNPs (~1.2 million variants)
-  - High-quality, well-characterized variants commonly used in GWAS
-  - Provides good coverage across the genome
-  - Standard reference panel for population genetics analyses
+- **`1kg_hm3_hg19_eaf`**: `PAN.hapmap3.hg19.EAF.tsv.gz` (~1.2M variants, hg19)
+- **`1kg_hm3_hg38_eaf`**: `PAN.hapmap3.hg38.EAF.tsv.gz` (~1.2M variants, hg38)
 
-- **Source**: 1000 Genomes Project
-  - Phase 3 (hg19): 2,504 individuals from 26 populations
-  - 30x (hg38): High-coverage sequencing data
-  - Publicly available reference dataset for human genetic variation
+```python
+import gwaslab as gl
+gl.download_ref("1kg_hm3_hg19_eaf")  # optional; overrides builtin when present
+```
 
-- **Data Format**: Tab-separated values (TSV) with columns:
-  - `CHR`: Chromosome
-  - `POS`: Base pair position
-  - `REF`: Reference allele
-  - `ALT`: Alternative allele
-  - Population-specific allele frequency columns (26 populations)
+### Data format
 
-- **Automatic Download**: Reference files are automatically downloaded on first use via `get_path()`
-  - Files are cached locally for subsequent use
-  - Download location: `~/.gwaslab/` directory
+Tab-separated values with `CHR`, `POS`, `REF`, `ALT`, 26 subpopulation AF columns, and EUR/EAS/AMR/SAS/AFR superpopulation columns.
 
 ### Custom Reference Files
 

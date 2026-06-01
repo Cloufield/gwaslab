@@ -1,0 +1,27 @@
+{
+  "created_utc": "2026-06-01T09:11:50.014633+00:00",
+  "source_hg19": "/home/yunye/.gwaslab/PAN.hapmap3.hg19.EAF.tsv.gz",
+  "source_hg38": "/home/yunye/.gwaslab/PAN.hapmap3.hg38.EAF.tsv.gz",
+  "params": {
+    "maf_min": 0.05,
+    "maf_max": 0.95,
+    "target_n_initial": 30000,
+    "max_mb_total": 5.0,
+    "score": "max_pairwise_fst_superpops"
+  },
+  "n_variants_per_build": 30000,
+  "selection_note": "Independent top-N per build (hg19/hg38 SNPID and coordinates differ)",
+  "outputs": {
+    "hg19": {
+      "path": "/home/yunye/work/gwaslab/eaf_tmp/out/PAN.hapmap3.hg19.EAF.core.tsv.gz",
+      "bytes_gzip": 1946675,
+      "md5": "65c71df7fb8a0dd8ee26f5f92e1e8261"
+    },
+    "hg38": {
+      "path": "/home/yunye/work/gwaslab/eaf_tmp/out/PAN.hapmap3.hg38.EAF.core.tsv.gz",
+      "bytes_gzip": 1930640,
+      "md5": "1d18272c01f618ecb8cb0cef5a10d420"
+    }
+  },
+  "bytes_total_gzip": 3877315
+}

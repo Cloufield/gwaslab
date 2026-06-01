@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union, Optional
 import pandas as pd
 from gwaslab.info.g_Log import Log
-from gwaslab.bd.bd_download import get_path
+from gwaslab.bd.bd_ancestry_ref import resolve_ancestry_af
 from gwaslab.qc.qc_decorator import with_logging
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 )
 def _infer_ancestry(
     sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
-    ancestry_af: str,
+    ancestry_af: Optional[str] = None,
     build: Optional[str] = None,
     log: Log = Log(),
     verbose: bool = True
@@ -31,10 +31,11 @@ def _infer_ancestry(
     ----------
     sumstats_or_dataframe : Sumstats or pd.DataFrame
         Sumstats object or DataFrame to process.
-    ancestry_af : str
-        Path to allele frequency file. Can be a file path or a key like "1kg_hm3_hg19_eaf" or "1kg_hm3_hg38_eaf".
+    ancestry_af : str, optional
+        Path to allele frequency file, or keywords ``1kg_hm3_hg19_eaf`` / ``1kg_hm3_hg38_eaf``.
+        If None, uses downloaded full PAN when available, otherwise the builtin core panel.
     build : str, optional
-        Genome build version. Options are "19" or "38". Default is "19".
+        Genome build version. Options are "19" or "38". Required when ``ancestry_af`` is None.
     verbose : bool, optional
         If True, write log messages. Default is True.
 
@@ -48,57 +49,38 @@ def _infer_ancestry(
     -----
     This function internally uses `calculate_fst` to compute Fst values for each variant.
     """
-    import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe
     else:
         sumstats = sumstats_or_dataframe.data
 
-    # Store original keyword for error message
-    original_keyword = None
-    if ancestry_af == "1kg_hm3_hg19_eaf":
-        original_keyword = "1kg_hm3_hg19_eaf"
-        ancestry_af = get_path("1kg_hm3_hg19_eaf", log=log, verbose=verbose)
-    elif ancestry_af == "1kg_hm3_hg38_eaf":
-        original_keyword = "1kg_hm3_hg38_eaf"
-        ancestry_af = get_path("1kg_hm3_hg38_eaf", log=log, verbose=verbose)
-    
-    if ancestry_af is None or ancestry_af is False:
-        if original_keyword:
-            raise ValueError(
-                f"Reference file '{original_keyword}' not found. "
-                f"Please download it first using: gl.download_ref('{original_keyword}')"
-            )
-        else:
-            raise ValueError("Please pass valid allele frequency table by ancestry file!")
-    
-    ##start function with col checking##########################################################
-
-    ############################################################################################
+    ancestry_af = resolve_ancestry_af(ancestry_af, build, log=log, verbose=verbose)
 
     ref_af = pd.read_csv(ancestry_af, sep="\t")
-    
-    data_af = pd.merge(sumstats[["CHR","POS","EA","NEA","EAF"]] ,ref_af,on=["CHR","POS"],how="inner") 
+
+    data_af = pd.merge(sumstats[["CHR","POS","EA","NEA","EAF"]] ,ref_af,on=["CHR","POS"],how="inner")
 
     log.write(f"  -Estimating Fst using {len(data_af)} variants...", verbose=verbose)
 
     is_filp = data_af["EA"] == data_af["ALT"]
     data_af.loc[is_filp, ["EA","NEA"]] = data_af.loc[is_filp, ["NEA","EA"]]
     data_af.loc[is_filp, "EAF"] = 1 - data_af.loc[is_filp, "EAF"]
-    
+
     headers = []
-    for i in ['GBR', 'FIN', 'CHS', 'PUR', 'CDX',
+    pop_cols = ['GBR', 'FIN', 'CHS', 'PUR', 'CDX',
         'CLM', 'IBS', 'PEL', 'PJL', 'KHV', 'ACB', 'GWD', 'ESN', 'BEB', 'MSL',
         'STU', 'ITU', 'CEU', 'YRI', 'CHB', 'JPT', 'LWK', 'ASW', 'MXL', 'TSI',
-        'GIH', 'EUR', 'EAS', 'AMR', 'SAS', 'AFR']:
+        'GIH', 'EUR', 'EAS', 'AMR', 'SAS', 'AFR']
+    for i in pop_cols:
         headers.append(f"FST_{i}")
         data_af[f"FST_{i}"] = data_af.apply(lambda x: calculate_fst(x["EAF"], x[i]), axis=1)
-    
-    for i,value in data_af[headers].mean().sort_values().items():
+
+    mean_fst = data_af[headers].mean().sort_values()
+    for i, value in mean_fst.items():
         log.write( f"  -{i} : {value}", verbose=verbose)
-        
-        closest_ancestry = data_af[headers].mean().sort_values().idxmin()
+
+    closest_ancestry = mean_fst.idxmin()
 
     log.write(f"  -Closest Ancestry: {closest_ancestry.split('_')[1]}", verbose=verbose)
     log.write("Finished inferring ancestry.", verbose=verbose)

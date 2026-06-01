@@ -56,6 +56,7 @@ gwaslab = [
   "data/cytoband/*",
   "data/high_ld/*",
   "data/hapmap3_SNPs/*",
+  "data/hapmap3_EAF/*",
   "qc/qc_researved_header.json"
 ]
 
