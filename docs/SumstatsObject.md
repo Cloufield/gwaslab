@@ -121,7 +121,7 @@ GWASLab uses a manually curated format conversion dictionary in [https://github.
 | `vcf`         | gwas-vcf format      |
 | `bolt_lmm`    | output format        |
 
-!!! info "Update Formatbook using `gl.update_formaybook()`"
+!!! info "Update Formatbook using `gl.update_formatbook()`"
     ```python
     gl.update_formatbook()
     Mon Jul 17 17:38:11 2023 Updating formatbook from: https://raw.github.com/Cloufield/formatbook/main/formatbook.json
