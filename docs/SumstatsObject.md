@@ -101,7 +101,7 @@ You can load the sumstats by specifying the columns like:
 
 GWASLab supports common sumstats formats and you can load sumstats by specifying `fmt`.  
     
-GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https:/github.com/Cloufield/formatbook). Currently, it supports the following formats:
+GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook). Currently, it supports the following formats:
 
 | `Keyword`     | `Description`        |
 |---------------|----------------------|
