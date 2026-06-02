@@ -1,5 +1,9 @@
 # Update Logs
 
+# v4.1.8 20260602
+
+- Added built-in panel for ancestry inferring based on allele frequency (AF)
+
 # v4.1.7 20260528
 
 - CLI: `--plot qq` now uses `plot_mqq(mode="qq")` (same path as manhattan/mqq) so shared plot options (`--sig-level`, `--ylim`, `--highlight`, `--out`) apply consistently

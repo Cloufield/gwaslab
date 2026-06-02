@@ -127,20 +127,42 @@ The function provides detailed logging output showing Fst values for all populat
 ```python
 Start to infer ancestry based on Fst ...(version)
  -Estimating Fst using 12345 variants...
- -FST_GBR : 0.001234
- -FST_FIN : 0.001456
- -FST_CHS : 0.002345
+ -Superpopulation (mean Fst):
+ -FST_EAS : 0.002345
+ -FST_EUR : 0.003456
  ...
- -FST_EUR : 0.001234
- -Closest Ancestry: EUR
+ -Population (mean Fst):
+ -FST_JPT : 0.001234
+ -FST_CHB : 0.001456
+ ...
+ -Closest superpopulation: EAS
+ -Closest population: JPT
 Finished inferring ancestry.
 ```
 
-The populations are sorted by Fst value (lowest to highest), with the closest match (lowest Fst) indicating the inferred ancestry.
+Within each section, groups are sorted by mean Fst (lowest to highest). The returned label is the overall minimum across all superpopulations and populations.
 
 ## Notes
 
-- **Fst Interpretation**: Lower Fst values indicate greater genetic similarity. The population with the minimum average Fst is identified as the closest ancestry match.
+
+!!! note "Fst-like score calculation"
+    GWASLab calculates an \(F_{ST}\)-like allele-frequency differentiation score based on expected heterozygosity.
+
+    For two populations with allele frequencies \(p_1\) and \(p_2\):
+
+    - Within-population expected heterozygosity:
+      \(H_S = \frac{2p_1(1-p_1) + 2p_2(1-p_2)}{2}\)
+    - Mean allele frequency:
+      \(p_T = \frac{p_1 + p_2}{2}\)
+    - Total expected heterozygosity:
+      \(H_T = 2p_T(1-p_T)\)
+    - Fst-like score:
+      \(\frac{H_T - H_S}{H_T}\)
+
+    This score reflects how much of the total allele-frequency variation can be attributed to differences between the two populations. In GWASLab, it is used as a simple \(F_{ST}\)-like distance for comparing GWAS summary-statistics allele frequencies with reference population allele frequencies. Lower values indicate greater similarity, and the population with the minimum average score is selected as the closest ancestry match.
+
+    This value is referred to as an \(F_{ST}\)-like score rather than a formal \(F_{ST}\) estimate because it is calculated only from allele frequencies in summary statistics and reference panels, without individual-level genotypes or genotype-count-based variance estimation.
+
 - **EAF Accuracy**: The accuracy of ancestry inference depends on the accuracy of EAF values in your sumstats. Inconsistent or mislabeled EAF values may lead to incorrect ancestry inference.
 - **Reference Data**: Uses HapMap3 SNPs from the 1000 Genomes Project (see [Reference Data](#reference-data) section above for details). The reference files are automatically downloaded on first use and cached locally.
 - **Allele Alignment**: The function automatically handles allele flipping to ensure proper comparison between sumstats and reference data.

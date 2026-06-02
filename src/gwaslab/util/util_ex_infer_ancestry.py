@@ -7,6 +7,32 @@ from gwaslab.qc.qc_decorator import with_logging
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
+SUPER_POPS = ["EUR", "EAS", "AMR", "SAS", "AFR"]
+SUB_POPS = [
+    "GBR", "FIN", "CHS", "PUR", "CDX", "CLM", "IBS", "PEL", "PJL", "KHV",
+    "ACB", "GWD", "ESN", "BEB", "MSL", "STU", "ITU", "CEU", "YRI", "CHB",
+    "JPT", "LWK", "ASW", "MXL", "TSI", "GIH",
+]
+ALL_POPS = SUB_POPS + SUPER_POPS
+
+
+def _mean_fst_section(mean_fst: pd.Series, pops: list[str]) -> pd.Series:
+    cols = [f"FST_{p}" for p in pops]
+    return mean_fst.loc[cols].sort_values()
+
+
+def _write_fst_section(
+    log: Log,
+    mean_fst: pd.Series,
+    pops: list[str],
+    title: str,
+    verbose: bool,
+) -> None:
+    log.write(f"  -{title}", verbose=verbose)
+    for col, value in _mean_fst_section(mean_fst, pops).items():
+        log.write(f"  -{col} : {value}", verbose=verbose)
+
+
 @with_logging(
         start_to_msg="infer ancestry based on Fst",
         finished_msg="inferring ancestry",
@@ -18,6 +44,7 @@ def _infer_ancestry(
     sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
     ancestry_af: Optional[str] = None,
     build: Optional[str] = None,
+    _core: bool = False,
     log: Log = Log(),
     verbose: bool = True
 ) -> str:
@@ -36,6 +63,9 @@ def _infer_ancestry(
         If None, uses downloaded full PAN when available, otherwise the builtin core panel.
     build : str, optional
         Genome build version. Options are "19" or "38". Required when ``ancestry_af`` is None.
+    _core : bool, optional
+        Internal flag. If True, force use of the builtin core EAF panel and skip downloaded
+        reference lookup.
     verbose : bool, optional
         If True, write log messages. Default is True.
 
@@ -55,7 +85,9 @@ def _infer_ancestry(
     else:
         sumstats = sumstats_or_dataframe.data
 
-    ancestry_af = resolve_ancestry_af(ancestry_af, build, log=log, verbose=verbose)
+    ancestry_af = resolve_ancestry_af(
+        ancestry_af, build, _core=_core, log=log, verbose=verbose
+    )
 
     ref_af = pd.read_csv(ancestry_af, sep="\t")
 
@@ -67,22 +99,32 @@ def _infer_ancestry(
     data_af.loc[is_filp, ["EA","NEA"]] = data_af.loc[is_filp, ["NEA","EA"]]
     data_af.loc[is_filp, "EAF"] = 1 - data_af.loc[is_filp, "EAF"]
 
-    headers = []
-    pop_cols = ['GBR', 'FIN', 'CHS', 'PUR', 'CDX',
-        'CLM', 'IBS', 'PEL', 'PJL', 'KHV', 'ACB', 'GWD', 'ESN', 'BEB', 'MSL',
-        'STU', 'ITU', 'CEU', 'YRI', 'CHB', 'JPT', 'LWK', 'ASW', 'MXL', 'TSI',
-        'GIH', 'EUR', 'EAS', 'AMR', 'SAS', 'AFR']
-    for i in pop_cols:
-        headers.append(f"FST_{i}")
-        data_af[f"FST_{i}"] = data_af.apply(lambda x: calculate_fst(x["EAF"], x[i]), axis=1)
+    headers = [f"FST_{p}" for p in ALL_POPS]
+    for pop in ALL_POPS:
+        data_af[f"FST_{pop}"] = data_af.apply(
+            lambda x, p=pop: calculate_fst(x["EAF"], x[p]), axis=1
+        )
 
-    mean_fst = data_af[headers].mean().sort_values()
-    for i, value in mean_fst.items():
-        log.write( f"  -{i} : {value}", verbose=verbose)
+    mean_fst = data_af[headers].mean()
+    _write_fst_section(
+        log, mean_fst, SUPER_POPS, "Superpopulation (mean Fst):", verbose
+    )
+    _write_fst_section(
+        log, mean_fst, SUB_POPS, "Population (mean Fst):", verbose
+    )
+
+    closest_super = _mean_fst_section(mean_fst, SUPER_POPS).idxmin()
+    closest_pop = _mean_fst_section(mean_fst, SUB_POPS).idxmin()
+    log.write(
+        f"  -Closest superpopulation: {closest_super.split('_')[1]}",
+        verbose=verbose,
+    )
+    log.write(
+        f"  -Closest population: {closest_pop.split('_')[1]}",
+        verbose=verbose,
+    )
 
     closest_ancestry = mean_fst.idxmin()
-
-    log.write(f"  -Closest Ancestry: {closest_ancestry.split('_')[1]}", verbose=verbose)
     log.write("Finished inferring ancestry.", verbose=verbose)
     return closest_ancestry.split("_")[1]
 
