@@ -406,6 +406,69 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
+    "anno_text": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Column name for phenogram annotation text labels (e.g. gene name)",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_group": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Column name to merge multiple phenogram leads into one label",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_shape": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Column name for phenogram marker shape; unique values auto-mapped to marker_shapes pool",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_color": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Column name for phenogram marker color; unique values auto-mapped to marker_colors pool",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "use_lead_extraction": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "If True, extract lead variants via _get_sig(); if False, use every input row",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_shapes": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Pool of matplotlib marker codes for auto phenogram shape mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_colors": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Pool of colors for auto phenogram color mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
     "anno_min": {
       "plots": [
         "compare_effect"
@@ -2325,6 +2388,15 @@
       "ctx_defaults": {},
       "add_to_docstring": true
     },
+    "show_legend": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Show figure-level legend below phenogram",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
     "show_ld_score": {
       "plots": [
         "plot_mqq:r",
@@ -2356,10 +2428,20 @@
     },
     "legend_kwargs": {
       "plots": [
-        "compare_effect"
+        "compare_effect",
+        "plot_phenogram"
       ],
       "desc": "Legend styling kwargs",
       "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend_ncol": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Number of columns in phenogram figure legend",
+      "default": 6,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2531,11 +2613,13 @@
         "plot_region:r",
         "plot_snp_density:b",
         "plot_trumpet:b",
-        "plot_trumpet:q"
+        "plot_trumpet:q",
+        "plot_phenogram"
       ],
       "desc": "Marker size or size range",
       "default": null,
       "ctx_defaults": {
+        "plot_phenogram": 42,
         "plot_mqq:r": [
           40,
           65
@@ -2553,6 +2637,105 @@
           20
         ]
       },
+      "add_to_docstring": false
+    },
+    "marker_color_map": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Map from phenogram anno_color values to marker colors",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_gap_pt": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Horizontal gap between phenogram markers within a group, in points",
+      "default": 14,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_shape_map": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Map from phenogram anno_shape values to matplotlib marker codes",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_label_gap_pt": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Vertical gap between phenogram marker row and text label below, in points",
+      "default": 6,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_label_align": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Horizontal alignment of phenogram marker label relative to marker row (center, left, right)",
+      "default": "center",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_fontsize": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Font size for phenogram marker-mode text labels",
+      "default": 10,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_linewidth": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Edge linewidth for phenogram marker scatter points",
+      "default": 0.6,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_label_bbox": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "If True, draw phenogram marker labels with a white text outline (no filled box)",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "group_min_vertical_gap_pt": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Minimum vertical spacing between phenogram group annotation blocks, in points",
+      "default": 18,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "group_marker_to_marker_gap_pt": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Minimum spacing between marker rows of adjacent phenogram groups, in points",
+      "default": 16,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "group_label_box_pad_pt": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Extra padding around phenogram label text for overlap calculations, in points",
+      "default": 1.5,
+      "ctx_defaults": {},
       "add_to_docstring": false
     },
     "markercolor": {

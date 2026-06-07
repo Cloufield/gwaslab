@@ -1,17 +1,35 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
+from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Ellipse
 from matplotlib.collections import PatchCollection
 from pathlib import Path
-from typing import Optional, Union, Dict, Any, List
+from typing import Optional, Union, Dict, Any, List, Tuple
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.bd.bd_common_data import get_chr_to_number, get_number_to_chr
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
-from adjustText import adjust_text
+
+
+DEFAULT_MARKER_SHAPES: List[str] = ["o", "D", "^", "s", "v", "P", "X", "*"]
+DEFAULT_MARKER_COLORS: List[str] = [
+    "black",
+    "#78A6D6",
+    "#B7354A",
+    "#E6A23A",
+    "#70AD47",
+    "#7F7F7F",
+    "#9467BD",
+    "#8C564B",
+]
+
+_TEXT_SKIP_KEYS = frozenset({
+    "arrow_pad", "arrow_shaft", "arrow_shrink_b", "arrowprops",
+})
 
 
 def _points_to_data_delta(ax, x, y, dx_points=0.0, dy_points=0.0):
@@ -38,6 +56,344 @@ def _resolve_anno_arrow_pt(
     return float(default)
 
 
+def _lead_anno_field(row: pd.Series, col_name: Optional[str], columns: pd.Index) -> Any:
+    if col_name is None or col_name not in columns:
+        return None
+    val = row[col_name]
+    if pd.isna(val):
+        return None
+    return val
+
+
+def _get_group_key(lead: Dict[str, Any]) -> str:
+    if lead.get("anno_group") is not None:
+        return str(lead["anno_group"])
+    if lead.get("anno_text") is not None:
+        return str(lead["anno_text"])
+    if lead.get("snpid") is not None:
+        return str(lead["snpid"])
+    return str(lead.get("index", "unknown"))
+
+
+def _get_text_mode_label(lead: Dict[str, Any]) -> str:
+    if lead.get("anno_text") is not None:
+        return str(lead["anno_text"])
+    if lead.get("snpid") is not None:
+        return str(lead["snpid"])
+    return ""
+
+
+def _get_marker_group_label(group_key: str, group_items: List[Dict[str, Any]]) -> str:
+    first_lead = group_items[0]["lead"]
+    if first_lead.get("anno_text") is not None:
+        return str(first_lead["anno_text"])
+    if first_lead.get("anno_group") is not None:
+        return str(first_lead["anno_group"])
+    if first_lead.get("snpid") is not None:
+        return str(first_lead["snpid"])
+    return str(group_key)
+
+
+def _resolve_marker_maps(
+    data: pd.DataFrame,
+    anno_shape: Optional[str],
+    anno_color: Optional[str],
+    marker_shapes: Optional[List[str]] = None,
+    marker_colors: Optional[List[str]] = None,
+    marker_shape_map: Optional[Dict[str, str]] = None,
+    marker_color_map: Optional[Dict[str, str]] = None,
+    log: Log = Log(),
+    verbose: bool = True,
+) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Build value -> marker shape/color maps from data unique values or user overrides."""
+    shapes = list(marker_shapes) if marker_shapes is not None else list(DEFAULT_MARKER_SHAPES)
+    colors = list(marker_colors) if marker_colors is not None else list(DEFAULT_MARKER_COLORS)
+
+    if marker_shape_map is not None:
+        resolved_shape_map = dict(marker_shape_map)
+    elif anno_shape is not None and anno_shape in data.columns:
+        shape_values = sorted([v for v in data[anno_shape].dropna().unique()], key=str)
+        if len(shape_values) > len(shapes):
+            log.write(
+                " -Warning: more unique marker shape values than available marker shapes; shapes will be reused.",
+                verbose=verbose,
+            )
+        resolved_shape_map = {
+            value: shapes[i % len(shapes)]
+            for i, value in enumerate(shape_values)
+        }
+    else:
+        resolved_shape_map = {}
+
+    if marker_color_map is not None:
+        resolved_color_map = dict(marker_color_map)
+    elif anno_color is not None and anno_color in data.columns:
+        color_values = sorted([v for v in data[anno_color].dropna().unique()], key=str)
+        if len(color_values) > len(colors):
+            log.write(
+                " -Warning: more unique marker color values than available marker colors; colors will be reused.",
+                verbose=verbose,
+            )
+        resolved_color_map = {
+            value: colors[i % len(colors)]
+            for i, value in enumerate(color_values)
+        }
+    else:
+        resolved_color_map = {}
+
+    return resolved_shape_map, resolved_color_map
+
+
+def _get_marker_style(
+    lead: Dict[str, Any],
+    marker_shape_map: Dict[str, str],
+    marker_color_map: Dict[str, str],
+) -> Tuple[str, str]:
+    shape_value = lead.get("anno_shape")
+    color_value = lead.get("anno_color")
+    marker = marker_shape_map.get(shape_value, "o") if shape_value is not None else "o"
+    color = marker_color_map.get(color_value, "black") if color_value is not None else "black"
+    return marker, color
+
+
+def _build_text_mode_kwargs(annotation_kwargs: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    text_kwargs = {
+        "fontsize": 8,
+        "ha": "left",
+        "va": "center",
+        "fontweight": "normal",
+    }
+    if annotation_kwargs:
+        clean = {k: v for k, v in annotation_kwargs.items() if k not in _TEXT_SKIP_KEYS}
+        text_kwargs.update(clean)
+    text_kwargs["ha"] = "left"
+    text_kwargs["va"] = "center"
+    return text_kwargs
+
+
+def _data_point_below(ax, x: float, y: float, dy_points: float) -> Tuple[float, float]:
+    """Return data coordinates dy_points below (x, y) in display space."""
+    scale = ax.figure.dpi / 72.0
+    x_disp, y_disp = ax.transData.transform((x, y))
+    return ax.transData.inverted().transform((x_disp, y_disp + dy_points * scale))
+
+
+def _marker_radius_pt(marker_size: float) -> float:
+    """Matplotlib scatter ``s`` is area in points²; return marker radius in points."""
+    return np.sqrt(max(marker_size, 1.0) / np.pi)
+
+
+def _marker_block_extents_pt(
+    marker_size: float,
+    marker_label_gap_pt: float,
+    marker_fontsize: float,
+    group_label_box_pad_pt: float,
+    bbox_pad: float = 0.15,
+) -> Tuple[float, float]:
+    """
+    Return (above_pt, below_pt) vertical extent of a marker-mode block from marker_y.
+
+    Marker is centered at marker_y; label top sits below the marker row bottom edge.
+    """
+    marker_radius_pt = _marker_radius_pt(marker_size)
+    text_height_pt = marker_fontsize * 1.25 + bbox_pad * 2.0
+    above_pt = marker_radius_pt
+    below_pt = (
+        marker_radius_pt
+        + marker_label_gap_pt
+        + text_height_pt
+        + group_label_box_pad_pt * 2.0
+    )
+    return above_pt, below_pt
+
+
+def _marker_label_position(
+    ax,
+    label_x: float,
+    marker_y: float,
+    marker_size: float,
+    marker_label_gap_pt: float,
+) -> Tuple[float, float]:
+    """Return (label_x, label_y) with va='top' anchor below the marker row bottom edge."""
+    scale = ax.figure.dpi / 72.0
+    marker_radius_pt = _marker_radius_pt(marker_size)
+    x_disp, y_disp = ax.transData.transform((label_x, marker_y))
+    label_top_disp = y_disp + (marker_radius_pt + marker_label_gap_pt) * scale
+    return ax.transData.inverted().transform((x_disp, label_top_disp))
+
+
+def _marker_row_x_positions(
+    ax,
+    start_x: float,
+    start_y: float,
+    n_markers: int,
+    gap_pt: float,
+) -> List[float]:
+    """Return evenly spaced marker center x positions using fixed display-pixel gaps."""
+    if n_markers <= 0:
+        return []
+    scale = ax.figure.dpi / 72.0
+    gap_px = gap_pt * scale
+    x0_disp, y_disp = ax.transData.transform((start_x, start_y))
+    xs_data: List[float] = []
+    for j in range(n_markers):
+        x_disp = x0_disp + j * gap_px
+        x_data, _ = ax.transData.inverted().transform((x_disp, y_disp))
+        xs_data.append(x_data)
+    return xs_data
+
+
+def _marker_block_bottom_display(
+    ax,
+    ref_x: float,
+    marker_y: float,
+    below_pt: float,
+) -> float:
+    """Return display-y of the bottom edge of a group annotation block."""
+    _, y_disp = ax.transData.transform((ref_x, marker_y))
+    scale = ax.figure.dpi / 72.0
+    return y_disp + below_pt * scale
+
+
+def _marker_block_height_pt(
+    marker_size: float,
+    marker_label_gap_pt: float,
+    marker_fontsize: float,
+    group_label_box_pad_pt: float,
+) -> float:
+    """Approximate total vertical extent of a marker-mode annotation block in points."""
+    above_pt, below_pt = _marker_block_extents_pt(
+        marker_size, marker_label_gap_pt, marker_fontsize, group_label_box_pad_pt
+    )
+    return above_pt + below_pt
+
+
+def _spread_group_blocks_display(
+    ax,
+    y_data_list: List[float],
+    ref_x: float,
+    above_pt: float,
+    below_pt: float,
+    gap_pt: float = 4.0,
+    max_iter: int = 300,
+) -> np.ndarray:
+    """
+    Spread group marker_y positions in display space so full blocks do not overlap.
+
+    Each block spans from (marker_y - above) to (marker_y + below) in display
+    coordinates. Groups are processed top-to-bottom; when a block would overlap
+    the previous block (including its label below the markers), it is pushed down
+    sequentially to leave enough room.
+    """
+    ys_data = np.array(y_data_list, dtype=float)
+    if len(ys_data) <= 1:
+        return ys_data.copy()
+
+    scale = ax.figure.dpi / 72.0
+    above_px = above_pt * scale
+    below_px = below_pt * scale
+    gap_px = gap_pt * scale
+
+    ys_disp = np.array([ax.transData.transform((ref_x, y))[1] for y in ys_data])
+    order = np.argsort(ys_disp)
+    ys_sorted = ys_disp[order].copy()
+
+    for _ in range(max_iter):
+        changed = False
+        for i in range(1, len(ys_sorted)):
+            prev_bottom = ys_sorted[i - 1] + below_px
+            min_marker_disp = prev_bottom + gap_px + above_px
+            if ys_sorted[i] < min_marker_disp:
+                ys_sorted[i] = min_marker_disp
+                changed = True
+        if not changed:
+            break
+
+    result = ys_data.copy()
+    for rank, orig_idx in enumerate(order):
+        _, y_data = ax.transData.inverted().transform((ref_x, ys_sorted[rank]))
+        result[orig_idx] = y_data
+    return result
+
+
+def _spread_group_positions_display(
+    ax,
+    y_data_list: List[float],
+    ref_x: float,
+    min_gap_pt: float = 18.0,
+    block_height_pt: Optional[float] = None,
+    max_iter: int = 300,
+) -> np.ndarray:
+    """Legacy wrapper: spread by total block height with symmetric padding."""
+    block_pt = block_height_pt if block_height_pt is not None else min_gap_pt
+    half = block_pt / 2.0
+    return _spread_group_blocks_display(
+        ax,
+        y_data_list,
+        ref_x=ref_x,
+        above_pt=half,
+        below_pt=half,
+        gap_pt=min_gap_pt,
+        max_iter=max_iter,
+    )
+
+
+def _build_marker_text_kwargs(
+    annotation_kwargs: Optional[Dict[str, Any]],
+    marker_fontsize: float = 10,
+    marker_label_bbox: bool = True,
+) -> Dict[str, Any]:
+    text_kwargs: Dict[str, Any] = {
+        "fontsize": marker_fontsize,
+        "ha": "center",
+        "va": "top",
+        "fontstyle": "italic",
+        "fontweight": "bold",
+    }
+    if marker_label_bbox:
+        text_kwargs["path_effects"] = [
+            pe.withStroke(linewidth=2.5, foreground="white"),
+        ]
+    if annotation_kwargs:
+        clean = {k: v for k, v in annotation_kwargs.items() if k not in _TEXT_SKIP_KEYS}
+        text_kwargs.update(clean)
+    for key in ("arrow_pad", "arrow_shaft", "arrow_shrink_b", "arrowprops"):
+        text_kwargs.pop(key, None)
+    return text_kwargs
+
+
+def _make_marker_legend_handles(
+    marker_shape_map: Dict[str, str],
+    marker_color_map: Dict[str, str],
+) -> List[Line2D]:
+    handles: List[Line2D] = []
+    for label, marker in marker_shape_map.items():
+        handles.append(
+            Line2D(
+                [0], [0],
+                marker=marker,
+                linestyle="None",
+                markerfacecolor="white",
+                markeredgecolor="black",
+                markersize=6,
+                label=str(label),
+            )
+        )
+    for label, color in marker_color_map.items():
+        handles.append(
+            Line2D(
+                [0], [0],
+                marker="s",
+                linestyle="None",
+                markerfacecolor=color,
+                markeredgecolor="black",
+                markersize=6,
+                label=str(label),
+            )
+        )
+    return handles
+
+
 def _plot_phenogram(
     insumstats,
     snpid: str = "SNPID",
@@ -55,14 +411,36 @@ def _plot_phenogram(
     chr_width: float = 0.35,
     chr_x: float = 0.0,
     anno_x_pad: float = 0.14,
+    use_lead_extraction: bool = True,
     annotate_snps: bool = True,
     annotation_kwargs: Optional[Dict[str, Any]] = None,
     anno_arrow_shaft: Optional[float] = 18,
     anno_arrow_pad: Optional[float] = 10,
     anno_arrow_shrink_b: Optional[float] = 4,
+    anno_text: Optional[str] = None,
+    anno_group: Optional[str] = None,
+    anno_shape: Optional[str] = None,
+    anno_color: Optional[str] = None,
+    marker_shapes: Optional[List[str]] = None,
+    marker_colors: Optional[List[str]] = None,
+    marker_shape_map: Optional[Dict[str, str]] = None,
+    marker_color_map: Optional[Dict[str, str]] = None,
+    marker_size: float = 42,
+    marker_gap_pt: float = 14,
+    marker_label_gap_pt: float = 6,
+    marker_label_align: str = "center",
+    marker_fontsize: float = 10,
+    marker_linewidth: float = 0.6,
+    marker_label_bbox: bool = True,
+    group_min_vertical_gap_pt: float = 18,
+    group_marker_to_marker_gap_pt: float = 16,
+    group_label_box_pad_pt: float = 1.5,
+    show_legend: bool = True,
+    legend_ncol: int = 6,
+    legend_kwargs: Optional[Dict[str, Any]] = None,
     anno_style: str = "expand",
     repel_force: float = 0.5,
-    anno_max_iter: int = 100,
+    anno_max_iter: int = 300,
     save: Union[bool, str] = False,
     save_kwargs: Optional[Dict[str, Any]] = None,
     fig_kwargs: Optional[Dict[str, Any]] = None,
@@ -110,27 +488,69 @@ def _plot_phenogram(
     chr_x : float, default=0.0
         Left x boundary of the chromosome in data coordinates
     anno_x_pad : float, default=0.14
-        Extra horizontal gap between chromosome right edge and annotation
-        text, in data coordinates (added before the arrow shaft in points)
+        Extra horizontal gap between chromosome right edge and annotation area (data coords)
+    use_lead_extraction : bool, default=True
+        If True, extract lead variants via ``_get_sig()``. If False, use every input row.
     annotate_snps : bool, default=True
-        If True, annotate SNP IDs on the plot
+        If True, annotate lead SNP positions
     annotation_kwargs : dict, optional
-        Additional keyword arguments passed to matplotlib annotate (e.g. fontsize).
-        Legacy arrow keys ``arrow_shaft``, ``arrow_pad``, ``arrow_shrink_b`` are
-        still accepted but prefer the dedicated ``anno_arrow_*`` parameters.
+        Additional keyword arguments for text/annotate styling.
     anno_arrow_shaft : float, optional, default=18
-        Horizontal arrow shaft length from annotation gap to text anchor, in
-        matplotlib points.
+        Arrow shaft length in points (text mode and marker connector offset).
     anno_arrow_pad : float, optional, default=10
-        Gap between arrow end and text box (``shrinkA``), in points.
+        Gap between arrow end and text box (``shrinkA``), text mode only.
     anno_arrow_shrink_b : float, optional, default=4
-        Gap between arrow head and chromosome marker (``shrinkB``), in points.
+        Gap between arrow head and chromosome (``shrinkB``), text mode only.
+    anno_text : str, optional
+        Column for annotation text labels (e.g. gene name).
+    anno_group : str, optional
+        Column for marker-mode grouping. If set, enables marker annotation mode.
+    anno_shape : str, optional
+        Column for marker shape; unique values auto-mapped to ``marker_shapes`` pool.
+    anno_color : str, optional
+        Column for marker color; unique values auto-mapped to ``marker_colors`` pool.
+    marker_shapes : list of str, optional
+        Pool of matplotlib marker codes for auto shape mapping.
+    marker_colors : list of str, optional
+        Pool of colors for auto color mapping.
+    marker_shape_map : dict, optional
+        Explicit override for shape value -> marker code.
+    marker_color_map : dict, optional
+        Explicit override for color value -> color.
+    marker_size : float, default=42
+        Scatter marker size for annotation markers.
+    marker_gap_pt : float, default=14
+        Horizontal gap between markers within a group, in points.
+    marker_label_gap_pt : float, default=6
+        Vertical gap between marker row and text label below, in points.
+    marker_label_align : str, default="center"
+        Horizontal alignment of text label relative to marker row (``"center"``,
+        ``"left"``, or ``"right"``).
+    marker_fontsize : float, default=10
+        Font size for marker-mode text labels.
+    marker_linewidth : float, default=0.6
+        Edge linewidth for marker scatter points.
+    marker_label_bbox : bool, default=True
+        If True, draw marker-mode labels with a white text outline (no filled box).
+    group_min_vertical_gap_pt : float, default=18
+        Minimum vertical spacing between group annotation blocks, in points.
+    group_marker_to_marker_gap_pt : float, default=16
+        Minimum spacing between marker rows of adjacent groups, in points.
+    group_label_box_pad_pt : float, default=1.5
+        Extra padding around label text for overlap calculations, in points.
+    show_legend : bool, default=True
+        If True, draw a figure-level marker legend below the plot (marker mode only).
+    legend_ncol : int, default=6
+        Number of columns in the figure legend.
+    legend_kwargs : dict, optional
+        Extra keyword arguments passed to ``fig.legend()``.
     anno_style : str, default="expand"
         Annotation layout style for lead SNP labels
     repel_force : float, default=0.5
-        Repulsion force for separating overlapping annotation labels
-    anno_max_iter : int, default=100
-        Maximum iterations for annotation label repulsion
+        Repulsion force for text-mode label separation. Marker mode uses display
+        spreading with ``anno_max_iter`` and always applies the full adjustment.
+    anno_max_iter : int, default=300
+        Maximum iterations for annotation repulsion / marker group spreading
     save : bool or str, default=False
         If True or str, save the figure
     save_kwargs : dict, optional
@@ -150,6 +570,10 @@ def _plot_phenogram(
     
     log.write("Start to create phenogram plot...", verbose=verbose)
     
+    marker_mode = anno_group is not None
+    if legend_kwargs is None:
+        legend_kwargs = {}
+    
     # Extract dataframe if Sumstats object is passed
     if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
         insumstats = insumstats.data
@@ -157,26 +581,52 @@ def _plot_phenogram(
     # Create working copy to preserve original (plotting functions should not modify input)
     sumstats = insumstats.copy()
     
-    # Get leads from sumstats
-    log.write(" -Extracting lead variants...", verbose=verbose)
-    leads = _get_sig(
-        insumstats_or_dataframe=sumstats,
-        variant_id=snpid,
-        chrom=chrom,
-        pos=pos,
-        p=p,
-        mlog10p=mlog10p,
-        windowsizekb=windowsizekb,
-        sig_level=sig_level,
-        log=log,
-        verbose=verbose
-    )
+    # Get leads from sumstats or use input table directly
+    if use_lead_extraction:
+        log.write(" -Extracting lead variants...", verbose=verbose)
+        leads = _get_sig(
+            insumstats_or_dataframe=sumstats,
+            variant_id=snpid,
+            chrom=chrom,
+            pos=pos,
+            p=p,
+            mlog10p=mlog10p,
+            windowsizekb=windowsizekb,
+            sig_level=sig_level,
+            log=log,
+            verbose=verbose
+        )
+    else:
+        log.write(" -Using input table directly (no lead extraction)...", verbose=verbose)
+        leads = sumstats.copy()
     
     if leads is None or len(leads) == 0:
-        log.write(" -No lead variants found. Plotting chromosomes without annotations.", verbose=verbose)
+        log.write(" -No variants to annotate. Plotting chromosomes without annotations.", verbose=verbose)
         leads = pd.DataFrame()
     else:
-        log.write(" -Found {} lead variants to annotate.".format(len(leads)), verbose=verbose)
+        log.write(" -Found {} variant row(s) to annotate.".format(len(leads)), verbose=verbose)
+    
+    if marker_mode:
+        resolved_shape_map, resolved_color_map = _resolve_marker_maps(
+            data=leads if len(leads) > 0 else sumstats,
+            anno_shape=anno_shape,
+            anno_color=anno_color,
+            marker_shapes=marker_shapes,
+            marker_colors=marker_colors,
+            marker_shape_map=marker_shape_map,
+            marker_color_map=marker_color_map,
+            log=log,
+            verbose=verbose,
+        )
+        log.write(
+            " -Marker mode: {} shape categories, {} color categories.".format(
+                len(resolved_shape_map), len(resolved_color_map)
+            ),
+            verbose=verbose,
+        )
+    else:
+        resolved_shape_map, resolved_color_map = {}, {}
+        log.write(" -Text annotation mode.", verbose=verbose)
     
     # Load cytoband data
     if cytoband_path is None:
@@ -330,7 +780,11 @@ def _plot_phenogram(
                         leads_dict.setdefault(chr_str, []).append({
                             'pos': int(pos_val) if pd.notna(pos_val) else None,
                             'snpid': row[snpid] if snpid in leads_copy.columns and pd.notna(row[snpid]) else None,
-                            'index': idx
+                            'index': idx,
+                            'anno_text': _lead_anno_field(row, anno_text, leads_copy.columns),
+                            'anno_group': _lead_anno_field(row, anno_group, leads_copy.columns),
+                            'anno_shape': _lead_anno_field(row, anno_shape, leads_copy.columns),
+                            'anno_color': _lead_anno_field(row, anno_color, leads_copy.columns),
                         })
     
     # Plot each chromosome
@@ -388,6 +842,23 @@ def _plot_phenogram(
             anno_arrow_shaft=anno_arrow_shaft,
             anno_arrow_pad=anno_arrow_pad,
             anno_arrow_shrink_b=anno_arrow_shrink_b,
+            anno_text=anno_text,
+            anno_group=anno_group,
+            anno_shape=anno_shape,
+            anno_color=anno_color,
+            marker_shape_map=resolved_shape_map,
+            marker_color_map=resolved_color_map,
+            marker_size=marker_size,
+            marker_gap_pt=marker_gap_pt,
+            marker_label_gap_pt=marker_label_gap_pt,
+            marker_label_align=marker_label_align,
+            marker_fontsize=marker_fontsize,
+            marker_linewidth=marker_linewidth,
+            marker_label_bbox=marker_label_bbox,
+            group_min_vertical_gap_pt=group_min_vertical_gap_pt,
+            group_marker_to_marker_gap_pt=group_marker_to_marker_gap_pt,
+            group_label_box_pad_pt=group_label_box_pad_pt,
+            marker_mode=marker_mode,
             anno_style=anno_style,
             repel_force=repel_force,
             anno_max_iter=anno_max_iter,
@@ -410,7 +881,11 @@ def _plot_phenogram(
     
     # Set axis properties
     for i in range(n_chr):
-        axes[i % ncols].set_ylim(-0.1, max_row_offset + 1)
+        axis_ymax = max(
+            max_row_offset + 1,
+            getattr(axes[i % ncols], "_phenogram_ymax", max_row_offset + 1),
+        )
+        axes[i % ncols].set_ylim(-0.1, axis_ymax)
         axes[i % ncols].invert_yaxis()
         axes[i % ncols].spines['top'].set_visible(False)
         axes[i % ncols].spines['right'].set_visible(False)
@@ -440,7 +915,28 @@ def _plot_phenogram(
     for i in range(n_chr, len(axes)):
         axes[i].set_visible(False)
     
-    fig.tight_layout()
+    if show_legend and marker_mode:
+        legend_handles = _make_marker_legend_handles(resolved_shape_map, resolved_color_map)
+        if legend_handles:
+            legend_bottom_margin = 0.035
+            fig.tight_layout(rect=[0, legend_bottom_margin, 1, 1])
+            fig.canvas.draw()
+            ax_bottom = min(
+                axes[i % ncols].get_position().y0
+                for i in range(n_chr)
+            )
+            fig.legend(
+                handles=legend_handles,
+                loc="upper center",
+                bbox_to_anchor=(0.5, ax_bottom - 0.004),
+                bbox_transform=fig.transFigure,
+                ncol=legend_ncol,
+                frameon=False,
+                fontsize=9,
+                **legend_kwargs,
+            )
+    else:
+        fig.tight_layout()
     
     # Save figure
     save_figure(fig=fig, save=save, keyword="phenogram", save_kwargs=save_kwargs, 
@@ -469,9 +965,26 @@ def _plot_chr(
     anno_arrow_shaft: Optional[float] = 18,
     anno_arrow_pad: Optional[float] = 10,
     anno_arrow_shrink_b: Optional[float] = 4,
+    anno_text: Optional[str] = None,
+    anno_group: Optional[str] = None,
+    anno_shape: Optional[str] = None,
+    anno_color: Optional[str] = None,
+    marker_shape_map: Optional[Dict[str, str]] = None,
+    marker_color_map: Optional[Dict[str, str]] = None,
+    marker_size: float = 42,
+    marker_gap_pt: float = 14,
+    marker_label_gap_pt: float = 6,
+    marker_label_align: str = "center",
+    marker_fontsize: float = 10,
+    marker_linewidth: float = 0.6,
+    marker_label_bbox: bool = True,
+    group_min_vertical_gap_pt: float = 18,
+    group_marker_to_marker_gap_pt: float = 16,
+    group_label_box_pad_pt: float = 1.5,
+    marker_mode: bool = False,
     anno_style: str = "expand",
-    repel_force: float = 0.02,
-    anno_max_iter: int = 100,
+    repel_force: float = 0.5,
+    anno_max_iter: int = 300,
     log: Log = Log(),
     verbose: bool = True
 ):
@@ -522,6 +1035,10 @@ def _plot_chr(
     
     if annotation_kwargs is None:
         annotation_kwargs = {}
+    if marker_shape_map is None:
+        marker_shape_map = {}
+    if marker_color_map is None:
+        marker_color_map = {}
     
     chr_center_x = chr_x + chr_width / 2
     chr_right_x = chr_x + chr_width
@@ -621,126 +1138,255 @@ def _plot_chr(
                                          linewidths=0, zorder=101)
             ax.add_collection(bands_pc)
     
-    # Annotate lead SNPs with arrows using expand style (horizontal layout)
+    # Lead SNP annotations (text mode or marker mode)
     if annotate_snps and len(leads) > 0:
-        # Filter and sort leads by position
-        leads_sorted = sorted([l for l in leads if l['pos'] is not None and pd.notna(l['pos'])], 
-                             key=lambda x: x['pos'])
+        leads_sorted = sorted(
+            [l for l in leads if l["pos"] is not None and pd.notna(l["pos"])],
+            key=lambda x: x["pos"],
+        )
         
         if len(leads_sorted) > 0:
-            # Calculate y positions on chromosome for all leads
-            leads_with_y = []
+            leads_with_y: List[Dict[str, Any]] = []
             for lead in leads_sorted:
-                pos = lead['pos']
+                pos = lead["pos"]
                 
-                # Calculate y position on chromosome based on genomic position
                 if pos <= chr_centromere_u:
-                    # Upper arm
                     y_pos_chr = pos / max_chr_size + offset
                 elif pos >= chr_centromere_l:
-                    # Lower arm
-                    y_pos_chr = (pos - chr_centromere_l) / max_chr_size + height_for_arm1 + offset + centromere_full_length
+                    y_pos_chr = (
+                        (pos - chr_centromere_l) / max_chr_size
+                        + height_for_arm1 + offset + centromere_full_length
+                    )
                 else:
-                    # In centromere region, skip annotation
                     continue
                 
                 leads_with_y.append({
-                    'lead': lead,
-                    'y_pos_chr': y_pos_chr,
-                    'original_y': y_pos_chr
+                    "lead": lead,
+                    "y_pos_chr": y_pos_chr,
+                    "original_y": y_pos_chr,
                 })
             
             if len(leads_with_y) > 0:
-                # Extract y positions for adjustment
-                y_positions = np.array([l['y_pos_chr'] for l in leads_with_y])
-                
-                # Always adjust positions to avoid overlap (using expand style logic)
-                # Calculate y span for this chromosome
-                if len(y_positions) > 1:
-                    y_span = max(y_positions) - min(y_positions)
-                    # If variants are very close together, use a minimum span
-                    if y_span < 0.01:
-                        y_span = 0.1
-                else:
-                    y_span = 0.1
-                
-                # Adjust positions using adjust_text_position to prevent overlap
-                adjusted_y = adjust_text_position(
-                    y_positions.copy(),
-                    y_span,
-                    repel_force=repel_force,
-                    max_iter=anno_max_iter,
-                    amode="float",
-                    log=log,
-                    verbose=verbose
-                )
-                
-                # Update y positions with adjusted values
-                for i, l in enumerate(leads_with_y):
-                    l['y_pos_chr'] = adjusted_y[i]
-                
-                # Create annotation objects
-                anno_objects = []
-                
-                for l in leads_with_y:
-                    lead = l['lead']
-                    y_pos_chr = l['y_pos_chr']
-                    original_y = l['original_y']
+                if marker_mode:
+                    text_kwargs = _build_marker_text_kwargs(
+                        annotation_kwargs,
+                        marker_fontsize=marker_fontsize,
+                        marker_label_bbox=marker_label_bbox,
+                    )
+                    anno_fontsize = float(text_kwargs.get("fontsize", marker_fontsize))
                     
-                    # Plot marker on chromosome at original position (as a horizontal line)
-                    ax.plot(
-                        [chr_x, chr_right_x],
-                        [original_y, original_y],
-                        color="red",
-                        linewidth=2,
-                        clip_on=False,
-                        zorder=200,
+                    grouped: Dict[str, List[Dict[str, Any]]] = {}
+                    for item in leads_with_y:
+                        group_key = _get_group_key(item["lead"])
+                        grouped.setdefault(group_key, []).append(item)
+                    
+                    group_representatives: List[Dict[str, Any]] = []
+                    for group_key, group_items in grouped.items():
+                        group_representatives.append({
+                            "group_key": group_key,
+                            "group_items": group_items,
+                            "original_y": group_items[0]["original_y"],
+                        })
+                    
+                    block_above_pt, block_below_pt = _marker_block_extents_pt(
+                        marker_size,
+                        marker_label_gap_pt,
+                        marker_fontsize,
+                        group_label_box_pad_pt,
                     )
                     
-                    if lead['snpid'] is not None:
-                        snp_text = str(lead['snpid'])
-                        # Truncate long SNP IDs
-                        if len(snp_text) > 20:
-                            snp_text = snp_text[:17] + "..."
+                    orig_y = np.array([g["original_y"] for g in group_representatives])
+                    spread_y = _spread_group_blocks_display(
+                        ax,
+                        orig_y.tolist(),
+                        ref_x=chr_right_x,
+                        above_pt=block_above_pt,
+                        below_pt=block_below_pt,
+                        gap_pt=group_min_vertical_gap_pt,
+                        max_iter=anno_max_iter,
+                    )
+                    marker_ys = spread_y
+                    
+                    for i, g in enumerate(group_representatives):
+                        g["marker_y"] = float(marker_ys[i])
+                    
+                    arrow_shaft_pt = _resolve_anno_arrow_pt(
+                        anno_arrow_shaft,
+                        "arrow_shaft",
+                        annotation_kwargs,
+                        18.0,
+                    )
+                    
+                    autoscale_x_on = ax.get_autoscalex_on()
+                    ax.set_autoscalex_on(False)
+                    
+                    for g in group_representatives:
+                        group_key = g["group_key"]
+                        group_items = g["group_items"]
+                        marker_y = float(g["marker_y"])
+                        label_text = _get_marker_group_label(group_key, group_items)
+                        if len(str(label_text)) > 20:
+                            label_text = str(label_text)[:17] + "..."
                         
-                        # Point on chromosome (right edge where arrow points)
+                        main_item = group_items[0]
+                        main_y = main_item["original_y"]
+                        
+                        dx_shaft, _ = _points_to_data_delta(
+                            ax, chr_right_x, marker_y, dx_points=arrow_shaft_pt
+                        )
+                        marker_start_x = chr_right_x + anno_x_pad + dx_shaft
+                        
+                        marker_xs = _marker_row_x_positions(
+                            ax,
+                            marker_start_x,
+                            marker_y,
+                            len(group_items),
+                            marker_gap_pt,
+                        )
+                        for j, item in enumerate(group_items):
+                            marker, color = _get_marker_style(
+                                item["lead"], marker_shape_map, marker_color_map
+                            )
+                            marker_x = marker_xs[j]
+                            ax.scatter(
+                                marker_x,
+                                marker_y,
+                                marker=marker,
+                                s=marker_size,
+                                facecolor=color,
+                                edgecolor="black",
+                                linewidth=marker_linewidth,
+                                clip_on=False,
+                                zorder=235,
+                            )
+                        
+                        if not marker_xs:
+                            continue
+                        
+                        marker_center_x = (marker_xs[0] + marker_xs[-1]) / 2
+                        if marker_label_align == "left":
+                            label_x = marker_xs[0]
+                        elif marker_label_align == "right":
+                            label_x = marker_xs[-1]
+                        else:
+                            label_x = marker_center_x
+                        label_x, label_y = _marker_label_position(
+                            ax,
+                            label_x,
+                            marker_y,
+                            marker_size,
+                            marker_label_gap_pt,
+                        )
+                        
+                        ax.plot(
+                            [chr_right_x, marker_xs[0]],
+                            [main_y, marker_y],
+                            color="black",
+                            linewidth=0.7,
+                            clip_on=False,
+                            zorder=190,
+                        )
+                        
+                        ax.text(
+                            label_x,
+                            label_y,
+                            str(label_text),
+                            clip_on=False,
+                            zorder=230,
+                            **text_kwargs,
+                        )
+                        
+                        max_xlim = max(max_xlim, marker_xs[-1])
+                        text_width_dx, _ = _points_to_data_delta(
+                            ax,
+                            label_x,
+                            label_y,
+                            dx_points=anno_fontsize * len(str(label_text)) * 0.55,
+                        )
+                        ha = text_kwargs.get("ha", "center")
+                        if ha == "center":
+                            text_right_x = label_x + text_width_dx / 2
+                        elif ha == "left":
+                            text_right_x = label_x + text_width_dx
+                        else:
+                            text_right_x = label_x
+                        max_xlim = max(max_xlim, text_right_x)
+                        
+                        _, label_bottom_y = _data_point_below(
+                            ax, chr_right_x, marker_y, block_below_pt + 4.0
+                        )
+                        ax._phenogram_ymax = max(
+                            getattr(ax, "_phenogram_ymax", 0),
+                            label_bottom_y + 0.01,
+                        )
+                    
+                    ax.set_autoscalex_on(autoscale_x_on)
+                else:
+                    text_kwargs = _build_text_mode_kwargs(annotation_kwargs)
+                    anno_fontsize = float(text_kwargs.get("fontsize", 8))
+                    
+                    y_positions = np.array([l["y_pos_chr"] for l in leads_with_y])
+                    if len(y_positions) > 1:
+                        y_span = max(y_positions) - min(y_positions)
+                        if y_span < 0.01:
+                            y_span = 0.1
+                    else:
+                        y_span = 0.1
+                    
+                    adjusted_y = adjust_text_position(
+                        y_positions.copy(),
+                        y_span,
+                        repel_force=repel_force,
+                        max_iter=anno_max_iter,
+                        amode="float",
+                        log=log,
+                        verbose=verbose,
+                    )
+                    
+                    for i, l in enumerate(leads_with_y):
+                        l["y_pos_chr"] = adjusted_y[i]
+                    
+                    arrow_pad_pt = _resolve_anno_arrow_pt(
+                        anno_arrow_pad,
+                        "arrow_pad",
+                        annotation_kwargs,
+                        10.0,
+                    )
+                    arrow_shaft_pt = _resolve_anno_arrow_pt(
+                        anno_arrow_shaft,
+                        "arrow_shaft",
+                        annotation_kwargs,
+                        18.0,
+                    )
+                    shrink_b_pt = _resolve_anno_arrow_pt(
+                        anno_arrow_shrink_b,
+                        "arrow_shrink_b",
+                        annotation_kwargs,
+                        4.0,
+                    )
+                    
+                    for l in leads_with_y:
+                        lead = l["lead"]
+                        original_y = l["original_y"]
+                        text_y = l["y_pos_chr"]
+                        
+                        ax.plot(
+                            [chr_x, chr_right_x],
+                            [original_y, original_y],
+                            color="red",
+                            linewidth=2,
+                            clip_on=False,
+                            zorder=200,
+                        )
+                        
+                        label_text = _get_text_mode_label(lead)
+                        if not label_text:
+                            continue
+                        if len(str(label_text)) > 20:
+                            label_text = str(label_text)[:17] + "..."
+                        
                         chr_point_x = chr_right_x
                         chr_point_y = original_y
-                        text_y = y_pos_chr
-                        
-                        # Set default annotation style (text anchor: left-center)
-                        anno_default = {
-                            "fontsize": 8,
-                            "ha": "left",
-                            "va": "center",
-                            "fontweight": "normal",
-                        }
-                        if annotation_kwargs:
-                            anno_default.update(annotation_kwargs)
-                        anno_default["ha"] = "left"
-                        anno_default["va"] = "center"
-                        for _arrow_key in ("arrow_pad", "arrow_shaft", "arrow_shrink_b"):
-                            anno_default.pop(_arrow_key, None)
-                        
-                        anno_fontsize = float(anno_default.get("fontsize", 8))
-                        arrow_pad_pt = _resolve_anno_arrow_pt(
-                            anno_arrow_pad,
-                            "arrow_pad",
-                            annotation_kwargs,
-                            10.0,
-                        )
-                        arrow_shaft_pt = _resolve_anno_arrow_pt(
-                            anno_arrow_shaft,
-                            "arrow_shaft",
-                            annotation_kwargs,
-                            18.0,
-                        )
-                        shrink_b_pt = _resolve_anno_arrow_pt(
-                            anno_arrow_shrink_b,
-                            "arrow_shrink_b",
-                            annotation_kwargs,
-                            4.0,
-                        )
                         
                         dx_shaft, _ = _points_to_data_delta(
                             ax, chr_point_x, text_y, dx_points=arrow_shaft_pt
@@ -748,12 +1394,15 @@ def _plot_chr(
                         text_x = chr_point_x + anno_x_pad + dx_shaft
                         
                         text_width_dx, _ = _points_to_data_delta(
-                            ax, text_x, text_y, dx_points=anno_fontsize * len(snp_text) * 0.55
+                            ax,
+                            text_x,
+                            text_y,
+                            dx_points=anno_fontsize * len(str(label_text)) * 0.55,
                         )
                         max_xlim = max(max_xlim, text_x + text_width_dx)
                         
-                        anno_obj = ax.annotate(
-                            snp_text,
+                        ax.annotate(
+                            str(label_text),
                             xy=(chr_point_x, chr_point_y),
                             xytext=(text_x, text_y),
                             arrowprops=dict(
@@ -766,31 +1415,8 @@ def _plot_chr(
                             ),
                             clip_on=False,
                             zorder=201,
-                            **anno_default
+                            **text_kwargs,
                         )
-                        anno_objects.append(anno_obj)
-        
-        # Use adjust_text for final fine-tuning (vertical movement only for horizontal layout)
-        # Note: We skip adjust_text for now as it interferes with arrow positioning
-        # The initial adjust_text_position should be sufficient for spacing
-        # If needed, we can enable this but would need to recalculate arrows after adjustment
-        # if anno_style == "expand" and len(anno_objects) > 1:
-        #     log.write(" -Auto-adjusting annotation positions...", verbose=verbose)
-        #     adjust_text(
-        #         texts=anno_objects,
-        #         autoalign=False,
-        #         only_move={'points': 'y', 'text': 'y', 'objects': 'y'},  # Only move vertically
-        #         ax=ax,
-        #         precision=0.02,
-        #         force_text=(repel_force, repel_force),
-        #         expand_text=(1, 1),
-        #         expand_objects=(0, 0),
-        #         expand_points=(0, 0),
-        #         va="center",
-        #         ha='left',
-        #         avoid_points=False,
-        #         lim=100
-        #     )
     
     ax.set_xticks(ticks=[])
     ax.set_yticks(ticks=[])
