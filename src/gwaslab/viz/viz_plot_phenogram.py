@@ -14,6 +14,30 @@ from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from adjustText import adjust_text
 
 
+def _points_to_data_delta(ax, x, y, dx_points=0.0, dy_points=0.0):
+    """Convert a display offset in matplotlib points to a data-coordinate delta at (x, y)."""
+    scale = ax.figure.dpi / 72.0
+    x_disp, y_disp = ax.transData.transform((x, y))
+    x_data, y_data = ax.transData.inverted().transform(
+        (x_disp + dx_points * scale, y_disp + dy_points * scale)
+    )
+    return x_data - x, y_data - y
+
+
+def _resolve_anno_arrow_pt(
+    explicit: Optional[float],
+    kwargs_key: str,
+    annotation_kwargs: Dict[str, Any],
+    default: float,
+) -> float:
+    """Resolve arrow spacing in points: explicit param > annotation_kwargs > default."""
+    if explicit is not None:
+        return float(explicit)
+    if kwargs_key in annotation_kwargs:
+        return float(annotation_kwargs[kwargs_key])
+    return float(default)
+
+
 def _plot_phenogram(
     insumstats,
     snpid: str = "SNPID",
@@ -27,9 +51,15 @@ def _plot_phenogram(
     build: str = "19",
     ncols: int = 11,
     figsize: tuple = (20, 40),
-    dpi: int = 100,
+    dpi: int = 400,
+    chr_width: float = 0.35,
+    chr_x: float = 0.0,
+    anno_x_pad: float = 0.14,
     annotate_snps: bool = True,
     annotation_kwargs: Optional[Dict[str, Any]] = None,
+    anno_arrow_shaft: Optional[float] = 18,
+    anno_arrow_pad: Optional[float] = 10,
+    anno_arrow_shrink_b: Optional[float] = 4,
     anno_style: str = "expand",
     repel_force: float = 0.5,
     anno_max_iter: int = 100,
@@ -73,12 +103,34 @@ def _plot_phenogram(
         Number of columns for arranging chromosomes
     figsize : tuple, default=(20, 40)
         Figure size in inches
-    dpi : int, default=100
+    dpi : int, default=400
         Resolution of the figure
+    chr_width : float, default=0.35
+        Chromosome width in data coordinates
+    chr_x : float, default=0.0
+        Left x boundary of the chromosome in data coordinates
+    anno_x_pad : float, default=0.14
+        Extra horizontal gap between chromosome right edge and annotation
+        text, in data coordinates (added before the arrow shaft in points)
     annotate_snps : bool, default=True
         If True, annotate SNP IDs on the plot
     annotation_kwargs : dict, optional
-        Additional keyword arguments for text annotations
+        Additional keyword arguments passed to matplotlib annotate (e.g. fontsize).
+        Legacy arrow keys ``arrow_shaft``, ``arrow_pad``, ``arrow_shrink_b`` are
+        still accepted but prefer the dedicated ``anno_arrow_*`` parameters.
+    anno_arrow_shaft : float, optional, default=18
+        Horizontal arrow shaft length from annotation gap to text anchor, in
+        matplotlib points.
+    anno_arrow_pad : float, optional, default=10
+        Gap between arrow end and text box (``shrinkA``), in points.
+    anno_arrow_shrink_b : float, optional, default=4
+        Gap between arrow head and chromosome marker (``shrinkB``), in points.
+    anno_style : str, default="expand"
+        Annotation layout style for lead SNP labels
+    repel_force : float, default=0.5
+        Repulsion force for separating overlapping annotation labels
+    anno_max_iter : int, default=100
+        Maximum iterations for annotation label repulsion
     save : bool or str, default=False
         If True or str, save the figure
     save_kwargs : dict, optional
@@ -328,14 +380,33 @@ def _plot_phenogram(
             chr_cytobands=chr_cytobands,
             chr_name=chr_name,
             leads=leads_dict.get(chr_name, []),
+            chr_width=chr_width,
+            chr_x=chr_x,
+            anno_x_pad=anno_x_pad,
             annotate_snps=annotate_snps,
             annotation_kwargs=annotation_kwargs if annotation_kwargs else {},
+            anno_arrow_shaft=anno_arrow_shaft,
+            anno_arrow_pad=anno_arrow_pad,
+            anno_arrow_shrink_b=anno_arrow_shrink_b,
             anno_style=anno_style,
             repel_force=repel_force,
             anno_max_iter=anno_max_iter,
             log=log,
             verbose=verbose
         )
+    
+    # All axes must share the same xlim. Otherwise, the same chr_width in data
+    # coordinates will be rendered with different physical widths across subplots.
+    global_xmin = chr_x - chr_width * 0.2
+    default_xmax = chr_x + chr_width + anno_x_pad + 0.5
+    auto_global_xmax = max(
+        getattr(ax, "_phenogram_xmax", default_xmax)
+        for ax in axes[:ncols]
+    )
+    fixed_global_xmax = chr_x + chr_width + anno_x_pad + 1.2
+    global_xmax = max(auto_global_xmax, fixed_global_xmax)
+    for ax in axes[:ncols]:
+        ax.set_xlim(global_xmin, global_xmax)
     
     # Set axis properties
     for i in range(n_chr):
@@ -355,8 +426,15 @@ def _plot_phenogram(
             # chr_bottom_with_telomere is already the bottom edge of telomere
             # Add padding (0.03) to ensure no overlap
             label_y = chr_bottom_with_telomere + 0.03
-            axes[i % ncols].text(0.1, label_y, chr_num, ha='center', va='bottom', 
-                                fontsize=10, zorder=300)
+            axes[i % ncols].text(
+                chr_x + chr_width / 2,
+                label_y,
+                chr_num,
+                ha="center",
+                va="bottom",
+                fontsize=10,
+                zorder=300,
+            )
     
     # Hide unused axes
     for i in range(n_chr, len(axes)):
@@ -383,8 +461,14 @@ def _plot_chr(
     chr_cytobands: pd.DataFrame,
     chr_name: str,
     leads: List[Dict[str, Any]],
+    chr_width: float = 0.35,
+    chr_x: float = 0.0,
+    anno_x_pad: float = 0.14,
     annotate_snps: bool = True,
     annotation_kwargs: Dict[str, Any] = None,
+    anno_arrow_shaft: Optional[float] = 18,
+    anno_arrow_pad: Optional[float] = 10,
+    anno_arrow_shrink_b: Optional[float] = 4,
     anno_style: str = "expand",
     repel_force: float = 0.02,
     anno_max_iter: int = 100,
@@ -414,10 +498,22 @@ def _plot_chr(
         Chromosome name
     leads : list
         List of lead SNP dictionaries with 'pos', 'snpid', 'index' keys
+    chr_width : float, default=0.35
+        Chromosome width in data coordinates
+    chr_x : float, default=0.0
+        Left x boundary of the chromosome
+    anno_x_pad : float, default=0.14
+        Extra horizontal gap between chromosome and annotation text (data coords)
     annotate_snps : bool
         If True, annotate SNP positions
     annotation_kwargs : dict
-        Additional keyword arguments for annotations
+        Additional keyword arguments for matplotlib annotate
+    anno_arrow_shaft : float, optional
+        Arrow shaft length in points (after anno_x_pad, before text anchor)
+    anno_arrow_pad : float, optional
+        Arrow-to-text gap in points (shrinkA)
+    anno_arrow_shrink_b : float, optional
+        Arrow-to-marker gap in points (shrinkB)
     log : Log
         Logging object
     verbose : bool
@@ -426,6 +522,13 @@ def _plot_chr(
     
     if annotation_kwargs is None:
         annotation_kwargs = {}
+    
+    chr_center_x = chr_x + chr_width / 2
+    chr_right_x = chr_x + chr_width
+    chr_inner_x = chr_x + chr_width * 0.05
+    chr_inner_width = chr_width * 0.90
+    
+    max_xlim = chr_right_x + anno_x_pad + 0.5
     
     positions = [
         0 + offset,
@@ -444,20 +547,36 @@ def _plot_chr(
     
     # Draw chromosome arms
     arms = [
-        Rectangle((0, positions[0]), width=0.21, height=height_for_arm1),
-        Rectangle((0, positions[1] + centromere_full_length), width=0.21, height=height_for_arm2)
+        Rectangle((chr_x, positions[0]), width=chr_width, height=height_for_arm1),
+        Rectangle((chr_x, positions[1] + centromere_full_length), width=chr_width, height=height_for_arm2)
     ]
     
     # Draw centromeres
     centromeres = [
-        Ellipse(xy=(0.1, positions[1] + centromere_full_length), width=0.2, height=centromere_full_length),
-        Ellipse(xy=(0.1, positions[1]), width=0.2, height=centromere_full_length)
+        Ellipse(
+            xy=(chr_center_x, positions[1] + centromere_full_length),
+            width=chr_width,
+            height=centromere_full_length,
+        ),
+        Ellipse(
+            xy=(chr_center_x, positions[1]),
+            width=chr_width,
+            height=centromere_full_length,
+        ),
     ]
     
     # Draw telomeres
     telemeres = [
-        Ellipse(xy=(0.105, positions[0]), width=0.21, height=telemere_full_length),
-        Ellipse(xy=(0.105, positions[0] + full_length), width=0.21, height=telemere_full_length)
+        Ellipse(
+            xy=(chr_center_x, positions[0]),
+            width=chr_width,
+            height=telemere_full_length,
+        ),
+        Ellipse(
+            xy=(chr_center_x, positions[0] + full_length),
+            width=chr_width,
+            height=telemere_full_length,
+        ),
     ]
     
     # Create patch collections
@@ -487,7 +606,11 @@ def _plot_chr(
         band_height = band_end - band_start
         
         if band_height > 0:
-            band = Rectangle((0.01, band_start), width=0.2, height=band_height)
+            band = Rectangle(
+                (chr_inner_x, band_start),
+                width=chr_inner_width,
+                height=band_height,
+            )
             facecolor = row["COLOR"]
             
             if row["STAIN"] == "stalk":
@@ -504,143 +627,148 @@ def _plot_chr(
         leads_sorted = sorted([l for l in leads if l['pos'] is not None and pd.notna(l['pos'])], 
                              key=lambda x: x['pos'])
         
-        if len(leads_sorted) == 0:
-            return
-        
-        # Calculate y positions on chromosome for all leads
-        leads_with_y = []
-        for lead in leads_sorted:
-            pos = lead['pos']
-            
-            # Calculate y position on chromosome based on genomic position
-            if pos <= chr_centromere_u:
-                # Upper arm
-                y_pos_chr = pos / max_chr_size + offset
-            elif pos >= chr_centromere_l:
-                # Lower arm
-                y_pos_chr = (pos - chr_centromere_l) / max_chr_size + height_for_arm1 + offset + centromere_full_length
-            else:
-                # In centromere region, skip annotation
-                continue
-            
-            leads_with_y.append({
-                'lead': lead,
-                'y_pos_chr': y_pos_chr,
-                'original_y': y_pos_chr
-            })
-        
-        if len(leads_with_y) == 0:
-            return
-        
-        # Extract y positions for adjustment
-        y_positions = np.array([l['y_pos_chr'] for l in leads_with_y])
-        
-        # Always adjust positions to avoid overlap (using expand style logic)
-        # Calculate y span for this chromosome
-        if len(y_positions) > 1:
-            y_span = max(y_positions) - min(y_positions)
-            # If variants are very close together, use a minimum span
-            if y_span < 0.01:
-                y_span = 0.1
-        else:
-            y_span = 0.1
-        
-        # Adjust positions using adjust_text_position to prevent overlap
-        adjusted_y = adjust_text_position(
-            y_positions.copy(),
-            y_span,
-            repel_force=repel_force,
-            max_iter=anno_max_iter,
-            amode="float",
-            log=log,
-            verbose=verbose
-        )
-        
-        # Update y positions with adjusted values
-        for i, l in enumerate(leads_with_y):
-            l['y_pos_chr'] = adjusted_y[i]
-        
-        # Base x position for annotations (on the right side)
-        annotation_x_base = 0.5
-        
-        # Calculate fixed armB for this chromosome (vertical distance from annotation area to chromosome)
-        # Use a representative y position (middle of annotation area) to calculate the distance
-        if len(leads_with_y) > 0:
-            # Use the first lead's adjusted y position as reference
-            ref_y = leads_with_y[0]['y_pos_chr']
-            ref_original_y = leads_with_y[0]['original_y']
-        else:
-            ref_y = offset + chr_size / max_chr_size / 2
-            ref_original_y = ref_y
-        
-        # Calculate fixed armB in pixels (horizontal distance)
-        transform = ax.transData
-        annotation_pixel = transform.transform((annotation_x_base, ref_y))
-        # Arrow points to right edge of chromosome (x=0.21)
-        chr_right_edge_pixel = transform.transform((0.21, ref_original_y))
-        # Fixed horizontal distance from annotation area to right edge of chromosome
-        armB_length_pixel = abs(annotation_pixel[0] - chr_right_edge_pixel[0])
-        
-        # Create annotation objects
-        anno_objects = []
-        
-        for l in leads_with_y:
-            lead = l['lead']
-            y_pos_chr = l['y_pos_chr']
-            original_y = l['original_y']
-            
-            # Plot marker on chromosome at original position (as a horizontal line)
-            # Draw a horizontal line across the full width of the chromosome
-            # Chromosome rectangle: Rectangle((0, y), width=0.21) extends from x=0 to x=0.21
-            # The line should exactly match the rectangle edges
-            # Use exact coordinates to align with rectangle boundaries
-            ax.plot([0.0, 0.21], [original_y, original_y], 
-                   color="red", linewidth=2, clip_on=False, zorder=200)
-            
-            if lead['snpid'] is not None:
-                snp_text = str(lead['snpid'])
-                # Truncate long SNP IDs
-                if len(snp_text) > 20:
-                    snp_text = snp_text[:17] + "..."
+        if len(leads_sorted) > 0:
+            # Calculate y positions on chromosome for all leads
+            leads_with_y = []
+            for lead in leads_sorted:
+                pos = lead['pos']
                 
-                # Point on chromosome (right edge where arrow points)
-                chr_point_x = 0.21  # Right edge of chromosome
-                chr_point_y = original_y
+                # Calculate y position on chromosome based on genomic position
+                if pos <= chr_centromere_u:
+                    # Upper arm
+                    y_pos_chr = pos / max_chr_size + offset
+                elif pos >= chr_centromere_l:
+                    # Lower arm
+                    y_pos_chr = (pos - chr_centromere_l) / max_chr_size + height_for_arm1 + offset + centromere_full_length
+                else:
+                    # In centromere region, skip annotation
+                    continue
                 
-                # Text position (on the right, using adjusted y)
-                text_x = annotation_x_base
-                text_y = y_pos_chr
+                leads_with_y.append({
+                    'lead': lead,
+                    'y_pos_chr': y_pos_chr,
+                    'original_y': y_pos_chr
+                })
+            
+            if len(leads_with_y) > 0:
+                # Extract y positions for adjustment
+                y_positions = np.array([l['y_pos_chr'] for l in leads_with_y])
                 
-                # Set default annotation style
-                anno_default = {
-                    "fontsize": 8,
-                    "ha": "left",
-                    "va": "center",
-                    "fontweight": "normal"
-                }
-                if annotation_kwargs:
-                    anno_default.update(annotation_kwargs)
+                # Always adjust positions to avoid overlap (using expand style logic)
+                # Calculate y span for this chromosome
+                if len(y_positions) > 1:
+                    y_span = max(y_positions) - min(y_positions)
+                    # If variants are very close together, use a minimum span
+                    if y_span < 0.01:
+                        y_span = 0.1
+                else:
+                    y_span = 0.1
                 
-                # Create annotation with arrow
-                # armA = 0 (no horizontal arm, go directly horizontal)
-                # armB = fixed for this chromosome (horizontal distance to chromosome)
-                anno_obj = ax.annotate(
-                    snp_text,
-                    xy=(chr_point_x, chr_point_y),  # Point on chromosome (arrow target) - FIXED
-                    xytext=(text_x, text_y),  # Text position (arrow start)
-                    arrowprops=dict(
-                        arrowstyle="-|>",
-                        color="gray",
-                        lw=0.8,
-                        # No initial arm (armA=0), fixed horizontal distance (armB)
-                        # angleA=180: point left from text, angleB=0: point horizontally to chromosome
-                        connectionstyle=f"arc,angleA=180,armA=0,angleB=0,armB={armB_length_pixel},rad=0"
-                    ),
-                    clip_on=False,
-                    zorder=201,
-                    **anno_default
+                # Adjust positions using adjust_text_position to prevent overlap
+                adjusted_y = adjust_text_position(
+                    y_positions.copy(),
+                    y_span,
+                    repel_force=repel_force,
+                    max_iter=anno_max_iter,
+                    amode="float",
+                    log=log,
+                    verbose=verbose
                 )
-                anno_objects.append(anno_obj)
+                
+                # Update y positions with adjusted values
+                for i, l in enumerate(leads_with_y):
+                    l['y_pos_chr'] = adjusted_y[i]
+                
+                # Create annotation objects
+                anno_objects = []
+                
+                for l in leads_with_y:
+                    lead = l['lead']
+                    y_pos_chr = l['y_pos_chr']
+                    original_y = l['original_y']
+                    
+                    # Plot marker on chromosome at original position (as a horizontal line)
+                    ax.plot(
+                        [chr_x, chr_right_x],
+                        [original_y, original_y],
+                        color="red",
+                        linewidth=2,
+                        clip_on=False,
+                        zorder=200,
+                    )
+                    
+                    if lead['snpid'] is not None:
+                        snp_text = str(lead['snpid'])
+                        # Truncate long SNP IDs
+                        if len(snp_text) > 20:
+                            snp_text = snp_text[:17] + "..."
+                        
+                        # Point on chromosome (right edge where arrow points)
+                        chr_point_x = chr_right_x
+                        chr_point_y = original_y
+                        text_y = y_pos_chr
+                        
+                        # Set default annotation style (text anchor: left-center)
+                        anno_default = {
+                            "fontsize": 8,
+                            "ha": "left",
+                            "va": "center",
+                            "fontweight": "normal",
+                        }
+                        if annotation_kwargs:
+                            anno_default.update(annotation_kwargs)
+                        anno_default["ha"] = "left"
+                        anno_default["va"] = "center"
+                        for _arrow_key in ("arrow_pad", "arrow_shaft", "arrow_shrink_b"):
+                            anno_default.pop(_arrow_key, None)
+                        
+                        anno_fontsize = float(anno_default.get("fontsize", 8))
+                        arrow_pad_pt = _resolve_anno_arrow_pt(
+                            anno_arrow_pad,
+                            "arrow_pad",
+                            annotation_kwargs,
+                            10.0,
+                        )
+                        arrow_shaft_pt = _resolve_anno_arrow_pt(
+                            anno_arrow_shaft,
+                            "arrow_shaft",
+                            annotation_kwargs,
+                            18.0,
+                        )
+                        shrink_b_pt = _resolve_anno_arrow_pt(
+                            anno_arrow_shrink_b,
+                            "arrow_shrink_b",
+                            annotation_kwargs,
+                            4.0,
+                        )
+                        
+                        dx_shaft, _ = _points_to_data_delta(
+                            ax, chr_point_x, text_y, dx_points=arrow_shaft_pt
+                        )
+                        text_x = chr_point_x + anno_x_pad + dx_shaft
+                        
+                        text_width_dx, _ = _points_to_data_delta(
+                            ax, text_x, text_y, dx_points=anno_fontsize * len(snp_text) * 0.55
+                        )
+                        max_xlim = max(max_xlim, text_x + text_width_dx)
+                        
+                        anno_obj = ax.annotate(
+                            snp_text,
+                            xy=(chr_point_x, chr_point_y),
+                            xytext=(text_x, text_y),
+                            arrowprops=dict(
+                                arrowstyle="-|>",
+                                color="gray",
+                                lw=0.8,
+                                relpos=(0, 0.5),
+                                shrinkA=arrow_pad_pt,
+                                shrinkB=shrink_b_pt,
+                            ),
+                            clip_on=False,
+                            zorder=201,
+                            **anno_default
+                        )
+                        anno_objects.append(anno_obj)
         
         # Use adjust_text for final fine-tuning (vertical movement only for horizontal layout)
         # Note: We skip adjust_text for now as it interferes with arrow positioning
@@ -666,6 +794,11 @@ def _plot_chr(
     
     ax.set_xticks(ticks=[])
     ax.set_yticks(ticks=[])
-    # Extend xlim to accommodate annotations on the right
-    # Need space for chromosome (0-0.21), gap, and annotations (up to 0.5+)
-    ax.set_xlim([0, 0.7])
+    # Record required right boundary for this axis; xlim is set globally in _plot_phenogram().
+    xlim_default = chr_right_x + anno_x_pad + 0.5
+    xlim_right = max(
+        getattr(ax, "_phenogram_xmax", xlim_default),
+        max_xlim * 1.05,
+    )
+    ax._phenogram_xmax = xlim_right
+    # Do NOT call ax.set_xlim() here — all axes share one xlim after all chromosomes are drawn.

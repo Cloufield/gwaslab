@@ -358,6 +358,7 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
+        "plot_phenogram",
         "plot_region:r",
         "plot_stacked_mqq"
       ],
@@ -367,6 +368,42 @@
         "plot_region:r": 100,
         "plot_mqq": 100
       },
+      "add_to_docstring": false
+    },
+    "anno_arrow_pad": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Phenogram arrow-to-text gap in matplotlib points (shrinkA)",
+      "default": 10,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_arrow_shaft": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Phenogram arrow shaft length from annotation gap to text, in points",
+      "default": 18,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_arrow_shrink_b": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Phenogram arrow-to-marker gap in matplotlib points (shrinkB)",
+      "default": 4,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_x_pad": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Phenogram extra horizontal gap between chromosome and annotation text (data coords)",
+      "default": 0.14,
+      "ctx_defaults": {},
       "add_to_docstring": false
     },
     "anno_min": {
@@ -839,6 +876,24 @@
       ],
       "desc": "Chromosome column used to position variants and x-axis layout",
       "default": "CHR",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "chr_width": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Phenogram chromosome width in data coordinates",
+      "default": 0.35,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "chr_x": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "Phenogram chromosome left x boundary in data coordinates",
+      "default": 0.0,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -3539,6 +3594,7 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
+        "plot_phenogram",
         "plot_region:r"
       ],
       "desc": "Text repulsion force parameter",
