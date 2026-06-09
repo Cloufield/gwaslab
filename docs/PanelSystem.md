@@ -41,6 +41,12 @@ GWASLab supports the following panel types:
 | `region` | Regional plots with LD information and gene track | `sumstats` or `insumstats`, `region`, `vcf_path` |
 | `chromatin` | Chromatin state tracks (Roadmap 15-state model) | `region_chromatin_files`, `region_chromatin_labels`, `region` |
 | `pipcs` | PIP (Posterior Inclusion Probability) and Credible Sets plots | `pipcs_raw`, `region` |
+| `ag_tracks` | AlphaGenome 1D predicted tracks | `bundle` or `ag_spec`, `region` |
+| `ag_overlay` | AlphaGenome REF/ALT variant overlay | `bundle` or `ag_spec`, `region`, optional `variant_context` |
+| `ag_contact` | AlphaGenome contact maps | `bundle` or `ag_spec`, `region` |
+| `ag_sashimi` | AlphaGenome splice junction sashimi | `bundle` or `ag_spec`, `region` |
+
+AlphaGenome data fetching uses the separate [gwaslab-alphagenome](https://github.com/Cloufield/gwaslab-alphagenome) package. Pass `ag_spec=glag.Spec(...)` on `gl.Panel`; `gl.plot_panels` materializes bundles via `glag.extract_batch()`.
 
 ### Panel Methods
 

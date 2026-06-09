@@ -14,7 +14,16 @@ from gwaslab.viz.viz_plot_ld_block import plot_ld_block
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_aux_chromatin import _plot_chromatin_state
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
+from gwaslab.viz.viz_plot_alphagenome import (
+    plot_ag_tracks,
+    plot_ag_overlay,
+    plot_ag_contact,
+    plot_ag_sashimi,
+)
+from gwaslab.viz.viz_aux_track_bundle import bundle_num_axes
 from gwaslab.info.g_Log import Log
+
+_AG_PANEL_TYPES = frozenset({"ag_tracks", "ag_overlay", "ag_contact", "ag_sashimi"})
 
 
 class Panel:
@@ -136,8 +145,12 @@ class Panel:
             "track": ("plot_track", plot_track, None),
             "arc": ("plot_arc", plot_arc, None),
             "ld_block": ("plot_ld_block", plot_ld_block, None),
-            "region": ("plot_region", _mqqplot, "r"),  # Use _mqqplot with mode="r" for regional plots
-            "pipcs": ("plot_pipcs", _plot_cs, None)
+            "region": ("plot_region", _mqqplot, "r"),
+            "pipcs": ("plot_pipcs", _plot_cs, None),
+            "ag_tracks": ("plot_ag_tracks", plot_ag_tracks, None),
+            "ag_overlay": ("plot_ag_overlay", plot_ag_overlay, None),
+            "ag_contact": ("plot_ag_contact", plot_ag_contact, None),
+            "ag_sashimi": ("plot_ag_sashimi", plot_ag_sashimi, None),
         }
         
         if self.panel_type in param_config:
@@ -146,7 +159,11 @@ class Panel:
             # Preserve data parameters that might be filtered out (e.g., sumstats, track_path, bedpe_path)
             # These are typically not in function signatures but are required for plotting
             data_params = {}
-            data_param_keys = ["insumstats", "sumstats", "track_path", "bedpe_path", "region_chromatin_files", "region_chromatin_labels", "pipcs_raw"]
+            data_param_keys = [
+                "insumstats", "sumstats", "track_path", "bedpe_path",
+                "region_chromatin_files", "region_chromatin_labels", "pipcs_raw",
+                "bundle", "ag_spec", "variant_context", "build",
+            ]
             for key in data_param_keys:
                 if key in kwargs:
                     data_params[key] = kwargs[key]
@@ -239,3 +256,33 @@ class Panel:
             Parameter value or default
         """
         return self.kwargs.get(key, default)
+
+    def is_deferred(self) -> bool:
+        """True when panel waits on ``ag_spec`` extraction (no ``bundle`` yet)."""
+        return (
+            self.panel_type in _AG_PANEL_TYPES
+            and self.get_kwarg("ag_spec") is not None
+            and self.get_kwarg("bundle") is None
+        )
+
+    def materialize(self, bundle) -> None:
+        """Attach a fetched bundle and clear ``ag_spec``."""
+        self.set_kwarg("bundle", bundle)
+        self.kwargs.pop("ag_spec", None)
+
+    def get_subplot_count(self) -> int:
+        """
+        Number of matplotlib axes this panel requires.
+
+        Deferred ``ag_*`` panels default to 1 until materialized.
+        """
+        if self.panel_type == "ld_block":
+            return 2
+        if self.panel_type == "region":
+            return 2
+        if self.panel_type in _AG_PANEL_TYPES:
+            bundle = self.get_kwarg("bundle")
+            if bundle is not None:
+                return bundle_num_axes(bundle)
+            return 1
+        return 1

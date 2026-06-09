@@ -17,7 +17,16 @@ from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_aux_xaxis_manager import XAxisManager
+from gwaslab.viz.viz_aux_materialize import materialize_ag_panels
+from gwaslab.viz.viz_plot_alphagenome import (
+    plot_ag_tracks,
+    plot_ag_overlay,
+    plot_ag_contact,
+    plot_ag_sashimi,
+)
 from gwaslab.info.g_Log import Log
+
+_AG_PANEL_TYPES = frozenset({"ag_tracks", "ag_overlay", "ag_contact", "ag_sashimi"})
 
 
 def _add_panel_title(ax, title: str, title_pos: Optional[Union[str, Tuple[float, float]]], title_kwargs: Dict[str, Any]):
@@ -68,14 +77,31 @@ def _get_default_height_ratio(panel_type: str) -> float:
         Default height ratio for the panel type
     """
     default_ratios = {
-        "region": 4,      # Regional plots need more space
-        "ld_block": 4,    # LD blocks need moderate space
-        "track": 2,       # Tracks are compact
-        "arc": 2,         # Arcs are compact
-        "chromatin": 1,   # Chromatin states are very compact
-        "pipcs": 3,       # PIPCS plots need moderate space
+        "region": 4,
+        "ld_block": 4,
+        "track": 2,
+        "arc": 2,
+        "chromatin": 1,
+        "pipcs": 3,
+        "ag_tracks": 2,
+        "ag_overlay": 2,
+        "ag_contact": 4,
+        "ag_sashimi": 2,
     }
     return default_ratios.get(panel_type.lower(), 1.0)  # Default to 1.0 for unknown types
+
+
+def _expand_height_ratio_for_panel(panel: Panel, ratio: float) -> List[float]:
+    """Expand one panel-level height ratio into per-subplot ratios."""
+    panel_type = panel.get_type()
+    if panel_type == "ld_block":
+        return [ratio * 0.1, ratio]
+    if panel_type == "region":
+        return [ratio, ratio * 0.5]
+    n = panel.get_subplot_count()
+    if panel_type in _AG_PANEL_TYPES and n > 1:
+        return [ratio] * n
+    return [ratio]
 
 
 def _auto_adjust_fig_kwargs(
@@ -212,6 +238,8 @@ def plot_panels(
     align_xaxis: bool = True,
     region_step: int = 21,
     track_start_i: float = 0.0,
+    variant_positions: Optional[List[float]] = None,
+    variant_line_kwargs: Optional[Dict[str, Any]] = None,
     verbose: bool = True,
     log: Log = Log(),
     **kwargs
@@ -339,27 +367,8 @@ def plot_panels(
     
     n_panels = len(panels)
     log.write(f" -Number of panels: {n_panels}", verbose=verbose)
-    
-    # Check which panels need multiple axes (e.g., ld_block needs ax_pos and ax, region needs ax1 and ax3)
-    panel_needs_multiple_axes = []
-    total_subplot_count = 0
-    for panel in panels:
-        panel_type = panel.get_type()
-        if panel_type == "ld_block":
-            # ld_block needs 2 axes: ax_pos (position bar) and ax (main LD block)
-            panel_needs_multiple_axes.append(True)
-            total_subplot_count += 2
-        elif panel_type == "region":
-            # region needs 2 axes: ax1 (main scatter plot) and ax3 (gene track)
-            panel_needs_multiple_axes.append(True)
-            total_subplot_count += 2
-        else:
-            panel_needs_multiple_axes.append(False)
-            total_subplot_count += 1
-    
-    log.write(f" -Total subplot count: {total_subplot_count} (including multi-axis panels)", verbose=verbose)
-    
-    # Extract region from panels if not provided
+
+    # Extract region from panels if not provided (before materialize)
     if region is None:
         for panel in panels:
             panel_region = panel.get_kwarg("region")
@@ -385,7 +394,16 @@ def plot_panels(
         # Set region in panel kwargs if not present
         if panel_region is None:
             panel.set_kwarg("region", region)
-    
+
+    panels = materialize_ag_panels(panels, log=log, verbose=verbose)
+
+    panel_subplot_counts = [p.get_subplot_count() for p in panels]
+    total_subplot_count = sum(panel_subplot_counts)
+    log.write(
+        f" -Total subplot count: {total_subplot_count} (including multi-axis panels)",
+        verbose=verbose,
+    )
+
     # Set up style
     # Remove figsize from fig_kwargs before passing to set_plot_style
     # so that _auto_adjust_fig_kwargs can calculate it properly
@@ -430,51 +448,25 @@ def plot_panels(
     if "fontsize" not in title_kwargs:
         title_kwargs["fontsize"] = fontsize
     
-    # Set up height ratios - expand for panels that need multiple axes
     if height_ratios is None:
         expanded_height_ratios = []
-        for i, panel in enumerate(panels):
-            panel_type = panel.get_type()
-            base_ratio = _get_default_height_ratio(panel_type)
-            
-            if panel_needs_multiple_axes[i]:
-                if panel_type == "ld_block":
-                    # For ld_block: small ratio for ax_pos, main ratio for ax
-                    expanded_height_ratios.extend([base_ratio * 0.1, base_ratio])  # ax_pos gets 10%, ax gets full
-                elif panel_type == "region":
-                    # For region: main ratio for ax1 (scatter plot), smaller ratio for ax3 (gene track)
-                    expanded_height_ratios.extend([base_ratio, base_ratio * 0.5])  # ax1 gets full, ax3 gets 50%
-                else:
-                    expanded_height_ratios.extend([base_ratio, base_ratio])  # Default for unknown multi-axis types
-            else:
-                expanded_height_ratios.append(base_ratio)
-        
+        for panel in panels:
+            base_ratio = _get_default_height_ratio(panel.get_type())
+            expanded_height_ratios.extend(_expand_height_ratio_for_panel(panel, base_ratio))
         log.write(
             f" -Using default height ratios: {[f'{r:.2f}' for r in expanded_height_ratios]}",
-            verbose=verbose
+            verbose=verbose,
         )
         height_ratios = expanded_height_ratios
     else:
-        # User provided height_ratios - expand them for multi-axis panels
         if len(height_ratios) != n_panels:
             raise ValueError(
                 f"height_ratios length ({len(height_ratios)}) must match "
                 f"number of panels ({n_panels})"
             )
         expanded_height_ratios = []
-        for i, ratio in enumerate(height_ratios):
-            if panel_needs_multiple_axes[i]:
-                panel_type = panels[i].get_type()
-                if panel_type == "ld_block":
-                    # For ld_block: small ratio for ax_pos, main ratio for ax
-                    expanded_height_ratios.extend([ratio * 0.1, ratio])  # ax_pos gets 10% of ratio, ax gets full ratio
-                elif panel_type == "region":
-                    # For region: main ratio for ax1, smaller ratio for ax3
-                    expanded_height_ratios.extend([ratio, ratio * 0.5])  # ax1 gets full ratio, ax3 gets 50%
-                else:
-                    expanded_height_ratios.extend([ratio, ratio])  # Default
-            else:
-                expanded_height_ratios.append(ratio)
+        for panel, ratio in zip(panels, height_ratios):
+            expanded_height_ratios.extend(_expand_height_ratio_for_panel(panel, ratio))
         height_ratios = expanded_height_ratios
     
     # Auto-adjust fig_kwargs based on panel number and types
@@ -723,13 +715,76 @@ def plot_panels(
                 _add_panel_title(ax, titles[i], title_pos, title_kwargs)
             
             axes_index += 1
-            
+
+        elif panel_type in _AG_PANEL_TYPES:
+            if "bundle" not in panel_kwargs:
+                raise ValueError(
+                    f"Panel {i+1} (type='{panel_type}') missing required parameter 'bundle' "
+                    "(or 'ag_spec' for deferred extraction)"
+                )
+            n_axes = panel.get_subplot_count()
+            if axes_index + n_axes > len(axes):
+                raise ValueError(
+                    f"Panel {i+1} (type='{panel_type}') needs {n_axes} axes but only "
+                    f"{len(axes) - axes_index} available"
+                )
+            panel_axes = axes[axes_index: axes_index + n_axes]
+            plot_region = panel_kwargs.get("region", region)
+            ag_kw = {
+                k: v for k, v in panel_kwargs.items()
+                if k not in (
+                    "bundle", "ag_spec", "variant_context", "build",
+                    "fig", "ax", "axes", "region", "verbose", "log",
+                )
+            }
+            if panel_type == "ag_tracks":
+                plot_ag_tracks(
+                    bundle=panel_kwargs["bundle"],
+                    axes=panel_axes,
+                    region=plot_region,
+                    verbose=verbose,
+                    log=log,
+                    **ag_kw,
+                )
+            elif panel_type == "ag_overlay":
+                plot_ag_overlay(
+                    bundle=panel_kwargs["bundle"],
+                    axes=panel_axes,
+                    region=plot_region,
+                    verbose=verbose,
+                    log=log,
+                    **ag_kw,
+                )
+            elif panel_type == "ag_contact":
+                plot_ag_contact(
+                    bundle=panel_kwargs["bundle"],
+                    axes=panel_axes,
+                    region=plot_region,
+                    verbose=verbose,
+                    log=log,
+                    **ag_kw,
+                )
+            elif panel_type == "ag_sashimi":
+                plot_ag_sashimi(
+                    bundle=panel_kwargs["bundle"],
+                    axes=panel_axes,
+                    region=plot_region,
+                    verbose=verbose,
+                    log=log,
+                    **ag_kw,
+                )
+            for ax in panel_axes:
+                main_axes.append(ax)
+            if titles is not None and i < len(titles) and titles[i] is not None:
+                _add_panel_title(panel_axes[0], titles[i], title_pos, title_kwargs)
+            axes_index += n_axes
+
         else:
             raise ValueError(
                 f"Unsupported panel type '{panel_type}' for panel {i+1}. "
-                f"Supported types: 'track', 'arc', 'ld_block', 'region', 'chromatin', 'pipcs'"
+                f"Supported types: 'track', 'arc', 'ld_block', 'region', 'chromatin', 'pipcs', "
+                f"'ag_tracks', 'ag_overlay', 'ag_contact', 'ag_sashimi'"
             )
-    print(all_axes)
     
     # Save figure size before alignment (in case anything modifies it)
     fig_size_before_align = fig.get_size_inches().copy()
@@ -754,7 +809,20 @@ def plot_panels(
         )
         xm.register_align_many(main_axes)  # Register axes for x-tick/label alignment
         xm.align()
-        
+
+        if variant_positions:
+            vline_kw = variant_line_kwargs or {
+                "color": "#FF0000",
+                "linestyle": "--",
+                "alpha": 0.7,
+                "linewidth": 1.0,
+            }
+            for ax in main_axes:
+                if ax in exclude_axes:
+                    continue
+                for pos in variant_positions:
+                    ax.axvline(pos, **vline_kw)
+
         # Restore figure size if XAxisManager modified it
         fig_size_after_align = fig.get_size_inches()
         if not np.allclose(fig_size_before_align, fig_size_after_align):
