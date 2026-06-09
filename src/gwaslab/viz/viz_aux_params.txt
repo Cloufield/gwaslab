@@ -167,7 +167,8 @@
         "plot_region:r",
         "plot_trumpet:b",
         "plot_trumpet:q",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_phenogram"
       ],
       "desc": "Annotation source or column (e.g., 'GENENAME', True, or column name)",
       "default": null,
@@ -203,7 +204,8 @@
         "plot_mqq:qqm",
         "plot_mqq:r",
         "plot_region",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_phenogram"
       ],
       "desc": "Mapping from SNPID to custom annotation label",
       "default": {},
@@ -282,7 +284,8 @@
         "plot_mqq:qqm",
         "plot_mqq:r",
         "plot_region:r",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_phenogram"
       ],
       "desc": "Custom GTF path for annotations",
       "default": null,
@@ -326,7 +329,8 @@
         "plot_snp_density",
         "plot_miami2",
         "plot_manhattan",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_phenogram"
       ],
       "desc": "Default styling kwargs for annotations",
       "default": {},
@@ -337,6 +341,7 @@
       "plots": [
         "compare_effect",
         "plot_mqq",
+        "plot_phenogram",
         "plot_region",
         "plot_snp_density",
         "plot_miami2",
@@ -370,48 +375,35 @@
       },
       "add_to_docstring": false
     },
-    "anno_arrow_pad": {
+    "anno_max_rows": {
       "plots": [
-        "plot_phenogram"
+        "compare_effect",
+        "plot_manhattan",
+        "plot_miami2",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:r",
+        "plot_phenogram",
+        "plot_region",
+        "plot_region:r",
+        "plot_snp_density",
+        "plot_stacked_mqq"
       ],
-      "desc": "Phenogram arrow-to-text gap in matplotlib points (shrinkA)",
-      "default": 10,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_arrow_shaft": {
-      "plots": [
-        "plot_phenogram"
-      ],
-      "desc": "Phenogram arrow shaft length from annotation gap to text, in points",
-      "default": 18,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_arrow_shrink_b": {
-      "plots": [
-        "plot_phenogram"
-      ],
-      "desc": "Phenogram arrow-to-marker gap in matplotlib points (shrinkB)",
-      "default": 4,
-      "ctx_defaults": {},
-      "add_to_docstring": false
+      "desc": "Maximum number of annotation rows to display. If more variants are provided, they will be sorted by p-value or -log10(p-value) and only the top ones will be shown.",
+      "default": 40,
+      "ctx_defaults": {
+        "plot_phenogram": 200
+      },
+      "add_to_docstring": true
     },
     "anno_x_pad": {
       "plots": [
         "plot_phenogram"
       ],
       "desc": "Phenogram extra horizontal gap between chromosome and annotation text (data coords)",
-      "default": 0.14,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_text": {
-      "plots": [
-        "plot_phenogram"
-      ],
-      "desc": "Column name for phenogram annotation text labels (e.g. gene name)",
-      "default": null,
+      "default": 0.18,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -509,7 +501,8 @@
         "plot_region",
         "plot_snp_density:b",
         "plot_snp_density",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_phenogram"
       ],
       "desc": "Set of variant IDs to annotate",
       "default": [],
@@ -526,7 +519,8 @@
         "plot_mqq:qqm",
         "plot_mqq:r",
         "plot_region:r",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_phenogram"
       ],
       "desc": "Annotation source backend (e.g., 'ensembl', 'refseq')",
       "default": "ensembl",
@@ -652,6 +646,7 @@
         "plot_manhattan",
         "plot_miami2",
         "plot_mqq",
+        "plot_phenogram",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
@@ -2619,7 +2614,7 @@
       "desc": "Marker size or size range",
       "default": null,
       "ctx_defaults": {
-        "plot_phenogram": 42,
+        "plot_phenogram": 81,
         "plot_mqq:r": [
           40,
           65
@@ -2653,7 +2648,7 @@
         "plot_phenogram"
       ],
       "desc": "Horizontal gap between phenogram markers within a group, in points",
-      "default": 14,
+      "default": 3,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2671,7 +2666,7 @@
         "plot_phenogram"
       ],
       "desc": "Vertical gap between phenogram marker row and text label below, in points",
-      "default": 6,
+      "default": 2.75,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2689,7 +2684,7 @@
         "plot_phenogram"
       ],
       "desc": "Font size for phenogram marker-mode text labels",
-      "default": 10,
+      "default": 11,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2716,7 +2711,7 @@
         "plot_phenogram"
       ],
       "desc": "Minimum vertical spacing between phenogram group annotation blocks, in points",
-      "default": 18,
+      "default": 3.5,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2725,7 +2720,7 @@
         "plot_phenogram"
       ],
       "desc": "Minimum spacing between marker rows of adjacent phenogram groups, in points",
-      "default": 16,
+      "default": 3,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -4102,7 +4097,8 @@
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
-        "plot_mqq:r"
+        "plot_mqq:r",
+        "plot_phenogram"
       ],
       "desc": "Significance level for extracting lead variants to annotate. Can be set independently from sig_level.",
       "default": 5e-08,
