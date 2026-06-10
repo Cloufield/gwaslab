@@ -13,7 +13,8 @@ Run (from repo root):
 PYTHONPATH=src pytest test/cli/ -m "not network"
 ```
 
-Network-dependent examples (`06_extract.sh`, `08_utility.sh`) are marked `@pytest.mark.network`:
+Network-dependent examples (`06_extract.sh`) are marked `@pytest.mark.network`.
+`08_utility.sh` is skipped in automated runs (GWAS Catalog download is slow); run it manually when needed.
 
 ```bash
 PYTHONPATH=src pytest test/cli/ -m network

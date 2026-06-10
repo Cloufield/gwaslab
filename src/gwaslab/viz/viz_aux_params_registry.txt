@@ -560,6 +560,9 @@
         "yticklabel_kwargs": []
       }
     },
+    "plot_mqq": {
+      "inherit": "plot_mqq:mqq"
+    },
     "plot_manhattan": {
       "inherit": "plot_mqq:mqq"
     },
@@ -1628,13 +1631,18 @@
         "chr_width",
         "chr_x",
         "anno_x_pad",
+        "chr_label_pad",
         "use_lead_extraction",
-        "annotate_snps",
-        "annotation_kwargs",
-        "anno_arrow_shaft",
-        "anno_arrow_pad",
-        "anno_arrow_shrink_b",
-        "anno_text",
+        "anno",
+        "anno_set",
+        "anno_alias",
+        "anno_source",
+        "anno_gtf_path",
+        "anno_sig_level",
+        "anno_max_rows",
+        "anno_kwargs",
+        "anno_kwargs_single",
+        "arrow_kwargs",
         "anno_group",
         "anno_shape",
         "anno_color",
@@ -1645,6 +1653,8 @@
         "marker_size",
         "marker_gap_pt",
         "marker_label_gap_pt",
+        "marker_max_per_row",
+        "marker_row_gap_pt",
         "marker_label_align",
         "marker_fontsize",
         "marker_linewidth",
@@ -1680,26 +1690,35 @@
         "ncols": 11,
         "figsize": [
           20,
-          40
+          48
         ],
         "dpi": 100,
         "chr_width": 0.35,
         "chr_x": 0.0,
-        "anno_x_pad": 0.14,
+        "anno_x_pad": 0.18,
+        "chr_label_pad": 0.06,
         "use_lead_extraction": true,
-        "annotate_snps": true,
-        "anno_arrow_shaft": 18,
-        "anno_arrow_pad": 10,
-        "anno_arrow_shrink_b": 4,
-        "marker_size": 42,
-        "marker_gap_pt": 14,
-        "marker_label_gap_pt": 6,
+        "anno": null,
+        "anno_set": [],
+        "anno_alias": {},
+        "anno_source": "ensembl",
+        "anno_gtf_path": null,
+        "anno_sig_level": 5e-08,
+        "anno_max_rows": 200,
+        "anno_kwargs": null,
+        "anno_kwargs_single": {},
+        "arrow_kwargs": {},
+        "marker_size": 81,
+        "marker_gap_pt": 3,
+        "marker_label_gap_pt": 2.75,
+        "marker_max_per_row": 5,
+        "marker_row_gap_pt": 2.5,
         "marker_label_align": "center",
-        "marker_fontsize": 10,
+        "marker_fontsize": 11,
         "marker_linewidth": 0.6,
         "marker_label_bbox": true,
-        "group_min_vertical_gap_pt": 18,
-        "group_marker_to_marker_gap_pt": 16,
+        "group_min_vertical_gap_pt": 3.5,
+        "group_marker_to_marker_gap_pt": 3,
         "group_label_box_pad_pt": 1.5,
         "show_legend": true,
         "legend_ncol": 6,
@@ -1711,7 +1730,7 @@
       "banned_keys": {
         "fig_kwargs": [],
         "save_kwargs": [],
-        "annotation_kwargs": []
+        "anno_kwargs": []
       }
     }
   }

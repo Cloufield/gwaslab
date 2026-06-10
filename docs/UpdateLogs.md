@@ -1,5 +1,9 @@
 # Update Logs
 
+# v4.1.9 20260609
+
+- Fixed `plot_mqq()` and related plots dropping `anno_max_rows`: base `plot_mqq` viz aux registry entry now inherits `plot_mqq:mqq`, and `anno_max_rows` is registered for Manhattan/regional MQQ-family plots
+
 # v4.1.8 20260602
 
 - Added built-in panel for ancestry inferring based on allele frequency (AF)

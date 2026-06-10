@@ -681,6 +681,7 @@ def test_report_subcommand_rejects_non_html_pdf_output(tmp_path: Path) -> None:
 
 
 def test_report_subcommand_writes_html(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Smoke-test report CLI: HTML output only (no regional plots)."""
     monkeypatch.setenv("MPLBACKEND", "Agg")
     from gwaslab_cli.cli import main as cli_main
 
@@ -697,6 +698,10 @@ def test_report_subcommand_writes_html(tmp_path: Path, monkeypatch: pytest.Monke
             "auto",
             "--build",
             "19",
+            "--sig-level",
+            "1e-50",
+            "--mqq-dpi",
+            "72",
             "-q",
         ]
     )

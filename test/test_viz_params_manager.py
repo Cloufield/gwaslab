@@ -916,6 +916,18 @@ class TestContextDefaults(unittest.TestCase):
         # If an arg has ctx_defaults but is not in allowed, it won't be in defaults
         # This is correct behavior
 
+    def test_plot_mqq_allows_anno_max_rows_without_mode(self):
+        """plot_mqq() without mode must accept anno_max_rows (inherits plot_mqq:mqq)."""
+        allowed = self.pm.allowed('plot_mqq', None)
+        self.assertIn('anno_max_rows', allowed)
+
+        merged = self.pm.merge('plot_mqq', {'anno_max_rows': 10}, mode=None)
+        filtered = self.pm.filter(
+            _mqqplot, merged, key='plot_mqq', mode=None, log=Log(), verbose=False
+        )
+        self.assertEqual(filtered.get('anno_max_rows'), 10)
+        self.assertEqual(self.pm.defaults('plot_mqq', None).get('anno_max_rows'), 40)
+
 
 class TestBannedKeys(unittest.TestCase):
     """Test banned keys (nested sub-keys) behavior."""
