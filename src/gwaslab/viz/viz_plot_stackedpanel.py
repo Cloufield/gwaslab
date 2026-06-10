@@ -19,6 +19,7 @@ from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_aux_xaxis_manager import XAxisManager
 from gwaslab.viz.viz_aux_materialize import materialize_ag_panels
 from gwaslab.viz.viz_plot_alphagenome import (
+    finalize_ag_panel_spines,
     plot_ag_tracks,
     plot_ag_overlay,
     plot_ag_contact,
@@ -99,6 +100,8 @@ def _expand_height_ratio_for_panel(panel: Panel, ratio: float) -> List[float]:
     if panel_type == "region":
         return [ratio, ratio * 0.5]
     n = panel.get_subplot_count()
+    if panel_type == "ag_overlay" and n > 1:
+        return [ratio * 0.5] * n
     if panel_type in _AG_PANEL_TYPES and n > 1:
         return [ratio] * n
     return [ratio]
@@ -500,6 +503,7 @@ def plot_panels(
     axes_index = 0  # Track current position in axes array
     main_axes = []  # Track main axes for alignment (exclude position bars, gene tracks)
     exclude_axes = []  # Track axes to exclude from alignment
+    ag_axes: List[plt.Axes] = []
     # Start with axes from plt.subplots (preserves order from top to bottom)
     # all_axes[0] is top panel, all_axes[-1] is bottom panel
     all_axes = list(axes)  # Base axes from plt.subplots
@@ -737,6 +741,8 @@ def plot_panels(
                     "fig", "ax", "axes", "region", "verbose", "log",
                 )
             }
+            if "fontsize" not in ag_kw:
+                ag_kw["fontsize"] = fontsize
             if panel_type == "ag_tracks":
                 plot_ag_tracks(
                     bundle=panel_kwargs["bundle"],
@@ -775,6 +781,7 @@ def plot_panels(
                 )
             for ax in panel_axes:
                 main_axes.append(ax)
+            ag_axes.extend(panel_axes)
             if titles is not None and i < len(titles) and titles[i] is not None:
                 _add_panel_title(panel_axes[0], titles[i], title_pos, title_kwargs)
             axes_index += n_axes
@@ -809,6 +816,9 @@ def plot_panels(
         )
         xm.register_align_many(main_axes)  # Register axes for x-tick/label alignment
         xm.align()
+
+        if ag_axes:
+            finalize_ag_panel_spines(ag_axes)
 
         if variant_positions:
             vline_kw = variant_line_kwargs or {

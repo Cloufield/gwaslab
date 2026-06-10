@@ -106,6 +106,8 @@ Bundle = Union[TrackBundle, OverlayBundle, ContactBundle, JunctionBundle]
 
 
 def bundle_num_axes(bundle: Bundle) -> int:
+    if isinstance(bundle, OverlayBundle):
+        return 2 * bundle.num_axes
     return bundle.num_axes
 
 

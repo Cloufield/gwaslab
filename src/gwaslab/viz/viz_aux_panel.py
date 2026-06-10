@@ -284,5 +284,7 @@ class Panel:
             bundle = self.get_kwarg("bundle")
             if bundle is not None:
                 return bundle_num_axes(bundle)
+            if self.panel_type == "ag_overlay":
+                return 2
             return 1
         return 1
