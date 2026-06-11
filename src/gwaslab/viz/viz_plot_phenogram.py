@@ -1,6 +1,5 @@
 """Phenogram plot entry point."""
 
-from pathlib import Path
 from typing import Optional, Union, Dict, Any, List
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -22,7 +21,7 @@ from gwaslab.viz.viz_aux_phenogram import (
     _compute_phenogram_xlim,
     _estimate_global_annotation_xmax,
     _label_eligible_mask,
-    _lead_anno_field,
+    _load_phenogram_cytobands,
     _phenogram_global_xmin,
     _phenogram_panel_ceiling_y,
     _phenogram_panel_floor_y,
@@ -31,11 +30,13 @@ from gwaslab.viz.viz_aux_phenogram import (
     _plot_chr_body,
     _plot_phenogram_marker_legends,
     _prepare_marker_label_layout,
+    _prepare_phenogram_leads_dict,
     _prepare_phenogram_annotation_column,
     _prepare_text_label_layout,
     _resolve_marker_maps,
+    _resolve_phenogram_cytoband_path,
     _resolve_phenogram_chr_width,
-    _resolve_phenogram_label,
+    _summarize_phenogram_cytobands,
 )
 
 
@@ -50,6 +51,8 @@ def _plot_phenogram(
     sig_level: float = 5e-8,
     cytoband_path: Optional[str] = None,
     build: str = "19",
+    include_sex_chr: bool = False,
+    only_anno_chr: bool = False,
     ncols: int = 11,
     figsize: tuple = (20, 48),
     dpi: int = 400,
@@ -133,6 +136,10 @@ def _plot_phenogram(
         Path to cytoband file. If None, uses default hg19 cytoband file
     build : str, default="19"
         Genome build version ("19" for hg19, "38" for hg38)
+    include_sex_chr : bool, default=False
+        If True, include chromosomes X and Y after autosomes when cytoband data is available.
+    only_anno_chr : bool, default=False
+        If True, plot only chromosomes containing phenogram lead/annotation rows.
     ncols : int, default=11
         Number of columns for arranging chromosomes
     figsize : tuple, default=(20, 48)
@@ -370,90 +377,55 @@ def _plot_phenogram(
                 verbose=verbose,
             )
     
-    # Load cytoband data
-    if cytoband_path is None:
-        # Use default cytoband file path
-        data_dir = Path(__file__).parent.parent / "data" / "cytoband"
-        if build == "19":
-            cytoband_path = data_dir / "cytoBand_hg19.txt.gz"
-        elif build == "38":
-            cytoband_path = data_dir / "cytoBand_hg38.txt.gz"
-        else:
-            # Default to hg19
-            cytoband_path = data_dir / "cytoBand_hg19.txt.gz"
-            log.write(" -Unknown build '{}', using hg19 cytoband data.".format(build), verbose=verbose)
-    
+    cytoband_path = _resolve_phenogram_cytoband_path(
+        build, cytoband_path, log=log, verbose=verbose
+    )
     log.write(" -Loading cytoband data from: {}".format(cytoband_path), verbose=verbose)
-    
+
     try:
-        cytobands = pd.read_csv(cytoband_path, sep="\s+", header=None, compression='gzip')
-        cytobands.columns = ["CHR", "START", "END", "ARM", "STAIN"]
+        cytobands = _load_phenogram_cytobands(str(cytoband_path))
     except Exception as e:
         log.write(" -Error loading cytoband data: {}".format(e), verbose=verbose)
         raise ValueError("Could not load cytoband data from {}".format(cytoband_path))
-    
-    # Color dictionary for cytobands
-    color_dict = {
-        "gpos100": (100/255, 100/255, 100/255),
-        "gpos": (100/255, 100/255, 100/255),
-        "gpos75": (110/255, 110/255, 110/255),
-        "gpos66": (130/255, 130/255, 130/255),
-        "gpos50": (160/255, 160/255, 160/255),
-        "gpos33": (180/255, 180/255, 180/255),
-        "gpos25": (200/255, 200/255, 200/255),
-        "gvar": (220/255, 220/255, 220/255),
-        "gneg": (255/255, 255/255, 255/255),
-        "acen": (217/255, 217/255, 217/255),
-        "stalk": (100/255, 127/255, 164/255)
-    }
-    cytobands["COLOR"] = cytobands["STAIN"].map(color_dict)
-    
-    # Get chromosome sizes from cytoband data
-    chr_sizes = {}
-    for chr_name in cytobands["CHR"].unique():
-        chr_bands = cytobands[cytobands["CHR"] == chr_name]
-        chr_sizes[chr_name] = chr_bands["END"].max()
-    
-    # Get numeric chromosome list (1-22, X, Y, MT)
-    chr_list = []
-    for chr_name in sorted(cytobands["CHR"].unique()):
-        # Extract number from chr name (e.g., "chr1" -> 1)
-        if chr_name.startswith("chr"):
-            chr_num_str = chr_name[3:]
-            try:
-                if chr_num_str in ["X", "Y", "MT"]:
-                    chr_list.append(chr_name)
-                else:
-                    chr_num = int(chr_num_str)
-                    if 1 <= chr_num <= 22:
-                        chr_list.append(chr_name)
-            except ValueError:
-                continue
-    
-    # Sort chromosomes numerically (1-22, then X, Y, MT)
-    def chr_sort_key(chr_name):
-        if not chr_name.startswith("chr"):
-            return (999, chr_name)
-        chr_num_str = chr_name[3:]
-        if chr_num_str.isdigit():
-            return (int(chr_num_str), chr_name)
-        elif chr_num_str == "X":
-            return (23, chr_name)
-        elif chr_num_str == "Y":
-            return (24, chr_name)
-        elif chr_num_str == "MT":
-            return (25, chr_name)
+
+    chr_list, chr_sizes, centromere_by_chr, cytobands_by_chr = (
+        _summarize_phenogram_cytobands(cytobands, include_sex_chr=include_sex_chr)
+    )
+    leads_dict = _prepare_phenogram_leads_dict(
+        leads=leads,
+        chrom=chrom,
+        pos=pos,
+        snpid=snpid,
+        chr_list=chr_list,
+        marker_mode=marker_mode,
+        anno=anno,
+        label_eligible=label_eligible,
+        anno_alias=anno_alias,
+        anno_group=anno_group,
+        anno_shape=anno_shape,
+        anno_color=anno_color,
+    )
+
+    if only_anno_chr:
+        annotated_chr_list = [chr_name for chr_name in chr_list if leads_dict.get(chr_name)]
+        if annotated_chr_list:
+            chr_list = annotated_chr_list
+            log.write(
+                " -only_anno_chr: plotting {} chromosome(s) with annotations.".format(
+                    len(chr_list)
+                ),
+                verbose=verbose,
+            )
         else:
-            return (999, chr_name)
-    
-    chr_list = sorted(chr_list, key=chr_sort_key)
-    
-    # Limit to autosomes (1-22) for now - can be extended later
-    chr_list = [c for c in chr_list if c.startswith("chr") and c[3:].isdigit() and 1 <= int(c[3:]) <= 22]
+            log.write(
+                " -only_anno_chr: no chromosomes with annotations; plotting all chromosomes.",
+                verbose=verbose,
+            )
+
     n_chr = len(chr_list)
-    
+
     log.write(" -Plotting {} chromosomes...".format(n_chr), verbose=verbose)
-    
+
     # Set up style
     style = set_plot_style(
         plot="plot_phenogram",
@@ -465,24 +437,24 @@ def _plot_phenogram(
     )
     fig_kwargs = style.get("fig_kwargs", {})
     save_kwargs = style.get("save_kwargs", {})
-    
+
     # Create figure
     if "figsize" not in fig_kwargs:
         fig_kwargs["figsize"] = figsize
     if "dpi" not in fig_kwargs:
         fig_kwargs["dpi"] = dpi
-    
-    fig, axes = plt.subplots(nrows=1, ncols=ncols, figsize=fig_kwargs["figsize"], 
+
+    fig, axes = plt.subplots(nrows=1, ncols=ncols, figsize=fig_kwargs["figsize"],
                              dpi=fig_kwargs["dpi"])
-    
+
     # Handle single axis case
     if ncols == 1:
         axes = [axes]
     else:
         axes = axes.flatten()
-    
+
     # Calculate offsets for each chromosome (row pitch from tallest chr per row).
-    max_chr_size = max(chr_sizes.values())
+    max_chr_size = max(chr_sizes[chr_name] for chr_name in chr_list)
     chr_number_fontsize = 10.0
     chr_number_pad_pt = 4.0
     chr_number_ref_x = chr_x + chr_width / 2
@@ -512,60 +484,10 @@ def _plot_phenogram(
         chr_number_pad_pt=chr_number_pad_pt,
     )
     
-    # Prepare leads data for annotation
-    leads_dict = {}
-    if len(leads) > 0:
-        # Convert chromosome format in leads to match cytoband format
-        leads_copy = leads.copy()
-        if chrom in leads_copy.columns and pos in leads_copy.columns:
-            # Convert numeric chromosomes to chr format
-            for idx, row in leads_copy.iterrows():
-                chr_val = row[chrom]
-                pos_val = row[pos]
-                if pd.notna(chr_val) and pd.notna(pos_val):
-                    # Convert to chr format
-                    if isinstance(chr_val, (int, float)):
-                        chr_str = "chr{}".format(int(chr_val))
-                    else:
-                        chr_str = str(chr_val)
-                        if not chr_str.startswith("chr"):
-                            # Try to extract number
-                            try:
-                                chr_num = int(chr_str)
-                                chr_str = "chr{}".format(chr_num)
-                            except (ValueError, TypeError):
-                                # If it's already a string like "X", "Y", etc., add "chr" prefix
-                                chr_str = "chr{}".format(chr_str)
-                    
-                    # Only include if it's a valid chromosome (1-22, X, Y, MT)
-                    if chr_str in chr_list or (chr_str.startswith("chr") and 
-                                               (chr_str[3:].isdigit() or chr_str[3:] in ["X", "Y", "MT"])):
-                        chrom_num = int(chr_val) if isinstance(chr_val, (int, float)) else chr_str.replace("chr", "")
-                        annotation_val = None
-                        if "Annotation" in leads_copy.columns and pd.notna(row.get("Annotation")):
-                            annotation_val = row["Annotation"]
-                        lead_entry = {
-                            'pos': int(pos_val) if pd.notna(pos_val) else None,
-                            'chrom': chrom_num,
-                            'snpid': row[snpid] if snpid in leads_copy.columns and pd.notna(row[snpid]) else None,
-                            'index': idx,
-                            'annotation': annotation_val,
-                            'anno_group': _lead_anno_field(row, anno_group, leads_copy.columns),
-                            'anno_shape': _lead_anno_field(row, anno_shape, leads_copy.columns),
-                            'anno_color': _lead_anno_field(row, anno_color, leads_copy.columns),
-                        }
-                        if not marker_mode and anno is not None and label_eligible.get(idx, False):
-                            lead_entry['label_text'] = _resolve_phenogram_label(
-                                lead_entry, anno, anno_alias
-                            )
-                        else:
-                            lead_entry['label_text'] = None
-                        leads_dict.setdefault(chr_str, []).append(lead_entry)
-    
     # Pass 1: chromosome geometry only (cytobands + red bars in text mode).
     chr_specs: List[Dict[str, Any]] = []
     for i, chr_name in enumerate(chr_list):
-        chr_cytobands = cytobands.loc[cytobands["CHR"] == chr_name, :].copy()
+        chr_cytobands = cytobands_by_chr[chr_name]
 
         visual_row = i // ncols
         chr_size = chr_sizes[chr_name]
@@ -576,13 +498,7 @@ def _plot_phenogram(
             telemere_full_length,
         )
 
-        acen_bands = chr_cytobands.loc[chr_cytobands["STAIN"] == "acen", :]
-        if len(acen_bands) > 0:
-            chr_centromere_u = acen_bands["START"].min()
-            chr_centromere_l = acen_bands["END"].max()
-        else:
-            chr_centromere_u = chr_size * 0.44
-            chr_centromere_l = chr_size * 0.46
+        chr_centromere_u, chr_centromere_l = centromere_by_chr[chr_name]
 
         spec = _plot_chr_body(
             axes[i % ncols],
@@ -622,95 +538,105 @@ def _plot_phenogram(
         axes[col].set_xlim(global_xmin, provisional_xmax)
         axes[col].set_ylim(global_ymin, global_ymax)
 
-    fig.canvas.draw()
-
-    global_xmax = _estimate_global_annotation_xmax(
-        chr_specs,
-        global_xmin=global_xmin,
-        provisional_xmax=provisional_xmax,
-        marker_mode=marker_mode,
-        marker_size=marker_size,
-        marker_gap_pt=marker_gap_pt,
-        marker_linewidth=marker_linewidth,
-        marker_max_per_row=marker_max_per_row,
-        marker_row_gap_pt=marker_row_gap_pt,
-        marker_fontsize=marker_fontsize,
-        marker_label_gap_pt=marker_label_gap_pt,
-        group_label_box_pad_pt=group_label_box_pad_pt,
-        anno_kwargs=anno_kwargs,
-        renderer=fig.canvas.get_renderer(),
-        anno=anno,
-        anno_alias=anno_alias,
-        marker_label_align=marker_label_align,
-        anno_wrap=anno_wrap,
-        anno_wrap_width_pt=anno_wrap_width_pt,
-        anno_wrap_chars_per_line=anno_wrap_chars_per_line,
-        anno_max_len=anno_max_len,
+    has_annotation_layout = (
+        any(spec.get("leads_with_y") for spec in chr_specs)
+        if marker_mode
+        else any(
+            item["lead"].get("label_text")
+            for spec in chr_specs
+            for item in (spec.get("leads_with_y") or [])
+        )
     )
+
+    if has_annotation_layout:
+        fig.canvas.draw()
+        estimate_renderer = fig.canvas.get_renderer()
+        estimated_xmax = _estimate_global_annotation_xmax(
+            chr_specs,
+            global_xmin=global_xmin,
+            provisional_xmax=provisional_xmax,
+            marker_mode=marker_mode,
+            marker_size=marker_size,
+            marker_gap_pt=marker_gap_pt,
+            marker_linewidth=marker_linewidth,
+            marker_max_per_row=marker_max_per_row,
+            marker_row_gap_pt=marker_row_gap_pt,
+            marker_fontsize=marker_fontsize,
+            marker_label_gap_pt=marker_label_gap_pt,
+            group_label_box_pad_pt=group_label_box_pad_pt,
+            anno_kwargs=anno_kwargs,
+            renderer=estimate_renderer,
+            anno=anno,
+            anno_alias=anno_alias,
+            marker_label_align=marker_label_align,
+            anno_wrap=anno_wrap,
+            anno_wrap_width_pt=anno_wrap_width_pt,
+            anno_wrap_chars_per_line=anno_wrap_chars_per_line,
+            anno_max_len=anno_max_len,
+        )
+    else:
+        estimated_xmax = provisional_xmax
+
     global_xmax = _compute_phenogram_xlim(
         global_xmin,
         chr_x,
         chr_width,
-        global_xmax,
+        estimated_xmax,
         anno_x_pad=anno_x_pad,
     )
 
     for col in range(ncols):
         axes[col].set_xlim(global_xmin, global_xmax)
 
-    fig.canvas.draw()
-    layout_renderer = fig.canvas.get_renderer()
-
-    if marker_mode:
-        for spec in chr_specs:
-            layout_ymax = _prepare_marker_label_layout(
-                spec,
-                marker_size=marker_size,
-                marker_gap_pt=marker_gap_pt,
-                marker_label_gap_pt=marker_label_gap_pt,
-                marker_max_per_row=marker_max_per_row,
-                marker_row_gap_pt=marker_row_gap_pt,
-                marker_fontsize=marker_fontsize,
-                marker_linewidth=marker_linewidth,
-                group_min_vertical_gap_pt=group_min_vertical_gap_pt,
-                group_marker_to_marker_gap_pt=group_marker_to_marker_gap_pt,
-                group_label_box_pad_pt=group_label_box_pad_pt,
-                anno_max_iter=anno_max_iter,
-                repel_force=repel_force,
-                marker_label_align=marker_label_align,
-                anno=anno,
-                anno_alias=anno_alias,
-                anno_wrap=anno_wrap,
-                anno_wrap_width_pt=anno_wrap_width_pt,
-                anno_wrap_chars_per_line=anno_wrap_chars_per_line,
-                anno_max_len=anno_max_len,
-                renderer=layout_renderer,
-            )
-            global_ymax = max(global_ymax, layout_ymax)
-
-        for col in range(ncols):
-            axes[col].set_ylim(global_ymin, global_ymax)
-
+    if has_annotation_layout:
         fig.canvas.draw()
-    else:
-        for spec in chr_specs:
-            layout_ymax = _prepare_text_label_layout(
-                spec,
-                anno_kwargs=anno_kwargs,
-                group_min_vertical_gap_pt=group_min_vertical_gap_pt,
-                group_marker_to_marker_gap_pt=group_marker_to_marker_gap_pt,
-                group_label_box_pad_pt=group_label_box_pad_pt,
-                marker_label_gap_pt=marker_label_gap_pt,
-                repel_force=repel_force,
-                anno_max_iter=anno_max_iter,
-                renderer=layout_renderer,
-                global_xmax=global_xmax,
-                anno_wrap=anno_wrap,
-                anno_wrap_width_pt=anno_wrap_width_pt,
-                anno_wrap_chars_per_line=anno_wrap_chars_per_line,
-                anno_max_len=anno_max_len,
-            )
-            global_ymax = max(global_ymax, layout_ymax)
+        layout_renderer = fig.canvas.get_renderer()
+
+        if marker_mode:
+            for spec in chr_specs:
+                layout_ymax = _prepare_marker_label_layout(
+                    spec,
+                    marker_size=marker_size,
+                    marker_gap_pt=marker_gap_pt,
+                    marker_label_gap_pt=marker_label_gap_pt,
+                    marker_max_per_row=marker_max_per_row,
+                    marker_row_gap_pt=marker_row_gap_pt,
+                    marker_fontsize=marker_fontsize,
+                    marker_linewidth=marker_linewidth,
+                    group_min_vertical_gap_pt=group_min_vertical_gap_pt,
+                    group_marker_to_marker_gap_pt=group_marker_to_marker_gap_pt,
+                    group_label_box_pad_pt=group_label_box_pad_pt,
+                    anno_max_iter=anno_max_iter,
+                    repel_force=repel_force,
+                    marker_label_align=marker_label_align,
+                    anno=anno,
+                    anno_alias=anno_alias,
+                    anno_wrap=anno_wrap,
+                    anno_wrap_width_pt=anno_wrap_width_pt,
+                    anno_wrap_chars_per_line=anno_wrap_chars_per_line,
+                    anno_max_len=anno_max_len,
+                    renderer=layout_renderer,
+                )
+                global_ymax = max(global_ymax, layout_ymax)
+        else:
+            for spec in chr_specs:
+                layout_ymax = _prepare_text_label_layout(
+                    spec,
+                    anno_kwargs=anno_kwargs,
+                    group_min_vertical_gap_pt=group_min_vertical_gap_pt,
+                    group_marker_to_marker_gap_pt=group_marker_to_marker_gap_pt,
+                    group_label_box_pad_pt=group_label_box_pad_pt,
+                    marker_label_gap_pt=marker_label_gap_pt,
+                    repel_force=repel_force,
+                    anno_max_iter=anno_max_iter,
+                    renderer=layout_renderer,
+                    global_xmax=global_xmax,
+                    anno_wrap=anno_wrap,
+                    anno_wrap_width_pt=anno_wrap_width_pt,
+                    anno_wrap_chars_per_line=anno_wrap_chars_per_line,
+                    anno_max_len=anno_max_len,
+                )
+                global_ymax = max(global_ymax, layout_ymax)
 
         for col in range(ncols):
             axes[col].set_ylim(global_ymin, global_ymax)
@@ -723,8 +649,11 @@ def _plot_phenogram(
     else:
         fig.tight_layout()
 
-    fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
+    if has_annotation_layout:
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+    else:
+        renderer = None
 
     # Pass 2: annotations on frozen axis limits.
     for spec in chr_specs:

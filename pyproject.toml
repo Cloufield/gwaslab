@@ -14,6 +14,7 @@ dependencies = [
   "pandas!=1.5,>=1.3,<=2.3.3",
   "numpy<2,>=1.21.2",
   "matplotlib<3.9,>=3.8",
+  "matplotlib-venn",
   "seaborn>=0.12",
   "scipy>=1.12",
   "pysam==0.22.1",

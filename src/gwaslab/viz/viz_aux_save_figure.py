@@ -114,6 +114,7 @@ def get_default_path(keyword, fmt="png"):
         "power_xq": "power_x_quant",
         "ldscrg": "ldscrg_heatmap",
         "miami": "miami",
+        "lead_overlap": "lead_overlap",
         "esc": "effect_size_comparision",
         "afc": "allele_frequency_comparision",
         "gwheatmap": "genome_wide_heatmap",

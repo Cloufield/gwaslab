@@ -2,6 +2,8 @@
 
 import math
 import textwrap
+from functools import lru_cache
+from pathlib import Path
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
@@ -49,6 +51,96 @@ _PHENOGRAM_INTER_ROW_GAP = 0.12
 _PANEL_FLOOR_PAD_FRACTION = 0.35
 _ANNOTATION_Y_MARGIN_DATA = 0.03
 _ANNOTATION_PATH_PAD_PT = 3.0
+_CYTOBAND_COLORS = {
+    "gpos100": (100 / 255, 100 / 255, 100 / 255),
+    "gpos": (100 / 255, 100 / 255, 100 / 255),
+    "gpos75": (110 / 255, 110 / 255, 110 / 255),
+    "gpos66": (130 / 255, 130 / 255, 130 / 255),
+    "gpos50": (160 / 255, 160 / 255, 160 / 255),
+    "gpos33": (180 / 255, 180 / 255, 180 / 255),
+    "gpos25": (200 / 255, 200 / 255, 200 / 255),
+    "gvar": (220 / 255, 220 / 255, 220 / 255),
+    "gneg": (255 / 255, 255 / 255, 255 / 255),
+    "acen": (217 / 255, 217 / 255, 217 / 255),
+    "stalk": (100 / 255, 127 / 255, 164 / 255),
+}
+
+
+def _resolve_phenogram_cytoband_path(
+    build: str,
+    cytoband_path: Optional[str],
+    log: Log = Log(),
+    verbose: bool = True,
+) -> Path:
+    """Resolve user/default cytoband path for phenogram plotting."""
+    if cytoband_path is not None:
+        return Path(cytoband_path)
+
+    data_dir = Path(__file__).parent.parent / "data" / "cytoband"
+    if build == "38":
+        return data_dir / "cytoBand_hg38.txt.gz"
+    if build != "19":
+        log.write(" -Unknown build '{}', using hg19 cytoband data.".format(build), verbose=verbose)
+    return data_dir / "cytoBand_hg19.txt.gz"
+
+
+@lru_cache(maxsize=8)
+def _load_phenogram_cytobands(cytoband_path: str) -> pd.DataFrame:
+    """Load and color-map cytobands; cached because packaged files are static."""
+    cytobands = pd.read_csv(cytoband_path, sep=r"\s+", header=None, compression="infer")
+    cytobands.columns = ["CHR", "START", "END", "ARM", "STAIN"]
+    cytobands["COLOR"] = cytobands["STAIN"].map(_CYTOBAND_COLORS)
+    return cytobands
+
+
+def _phenogram_chr_sort_key(chr_name: str) -> Tuple[int, str]:
+    if not str(chr_name).startswith("chr"):
+        return (999, str(chr_name))
+    chr_num_str = str(chr_name)[3:]
+    if chr_num_str.isdigit():
+        return (int(chr_num_str), str(chr_name))
+    if chr_num_str == "X":
+        return (23, str(chr_name))
+    if chr_num_str == "Y":
+        return (24, str(chr_name))
+    if chr_num_str == "MT":
+        return (25, str(chr_name))
+    return (999, str(chr_name))
+
+
+def _summarize_phenogram_cytobands(
+    cytobands: pd.DataFrame,
+    include_sex_chr: bool = False,
+) -> Tuple[List[str], Dict[str, int], Dict[str, Tuple[float, float]], Dict[str, pd.DataFrame]]:
+    """Precompute chromosome order, sizes, centromeres, and per-chromosome bands."""
+    chr_sizes = cytobands.groupby("CHR", sort=False)["END"].max().to_dict()
+    chr_list = [
+        chr_name
+        for chr_name in sorted(chr_sizes, key=_phenogram_chr_sort_key)
+        if str(chr_name).startswith("chr")
+        and str(chr_name)[3:].isdigit()
+        and 1 <= int(str(chr_name)[3:]) <= 22
+    ]
+    if include_sex_chr:
+        chr_list.extend(chr_name for chr_name in ("chrX", "chrY") if chr_name in chr_sizes)
+    cytobands_by_chr = {
+        chr_name: chr_bands
+        for chr_name, chr_bands in cytobands.groupby("CHR", sort=False)
+        if chr_name in chr_list
+    }
+    centromere_by_chr: Dict[str, Tuple[float, float]] = {}
+    for chr_name in chr_list:
+        chr_bands = cytobands_by_chr[chr_name]
+        acen_bands = chr_bands.loc[chr_bands["STAIN"] == "acen", :]
+        if len(acen_bands) > 0:
+            centromere_by_chr[chr_name] = (
+                float(acen_bands["START"].min()),
+                float(acen_bands["END"].max()),
+            )
+        else:
+            chr_size = float(chr_sizes[chr_name])
+            centromere_by_chr[chr_name] = (chr_size * 0.44, chr_size * 0.46)
+    return chr_list, chr_sizes, centromere_by_chr, cytobands_by_chr
 
 
 # --- Constants and ideogram geometry ---
@@ -68,6 +160,7 @@ class _ChrIdeogramGeometry:
     y_arm2_bottom: float
     telomere_h: float
     centromere_h: float
+    centromere_marker_h: float
 
     @property
     def arm1_h(self) -> float:
@@ -99,14 +192,17 @@ def _compute_chr_ideogram_geometry(
     max_chr_size: float,
     offset: float,
     telomere_h: float = _TELOMERE_LENGTH,
+    centromere_marker_h: Optional[float] = None,
 ) -> _ChrIdeogramGeometry:
     """Derive all ideogram bounds from one geometry definition (y increases upward)."""
     chr_extent = chr_size / max_chr_size
     y_arm2_bottom = offset + telomere_h / 2.0
     y_arm1_top = offset + chr_extent + telomere_h / 2.0
-    y_cent_top = y_arm1_top - chr_centromere_u / max_chr_size
-    y_cent_bottom = y_arm1_top - chr_centromere_l / max_chr_size
-    centromere_h = y_cent_top - y_cent_bottom
+    centromere_mid_bp = (float(chr_centromere_u) + float(chr_centromere_l)) / 2.0
+    y_cent_mid = y_arm1_top - centromere_mid_bp / max_chr_size
+    marker_h = float(centromere_marker_h if centromere_marker_h is not None else telomere_h)
+    y_cent_top = y_cent_mid + marker_h / 2.0
+    y_cent_bottom = y_cent_mid - marker_h / 2.0
     return _ChrIdeogramGeometry(
         left_x=chr_x,
         right_x=chr_x + chr_width,
@@ -117,7 +213,8 @@ def _compute_chr_ideogram_geometry(
         y_cent_bottom=y_cent_bottom,
         y_arm2_bottom=y_arm2_bottom,
         telomere_h=telomere_h,
-        centromere_h=centromere_h,
+        centromere_h=marker_h,
+        centromere_marker_h=marker_h,
     )
 
 
@@ -140,8 +237,8 @@ def _semicircle_arc(
     return xs, ys
 
 
-def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
-    """Closed outer boundary path shared by every ideogram sub-element."""
+def _chr_ideogram_body_clip_path(geom: _ChrIdeogramGeometry) -> MplPath:
+    """Closed outer boundary used for clipping chromosome fills."""
     hw = geom.width / 2.0
     hh = geom.telomere_h / 2.0
 
@@ -161,8 +258,6 @@ def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
 
     for x, y in (
         (geom.right_x, geom.y_arm1_top),
-        (geom.right_x, geom.y_cent_top),
-        (geom.right_x, geom.y_cent_bottom),
         (geom.right_x, geom.y_arm2_bottom),
     ):
         verts.append((float(x), float(y)))
@@ -174,8 +269,6 @@ def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
 
     for x, y in (
         (geom.left_x, geom.y_arm2_bottom),
-        (geom.left_x, geom.y_cent_bottom),
-        (geom.left_x, geom.y_cent_top),
         (geom.left_x, geom.y_arm1_top),
     ):
         verts.append((float(x), float(y)))
@@ -187,23 +280,58 @@ def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
     return MplPath(verts, codes)
 
 
+def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
+    """Visible ideogram outline with side gaps at the centromere marker."""
+    hw = geom.width / 2.0
+    hh = geom.telomere_h / 2.0
+
+    top_x, top_y = _semicircle_arc(
+        geom.center_x, geom.y_arm1_top, hw, hh, upper=True
+    )
+    bot_x, bot_y = _semicircle_arc(
+        geom.center_x, geom.y_arm2_bottom, hw, hh, upper=False
+    )
+
+    verts: List[Tuple[float, float]] = []
+    codes: List[int] = []
+
+    for i, (x, y) in enumerate(zip(top_x, top_y)):
+        verts.append((float(x), float(y)))
+        codes.append(MplPath.MOVETO if i == 0 else MplPath.LINETO)
+    verts.append((geom.left_x, geom.y_cent_top))
+    codes.append(MplPath.LINETO)
+
+    verts.append((geom.left_x, geom.y_cent_bottom))
+    codes.append(MplPath.MOVETO)
+    verts.append((geom.left_x, geom.y_arm2_bottom))
+    codes.append(MplPath.LINETO)
+
+    for x, y in zip(bot_x, bot_y):
+        verts.append((float(x), float(y)))
+        codes.append(MplPath.LINETO)
+
+    verts.append((geom.right_x, geom.y_cent_bottom))
+    codes.append(MplPath.LINETO)
+
+    verts.append((geom.right_x, geom.y_cent_top))
+    codes.append(MplPath.MOVETO)
+    verts.append((geom.right_x, geom.y_arm1_top))
+    codes.append(MplPath.LINETO)
+
+    return MplPath(verts, codes)
+
+
 def _chr_ideogram_fill_patches(
     geom: _ChrIdeogramGeometry,
 ) -> Tuple[List[Any], List[Any], List[Any]]:
     """Return arm, centromere, and telomere fill patches (no stroke)."""
     arms = [
         Rectangle(
-            (geom.left_x, geom.y_cent_top),
-            geom.width,
-            geom.arm1_h,
-        ),
-        Rectangle(
             (geom.left_x, geom.y_arm2_bottom),
             geom.width,
-            geom.arm2_h,
+            geom.y_arm1_top - geom.y_arm2_bottom,
         ),
     ]
-    # Centromere fill is drawn via ``_centromere_fill_patches`` / ``_add_centromere_caps``.
     telemeres: List[Any] = []
     return arms, [], telemeres
 
@@ -287,77 +415,73 @@ def _add_telomere_cap(
     return cap
 
 
-def _centromere_cap_path(
-    geom: _ChrIdeogramGeometry,
-    at_cent_top: bool,
-) -> MplPath:
+def _centromere_hourglass_path(geom: _ChrIdeogramGeometry) -> MplPath:
     """
-    Semicircle centromere constriction cap (same arc geometry as telomere caps).
+    Fixed-size hourglass centromere decoration.
 
-    ``at_cent_top=True``: flat edge on ``y_cent_top``, bulge toward the q-arm.
-    ``at_cent_top=False``: flat edge on ``y_cent_bottom``, bulge toward the p-arm.
+    The underlying chromosome body remains continuous and position-bearing; this
+    path only marks the centromere location visually.
     """
-    hw = geom.width / 2.0
-    hh = geom.telomere_h / 2.0
-    if at_cent_top:
-        base_y = geom.y_cent_top
-        bulge_upper = False
-    else:
-        base_y = geom.y_cent_bottom
-        bulge_upper = True
-    xs, ys = _semicircle_arc(
-        geom.center_x, base_y, hw, hh, upper=bulge_upper
-    )
-    verts = [(float(x), float(y)) for x, y in zip(xs, ys)]
-    codes = [MplPath.MOVETO] + [MplPath.LINETO] * (len(verts) - 1)
-    codes.append(MplPath.CLOSEPOLY)
-    verts.append((0.0, 0.0))
+    mid_y = geom.y_cent_mid
+    verts = [
+        (geom.left_x, geom.y_cent_top),
+        (geom.right_x, geom.y_cent_top),
+        (geom.center_x, mid_y),
+        (geom.left_x, geom.y_cent_top),
+        (geom.left_x, geom.y_cent_bottom),
+        (geom.right_x, geom.y_cent_bottom),
+        (geom.center_x, mid_y),
+        (geom.left_x, geom.y_cent_bottom),
+    ]
+    codes = [
+        MplPath.MOVETO,
+        MplPath.LINETO,
+        MplPath.LINETO,
+        MplPath.CLOSEPOLY,
+        MplPath.MOVETO,
+        MplPath.LINETO,
+        MplPath.LINETO,
+        MplPath.CLOSEPOLY,
+    ]
     return MplPath(verts, codes)
 
 
 def _centromere_fill_patches(geom: _ChrIdeogramGeometry) -> List[Rectangle]:
-    """Grey rectangular band between centromere cap flat edges."""
-    if geom.centromere_h <= 0:
-        return []
-    return [
-        Rectangle(
-            (geom.left_x, geom.y_cent_bottom),
-            geom.width,
-            geom.centromere_h,
-        )
-    ]
+    """Centromere is rendered by fixed triangles, not a proportional band."""
+    del geom
+    return []
 
 
-def _add_centromere_cap(
+def _add_centromere_hourglass(
     ax,
     geom: _ChrIdeogramGeometry,
-    at_cent_top: bool,
     facecolor: str,
     zorder: int,
+    edgecolor: str = "grey",
+    linewidth: float = 0.4,
 ) -> PathPatch:
-    cap = PathPatch(
-        _centromere_cap_path(geom, at_cent_top=at_cent_top),
+    hourglass = PathPatch(
+        _centromere_hourglass_path(geom),
         facecolor=facecolor,
-        edgecolor="none",
-        linewidth=0.0,
+        edgecolor=edgecolor,
+        linewidth=linewidth,
         antialiased=False,
         clip_on=False,
         zorder=zorder,
     )
-    ax.add_patch(cap)
-    return cap
+    ax.add_patch(hourglass)
+    return hourglass
 
 
-def _add_centromere_caps(
+def _add_centromere_decoration(
     ax,
     geom: _ChrIdeogramGeometry,
     facecolor: str = "grey",
-    zorder: int = 101,
-) -> Tuple[PathPatch, PathPatch]:
-    """Draw paired semicircle centromere constriction caps."""
-    top = _add_centromere_cap(ax, geom, at_cent_top=True, facecolor=facecolor, zorder=zorder)
-    bottom = _add_centromere_cap(
-        ax, geom, at_cent_top=False, facecolor=facecolor, zorder=zorder
+    zorder: int = 103,
+) -> PathPatch:
+    """Draw one hourglass centromere decoration patch."""
+    return _add_centromere_hourglass(
+        ax, geom, facecolor=facecolor, zorder=zorder
     )
     return top, bottom
 
@@ -370,20 +494,12 @@ def _cytoband_y_range(
     max_chr_size: float,
     offset: float,
 ) -> Optional[Tuple[float, float]]:
-    """Map a cytoband row to data-y start/end, or None if in centromere gap."""
-    del offset
-    if row["END"] <= chr_centromere_u:
-        band_start = geom.y_arm1_top - row["END"] / max_chr_size
-        band_end = geom.y_arm1_top - row["START"] / max_chr_size
-    elif row["START"] >= chr_centromere_l:
-        band_start = geom.y_cent_bottom - (
-            row["END"] - chr_centromere_l
-        ) / max_chr_size
-        band_end = geom.y_cent_bottom - (
-            row["START"] - chr_centromere_l
-        ) / max_chr_size
-    else:
+    """Map a cytoband row to data-y start/end; acen is shown by fixed triangles."""
+    del offset, chr_centromere_u, chr_centromere_l
+    if row["STAIN"] == "acen":
         return None
+    band_start = geom.y_arm1_top - row["END"] / max_chr_size
+    band_end = geom.y_arm1_top - row["START"] / max_chr_size
     if band_end <= band_start:
         return None
     return band_start, band_end
@@ -641,6 +757,101 @@ def _lead_anno_field(row: pd.Series, col_name: Optional[str], columns: pd.Index)
     if pd.isna(val):
         return None
     return val
+
+
+def _phenogram_chr_string(chr_val: Any) -> Optional[str]:
+    if pd.isna(chr_val):
+        return None
+    if isinstance(chr_val, (int, float)):
+        if int(chr_val) == 23:
+            return "chrX"
+        if int(chr_val) == 24:
+            return "chrY"
+        return "chr{}".format(int(chr_val))
+    chr_str = str(chr_val)
+    if chr_str.startswith("chr"):
+        return chr_str
+    try:
+        return "chr{}".format(int(chr_str))
+    except (ValueError, TypeError):
+        return "chr{}".format(chr_str)
+
+
+def _phenogram_chr_display_value(chr_val: Any, chr_str: str) -> Any:
+    if isinstance(chr_val, (int, float)):
+        return int(chr_val)
+    return chr_str.replace("chr", "")
+
+
+def _notna_or_none(value: Any) -> Any:
+    if pd.isna(value):
+        return None
+    return value
+
+
+def _prepare_phenogram_leads_dict(
+    leads: pd.DataFrame,
+    chrom: str,
+    pos: str,
+    snpid: str,
+    chr_list: List[str],
+    marker_mode: bool,
+    anno: Optional[Union[bool, str]],
+    label_eligible: pd.Series,
+    anno_alias: Optional[Dict[str, str]],
+    anno_group: Optional[str],
+    anno_shape: Optional[str],
+    anno_color: Optional[str],
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Normalize lead rows into per-chromosome dictionaries used by plot layout."""
+    if len(leads) == 0 or chrom not in leads.columns or pos not in leads.columns:
+        return {}
+
+    valid_chr_values = set(chr_list)
+    valid_chr_values.update({"chrX", "chrY", "chrMT"})
+
+    chr_strings = leads[chrom].map(_phenogram_chr_string)
+    valid_mask = chr_strings.notna() & leads[pos].notna()
+    valid_mask &= chr_strings.isin(valid_chr_values)
+    if not valid_mask.any():
+        return {}
+
+    prepared = pd.DataFrame(
+        {
+            "lead_index": leads.index,
+            "chr_str": chr_strings,
+            "chr_val": leads[chrom],
+            "pos_value": leads[pos],
+            "snpid_value": leads[snpid] if snpid in leads.columns else None,
+            "annotation_value": leads["Annotation"] if "Annotation" in leads.columns else None,
+            "anno_group_value": leads[anno_group] if anno_group in leads.columns else None,
+            "anno_shape_value": leads[anno_shape] if anno_shape in leads.columns else None,
+            "anno_color_value": leads[anno_color] if anno_color in leads.columns else None,
+        },
+        index=leads.index,
+    ).loc[valid_mask]
+
+    label_lookup = set(label_eligible.index[label_eligible]) if len(label_eligible) else set()
+    leads_dict: Dict[str, List[Dict[str, Any]]] = {}
+    for row in prepared.itertuples(index=False):
+        lead_entry = {
+            "pos": int(row.pos_value),
+            "chrom": _phenogram_chr_display_value(row.chr_val, row.chr_str),
+            "snpid": _notna_or_none(row.snpid_value),
+            "index": row.lead_index,
+            "annotation": _notna_or_none(row.annotation_value),
+            "anno_group": _notna_or_none(row.anno_group_value),
+            "anno_shape": _notna_or_none(row.anno_shape_value),
+            "anno_color": _notna_or_none(row.anno_color_value),
+        }
+        if not marker_mode and anno is not None and row.lead_index in label_lookup:
+            lead_entry["label_text"] = _resolve_phenogram_label(
+                lead_entry, anno, anno_alias
+            )
+        else:
+            lead_entry["label_text"] = None
+        leads_dict.setdefault(row.chr_str, []).append(lead_entry)
+    return leads_dict
 
 
 def _get_group_key(lead: Dict[str, Any]) -> str:
@@ -1991,19 +2202,17 @@ def _compute_group_marker_positions(
 
     dx_radius, _ = _points_to_data_delta(ax, anno_col_x, anchor_y, dx_points=radius_pt)
     start_center_x = anno_col_x + dx_radius
+    dx_step, _ = _points_to_data_delta(ax, start_center_x, anchor_y, dx_points=step_pt)
+    _, dy_row_step = _points_to_data_delta(
+        ax, anno_col_x, anchor_y, dy_points=-row_pitch_pt
+    )
 
     positions: List[Tuple[float, float, Dict[str, Any]]] = []
     for idx, item in enumerate(group_items):
         row = idx // marker_max_per_row
         col = idx % marker_max_per_row
-        _, dy_row = _points_to_data_delta(
-            ax, anno_col_x, anchor_y, dy_points=-row * row_pitch_pt
-        )
-        y = anchor_y + dy_row
-        dx_col, _ = _points_to_data_delta(
-            ax, start_center_x, y, dx_points=col * step_pt
-        )
-        x = start_center_x + dx_col
+        y = anchor_y + row * dy_row_step
+        x = start_center_x + col * dx_step
         positions.append((x, y, item))
 
     bottom_row_y = positions[-1][1] if positions else anchor_y
@@ -2277,6 +2486,7 @@ def _build_leads_with_y(
     y_cent_bottom: float,
 ) -> List[Dict[str, Any]]:
     """Map lead genomic positions to y coordinates on the chromosome drawing."""
+    del chr_centromere_u, chr_centromere_l, y_cent_bottom
     leads_sorted = sorted(
         [l for l in leads if l.get("pos") is not None and pd.notna(l["pos"])],
         key=lambda x: x["pos"],
@@ -2284,12 +2494,7 @@ def _build_leads_with_y(
     leads_with_y: List[Dict[str, Any]] = []
     for lead in leads_sorted:
         pos = lead["pos"]
-        if pos <= chr_centromere_u:
-            y_pos_chr = y_arm1_top - pos / max_chr_size
-        elif pos >= chr_centromere_l:
-            y_pos_chr = y_cent_bottom - (pos - chr_centromere_l) / max_chr_size
-        else:
-            continue
+        y_pos_chr = y_arm1_top - pos / max_chr_size
         leads_with_y.append({
             "lead": lead,
             "y_pos_chr": y_pos_chr,
@@ -2353,6 +2558,7 @@ def _estimate_global_annotation_xmax(
             for item in leads_with_y:
                 group_key = _get_group_key(item["lead"])
                 grouped.setdefault(group_key, []).append(item)
+            group_display_cache = spec.setdefault("_marker_group_display_cache", {})
             for group_key, group_items in grouped.items():
                 anchor_y = float(group_items[0]["original_y"])
                 display_label, n_lines = _prepare_marker_group_display_label(
@@ -2367,6 +2573,7 @@ def _estimate_global_annotation_xmax(
                     fontproperties=_phenogram_text_fontproperties(text_kwargs),
                     renderer=renderer,
                 )
+                group_display_cache[group_key] = (display_label, n_lines)
                 marker_positions, bottom_row_y = _compute_group_marker_positions(
                     ax,
                     anno_col_x,
@@ -2430,10 +2637,7 @@ def _estimate_global_annotation_xmax(
                 if not label_text:
                     continue
                 text_y = item["y_pos_chr"]
-                label_right = _measure_label_right_x(
-                    ax,
-                    anno_col_x,
-                    text_y,
+                display, n_lines, width_pt = _prepare_phenogram_display_label(
                     label_text,
                     anno_wrap=anno_wrap,
                     anno_wrap_width_pt=wrap_width_pt,
@@ -2441,8 +2645,11 @@ def _estimate_global_annotation_xmax(
                     anno_max_len=anno_max_len,
                     fontproperties=fontproperties,
                     renderer=renderer,
-                    ha="left",
-                    fallback_fontsize=anno_fontsize,
+                )
+                item["display_label"] = display
+                item["n_lines"] = n_lines
+                _, label_right = _label_width_data_dx(
+                    ax, anno_col_x, text_y, width_pt, ha="left"
                 )
                 local_xmax = max(local_xmax, label_right)
 
@@ -2505,15 +2712,19 @@ def _prepare_text_label_layout(
         return layout_ymax
 
     for l in labelled_items:
-        display, n_lines = _prepare_lead_display_label_simple(
-            l["lead"].get("label_text"),
-            anno_wrap=anno_wrap,
-            anno_wrap_width_pt=wrap_width_pt,
-            anno_wrap_chars_per_line=anno_wrap_chars_per_line,
-            anno_max_len=anno_max_len,
-            fontproperties=fontproperties,
-            renderer=renderer,
-        )
+        if l.get("display_label") and l.get("n_lines"):
+            display = l["display_label"]
+            n_lines = l["n_lines"]
+        else:
+            display, n_lines = _prepare_lead_display_label_simple(
+                l["lead"].get("label_text"),
+                anno_wrap=anno_wrap,
+                anno_wrap_width_pt=wrap_width_pt,
+                anno_wrap_chars_per_line=anno_wrap_chars_per_line,
+                anno_max_len=anno_max_len,
+                fontproperties=fontproperties,
+                renderer=renderer,
+            )
         l["display_label"] = display
         l["n_lines"] = n_lines
 
@@ -2626,19 +2837,24 @@ def _compute_marker_group_layout(
     gap_data = _gap_pt_to_data(ax, ref_x, 0.5, gap_pt)
     min_gap_floor = _gap_pt_to_data(ax, ref_x, 0.5, group_min_vertical_gap_pt)
 
+    display_cache = spec.get("_marker_group_display_cache", {}) if spec is not None else {}
     for block_id, (group_key, group_items) in enumerate(grouped.items()):
-        display_label, n_lines = _prepare_marker_group_display_label(
-            group_key,
-            group_items,
-            anno=anno,
-            anno_alias=anno_alias,
-            anno_wrap=anno_wrap,
-            anno_wrap_width_pt=anno_wrap_width_pt,
-            anno_wrap_chars_per_line=anno_wrap_chars_per_line,
-            anno_max_len=anno_max_len,
-            fontproperties=fontproperties,
-            renderer=renderer,
-        )
+        cached_display = display_cache.get(group_key)
+        if cached_display is not None:
+            display_label, n_lines = cached_display
+        else:
+            display_label, n_lines = _prepare_marker_group_display_label(
+                group_key,
+                group_items,
+                anno=anno,
+                anno_alias=anno_alias,
+                anno_wrap=anno_wrap,
+                anno_wrap_width_pt=anno_wrap_width_pt,
+                anno_wrap_chars_per_line=anno_wrap_chars_per_line,
+                anno_max_len=anno_max_len,
+                fontproperties=fontproperties,
+                renderer=renderer,
+            )
         locus_y = float(group_items[0]["original_y"])
         n_rows = math.ceil(len(group_items) / max(1, marker_max_per_row))
         above_pt, below_pt = _marker_group_block_extents_pt(
@@ -2983,15 +3199,11 @@ def _plot_chr_body(
 
     arms, _, _ = _chr_ideogram_fill_patches(geom)
     _add_chr_fill_collection(ax, arms, facecolor="white", zorder=100)
-    _add_chr_fill_collection(
-        ax, _centromere_fill_patches(geom), facecolor="grey", zorder=100
-    )
-    _add_centromere_caps(ax, geom, facecolor="grey", zorder=101)
     _add_telomere_cap(ax, geom, upper=True, facecolor="white", zorder=101)
     _add_telomere_cap(ax, geom, upper=False, facecolor="white", zorder=101)
 
     body_clip = PathPatch(
-        _chr_ideogram_outline_path(geom),
+        _chr_ideogram_body_clip_path(geom),
         facecolor="none",
         edgecolor="none",
         linewidth=0.0,
@@ -3000,6 +3212,7 @@ def _plot_chr_body(
     )
     ax.add_patch(body_clip)
 
+    band_groups: Dict[Tuple[Any, int], List[Rectangle]] = {}
     for _, row in chr_cytobands.iterrows():
         y_range = _cytoband_y_range(
             row,
@@ -3019,8 +3232,11 @@ def _plot_chr_body(
         )
         facecolor = row["COLOR"]
         zorder = 102 if row["STAIN"] == "stalk" else 101
+        band_groups.setdefault((facecolor, zorder), []).append(band)
+
+    for (facecolor, zorder), patches in band_groups.items():
         band_pc = PatchCollection(
-            [band],
+            patches,
             facecolor=facecolor,
             edgecolor="none",
             linewidths=0.0,
@@ -3030,6 +3246,7 @@ def _plot_chr_body(
         band_pc.set_clip_path(body_clip)
         ax.add_collection(band_pc)
 
+    _add_centromere_decoration(ax, geom, facecolor="grey", zorder=103)
     _plot_chr_ideogram_outline(ax, geom)
 
     leads_with_y = _build_leads_with_y(

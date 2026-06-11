@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+from matplotlib.path import Path as MplPath
 import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,7 +26,8 @@ from gwaslab.viz.viz_aux_phenogram import (
     _block_bottom_from_center,
     _block_top,
     _block_top_from_center,
-    _centromere_cap_path,
+    _build_leads_with_y,
+    _centromere_hourglass_path,
     _centromere_fill_patches,
     _chr_ideogram_fill_patches,
     _chr_ideogram_outline_path,
@@ -49,6 +51,7 @@ from gwaslab.viz.viz_aux_phenogram import (
     _marker_label_position,
     _marker_radius_pt,
     _marker_row_x_bounds,
+    _plot_chr_body,
     _plot_chr_ideogram_outline,
     _plot_phenogram_text_connector,
     _points_to_data_delta,
@@ -63,6 +66,7 @@ from gwaslab.viz.viz_aux_phenogram import (
     _ANNOTATION_PATH_PAD_PT,
     _ANNOTATION_Y_MARGIN_DATA,
     _chr_panel_bottom_from_row_top,
+    _cytoband_y_range,
     _compute_phenogram_row_bands,
     _unit_bottom_data_y,
     _phenogram_inter_unit_gap_pt,
@@ -77,6 +81,7 @@ from gwaslab.viz.viz_aux_phenogram import (
     _text_bbox_attach_point,
     _wrap_phenogram_label,
     _wrap_phenogram_label_chars,
+    _summarize_phenogram_cytobands,
     _DEFAULT_ANNO_WRAP_CHARS_PER_LINE,
     _DEFAULT_MARKER_MAX_PER_ROW,
     _LEGEND_FONTSIZE,
@@ -694,6 +699,36 @@ class TestPhenogramAnno(unittest.TestCase):
         self.assertGreater(chr1_offset, chr12_offset)
         plt.close(fig)
 
+    def test_summarize_cytobands_excludes_sex_chr_by_default(self):
+        cytobands = pd.DataFrame(
+            {
+                "CHR": ["chr1", "chr22", "chrX", "chrY"],
+                "START": [0, 0, 0, 0],
+                "END": [100, 80, 70, 60],
+                "ARM": ["q", "q", "q", "q"],
+                "STAIN": ["gpos", "gpos", "gpos", "gpos"],
+                "COLOR": ["grey", "grey", "grey", "grey"],
+            }
+        )
+        chr_list, _, _, _ = _summarize_phenogram_cytobands(cytobands)
+        self.assertEqual(chr_list, ["chr1", "chr22"])
+
+    def test_summarize_cytobands_includes_sex_chr_after_autosomes(self):
+        cytobands = pd.DataFrame(
+            {
+                "CHR": ["chr1", "chr22", "chrX", "chrY", "chrMT"],
+                "START": [0, 0, 0, 0, 0],
+                "END": [100, 80, 70, 60, 50],
+                "ARM": ["q", "q", "q", "q", "q"],
+                "STAIN": ["gpos", "gpos", "gpos", "gpos", "gpos"],
+                "COLOR": ["grey", "grey", "grey", "grey", "grey"],
+            }
+        )
+        chr_list, _, _, _ = _summarize_phenogram_cytobands(
+            cytobands, include_sex_chr=True
+        )
+        self.assertEqual(chr_list, ["chr1", "chr22", "chrX", "chrY"])
+
     def test_row_top_aligns_ideogram_tops(self):
         max_chr_size = 250_000_000.0
         row_top = 2.0
@@ -984,39 +1019,113 @@ class TestPhenogramAnno(unittest.TestCase):
         self.assertGreater(right_x, 0.55)
         plt.close(fig)
 
-    def test_centromere_telomere_style_caps(self):
+    def test_centromere_uses_fixed_triangles(self):
         geom = _compute_chr_ideogram_geometry(
             0.0, 0.35, 250_000_000, 110_000_000, 114_000_000,
             250_000_000, 0.5, telomere_h=_TELOMERE_LENGTH,
         )
         band = _centromere_fill_patches(geom)
-        self.assertEqual(len(band), 1)
-        self.assertAlmostEqual(band[0].get_y(), geom.y_cent_bottom)
-        self.assertAlmostEqual(band[0].get_height(), geom.centromere_h)
+        self.assertEqual(len(band), 0)
+        self.assertAlmostEqual(geom.centromere_h, _TELOMERE_LENGTH)
         self.assertGreater(geom.y_cent_mid, geom.y_cent_bottom)
         self.assertLess(geom.y_cent_mid, geom.y_cent_top)
 
-        top_cap = _centromere_cap_path(geom, at_cent_top=True)
-        bot_cap = _centromere_cap_path(geom, at_cent_top=False)
-        top_ys = [v[1] for v in top_cap.vertices if v[1] != 0.0]
-        bot_ys = [v[1] for v in bot_cap.vertices if v[1] != 0.0]
-        self.assertAlmostEqual(
-            min(top_ys), geom.y_cent_top - geom.telomere_h / 2.0, places=4
-        )
-        self.assertAlmostEqual(
-            max(bot_ys), geom.y_cent_bottom + geom.telomere_h / 2.0, places=4
-        )
+        hourglass = _centromere_hourglass_path(geom)
+        self.assertEqual(len(hourglass.vertices), 8)
+        self.assertEqual(list(hourglass.codes).count(MplPath.MOVETO), 2)
+        self.assertEqual(list(hourglass.codes).count(MplPath.CLOSEPOLY), 2)
+        top_ys = [v[1] for v in hourglass.vertices[:4]]
+        bot_ys = [v[1] for v in hourglass.vertices[4:]]
+        self.assertAlmostEqual(max(top_ys), geom.y_cent_top, places=4)
+        self.assertAlmostEqual(min(top_ys), geom.y_cent_mid, places=4)
+        self.assertAlmostEqual(max(bot_ys), geom.y_cent_mid, places=4)
+        self.assertAlmostEqual(min(bot_ys), geom.y_cent_bottom, places=4)
 
         outline = _chr_ideogram_outline_path(geom)
-        ys = [v[1] for v in outline.vertices]
-        self.assertTrue(
-            any(abs(y - geom.y_cent_top) < 1e-5 for y in ys),
-            "outline should pass through y_cent_top",
+        self.assertIn(MplPath.MOVETO, outline.codes)
+        for (x0, y0), (x1, y1), code1 in zip(
+            outline.vertices[:-1], outline.vertices[1:], outline.codes[1:]
+        ):
+            if code1 == MplPath.MOVETO:
+                continue
+            same_side = (
+                abs(x0 - x1) < 1e-12
+                and (abs(x0 - geom.left_x) < 1e-12 or abs(x0 - geom.right_x) < 1e-12)
+            )
+            spans_centromere = (
+                min(y0, y1) < geom.y_cent_mid < max(y0, y1)
+            )
+            self.assertFalse(
+                same_side and spans_centromere,
+                "outline should not draw side lines through the centromere marker",
+            )
+
+    def test_centromere_does_not_skip_positions(self):
+        geom = _compute_chr_ideogram_geometry(
+            0.0, 0.35, 250_000_000, 110_000_000, 114_000_000,
+            250_000_000, 0.5, telomere_h=_TELOMERE_LENGTH,
         )
-        self.assertTrue(
-            any(abs(y - geom.y_cent_bottom) < 1e-5 for y in ys),
-            "outline should pass through y_cent_bottom",
+        acen_row = pd.Series(
+            {
+                "START": 110_000_000,
+                "END": 114_000_000,
+                "STAIN": "acen",
+            }
         )
+        self.assertIsNone(
+            _cytoband_y_range(
+                acen_row,
+                geom,
+                110_000_000,
+                114_000_000,
+                250_000_000,
+                0.5,
+            )
+        )
+
+        leads = _build_leads_with_y(
+            [{"pos": 112_000_000}],
+            chr_centromere_u=110_000_000,
+            chr_centromere_l=114_000_000,
+            max_chr_size=250_000_000,
+            y_arm1_top=geom.y_arm1_top,
+            y_cent_bottom=geom.y_cent_bottom,
+        )
+        self.assertEqual(len(leads), 1)
+        self.assertAlmostEqual(
+            leads[0]["y_pos_chr"],
+            geom.y_arm1_top - 112_000_000 / 250_000_000,
+        )
+
+    def test_centromere_hourglass_draws_above_cytobands(self):
+        fig, ax = plt.subplots(figsize=(4, 6))
+        cytobands = pd.DataFrame(
+            {
+                "START": [0, 110_000_000, 114_000_000],
+                "END": [110_000_000, 114_000_000, 250_000_000],
+                "STAIN": ["gpos", "acen", "stalk"],
+                "COLOR": ["white", "grey", "blue"],
+            }
+        )
+        _plot_chr_body(
+            ax,
+            chr_size=250_000_000,
+            chr_centromere_u=110_000_000,
+            chr_centromere_l=114_000_000,
+            max_chr_size=250_000_000,
+            offset=0.0,
+            chr_cytobands=cytobands,
+            chr_name="chr1",
+            leads=[],
+        )
+        centromere_patches = [
+            patch
+            for patch in ax.patches
+            if patch.get_zorder() == 103 and patch.get_linewidth() > 0
+        ]
+        self.assertEqual(len(centromere_patches), 1)
+        self.assertTrue(all(patch.get_edgecolor()[-1] > 0 for patch in centromere_patches))
+        plt.close(fig)
 
     def test_bounded_stack_no_overlap(self):
         blocks = [
@@ -1238,6 +1347,88 @@ class TestPhenogramAnno(unittest.TestCase):
             )
             self.assertIsNotNone(fig)
             self.assertGreater(len(fig.axes), 0)
+            plt.close(fig)
+        finally:
+            os.unlink(cytoband_path)
+
+    def test_plot_phenogram_include_sex_chr_smoke(self):
+        rows = []
+        for chr_name in [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]:
+            rows.append("{}\t0\t250000000\tq\tgpos".format(chr_name))
+            rows.append("{}\t110000000\t114000000\tacen\tacen".format(chr_name))
+        with tempfile.NamedTemporaryFile(suffix=".txt.gz", delete=False) as tmp:
+            cytoband_path = tmp.name
+        try:
+            with gzip.open(cytoband_path, "wt") as gz:
+                gz.write("\n".join(rows))
+
+            sumstats = pd.DataFrame(
+                {
+                    "SNPID": ["rsX", "rsY"],
+                    "CHR": [23, "Y"],
+                    "POS": [1_000_000, 2_000_000],
+                    "P": [1e-10, 1e-9],
+                    "MLOG10P": [10.0, 9.0],
+                }
+            )
+            fig = _plot_phenogram(
+                sumstats,
+                cytoband_path=cytoband_path,
+                include_sex_chr=True,
+                use_lead_extraction=False,
+                anno=True,
+                ncols=6,
+                figsize=(10, 12),
+                dpi=100,
+                verbose=False,
+            )
+            self.assertIsNotNone(fig)
+            labels = [text.get_text() for ax in fig.axes for text in ax.texts]
+            self.assertIn("X", labels)
+            self.assertIn("Y", labels)
+            plt.close(fig)
+        finally:
+            os.unlink(cytoband_path)
+
+    def test_plot_phenogram_only_anno_chr_smoke(self):
+        rows = []
+        for chr_name in [f"chr{i}" for i in range(1, 4)] + ["chrX", "chrY"]:
+            rows.append("{}\t0\t250000000\tq\tgpos".format(chr_name))
+            rows.append("{}\t110000000\t114000000\tacen\tacen".format(chr_name))
+        with tempfile.NamedTemporaryFile(suffix=".txt.gz", delete=False) as tmp:
+            cytoband_path = tmp.name
+        try:
+            with gzip.open(cytoband_path, "wt") as gz:
+                gz.write("\n".join(rows))
+
+            sumstats = pd.DataFrame(
+                {
+                    "SNPID": ["rs2", "rsX"],
+                    "CHR": [2, 23],
+                    "POS": [1_000_000, 2_000_000],
+                    "P": [1e-10, 1e-9],
+                    "MLOG10P": [10.0, 9.0],
+                }
+            )
+            fig = _plot_phenogram(
+                sumstats,
+                cytoband_path=cytoband_path,
+                include_sex_chr=True,
+                only_anno_chr=True,
+                use_lead_extraction=False,
+                anno=True,
+                ncols=4,
+                figsize=(8, 8),
+                dpi=100,
+                verbose=False,
+            )
+            chr_labels = [
+                text.get_text()
+                for ax in fig.axes
+                for text in ax.texts
+                if text.get_zorder() == 300
+            ]
+            self.assertEqual(chr_labels, ["2", "X"])
             plt.close(fig)
         finally:
             os.unlink(cytoband_path)

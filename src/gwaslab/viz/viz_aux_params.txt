@@ -443,6 +443,24 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
+    "include_sex_chr": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "If True, include chrX and chrY after autosomes in phenogram",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "only_anno_chr": {
+      "plots": [
+        "plot_phenogram"
+      ],
+      "desc": "If True, plot only chromosomes containing phenogram lead or annotation rows",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
     "marker_shapes": {
       "plots": [
         "plot_phenogram"

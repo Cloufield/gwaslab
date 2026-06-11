@@ -1614,6 +1614,68 @@
         "save_kwargs": []
       }
     },
+    "plot_lead_overlap": {
+      "allowed": [
+        "objects",
+        "titles",
+        "mode",
+        "sig_level",
+        "windowsizekb",
+        "windowsizekb_for_overlap",
+        "use_p",
+        "get_lead_kwargs",
+        "anno",
+        "build",
+        "source",
+        "gtf_path",
+        "wc_correction",
+        "show_counts",
+        "show_genes",
+        "max_gene_labels",
+        "sort_by",
+        "venn_kwargs",
+        "upset_kwargs",
+        "fig_kwargs",
+        "save",
+        "save_kwargs",
+        "font_kwargs",
+        "legend_kwargs",
+        "title",
+        "log",
+        "verbose"
+      ],
+      "defaults": {
+        "mode": "auto",
+        "sig_level": 5e-08,
+        "windowsizekb": 500,
+        "windowsizekb_for_overlap": 1000,
+        "use_p": false,
+        "anno": true,
+        "source": "ensembl",
+        "wc_correction": false,
+        "show_counts": true,
+        "show_genes": true,
+        "max_gene_labels": 30,
+        "sort_by": "count",
+        "fig_kwargs": {
+          "figsize": [
+            8,
+            6
+          ],
+          "dpi": 200
+        },
+        "font_kwargs": {
+          "fontsize": 9
+        },
+        "save": false
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "font_kwargs": [],
+        "legend_kwargs": []
+      }
+    },
     "plot_phenogram": {
       "allowed": [
         "snpid",
@@ -1625,6 +1687,8 @@
         "sig_level",
         "cytoband_path",
         "build",
+        "include_sex_chr",
+        "only_anno_chr",
         "ncols",
         "figsize",
         "dpi",
@@ -1687,6 +1751,8 @@
         "windowsizekb": 500,
         "sig_level": 5e-08,
         "build": "19",
+        "include_sex_chr": false,
+        "only_anno_chr": false,
         "ncols": 11,
         "figsize": [
           20,

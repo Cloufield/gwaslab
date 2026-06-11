@@ -46,6 +46,7 @@ from gwaslab.io.io_ucsc_bed import read_bed
 from gwaslab.viz.viz_plot_compare_effect import compare_effect as _compare_effect
 from gwaslab.viz.viz_plot_forestplot import plot_forest as _plot_forest
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2 as _plot_miami2
+from gwaslab.viz.viz_plot_lead_overlap import plot_lead_overlap as _plot_lead_overlap
 from gwaslab.viz.viz_plot_rg_heatmap import plot_rg as _plot_rg
 from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq as _plot_stacked_mqq
 from gwaslab.viz.viz_plot_trumpetplot import plot_power as _plot_power
@@ -112,6 +113,12 @@ def plot_miami2(path1: Optional[str] = None, path2: Optional[str] = None, merged
     params = _viz_params.merge("plot_miami2", kwargs)
     params = _viz_params.filter(_plot_miami2, params, key="plot_miami2", log=Log(), verbose=params.get("verbose", True))
     return _plot_miami2(path1=path1, path2=path2, merged_sumstats=merged_sumstats, **params)
+
+def plot_lead_overlap(objects: Any, **kwargs: Any) -> Any:
+    """Plot lead-locus overlap across multiple sumstats objects."""
+    params = _viz_params.merge("plot_lead_overlap", kwargs)
+    params = _viz_params.filter(_plot_lead_overlap, params, key="plot_lead_overlap", log=Log(), verbose=params.get("verbose", True))
+    return _plot_lead_overlap(objects=objects, **params)
 
 def plot_rg(ldscrg: Union[str, pd.DataFrame], **kwargs: Any) -> Any:
     """Plot genetic correlation heatmap from LDSC results."""
