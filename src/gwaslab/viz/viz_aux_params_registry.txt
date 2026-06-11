@@ -1711,7 +1711,7 @@
         "marker_size": 81,
         "marker_gap_pt": 3,
         "marker_label_gap_pt": 2.75,
-        "marker_max_per_row": 5,
+        "marker_max_per_row": 4,
         "marker_row_gap_pt": 2.5,
         "marker_label_align": "center",
         "marker_fontsize": 11,
