@@ -1229,6 +1229,8 @@ def plot_ld_block(
     ax : matplotlib.axes.Axes
         Axes object.
     """
+    embedded_axes = ax is not None
+
     log.write("Start to create LD block plot (45° rotated inverted triangle)...", verbose=verbose)
  
     # ============================================================================
@@ -1512,17 +1514,16 @@ def plot_ld_block(
         # For upper triangle, maximum V_negated is 0 (at the diagonal)
         v_neg_max_edge = 0.0
         
-        # Set figure size: aspect ratio for ax = 2:(1 + 4/n)
-        # Account for position bar (height_ratios=[1, 14])
-        ax_aspect_ratio = 2.0 / (1.0 + 4.0 / n)
-        current_size = fig.get_size_inches()
-        fig_width = current_size[0]
-        # LD block gets 14/15 of height, so adjust for that
-        fig_height = (fig_width / ax_aspect_ratio) * (15.0 / 14.0) * 1.1  # 1.1 for colorbar/labels
-        fig.set_size_inches(fig_width, fig_height)
-        
-        # Use tight_layout
-        fig.tight_layout()
+        if not embedded_axes:
+            # Set figure size: aspect ratio for ax = 2:(1 + 4/n)
+            # Account for position bar (height_ratios=[1, 14])
+            ax_aspect_ratio = 2.0 / (1.0 + 4.0 / n)
+            current_size = fig.get_size_inches()
+            fig_width = current_size[0]
+            # LD block gets 14/15 of height, so adjust for that
+            fig_height = (fig_width / ax_aspect_ratio) * (15.0 / 14.0) * 1.1  # 1.1 for colorbar/labels
+            fig.set_size_inches(fig_width, fig_height)
+            fig.tight_layout()
         
         # Set xlim from edge coordinates (no padding)
         ax.set_xlim(u_min_edge, u_max_edge)

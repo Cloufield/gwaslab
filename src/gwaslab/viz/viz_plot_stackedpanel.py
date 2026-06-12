@@ -7,10 +7,10 @@ figures from Panel objects, supporting different panel types like tracks and arc
 
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List, Optional, Dict, Any, Tuple, Union
+from typing import List, Optional, Dict, Any, Tuple, Union, Sequence
 from gwaslab.viz.viz_aux_panel import Panel
 from gwaslab.viz.viz_plot_track import plot_track
-from gwaslab.viz.viz_plot_arc import plot_arc
+from gwaslab.viz.viz_plot_arc import plot_arc, refit_arc_colorbars
 from gwaslab.viz.viz_plot_ld_block import plot_ld_block
 from gwaslab.viz.viz_aux_chromatin import _plot_chromatin_state
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
@@ -19,6 +19,7 @@ from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_aux_xaxis_manager import XAxisManager
 from gwaslab.viz.viz_aux_materialize import materialize_ag_panels
 from gwaslab.viz.viz_plot_alphagenome import (
+    finalize_ag_contact_axes,
     finalize_ag_panel_spines,
     plot_ag_tracks,
     plot_ag_overlay,
@@ -30,29 +31,219 @@ from gwaslab.info.g_Log import Log
 _AG_PANEL_TYPES = frozenset({"ag_tracks", "ag_overlay", "ag_contact", "ag_sashimi"})
 
 
-def _add_panel_title(ax, title: str, title_pos: Optional[Union[str, Tuple[float, float]]], title_kwargs: Dict[str, Any]):
-    """Helper function to add title to a panel."""
-    if title_pos is None:
-        title_pos_str = "left"
-    elif isinstance(title_pos, str):
-        title_pos_str = title_pos
-    else:
-        # Tuple position - use ax.text for custom positioning
-        ax.text(
+def _apply_shared_font_defaults(
+    panel_kwargs: Dict[str, Any],
+    panel_type: str,
+    fontsize: int,
+    font_family: str,
+) -> None:
+    """Inject plot_panels-level font settings into per-panel kwargs when unset."""
+    if panel_type in ("track", "arc", "region"):
+        panel_kwargs.setdefault("track_font_family", font_family)
+    if panel_type in ("chromatin", "pipcs", "ld_block", "region"):
+        panel_kwargs.setdefault("fontsize", fontsize)
+        panel_kwargs.setdefault("font_family", font_family)
+    if panel_type == "region":
+        panel_kwargs.setdefault("anno_fontsize", fontsize)
+        panel_kwargs.setdefault("cbar_fontsize", fontsize)
+        panel_kwargs.setdefault("title_fontsize", fontsize)
+
+
+def _as_axes_list(ax_or_axes: Union[plt.Axes, Sequence[plt.Axes]]) -> List[plt.Axes]:
+    if isinstance(ax_or_axes, plt.Axes):
+        return [ax_or_axes]
+    return list(ax_or_axes)
+
+
+def _left_label_extent_fig_x(ax: plt.Axes, fig: plt.Figure, renderer) -> float:
+    """Leftmost figure-coordinate x of y-axis label and tick labels."""
+    extents = []
+    ylab = ax.yaxis.get_label()
+    if ylab.get_text().strip():
+        bb = ylab.get_window_extent(renderer).transformed(fig.transFigure.inverted())
+        extents.append(bb.x0)
+    for tick in ax.get_yticklabels():
+        if tick.get_text().strip():
+            bb = tick.get_window_extent(renderer).transformed(fig.transFigure.inverted())
+            extents.append(bb.x0)
+    if extents:
+        return min(extents)
+    return ax.get_position().x0
+
+
+def _panel_vertical_center_fig_y(axes: Sequence[plt.Axes]) -> float:
+    y0 = min(ax.get_position().y0 for ax in axes)
+    y1 = max(ax.get_position().y1 for ax in axes)
+    return y0 + (y1 - y0) / 2.0
+
+
+def _text_width_fig(fig: plt.Figure, text: str, fontsize: float, family: str, renderer) -> float:
+    probe = fig.text(0.0, 0.0, text, fontsize=fontsize, family=family, alpha=0.0)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    width = probe.get_window_extent(renderer).transformed(fig.transFigure.inverted()).width
+    probe.remove()
+    return width
+
+
+def _draw_margin_title(
+    fig: plt.Figure,
+    title: str,
+    title_left_x: float,
+    y: float,
+    title_kwargs: Dict[str, Any],
+) -> plt.Text:
+    """Draw one panel title in the left margin, left-aligned at ``title_left_x``."""
+    kw = dict(title_kwargs)
+    fontsize = kw.pop("fontsize", 9)
+    family = kw.pop("family", kw.pop("fontfamily", "Arial"))
+    kw.pop("pad", None)
+    kw.pop("xpad", None)
+    kw.pop("margin_pad", None)
+    return fig.text(
+        title_left_x, y, title,
+        ha="left",
+        va="center",
+        fontsize=fontsize,
+        family=family,
+        clip_on=False,
+        **kw,
+    )
+
+
+def _add_panel_title(
+    fig: plt.Figure,
+    ax_or_axes: Union[plt.Axes, Sequence[plt.Axes]],
+    title: str,
+    title_pos: Optional[Union[str, Tuple[float, float]]],
+    title_kwargs: Dict[str, Any],
+    renderer=None,
+    title_left_x: Optional[float] = None,
+) -> Optional[plt.Text]:
+    """Place a panel title outside the axes, left of y-axis labels."""
+    axes = _as_axes_list(ax_or_axes)
+    ax = axes[0]
+    kw = dict(title_kwargs)
+    fontsize = kw.pop("fontsize", 9)
+    family = kw.pop("family", kw.pop("fontfamily", "Arial"))
+    pad = kw.pop("pad", 6)
+    xpad = kw.pop("xpad", 4)  # points between title column and y labels
+
+    if isinstance(title_pos, tuple):
+        return ax.text(
             title_pos[0], title_pos[1], title,
-            transform=ax.transAxes, **title_kwargs
+            transform=ax.transAxes,
+            fontsize=fontsize,
+            family=family,
+            clip_on=False,
+            **kw,
         )
-        return  # Early return for tuple position
-    
-    # String position - use ax.set_title
-    if title_pos_str == "left":
-        ax.set_title(title, loc="left", **title_kwargs)
-    elif title_pos_str == "right":
-        ax.set_title(title, loc="right", **title_kwargs)
-    elif title_pos_str == "center":
-        ax.set_title(title, loc="center", **title_kwargs)
+
+    pos = title_pos if title_pos is not None else "left"
+
+    if pos in ("left", "margin"):
+        y = _panel_vertical_center_fig_y(axes)
+        if title_left_x is not None:
+            return _draw_margin_title(fig, title, title_left_x, y, {
+                "fontsize": fontsize, "family": family, **kw,
+            })
+        if renderer is None:
+            fig.canvas.draw()
+            renderer = fig.canvas.get_renderer()
+        ylab_x = min(_left_label_extent_fig_x(a, fig, renderer) for a in axes)
+        xpad_frac = xpad / 72.0 / max(fig.get_figwidth(), 1e-6)
+        text_w = _text_width_fig(fig, title, fontsize, family, renderer)
+        return _draw_margin_title(
+            fig, title, ylab_x - xpad_frac - text_w, y,
+            {"fontsize": fontsize, "family": family, **kw},
+        )
+
+    subplot_h_in = max(ax.get_position().height * fig.get_figheight(), 1e-6)
+    y_offset = pad / 72.0 / subplot_h_in
+
+    if pos == "above-left":
+        ha, x, va = "left", 0.0, "bottom"
+    elif pos in ("above-right", "right"):
+        ha, x, va = "right", 1.0, "bottom"
+    elif pos in ("above-center", "center"):
+        ha, x, va = "center", 0.5, "bottom"
     else:
-        ax.set_title(title, **title_kwargs)
+        return ax.set_title(title, loc=pos, fontsize=fontsize, family=family, pad=pad, **kw)
+
+    return ax.text(
+        x, 1.0 + y_offset, title,
+        transform=ax.transAxes,
+        ha=ha,
+        va=va,
+        fontsize=fontsize,
+        family=family,
+        clip_on=False,
+        **kw,
+    )
+
+
+def _apply_panel_titles(
+    fig: plt.Figure,
+    pending_titles: List[Tuple[Union[plt.Axes, Sequence[plt.Axes]], str]],
+    title_pos: Optional[Union[str, Tuple[float, float]]],
+    title_kwargs: Dict[str, Any],
+) -> None:
+    """Draw panel titles after all panels are plotted and layout is final."""
+    if not pending_titles:
+        return
+
+    if isinstance(title_pos, tuple) or title_pos not in (None, "left", "margin"):
+        for ax_or_axes, title in pending_titles:
+            _add_panel_title(fig, ax_or_axes, title, title_pos, title_kwargs)
+        return
+
+    kw = dict(title_kwargs)
+    fontsize = kw.get("fontsize", 9)
+    family = kw.get("family", kw.get("fontfamily", "Arial"))
+    xpad = kw.get("xpad", 6)
+    margin_pad = kw.get("margin_pad", 0.01)
+
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    xpad_frac = xpad / 72.0 / max(fig.get_figwidth(), 1e-6)
+
+    min_ylab_x = 1.0
+    max_title_w = 0.0
+    for ax_or_axes, title in pending_titles:
+        axes = _as_axes_list(ax_or_axes)
+        min_ylab_x = min(
+            min_ylab_x,
+            min(_left_label_extent_fig_x(ax, fig, renderer) for ax in axes),
+        )
+        max_title_w = max(
+            max_title_w,
+            _text_width_fig(fig, title, fontsize, family, renderer),
+        )
+
+    title_left_x = min_ylab_x - xpad_frac - max_title_w
+    required_left = max(fig.subplotpars.left, title_left_x - margin_pad)
+
+    if required_left > fig.subplotpars.left + 1e-4:
+        fig.subplots_adjust(left=required_left)
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        min_ylab_x = 1.0
+        for ax_or_axes, title in pending_titles:
+            axes = _as_axes_list(ax_or_axes)
+            min_ylab_x = min(
+                min_ylab_x,
+                min(_left_label_extent_fig_x(ax, fig, renderer) for ax in axes),
+            )
+            max_title_w = max(
+                max_title_w,
+                _text_width_fig(fig, title, fontsize, family, renderer),
+            )
+        title_left_x = min_ylab_x - xpad_frac - max_title_w
+
+    for ax_or_axes, title in pending_titles:
+        axes = _as_axes_list(ax_or_axes)
+        y = _panel_vertical_center_fig_y(axes)
+        _draw_margin_title(fig, title, title_left_x, y, title_kwargs)
 
 
 def _get_default_height_ratio(panel_type: str) -> float:
@@ -156,8 +347,6 @@ def _auto_adjust_fig_kwargs(
     # Calculate height based on subplot_height and height_ratios
     calculated_height = subplot_height * sum(height_ratios)
     
-    # Get or set width (cap at reasonable maximum to avoid too-wide figures)
-    max_reasonable_width = 12.0
     default_width = 10.0
     
     if "figsize" not in adjusted_kwargs:
@@ -174,20 +363,7 @@ def _auto_adjust_fig_kwargs(
         if isinstance(existing_figsize, (tuple, list)) and len(existing_figsize) >= 2:
             existing_width = existing_figsize[0]
             existing_height = existing_figsize[1]
-            
-            # Cap width at reasonable maximum (set_plot_style might set 15, which is too wide)
-            if existing_width > max_reasonable_width:
-                adjusted_width = max_reasonable_width
-                log.write(
-                    f" -Capped width from {existing_width:.1f} to {adjusted_width:.1f} "
-                    f"(too wide, using max {max_reasonable_width:.1f})",
-                    verbose=verbose
-                )
-            else:
-                adjusted_width = existing_width
-            
-            # Respect user-provided height - if they explicitly set it, use it
-            # Only calculate height if user didn't provide figsize at all
+            adjusted_width = existing_width
             final_height = existing_height
             log.write(
                 f" -Using user-provided figsize: ({adjusted_width:.1f}, {final_height:.1f}) "
@@ -281,10 +457,15 @@ def plot_panels(
         if figsize is not provided in fig_kwargs.
     titles : list of str, optional
         List of titles for each panel. Length should match number of panels.
-    title_pos : str or tuple, optional
-        Position of titles. Can be "left", "right", "center", or (x, y) tuple.
+    title_pos : str or tuple, default="left"
+        Title placement. ``"left"`` (alias ``"margin"``) draws the title outside
+        the panel, vertically centered and to the left of y-axis labels.
+        ``"above-left"``, ``"above-right"``, and ``"above-center"`` place titles
+        above the panel. A ``(x, y)`` tuple uses ``ax.text`` in transAxes.
     title_kwargs : dict, optional
-        Keyword arguments for title styling (e.g., fontsize, fontfamily).
+        Title styling. ``fontsize``, ``family``, ``xpad`` (points left of y labels),
+        and ``margin_pad`` (figure fraction) are supported for margin titles.
+        ``pad`` applies to above-panel titles.
     fig_kwargs : dict, optional
         Additional keyword arguments for matplotlib figure creation
         (e.g., {'figsize': (10, 8), 'dpi': 200}).
@@ -295,9 +476,12 @@ def plot_panels(
     save_kwargs : dict, optional
         Additional arguments for saving (e.g., {'dpi': 300, 'bbox_inches': 'tight'}).
     fontsize : int, default=9
-        Default font size for labels.
+        Shared font size for panel labels, legends, and titles. Propagated to
+        chromatin, pipcs, ld_block, and region panels (and ag_* panels) unless
+        overridden on individual ``Panel`` kwargs. Track/arc gene labels scale
+        via ``taf`` on the panel.
     font_family : str, default="Arial"
-        Font family for text.
+        Shared font family; also sets ``track_font_family`` on track/arc/region.
     align_xaxis : bool, default=True
         Whether to align x-axes across all panels. If True, applies consistent
         xlim and tick positions to all main axes (excludes position bars and
@@ -450,7 +634,14 @@ def plot_panels(
         title_kwargs["family"] = font_family
     if "fontsize" not in title_kwargs:
         title_kwargs["fontsize"] = fontsize
-    
+    if "pad" not in title_kwargs:
+        title_kwargs["pad"] = 6
+
+    if title_pos is None:
+        title_pos = "left"
+
+    user_specified_height_ratios = height_ratios is not None
+
     if height_ratios is None:
         expanded_height_ratios = []
         for panel in panels:
@@ -487,7 +678,7 @@ def plot_panels(
     log.write(f" -Creating figure with {total_subplot_count} subplots...", verbose=verbose)
     fig, axes = plt.subplots(
         total_subplot_count, 1,
-        gridspec_kw={'height_ratios': height_ratios},
+        gridspec_kw={'height_ratios': height_ratios, 'hspace': hspace},
         **fig_kwargs
     )
     
@@ -495,15 +686,14 @@ def plot_panels(
     if total_subplot_count == 1:
         axes = [axes]
     
-    # Adjust spacing
-    #plt.subplots_adjust(hspace=hspace)
-    
     # Plot each panel
     log.write(" -Plotting panels...", verbose=verbose)
     axes_index = 0  # Track current position in axes array
     main_axes = []  # Track main axes for alignment (exclude position bars, gene tracks)
     exclude_axes = []  # Track axes to exclude from alignment
     ag_axes: List[plt.Axes] = []
+    ag_contact_axes: List[plt.Axes] = []
+    pending_titles: List[Tuple[Union[plt.Axes, Sequence[plt.Axes]], str]] = []
     # Start with axes from plt.subplots (preserves order from top to bottom)
     # all_axes[0] is top panel, all_axes[-1] is bottom panel
     all_axes = list(axes)  # Base axes from plt.subplots
@@ -518,6 +708,7 @@ def plot_panels(
         panel_kwargs["fig"] = fig
         panel_kwargs["verbose"] = verbose
         panel_kwargs["log"] = log
+        _apply_shared_font_defaults(panel_kwargs, panel_type, fontsize, font_family)
         
         # Call appropriate plotting function based on panel type
         if panel_type == "track":
@@ -534,9 +725,8 @@ def plot_panels(
             # ax is already in all_axes (from plt.subplots), no need to append
             main_axes.append(ax)  # Track panel uses main axis
             
-            # Add title if provided
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(ax, titles[i], title_pos, title_kwargs)
+                pending_titles.append((ax, titles[i]))
             
             axes_index += 1
             
@@ -554,9 +744,8 @@ def plot_panels(
             # ax is already in all_axes (from plt.subplots), no need to append
             main_axes.append(ax)  # Arc panel uses main axis
             
-            # Add title if provided
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(ax, titles[i], title_pos, title_kwargs)
+                pending_titles.append((ax, titles[i]))
             
             axes_index += 1
             
@@ -572,6 +761,18 @@ def plot_panels(
             # Create a copy of panel_kwargs and remove fig (plot_ld_block doesn't accept it)
             ld_block_kwargs = panel_kwargs.copy()
             ld_block_kwargs.pop("fig", None)  # Remove fig if present
+
+            # plot_ld_block expects sumstats; accept insumstats from Panel / Sumstats.Panel
+            if "sumstats" not in ld_block_kwargs:
+                if "insumstats" in ld_block_kwargs:
+                    ld_block_kwargs["sumstats"] = ld_block_kwargs.pop("insumstats")
+                else:
+                    raise ValueError(
+                        f"Panel {i+1} (type='ld_block') missing required parameter "
+                        "'sumstats' or 'insumstats'"
+                    )
+            else:
+                ld_block_kwargs.pop("insumstats", None)
             
             ld_block_kwargs["ax"] = ax
             ld_block_kwargs["ax_pos"] = ax_pos
@@ -602,9 +803,8 @@ def plot_panels(
             main_axes.append(ax_pos)  # Position bar uses genomic positions, should be aligned
             exclude_axes.append(ax)  # Main LD block uses rank-based coordinates, exclude from alignment
             
-            # Add title if provided (on the main ax, not ax_pos)
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(ax, titles[i], title_pos, title_kwargs)
+                pending_titles.append(([ax_pos, ax], titles[i]))
             
             axes_index += 2  # Skip both axes
             
@@ -651,9 +851,8 @@ def plot_panels(
             main_axes.append(ax1)  # Main scatter plot should be aligned
             main_axes.append(ax3)  # Gene track should also be aligned
             
-            # Add title if provided (on the main ax1, not ax3)
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(ax1, titles[i], title_pos, title_kwargs)
+                pending_titles.append(([ax1, ax3], titles[i]))
             
             axes_index += 2  # Skip both axes
             
@@ -678,9 +877,8 @@ def plot_panels(
             axes[axes_index] = ax
             main_axes.append(ax)  # Chromatin panel uses main axis
             
-            # Add title if provided
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(ax, titles[i], title_pos, title_kwargs)
+                pending_titles.append((ax, titles[i]))
             
             axes_index += 1
             
@@ -714,9 +912,8 @@ def plot_panels(
             axes[axes_index] = ax
             main_axes.append(ax)  # PIPCS panel uses main axis
             
-            # Add title if provided
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(ax, titles[i], title_pos, title_kwargs)
+                pending_titles.append((ax, titles[i]))
             
             axes_index += 1
 
@@ -766,10 +963,12 @@ def plot_panels(
                     bundle=panel_kwargs["bundle"],
                     axes=panel_axes,
                     region=plot_region,
+                    track_start_i=track_start_i,
                     verbose=verbose,
                     log=log,
                     **ag_kw,
                 )
+                ag_contact_axes.extend(panel_axes)
             elif panel_type == "ag_sashimi":
                 plot_ag_sashimi(
                     bundle=panel_kwargs["bundle"],
@@ -783,7 +982,7 @@ def plot_panels(
                 main_axes.append(ax)
             ag_axes.extend(panel_axes)
             if titles is not None and i < len(titles) and titles[i] is not None:
-                _add_panel_title(panel_axes[0], titles[i], title_pos, title_kwargs)
+                pending_titles.append((panel_axes, titles[i]))
             axes_index += n_axes
 
         else:
@@ -820,6 +1019,9 @@ def plot_panels(
         if ag_axes:
             finalize_ag_panel_spines(ag_axes)
 
+        if ag_contact_axes:
+            finalize_ag_contact_axes(ag_contact_axes, region, track_start_i)
+
         if variant_positions:
             vline_kw = variant_line_kwargs or {
                 "color": "#FF0000",
@@ -837,6 +1039,10 @@ def plot_panels(
         fig_size_after_align = fig.get_size_inches()
         if not np.allclose(fig_size_before_align, fig_size_after_align):
             fig.set_size_inches(fig_size_before_align[0], fig_size_before_align[1])
+
+    refit_arc_colorbars(main_axes)
+
+    _apply_panel_titles(fig, pending_titles, title_pos, title_kwargs)
     
     # Save figure
     save_figure(fig, save, keyword="panels", save_kwargs=save_kwargs, log=log, verbose=verbose)

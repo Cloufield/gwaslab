@@ -21,6 +21,82 @@ from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.info.g_Log import Log
 
+_MIDDLE_LABEL_ADJUST_KW = dict(
+    autoalign=False,
+    only_move={'points': 'x', 'text': 'x', 'objects': 'x'},
+    precision=0,
+    force_text=(0.1, 0),
+    expand_text=(1, 1),
+    expand_objects=(1, 1),
+    expand_points=(1, 1),
+    va="center",
+    ha='center',
+    avoid_points=False,
+    lim=1000,
+)
+
+
+def _adjust_middle_track_labels(texts: List[plt.Text], ax: plt.Axes) -> None:
+    """Spread overlapping middle labels horizontally; keep vertical taf offset."""
+    if not texts:
+        return
+    label_y = [t.get_position()[1] for t in texts]
+    adjust_text(texts, ax=ax, **_MIDDLE_LABEL_ADJUST_KW)
+    for text_obj, y in zip(texts, label_y):
+        text_obj.set_y(y)
+
+
+def _ylim_pad_data(
+    ax: plt.Axes,
+    fig: plt.Figure,
+    pad_points: float = 2.0,
+    renderer=None,
+) -> float:
+    """Convert a vertical padding (points) to data-axis units."""
+    if renderer is None:
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+    bbox = ax.get_window_extent(renderer)
+    inv = ax.transData.inverted()
+    cx = 0.5 * (bbox.x0 + bbox.x1)
+    cy = 0.5 * (bbox.y0 + bbox.y1)
+    _, y0 = inv.transform((cx, cy))
+    _, y1 = inv.transform((cx, cy + pad_points))
+    return abs(y1 - y0)
+
+
+def _expand_ylim_for_gene_labels(
+    ax: plt.Axes,
+    fig: plt.Figure,
+    label_texts: List[plt.Text],
+    ymin_floor: float,
+    ymax_floor: float,
+    pad_points: float = 4.0,
+) -> None:
+    """Expand ylim so gene-name labels are fully inside the panel."""
+    ymin, ymax = ymin_floor, ymax_floor
+    if not label_texts:
+        ax.set_ylim(ymin, ymax)
+        return
+
+    # Two passes: bbox can grow after ylim is widened (labels were clipped).
+    for _ in range(2):
+        ax.set_ylim(ymin, ymax)
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        inv = ax.transData.inverted()
+        pad = _ylim_pad_data(ax, fig, pad_points, renderer=renderer)
+        ymin_next, ymax_next = ymin_floor, ymax_floor
+        for text in label_texts:
+            if not text.get_text().strip():
+                continue
+            bb = text.get_window_extent(renderer).transformed(inv)
+            ymin_next = min(ymin_next, bb.y0 - pad)
+            ymax_next = max(ymax_next, bb.y1 + pad)
+        ymin, ymax = ymin_next, ymax_next
+
+    ax.set_ylim(ymin, ymax)
+
 
 def plot_track(
     track_path: str,
@@ -278,6 +354,9 @@ def plot_track(
     highlighted_lefts = []
     highlighted_rights = []
     texts_to_adjust_middle = []
+    label_texts: List[plt.Text] = []
+    ymin_floor = -stack_num_to_plot * 2 - taf[1] * 2
+    ymax_floor = 2 + taf[1] * 2
     
     # Plot main features
     for index, row in features_df.iterrows():
@@ -319,7 +398,7 @@ def plot_track(
         # Plot feature name
         if row["end"] >= region[2]:
             # Right side
-            ax.text(
+            label_texts.append(ax.text(
                 x=track_start_i + region[2],
                 y=row["stack"] * 2 + taf[4],
                 s=feature_anno,
@@ -329,10 +408,10 @@ def plot_track(
                 style='italic',
                 size=font_size_in_points,
                 family=track_font_family
-            )
+            ))
         elif row["start"] <= region[1]:
             # Left side
-            ax.text(
+            label_texts.append(ax.text(
                 x=track_start_i + region[1],
                 y=row["stack"] * 2 + taf[4],
                 s=feature_anno,
@@ -342,7 +421,7 @@ def plot_track(
                 style='italic',
                 size=font_size_in_points,
                 family=track_font_family
-            )
+            ))
         else:
             # Middle
             text_obj = ax.text(
@@ -356,6 +435,7 @@ def plot_track(
                 size=font_size_in_points,
                 family=track_font_family
             )
+            label_texts.append(text_obj)
             texts_to_adjust_middle.append(text_obj)
     
     # Plot subfeatures (e.g., exons for GTF)
@@ -401,19 +481,11 @@ def plot_track(
     
     # Adjust text positions to prevent overlapping (similar to regional plot)
     if len(texts_to_adjust_middle) > 0:
-        adjust_text(texts_to_adjust_middle,
-                    autoalign=False,
-                    only_move={'points': 'x', 'text': 'x', 'objects': 'x'},
-                    ax=ax,
-                    precision=0,
-                    force_text=(0.1, 0),
-                    expand_text=(1, 1),
-                    expand_objects=(1, 1),
-                    expand_points=(1, 1),
-                    va="center",
-                    ha='center',
-                    avoid_points=False,
-                    lim=1000)
+        _adjust_middle_track_labels(texts_to_adjust_middle, ax)
+
+    _expand_ylim_for_gene_labels(
+        ax, fig, label_texts, ymin_floor=ymin_floor, ymax_floor=ymax_floor,
+    )
     
     return ax, texts_to_adjust_middle
 

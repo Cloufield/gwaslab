@@ -11,12 +11,76 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, PathPatch
 from matplotlib.path import Path
 from matplotlib.colors import Normalize
+from matplotlib.transforms import Bbox
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from typing import Optional, Tuple, List, Dict, Union, Any
+from typing import Optional, Tuple, List, Dict, Union, Any, Sequence
 from gwaslab.io.io_bedpe import read_bedpe
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.info.g_Log import Log
+
+
+def _arc_cbar_locator(cax: plt.Axes):
+    """Return the inset locator underlying a colorbar axes, if present."""
+    locator = getattr(cax, "_axes_locator", None)
+    if locator is not None and hasattr(locator, "_orig_locator"):
+        return locator._orig_locator
+    return None
+
+
+def fit_arc_colorbar_inside_panel(
+    ax: plt.Axes,
+    cax: plt.Axes,
+    pad_frac: float = 0.03,
+    max_iter: int = 12,
+    reset_anchor: bool = True,
+) -> None:
+    """
+    Shrink the inset anchor box so the horizontal colorbar and its labels
+    stay inside ``ax`` (works after plot_panels repositions the parent).
+    """
+    orig = _arc_cbar_locator(cax)
+    if orig is None:
+        return
+
+    if reset_anchor:
+        orig._bbox_to_anchor = Bbox.from_extents(0.02, 0.02, 0.98, 0.98)
+
+    fig = ax.figure
+    for _ in range(max_iter):
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        panel = ax.get_position()
+        pad_x = pad_frac * panel.width
+        pad_y = pad_frac * panel.height
+        tight = cax.get_tightbbox(renderer).transformed(fig.transFigure.inverted())
+
+        top_ov = max(0.0, tight.y1 - (panel.y1 - pad_y))
+        right_ov = max(0.0, tight.x1 - (panel.x1 - pad_x))
+        left_ov = max(0.0, (panel.x0 + pad_x) - tight.x0)
+        bottom_ov = max(0.0, (panel.y0 + pad_y) - tight.y0)
+        if max(top_ov, right_ov, left_ov, bottom_ov) < 1e-5:
+            return
+
+        anchor = orig._bbox_to_anchor
+        x0, y0, x1, y1 = anchor.x0, anchor.y0, anchor.x1, anchor.y1
+        if top_ov:
+            y1 -= top_ov / panel.height
+        if bottom_ov:
+            y0 += bottom_ov / panel.height
+        if right_ov:
+            x1 -= right_ov / panel.width
+        if left_ov:
+            x0 += left_ov / panel.width
+        orig._bbox_to_anchor = Bbox.from_extents(x0, y0, x1, y1)
+
+
+def refit_arc_colorbars(axes: Sequence[plt.Axes]) -> None:
+    """Re-fit score colorbars after stacked-panel layout / x-axis alignment."""
+    for ax in axes:
+        cax = getattr(ax, "_gwaslab_arc_cbar_axes", None)
+        if cax is not None:
+            fit_arc_colorbar_inside_panel(ax, cax)
 
 
 def plot_arc(
@@ -309,10 +373,12 @@ def plot_arc(
     ax.set_ylim((y_base, y_top))
     ax.set_yticks([])  # Hide y-axis ticks
     
-    # Remove left, top, and right spines
-    ax.spines['left'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    # Full panel spines (consistent with track / regional stacked panels)
+    ax.spines['left'].set_visible(True)
+    ax.spines['top'].set_visible(True)
+    ax.spines['top'].set_zorder(1)
+    ax.spines['right'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
     
     # Draw a base line to show the chromosome track
     if region is not None:
@@ -440,42 +506,18 @@ def plot_arc(
         import matplotlib.cm as cm
         sm = plt.cm.ScalarMappable(cmap=cmap_obj, norm=score_norm)
         sm.set_array([])  # Empty array, we just need the colormap
-        
-        # Use inset_axes to place colorbar at upper right corner (same style as plot_ld_block)
-        # Position: upper right, horizontal orientation
-        # Calculate position relative to axes for upper right corner
-        # Get axes position in figure coordinates
-        pos = ax.get_position()
-        # Position colorbar in upper right: horizontal bar near top-right corner
-        # Width: 20% of axes width, Height: 3% of axes height (horizontal)
-        cbar_width_frac = 0.20  # 20% of axes width
-        cbar_height_frac = 0.03  # 3% of axes height
-        borderpad_frac = 0.03  # Padding from edges
-        
-        # Calculate label height based on font size
-        # Label fontsize is 8, tick labels are 7
-        # Convert font size (points) to figure coordinates
-        # Approximate: 1 point ≈ 1/72 inch, need to convert to figure fraction
-        fig_height_inches = ax.figure.get_figheight()
-        label_fontsize = 8
-        tick_fontsize = 7
-        labelpad_points = 2
-        
-        # Calculate space needed for labels in figure coordinates
-        # Label height + labelpad + tick label height + small padding
-        label_height_fig = (label_fontsize / 72.0) / fig_height_inches  # Convert points to figure fraction
-        tick_height_fig = (tick_fontsize / 72.0) / fig_height_inches
-        labelpad_fig = (labelpad_points / 72.0) / fig_height_inches
-        label_space = label_height_fig + labelpad_fig + tick_height_fig + 0.01  # Extra padding
-        
-        # Calculate in figure coordinates
-        cbar_width = cbar_width_frac * (pos.x1 - pos.x0)
-        cbar_height = cbar_height_frac * (pos.y1 - pos.y0)
-        # Position at upper right: x near right edge, y lower to accommodate labels
-        cbar_x0 = pos.x1 - cbar_width - borderpad_frac * (pos.x1 - pos.x0)
-        cbar_y0 = pos.y1 - cbar_height - borderpad_frac * (pos.y1 - pos.y0) - label_space
-        
-        cax = ax.figure.add_axes([cbar_x0, cbar_y0, cbar_width, cbar_height])
+
+        # inset_axes keeps the colorbar anchored when plot_panels / XAxisManager
+        # repositions the parent axis (fig.add_axes figure coords go stale).
+        cax = inset_axes(
+            ax,
+            width="20%",
+            height="3%",
+            loc="upper right",
+            bbox_to_anchor=(0.02, 0.02, 0.98, 0.98),
+            bbox_transform=ax.transAxes,
+            borderpad=0.5,
+        )
         cbar = plt.colorbar(sm, cax=cax, orientation='horizontal')
         cbar.set_label(score_col if score_col else 'Score', fontsize=8, family=track_font_family, labelpad=2)
         cbar.ax.tick_params(labelsize=7)
@@ -483,6 +525,8 @@ def plot_arc(
         cbar.ax.xaxis.set_label_position('top')
         cbar.ax.xaxis.set_ticks_position('top')
         cbar.ax.tick_params(labeltop=True, labelbottom=False)
+        ax._gwaslab_arc_cbar_axes = cax
+        fit_arc_colorbar_inside_panel(ax, cax, reset_anchor=True)
     
     if log and verbose:
         log.write(f"Plotted {len(bedpe_df)} cis arcs", verbose=verbose)

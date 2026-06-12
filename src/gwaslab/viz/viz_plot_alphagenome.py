@@ -286,10 +286,61 @@ def plot_ag_overlay(
     return list(axes[:n_axes])
 
 
+def _slice_contact_data(
+    bundle: ContactBundle,
+    region: Optional[Tuple[int, int, int]],
+    track_start_i: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Return bin edges and values for pcolormesh aligned to genomic coordinates."""
+    start = bundle.region[1]
+    res = bundle.resolution
+    n_bins = bundle.values.shape[0]
+    edges = start + np.arange(n_bins + 1, dtype=float) * res
+
+    if region is not None:
+        view_lo, view_hi = region[1], region[2]
+        i0 = max(0, int((view_lo - start) // res))
+        i1 = min(n_bins, int((view_hi - start + res - 1) // res))
+        edges = edges[i0 : i1 + 1]
+        data = bundle.values[i0:i1, i0:i1, :]
+    else:
+        data = bundle.values
+
+    if track_start_i:
+        edges = edges + track_start_i
+    return edges, data
+
+
+def _sync_ag_contact_axis_limits(
+    ax: plt.Axes,
+    region: Optional[Tuple[int, int, int]],
+    track_start_i: float = 0.0,
+) -> None:
+    """Match contact-map x/y limits to stacked-panel genomic coordinates."""
+    if region is None:
+        return
+    lo = track_start_i + region[1]
+    hi = track_start_i + region[2]
+    ax.set_xlim(lo, hi)
+    ax.set_ylim(lo, hi)
+    ax.set_aspect("equal", adjustable="box")
+
+
+def finalize_ag_contact_axes(
+    contact_axes: Sequence[plt.Axes],
+    region: Optional[Tuple[int, int, int]],
+    track_start_i: float = 0.0,
+) -> None:
+    """Re-apply contact limits after stacked x-axis alignment."""
+    for ax in contact_axes:
+        _sync_ag_contact_axis_limits(ax, region, track_start_i)
+
+
 def plot_ag_contact(
     bundle: ContactBundle,
     axes: Sequence[plt.Axes],
     region: Optional[Tuple[int, int, int]] = None,
+    track_start_i: float = 0.0,
     cmap: str = "autumn_r",
     vmin: Optional[float] = None,
     vmax: Optional[float] = None,
@@ -302,26 +353,18 @@ def plot_ag_contact(
         raise ValueError(
             f"plot_ag_contact needs {bundle.num_axes} axes, got {len(axes)}"
         )
-    start = bundle.region[1]
-    n_bins = bundle.values.shape[0]
-    pos = np.arange(n_bins) * bundle.resolution + start
-    if region is not None:
-        i0 = max(0, int((region[1] - start) // bundle.resolution))
-        i1 = min(n_bins, int((region[2] - start) // bundle.resolution) + 1)
-        pos = pos[i0:i1]
-        data = bundle.values[i0:i1, i0:i1, :]
-    else:
-        data = bundle.values
+    edges, data = _slice_contact_data(bundle, region, track_start_i=track_start_i)
 
     for i in range(bundle.num_axes):
         ax = axes[i]
         arr = data[:, :, i]
-        if vmin is None:
-            vmin = float(np.nanmin(arr))
-        if vmax is None:
-            vmax = float(np.nanmax(arr))
-        im = ax.pcolormesh(pos, pos, arr, cmap=cmap, vmin=vmin, vmax=vmax, shading="auto")
-        ax.set_aspect("equal")
+        arr_vmin = vmin if vmin is not None else float(np.nanmin(arr))
+        arr_vmax = vmax if vmax is not None else float(np.nanmax(arr))
+        im = ax.pcolormesh(
+            edges, edges, arr,
+            cmap=cmap, vmin=arr_vmin, vmax=arr_vmax, shading="flat",
+        )
+        _sync_ag_contact_axis_limits(ax, region, track_start_i)
         ylab = _ylabel_from_metadata(bundle.metadata, i, ylabel_template)
         if not ylab:
             ylab = str(bundle.metadata.iloc[i].get("name", f"contact_{i}"))

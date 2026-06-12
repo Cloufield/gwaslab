@@ -21,6 +21,10 @@ from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from adjustText import adjust_text
+from gwaslab.viz.viz_plot_track import (
+    _adjust_middle_track_labels,
+    _expand_ylim_for_gene_labels,
+)
 from gwaslab.io.io_gtf import read_gtf
 
 from gwaslab.info.g_Log import Log
@@ -572,7 +576,7 @@ def _plot_regional(
         if len(lead_ids) > 0 and lead_ids[0] is not None:
             lead_snp_is_for_gene_coloring.append(sumstats.loc[lead_ids[0],"i"])
         # load gtf
-        ax3, texts_to_adjust_middle =_plot_gene_track(
+        ax3, texts_to_adjust_middle, gene_label_texts, gene_ylim_bounds = _plot_gene_track(
                         ax3=ax3,
                         fig=fig,
                         gtf_path=gtf_path,
@@ -632,20 +636,14 @@ def _plot_regional(
 
     # gene track (ax3) text adjustment
     if (gtf_path is not None ) and ("r" in mode):
-        if len(texts_to_adjust_middle)>0:
-            adjust_text(texts_to_adjust_middle,
-                    autoalign=False, 
-                    only_move={'points':'x', 'text':'x', 'objects':'x'},
-                    ax=ax3,
-                    precision=0,
-                    force_text=(0.1,0),
-                    expand_text=(1, 1),
-                    expand_objects=(1,1),
-                    expand_points=(1,1),
-                    va="center",
-                    ha='center',
-                    avoid_points=False,
-                    lim =1000)     
+        if len(texts_to_adjust_middle) > 0:
+            _adjust_middle_track_labels(texts_to_adjust_middle, ax3)
+        if gene_label_texts:
+            ymin_floor, ymax_floor = gene_ylim_bounds
+            _expand_ylim_for_gene_labels(
+                ax3, fig, gene_label_texts,
+                ymin_floor=ymin_floor, ymax_floor=ymax_floor,
+            )
     
     return ax1, ax3, ax4, cbar, lead_snp_is, lead_snp_is_colors
 
@@ -1326,7 +1324,9 @@ def _plot_gene_track(
 
     n_uniq_stack = uniq_gene_region["stack"].nunique()
     stack_num_to_plot = max(taf[0],n_uniq_stack)
-    ax3.set_ylim((-stack_num_to_plot*2-taf[1]*2,2+taf[1]*2))
+    ymin_floor = -stack_num_to_plot * 2 - taf[1] * 2
+    ymax_floor = 2 + taf[1] * 2
+    ax3.set_ylim((ymin_floor, ymax_floor))
     ax3.set_yticks([])
     point_per_pixels = 72/fig.dpi
     pixels_per_point = fig.dpi/72
@@ -1344,6 +1344,7 @@ def _plot_gene_track(
     texts_to_adjust_left = []
     texts_to_adjust_middle = []
     texts_to_adjust_right = []
+    gene_label_texts = []
 
     
     sig_gene_names=[]
@@ -1378,16 +1379,34 @@ def _plot_gene_track(
         # plot gene name
         if row["end"] >= region[2]:
             #right side
-            texts_to_adjust_right.append(ax3.text(x=gene_track_start_i+region[2],
-                    y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points,family=track_font_family))
+            text_obj = ax3.text(
+                x=gene_track_start_i+region[2],
+                y=row["stack"]*2+taf[4], s=gene_anno, ha="right", va="center",
+                color="black", style='italic', size=font_size_in_points,
+                family=track_font_family,
+            )
+            texts_to_adjust_right.append(text_obj)
+            gene_label_texts.append(text_obj)
 
         elif row["start"] <= region[1] :
             #left side
-            texts_to_adjust_left.append(ax3.text(x=gene_track_start_i+region[1],
-                    y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points,family=track_font_family))
+            text_obj = ax3.text(
+                x=gene_track_start_i+region[1],
+                y=row["stack"]*2+taf[4], s=gene_anno, ha="left", va="center",
+                color="black", style='italic', size=font_size_in_points,
+                family=track_font_family,
+            )
+            texts_to_adjust_left.append(text_obj)
+            gene_label_texts.append(text_obj)
         else:
-            texts_to_adjust_middle.append(ax3.text(x=(gene_track_start_i+row["start"]+gene_track_start_i+row["end"])/2,
-                    y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points,family=track_font_family))
+            text_obj = ax3.text(
+                x=(gene_track_start_i+row["start"]+gene_track_start_i+row["end"])/2,
+                y=row["stack"]*2+taf[4], s=gene_anno, ha="center", va="center",
+                color="black", style='italic', size=font_size_in_points,
+                family=track_font_family,
+            )
+            texts_to_adjust_middle.append(text_obj)
+            gene_label_texts.append(text_obj)
     
     # plot exons
     log.write(" -plotting exons: {}..".format(len(exons)), verbose=verbose)
@@ -1413,7 +1432,7 @@ def _plot_gene_track(
 
     log.write(" -Finished plotting gene track..", verbose=verbose)
 
-    return ax3,texts_to_adjust_middle
+    return ax3, texts_to_adjust_middle, gene_label_texts, (ymin_floor, ymax_floor)
 
 # -############################################################################################################################################################################
 # Helpers    
