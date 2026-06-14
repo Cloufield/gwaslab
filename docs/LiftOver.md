@@ -32,7 +32,7 @@ The liftover implementation uses the `sumstats_liftover` package, which directly
 | `remove`              | `boolean`        | If True, remove unmapped variants (including chromosome mismatches) | `True`  |
 
 !!! quote
-    This method uses the [sumstats_liftover](https://github.com/statgen/sumstats_liftover) package, which provides fast chain-based coordinate conversion using vectorized operations.
+    This method uses the [sumstats_liftover](https://github.com/Cloufield/sumstats-liftover) package, which provides fast chain-based coordinate conversion using vectorized operations.
 
 ## Example
 
