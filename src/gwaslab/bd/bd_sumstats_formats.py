@@ -105,6 +105,32 @@ def sniff_delimiter(sample: str) -> str:
         return best
 
 
+_PLINK2_GLM_HEADER_MARKERS = frozenset({
+    "beta", "obsct", "test", "tstat", "zstat", "fstat", "log10p", "logor_se", "neglog10p",
+    "a1freq", "a1ct", "allele0", "allele1", "machr2",
+})
+
+_VCF_HEADER_MARKERS = frozenset({
+    "qual", "filter", "info", "format",
+})
+
+
+def _looks_like_vcf_header(header_cols: List[str], is_vcf_meta: bool = False) -> bool:
+    """
+    True when a ``#CHROM`` header row looks like VCF, not PLINK2 GLM / similar tabular output.
+    """
+    if not header_cols:
+        return bool(is_vcf_meta)
+    norms = {norm_header(c) for c in header_cols}
+    if "#chrom" not in norms:
+        return bool(is_vcf_meta)
+    if norms & _PLINK2_GLM_HEADER_MARKERS:
+        return False
+    if is_vcf_meta:
+        return True
+    return bool(norms & _VCF_HEADER_MARKERS)
+
+
 def read_header_and_rows(file_path: Union[str, Path], max_lines: int = 2000) -> Tuple[Optional[List[str]], List[List[str]], Dict]:
     """
     Read header and sample rows from a sumstats file.
@@ -158,7 +184,6 @@ def read_header_and_rows(file_path: Union[str, Path], max_lines: int = 2000) -> 
             parts = s.split(delim) if delim != " " else s.split()
 
             if s.startswith("#CHROM"):
-                meta["is_vcf"] = True
                 header = parts
                 continue
 
@@ -251,8 +276,10 @@ def detect_sumstats_format(
        - Reads up to 2000 sample rows for analysis
     
     2. **VCF Fast-Path Detection**
-       - If file starts with "##fileformat=VCF" or has "#CHROM" header, immediately
-         returns "vcf" format with high confidence (0.99)
+       - If file starts with ``##fileformat=VCF`` or has a ``#CHROM`` header with VCF columns
+         (``QUAL``/``FILTER``/``INFO``/``FORMAT``), returns ``vcf`` with high confidence (0.99)
+       - PLINK2 ``.glm.*`` files also use ``#CHROM`` but are scored normally when GLM columns
+         (``BETA``, ``OBS_CT``, ``TEST``, etc.) are present
     
     3. **Candidate Format Filtering**
        - Excludes all formats starting with "auto*" (e.g., "auto", "auto_detect")
@@ -355,7 +382,7 @@ def detect_sumstats_format(
             candidates.append(fmt)
 
     # VCF fast path
-    if meta.get("is_vcf") or (header and norm_header(header[0]) == "#chrom"):
+    if header and _looks_like_vcf_header(header, meta.get("is_vcf", False)):
         if "vcf" in formatbook:
             return {
                 "best_format": "vcf",

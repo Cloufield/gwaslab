@@ -228,8 +228,10 @@ def _plot_phenogram(
     group_label_box_pad_pt : float, default=1.5
         Extra padding around label text for overlap calculations, in points.
     show_legend : bool, default=True
-        If True, draw two single-line figure legends above the plot in marker
-        mode: one row ``Shape …`` and one row ``Color …``.
+        If True, draw figure legend(s) above the plot in marker mode. When
+        ``anno_shape`` and ``anno_color`` are the same column, one combined
+        row ``Marker …`` is drawn; otherwise separate ``Shape …`` and
+        ``Color …`` rows are used.
     legend_ncol : int, default=6
         Deprecated for marker legends (each row is kept on one line). Retained
         for API compatibility.
@@ -644,7 +646,12 @@ def _plot_phenogram(
         fig.canvas.draw()
 
     if show_legend and marker_mode:
-        legend_top_margin = 0.075
+        same_legend_column = (
+            anno_shape is not None
+            and anno_color is not None
+            and anno_shape == anno_color
+        )
+        legend_top_margin = 0.04 if same_legend_column else 0.075
         fig.tight_layout(rect=[0, 0, 1, 1 - legend_top_margin])
     else:
         fig.tight_layout()
@@ -732,6 +739,8 @@ def _plot_phenogram(
             resolved_color_map,
             legend_ncol,
             legend_kwargs,
+            anno_shape=anno_shape,
+            anno_color=anno_color,
         )
 
     for i, spec in enumerate(chr_specs):

@@ -24,6 +24,72 @@ def _pre_rename_dtype_map(
     return dict(dtypes)
 
 
+def format_comment_leading_skip_count(meta_data: Optional[Mapping[str, Any]], path: str) -> int:
+    """
+    Number of leading file lines to skip for formatbook ``format_comment``.
+
+    ``format_comment='#'`` skips only consecutive ``##`` meta lines (VCF header /
+    PLINK comments), preserving the ``#CHROM`` column header row.
+    """
+    if not meta_data:
+        return 0
+    fc = meta_data.get("format_comment")
+    if not isinstance(fc, str):
+        return 0
+    if fc == "#":
+        return _count_leading_lines_with_prefix(path, "##")
+    if len(fc) > 1:
+        return _count_leading_lines_with_prefix(path, fc)
+    return 0
+
+
+def _merge_skiprows_into_readargs(readargs: Dict[str, Any], new_rows: list) -> None:
+    existing = readargs.get("skiprows")
+    skip = set(new_rows)
+    if existing is not None:
+        if isinstance(existing, int):
+            skip.update(range(existing))
+        else:
+            skip.update(existing)
+    readargs["skiprows"] = sorted(skip)
+
+
+def apply_format_comment_readargs(
+    meta_data: Optional[Mapping[str, Any]],
+    readargs: Dict[str, Any],
+    path: Optional[str] = None,
+    user_kwargs: Optional[Mapping[str, Any]] = None,
+) -> None:
+    """
+    Apply formatbook ``format_comment`` to pandas read kwargs.
+
+    ``format_comment='#'`` must not become ``comment='#'`` (that drops ``#CHROM``).
+    """
+    user_kwargs = user_kwargs or {}
+    if not meta_data:
+        return
+    fc = meta_data.get("format_comment")
+    if fc is None or not isinstance(fc, str):
+        return
+
+    if fc == "#":
+        readargs.pop("comment", None)
+        return
+
+    if len(fc) > 1 and path and "skiprows" not in user_kwargs:
+        skip_n = _count_leading_lines_with_prefix(path, fc)
+        if skip_n:
+            _merge_skiprows_into_readargs(readargs, list(range(skip_n)))
+    elif len(fc) == 1 and "comment" not in user_kwargs:
+        readargs["comment"] = fc
+
+
+def build_path_skiprows(inpath: str, meta_data: Optional[Mapping[str, Any]]) -> Optional[list]:
+    """Leading skip row indices from ``format_comment`` (excludes vcf.gz handling)."""
+    n = format_comment_leading_skip_count(meta_data, inpath) if inpath else 0
+    return list(range(n)) if n else None
+
+
 def _count_leading_lines_with_prefix(path: str, prefix: str) -> int:
     """Count initial lines starting with ``prefix`` (e.g. skip VCF/PLINK2 ``##`` meta)."""
     n = 0
@@ -113,21 +179,10 @@ def _read_tabular(path: str, fmt: str, **kwargs: Any) -> pd.DataFrame:
     if "format_separator" in meta_data and "sep" not in kwargs:
         load_kwargs_dict["sep"] = meta_data["format_separator"]
     
-    # format_comment: single char -> pandas ``comment=``; multi-char -> *line prefix* at file start:
-    # count consecutive leading lines starting with that string and set ``skiprows`` (no ``comment=``),
-    # since pandas only allows length-1 ``comment`` and "#" would remove the "#CHROM" header row.
-    if "format_comment" in meta_data and meta_data["format_comment"] is not None:
-        fc = meta_data["format_comment"]
-        if (
-            isinstance(fc, str)
-            and len(fc) > 1
-            and "skiprows" not in kwargs
-        ):
-            skip_n = _count_leading_lines_with_prefix(path, fc)
-            if skip_n:
-                load_kwargs_dict["skiprows"] = list(range(skip_n))
-        elif isinstance(fc, str) and len(fc) == 1 and "comment" not in kwargs:
-            load_kwargs_dict["comment"] = fc
+    apply_format_comment_readargs(meta_data, load_kwargs_dict, path, kwargs)
+    fc_skip = build_path_skiprows(path, meta_data)
+    if fc_skip and "skiprows" not in kwargs:
+        _merge_skiprows_into_readargs(load_kwargs_dict, fc_skip)
 
     if "format_header" in meta_data and "header" not in kwargs:
         if meta_data["format_header"] is True:

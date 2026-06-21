@@ -86,7 +86,7 @@ The following external command-line tools are used by various `util_ex_*` functi
 | **susieR** | `util_ex_run_susie`, `util_ex_run_coloc`, `util_ex_run_mesusie` | BSD-style (see note) | Sum of Single Effects model for fine-mapping. Copyright (c) 2017-2022, Gao Wang, Peter Carbonetto, Yuxin Zou, Kaiqian Zhang, Matthew Stephens |
 | **coloc** | `util_ex_run_coloc` | GPL | Colocalization analysis for shared genetic associations |
 | **hyprcoloc** | `util_ex_run_hyprcoloc` | GPL-2.0-or-later | Hierarchical Bayesian colocalization analysis |
-| **TwoSampleMR** | `util_ex_run_2samplemr` | MIT | Mendelian Randomization using two-sample summary data |
+| **TwoSampleMR** | `extension/mr` (Python); optional R via `util_ex_run_2samplemr` | MIT | Mendelian Randomization using two-sample summary data. Python implementation in `extension/mr`; R bridge optional with `engine="r"`. |
 | **MESuSiE** | `util_ex_run_mesusie` | GPL (>= 2) | Multivariate extension of SuSiE for fine-mapping. R package by borangao. Original reference: Gao & Zhou, Nature Genetics, 2024. |
 | **PLINK/PLINK2** | `util_ex_run_clumping`, `util_ex_calculate_ldmatrix`, `util_ex_process_ref` | GPL-3.0 | PLINK whole genome association analysis toolset |
 | **BCFtools** | `hm_assign_rsid`, `util_ex_process_h5` | MIT/Expat License | Variant calling and manipulation utilities. Part of samtools/htslib |
@@ -99,7 +99,7 @@ The following external command-line tools are used by various `util_ex_*` functi
 - **coloc** uses GPL license (GPL-3.0 compatible)
 - **hyprcoloc** is licensed under GPL-2.0-or-later (GPL-3.0 compatible)
 - **MESuSiE** is licensed under GPL (>= 2), equivalent to GPL-2.0-or-later (GPL-3.0 compatible)
-- **TwoSampleMR** uses MIT license (permissive, GPL-3.0 compatible)
+- **TwoSampleMR** uses MIT license (permissive, GPL-3.0 compatible). Core MR algorithms are reimplemented in `gwaslab.extension.mr`; the optional R bridge calls the installed TwoSampleMR package.
 - These packages are called via R subprocess calls and are not included in the GWASLab codebase
 
 **Important**: These external tools have their own licenses and installation requirements. Users must install and license these tools separately if they wish to use the corresponding GWASLab functions. GWASLab's GPL-3.0 license does not apply to these external tools.

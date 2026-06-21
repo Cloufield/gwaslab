@@ -2396,6 +2396,33 @@ def _make_marker_color_legend_handles(
     return handles
 
 
+def _make_marker_combined_legend_handles(
+    marker_shape_map: Dict[str, str],
+    marker_color_map: Dict[str, str],
+    markersize: float = _LEGEND_MARKER_SIZE,
+) -> List[Line2D]:
+    """Legend handles showing both shape and fill color per category."""
+    labels = sorted(
+        set(marker_shape_map) | set(marker_color_map),
+        key=str,
+    )
+    handles: List[Line2D] = []
+    for label in labels:
+        marker = marker_shape_map.get(label, "o")
+        color = marker_color_map.get(label, "black")
+        handles.append(
+            Line2D(
+                [0], [0],
+                marker=marker,
+                linestyle="None",
+                markerfacecolor=color,
+                markeredgecolor="black",
+                markeredgewidth=0.8,
+                markersize=markersize,
+                label=str(label),
+            )
+        )
+    return handles
 
 
 def _plot_phenogram_marker_legends(
@@ -2409,23 +2436,25 @@ def _plot_phenogram_marker_legends(
     legend_kwargs: Optional[Dict[str, Any]] = None,
     legend_fontsize: float = _LEGEND_FONTSIZE,
     legend_markersize: float = _LEGEND_MARKER_SIZE,
+    anno_shape: Optional[str] = None,
+    anno_color: Optional[str] = None,
 ) -> None:
-    """Draw two single-line legend rows: ``Shape …`` and ``Color …``."""
+    """Draw marker legend rows above the ideogram grid.
+
+    When ``anno_shape`` and ``anno_color`` refer to the same column, draw one
+    combined row (``Marker …``). Otherwise draw separate ``Shape …`` and/or
+    ``Color …`` rows.
+    """
     del legend_ncol  # each row is one line: prefix + all entries
     extra = dict(legend_kwargs) if legend_kwargs else {}
     legend_fontsize = float(extra.pop("fontsize", legend_fontsize))
     legend_markersize = float(extra.pop("markersize", legend_markersize))
 
-    shape_items = _make_marker_shape_legend_handles(
-        marker_shape_map, markersize=legend_markersize
+    same_column = (
+        anno_shape is not None
+        and anno_color is not None
+        and anno_shape == anno_color
     )
-    color_items = _make_marker_color_legend_handles(
-        marker_color_map, markersize=legend_markersize
-    )
-    shape_row = _marker_legend_row_handles("Shape", shape_items)
-    color_row = _marker_legend_row_handles("Color", color_items)
-    if not shape_row and not color_row:
-        return
 
     ax_top = max(
         axes[i % ncols].get_position().y1
@@ -2442,6 +2471,34 @@ def _plot_phenogram_marker_legends(
         "borderaxespad": 0.0,
     }
     common.update(extra)
+
+    if same_column:
+        combined_items = _make_marker_combined_legend_handles(
+            marker_shape_map,
+            marker_color_map,
+            markersize=legend_markersize,
+        )
+        combined_row = _marker_legend_row_handles("Marker", combined_items)
+        if not combined_row:
+            return
+        fig.legend(
+            handles=combined_row,
+            bbox_to_anchor=(0.5, ax_top + 0.020),
+            ncol=len(combined_row),
+            **common,
+        )
+        return
+
+    shape_items = _make_marker_shape_legend_handles(
+        marker_shape_map, markersize=legend_markersize
+    )
+    color_items = _make_marker_color_legend_handles(
+        marker_color_map, markersize=legend_markersize
+    )
+    shape_row = _marker_legend_row_handles("Shape", shape_items)
+    color_row = _marker_legend_row_handles("Color", color_items)
+    if not shape_row and not color_row:
+        return
 
     # Above the ideogram grid (annotations extend right / downward, not here).
     shape_anchor = (0.5, ax_top + 0.006)

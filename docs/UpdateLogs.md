@@ -1,5 +1,16 @@
 # Update Logs
 
+# v4.2.0 Coming soon
+
+- Added `plot_lead_overlap()`: Venn (2–3 studies) or UpSet visualization of annotated lead-locus overlap across multiple Sumstats objects (`gl.plot_lead_overlap()`)
+- Added AlphaGenome panel types for `plot_panels()`: `ag_tracks`, `ag_overlay`, `ag_contact`, `ag_sashimi` via `viz_plot_alphagenome.py`; optional fetch through [gwaslab-alphagenome](https://github.com/Cloufield/gwaslab-alphagenome) with `ag_spec` on `gl.Panel`
+- Enhanced `plot_phenogram()`: refactored into `viz_aux_phenogram.py`; grouped marker shapes/colors with legend, text wrap/repel, and `include_sex_chr` / `only_anno_chr` layout options
+- Improved `plot_track()` and `plot_arc()`: gene-label collision avoidance, y-limit padding for track labels, and score-based arc coloring in stacked panel layouts
+- Fixed PLINK2 / PLINK2 GLM loading with `#CHROM` headers: `format_comment='#'` now skips only leading `##` meta lines (VCF header / PLINK comments) instead of using pandas `comment='#'`, which removed the `#CHROM` column row and produced empty Sumstats
+- Fixed `detect_sumstats_format()` misclassifying PLINK2 `.glm.*` output as VCF when the header starts with `#CHROM`; VCF fast-path now requires VCF column signatures (`QUAL`/`FILTER`/`INFO`/`FORMAT`) or `##fileformat=VCF`
+- I/O: shared `format_comment` handling in `io_read_tabular.py`; pandas and Polars preformat loaders apply the same skip logic for header preview and data read
+- Tests: PLINK2 load/detection regression coverage in `test_preformat_input.py` and `test_sumstats_format_detection.py`
+
 # v4.1.9 20260609
 
 - Fixed `plot_mqq()` and related plots dropping `anno_max_rows`: base `plot_mqq` viz aux registry entry now inherits `plot_mqq:mqq`, and `anno_max_rows` is registered for Manhattan/regional MQQ-family plots

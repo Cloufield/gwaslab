@@ -415,29 +415,27 @@ class TestPreformatInputFormats(unittest.TestCase):
             self.skipTest(f"PLINK format not available: {e}")
     
     def test_load_plink2_format(self):
-        """Test loading PLINK2 format"""
+        """Test loading PLINK2 format with #CHROM header"""
         plink2_path = os.path.join(self.temp_dir, "plink2_test.glm.linear")
-        # PLINK2 format: #CHROM ID REF ALT A1 TEST OBS_CT BETA SE T_STAT P
         plink2_data = """#CHROM\tID\tREF\tALT\tA1\tTEST\tOBS_CT\tBETA\tSE\tT_STAT\tP
 1\trs1\tG\tA\tA\tADD\t1000\t0.1\t0.01\t10.0\t0.001
 1\trs2\tC\tT\tT\tADD\t1000\t0.15\t0.015\t10.0\t0.0005
 2\trs3\tA\tG\tG\tADD\t1000\t0.2\t0.02\t10.0\t0.0001"""
-        
+
         with open(plink2_path, 'w') as f:
             f.write(plink2_data)
-        
-        try:
-            result = _preformat(
-                sumstats=plink2_path,
-                fmt="plink2",
-                verbose=False
-            )
-            
-            self.assertGreater(len(result), 0)
-            self.assertIn("CHR", result.columns)
-            self.assertIn("POS", result.columns)
-        except Exception as e:
-            self.skipTest(f"PLINK2 format not available: {e}")
+
+        result = _preformat(
+            sumstats=plink2_path,
+            fmt="plink2",
+            verbose=False
+        )
+
+        self.assertGreater(len(result), 0)
+        self.assertIn("CHR", result.columns)
+        self.assertIn("BETA", result.columns)
+        self.assertIn("P", result.columns)
+        self.assertEqual(len(result), 3)
     
     def test_load_regenie_format(self):
         """Test loading REGENIE format"""

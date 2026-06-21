@@ -16,6 +16,10 @@ from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
 from gwaslab.qc.qc_reserved_headers import _check_overlap_with_reserved_keys
 from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
 from gwaslab.info.g_Log import Log
+from gwaslab.io.io_read_tabular import (
+    apply_format_comment_readargs,
+    build_path_skiprows,
+)
 
 
 #### Helper functions for _preformat #######################################################################
@@ -62,9 +66,6 @@ def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbos
         
         if "format_na" in meta_data:
             readargs["na_values"] = meta_data["format_na"]
-        
-        if "format_comment" in meta_data:
-            readargs["comment"] = meta_data["format_comment"]
         
         if "format_other_cols" in meta_data:
             other += meta_data["format_other_cols"]
@@ -316,13 +317,13 @@ def _apply_column_filters(*, include=None, exclude=None, usecols=None, rename_di
 
 def _load_sumstats_data(*, sumstats=None, inpath=None, inpath_chr_list=None, inpath_chr_num_list=None, 
                         usecols=None, dtype_dictionary=None, readargs=None, rename_dictionary=None,
-                        chrom_pat=None, snpid_pat=None, log=None, verbose=False):
+                        meta_data=None, chrom_pat=None, snpid_pat=None, log=None, verbose=False):
     """Load sumstats data from file path or DataFrame."""
     if isinstance(sumstats, str):
         return _load_sumstats_from_path(
             inpath=inpath, inpath_chr_list=inpath_chr_list, inpath_chr_num_list=inpath_chr_num_list,
             usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs, rename_dictionary=rename_dictionary,
-            chrom_pat=chrom_pat, snpid_pat=snpid_pat, log=log, verbose=verbose
+            meta_data=meta_data, chrom_pat=chrom_pat, snpid_pat=snpid_pat, log=log, verbose=verbose
         )
     elif isinstance(sumstats, pd.DataFrame):
         return _load_sumstats_from_dataframe(
@@ -333,9 +334,27 @@ def _load_sumstats_data(*, sumstats=None, inpath=None, inpath_chr_list=None, inp
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contain the columns.")
 
 
+def _prepare_path_readargs(readargs, inpath, meta_data):
+    """Merge vcf.gz / format_comment skip rows and strip erroneous comment='#' ."""
+    readargs_copy = readargs.copy()
+    skip = set()
+    vcf_skip = _get_skip_rows(inpath)
+    if vcf_skip:
+        skip.update(range(vcf_skip))
+    fc_skip = build_path_skiprows(inpath, meta_data)
+    if fc_skip:
+        skip.update(fc_skip)
+    apply_format_comment_readargs(meta_data, readargs_copy, inpath)
+    if skip:
+        readargs_copy["skiprows"] = sorted(skip)
+    else:
+        readargs_copy.pop("skiprows", None)
+    return readargs_copy
+
+
 def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_num_list=None,
                              usecols=None, dtype_dictionary=None, readargs=None, rename_dictionary=None,
-                             chrom_pat=None, snpid_pat=None, log=None, verbose=False):
+                             meta_data=None, chrom_pat=None, snpid_pat=None, log=None, verbose=False):
     """Load sumstats from file path(s)."""
     if inpath_chr_list:
         # Load multiple files (glob pattern or @ chromosome pattern)
@@ -344,9 +363,7 @@ def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_nu
         sumstats_chr_list = []
         for i in inpath_chr_list:
             log.write(" -Loading:" + i, verbose=verbose)
-            skip_rows = _get_skip_rows(i)
-            readargs_copy = readargs.copy()
-            readargs_copy["skiprows"] = skip_rows
+            readargs_copy = _prepare_path_readargs(readargs, i, meta_data)
             explicit = {"usecols", "dtype_dictionary"}
             readargs_copy = {k: v for k, v in readargs_copy.items() if k not in explicit}
             sumstats_chr = pd.read_table(i, usecols=set(usecols), dtype=dtype_dictionary, **readargs_copy)
@@ -360,24 +377,23 @@ def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_nu
         return sumstats
     else:
         # Load single file
-        skip_rows = _get_skip_rows(inpath)
-        readargs["skiprows"] = skip_rows
+        readargs_prepared = _prepare_path_readargs(readargs, inpath, meta_data)
         log.write("Start to initialize gl.Sumstats from file :" + inpath, verbose=verbose)
         
         if chrom_pat is not None:
             sumstats = _load_single_chr(
-                inpath=inpath, usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs,
+                inpath=inpath, usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs_prepared,
                 rename_dictionary=rename_dictionary, chrom_pat=chrom_pat, log=log, verbose=verbose
             )
         elif snpid_pat is not None:
             sumstats = _load_variants_with_pattern(
-                inpath=inpath, usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs,
+                inpath=inpath, usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs_prepared,
                 rename_dictionary=rename_dictionary, snpid_pat=snpid_pat, log=log, verbose=verbose
             )
         else:
             explicit = {"usecols", "dtype_dictionary"}
-            readargs = {k: v for k, v in readargs.items() if k not in explicit}
-            sumstats = pd.read_table(inpath, usecols=set(usecols), dtype=dtype_dictionary, **readargs)
+            readargs_prepared = {k: v for k, v in readargs_prepared.items() if k not in explicit}
+            sumstats = pd.read_table(inpath, usecols=set(usecols), dtype=dtype_dictionary, **readargs_prepared)
         return sumstats
 
 
@@ -755,7 +771,7 @@ def _preformat(sumstats,
     sumstats = _load_sumstats_data(
         sumstats=sumstats, inpath=inpath, inpath_chr_list=inpath_chr_list, inpath_chr_num_list=inpath_chr_num_list,
         usecols=usecols, dtype_dictionary=dtype_dictionary, readargs=readargs, rename_dictionary=rename_dictionary,
-        chrom_pat=chrom_pat, snpid_pat=snpid_pat, log=log, verbose=verbose
+        meta_data=meta_data, chrom_pat=chrom_pat, snpid_pat=snpid_pat, log=log, verbose=verbose
     )
     
     # Step 9: Post-process data (rename, transform, validate)
@@ -776,20 +792,14 @@ def _isfile_casesensitive(path):
     directory, filename = os.path.split(path)
     return filename in os.listdir(directory)
 
-def _get_readargs_header(inpath,readargs):
+def _get_readargs_header(inpath, readargs, meta_data=None):
     if "vcf.gz" in inpath:
-        with gzip.open(inpath,'r') as file:      
-            skip=0
-            for line in file:        
-                if line.decode('utf-8').startswith('##'):
-                    skip+=1
-                else:
-                    readargs["skiprows"]=skip
-                    readargs["sep"]="\t"
-                    break
-    readargs_header = readargs.copy()
-    readargs_header["nrows"]=1
-    readargs_header["dtype"]="string"
+        readargs = readargs.copy()
+        readargs["sep"] = "\t"
+    readargs_prepared = _prepare_path_readargs(readargs, inpath, meta_data)
+    readargs_header = readargs_prepared.copy()
+    readargs_header["nrows"] = 1
+    readargs_header["dtype"] = "string"
     return readargs_header
 
 def _get_skip_rows(inpath):
@@ -1078,7 +1088,7 @@ def _process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verb
         log.write(" -Detected glob pattern: loading {} matching file(s)...".format(len(expanded)), verbose=verbose)
         inpath_chr_list = expanded
         inpath_chr_num_list = [os.path.basename(p) for p in expanded]
-        readargs_header = _get_readargs_header(inpath=inpath_chr_list[0], readargs=readargs)
+        readargs_header = _get_readargs_header(inpath=inpath_chr_list[0], readargs=readargs, meta_data=meta_data)
         row_one = pd.read_table(inpath_chr_list[0], **readargs_header)
         raw_cols = row_one.columns
         if fmt == "vcf":
@@ -1114,14 +1124,14 @@ def _process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verb
         log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list),verbose=verbose)
 
         #if inpath_chr_list is empty-> IndexError
-        readargs_header = _get_readargs_header(inpath = inpath_chr_list[0], readargs = readargs)
+        readargs_header = _get_readargs_header(inpath=inpath_chr_list[0], readargs=readargs, meta_data=meta_data)
         row_one = pd.read_table(inpath_chr_list[0],**readargs_header)
         # columns in the sumstats
         raw_cols = row_one.columns
     else:
     ##### loading data from tabular file#################################################
     #if file not found, FileNotFoundError
-        readargs_header = _get_readargs_header(inpath = inpath, readargs = readargs)
+        readargs_header = _get_readargs_header(inpath=inpath, readargs=readargs, meta_data=meta_data)
         row_one = pd.read_table(inpath,**readargs_header)
         raw_cols = row_one.columns
 

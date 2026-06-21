@@ -43,7 +43,9 @@ from gwaslab.viz.viz_aux_phenogram import (
     _label_width_data_dx,
     _marker_legend_row_handles,
     _make_marker_color_legend_handles,
+    _make_marker_combined_legend_handles,
     _make_marker_shape_legend_handles,
+    _plot_phenogram_marker_legends,
     _marker_center_step_pt,
     _marker_anchor_from_block_center,
     _marker_group_block_extents_pt,
@@ -932,6 +934,74 @@ class TestPhenogramAnno(unittest.TestCase):
             shape_handles[0].get_markersize(),
             color_handles[0].get_markersize(),
         )
+
+    def test_make_marker_combined_legend_handles(self):
+        shape_map = {"A": "o", "B": "^"}
+        color_map = {"A": "red", "B": "blue"}
+        handles = _make_marker_combined_legend_handles(shape_map, color_map)
+        self.assertEqual(len(handles), 2)
+        self.assertEqual(handles[0].get_label(), "A")
+        self.assertEqual(handles[0].get_marker(), "o")
+        self.assertEqual(handles[0].get_markerfacecolor(), "red")
+        self.assertEqual(handles[1].get_label(), "B")
+        self.assertEqual(handles[1].get_marker(), "^")
+        self.assertEqual(handles[1].get_markerfacecolor(), "blue")
+
+    def test_marker_legend_same_column_single_row(self):
+        fig, axes = plt.subplots(1, 2, figsize=(6, 4))
+        axes = list(axes)
+        for ax in axes:
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+        fig.tight_layout()
+        _plot_phenogram_marker_legends(
+            fig,
+            axes,
+            ncols=2,
+            n_chr=2,
+            marker_shape_map={"A": "o", "B": "^"},
+            marker_color_map={"A": "red", "B": "blue"},
+            legend_ncol=6,
+            anno_shape="TRAIT",
+            anno_color="TRAIT",
+        )
+        legends = fig.legends
+        self.assertEqual(len(legends), 1)
+        labels = [text.get_text() for text in legends[0].get_texts()]
+        self.assertEqual(labels[0], "Marker")
+        self.assertIn("A", labels)
+        self.assertIn("B", labels)
+        self.assertNotIn("Shape", labels)
+        self.assertNotIn("Color", labels)
+        plt.close(fig)
+
+    def test_marker_legend_different_columns_two_rows(self):
+        fig, axes = plt.subplots(1, 2, figsize=(6, 4))
+        axes = list(axes)
+        for ax in axes:
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+        fig.tight_layout()
+        _plot_phenogram_marker_legends(
+            fig,
+            axes,
+            ncols=2,
+            n_chr=2,
+            marker_shape_map={"A": "o", "B": "^"},
+            marker_color_map={"X": "red", "Y": "blue"},
+            legend_ncol=6,
+            anno_shape="SHAPE_COL",
+            anno_color="COLOR_COL",
+        )
+        legends = fig.legends
+        self.assertEqual(len(legends), 2)
+        all_labels = []
+        for legend in legends:
+            all_labels.extend(text.get_text() for text in legend.get_texts())
+        self.assertIn("Shape", all_labels)
+        self.assertIn("Color", all_labels)
+        self.assertNotIn("Marker", all_labels)
+        plt.close(fig)
 
     def test_marker_group_display_label_wraps(self):
         group_items = [{"lead": {"annotation": "Very Long Gene Name Example"}}]

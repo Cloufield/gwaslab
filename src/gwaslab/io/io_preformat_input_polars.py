@@ -14,7 +14,7 @@ from gwaslab.qc.qc_check_datatype_polars import check_dataframe_memory_usage
 from gwaslab.qc.qc_reserved_headers import _check_overlap_with_reserved_keys
 from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
 from gwaslab.info.g_Log import Log
-from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
+from gwaslab.io.io_read_tabular import format_comment_leading_skip_count
 #20221030
 def preformatp(sumstats,
           fmt=None,
@@ -123,9 +123,6 @@ def preformatp(sumstats,
 
         if "format_na" in meta_data.keys():
             readargs["null_values"] = meta_data["format_na"]
-        
-        if "format_comment" in meta_data.keys():
-            readargs["comment_prefix"] = meta_data["format_comment"]
         
         if "format_other_cols" in meta_data.keys():
             other += meta_data["format_other_cols"]
@@ -369,8 +366,8 @@ def preformatp(sumstats,
                 sumstats_chr_list=[]
                 for i in inpath_chr_list:
                     log.write(" -Loading:" + i)
-                    skip_rows = get_skip_rows(i)
-                    readargs["skip_rows"] = skip_rows
+                    readargs["skip_rows"] = _prepare_polars_skip_rows(i, meta_data)
+                    readargs.pop("comment_prefix", None)
                     explicit = {"columns","schema_overrides"}
                     readargs_clean = _filter_polars_readargs(readargs, exclude_explicit=explicit)
                     sumstats_chr = pl.read_csv(i,
@@ -383,8 +380,8 @@ def preformatp(sumstats,
                 del(sumstats_chr_list)
                 gc.collect()
             else:
-                skip_rows = get_skip_rows(inpath)
-                readargs["skip_rows"] = skip_rows
+                readargs["skip_rows"] = _prepare_polars_skip_rows(inpath, meta_data)
+                readargs.pop("comment_prefix", None)
                 log.write("Start to initialize gl.Sumstats from file :" + inpath,verbose=verbose)
                 if chrom_pat is not None:
                     sumstats = _load_single_chr(inpath,
@@ -534,6 +531,15 @@ def isfile_casesensitive(path):
         return False   # exit early
     directory, filename = os.path.split(path)
     return filename in os.listdir(directory)
+
+def _prepare_polars_skip_rows(inpath, meta_data):
+    """Merge vcf.gz meta skip count with format_comment leading ## lines."""
+    skip = get_skip_rows(inpath)
+    if meta_data and inpath:
+        fc_skip = format_comment_leading_skip_count(meta_data, inpath)
+        skip = max(skip, fc_skip)
+    return skip
+
 
 def _filter_polars_readargs(readargs, exclude_explicit=None):
     """
