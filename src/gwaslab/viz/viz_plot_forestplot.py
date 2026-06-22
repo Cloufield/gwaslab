@@ -288,6 +288,38 @@ def plot_forest(
     return fig, axes
 
 
+def _format_pvalue_mathtext(p: float) -> str:
+    """Return p-value fragment for use inside ``$\\mathregular{...}$`` (no outer $)."""
+    if p <= 1e-300:
+        return r"p < 1 \times 10^{-300}"
+    try:
+        p_str = f"{p:.2e}"
+        if "e" in p_str.lower():
+            mantissa, exponent = p_str.lower().split("e")
+            mantissa = f"{float(mantissa):.2f}".rstrip("0").rstrip(".")
+            exponent = int(exponent)
+            if exponent == 0:
+                return f"p = {mantissa}"
+            return f"p = {mantissa} \\times 10^{{{exponent}}}"
+    except (ValueError, OverflowError):
+        pass
+    if p < 0.001:
+        return f"p = {p:.2e}"
+    if p < 0.01:
+        return f"p = {p:.3f}"
+    return f"p = {p:.2f}"
+
+
+def _format_het_stats_label(
+    Q: float, Qdf: float, Qp: float, I2: float
+) -> str:
+    """Two-line mathtext label for Cochran Q heterogeneity statistics."""
+    line1 = rf"$\mathregular{{Q = {Q:.2f}, Q_{{df}} = {Qdf:.0f}}}$"
+    p_part = _format_pvalue_mathtext(Qp)
+    line2 = rf"$\mathregular{{{p_part}, I^{{2}} = {I2:.1f}\%}}$"
+    return line1 + "\n" + line2
+
+
 def plot_row(
     axes: Union[np.ndarray, List[Axes]],
     df_to_plot: pd.DataFrame,
@@ -425,36 +457,13 @@ def plot_row(
     # Add heterogeneity statistics
     if meta and het_stats is not None and len(het_stats) == 4:
         Q, Qdf, Qp, I2 = het_stats
-        
-        # Format p-value nicely (similar to plot_compare_effect style)
-        try:
-            if Qp > 1e-300:
-                p_str = f"{Qp:.2e}"
-                if 'e' in p_str:
-                    mantissa, exponent = p_str.split('e')
-                    # Remove trailing zeros from mantissa
-                    mantissa = f"{float(mantissa):.2f}".rstrip('0').rstrip('.')
-                    exponent = int(exponent)
-                    if exponent == 0:
-                        p_formatted = f"${mantissa}$"
-                    else:
-                        p_formatted = rf"${mantissa} \times 10^{{{exponent}}}$"
-                else:
-                    p_formatted = f"${p_str}$"
-            else:
-                p_formatted = r"$< 1 \times 10^{-300}$"
-        except (ValueError, OverflowError):
-            # Fallback to simple format
-            if Qp < 0.001:
-                p_formatted = f"${Qp:.2e}$"
-            elif Qp < 0.01:
-                p_formatted = f"${Qp:.3f}$"
-            else:
-                p_formatted = f"${Qp:.2f}$"
-        
-        het_string1 = rf'$Q={Q:.2f}, Qdf={Qdf:.0f}$'
-        het_string2 = rf'$p={p_formatted}, I^2={I2:.1f}\%$'
-        axes[0].text(0, 0, s=het_string1 + "\n" + het_string2, size=fontsize, family=font_family)
+        axes[0].text(
+            0,
+            0,
+            s=_format_het_stats_label(Q, Qdf, Qp, I2),
+            size=fontsize,
+            family=font_family,
+        )
     
     # Set y-axis ticks and labels
     axes[1].set_yticks(df_to_plot["YORDER"])

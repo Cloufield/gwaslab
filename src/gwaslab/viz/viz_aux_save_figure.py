@@ -120,6 +120,7 @@ def get_default_path(keyword, fmt="png"):
         "gwheatmap": "genome_wide_heatmap",
         "scatter": "scatter",
         "forest": "forest",
+        "sankey": "sankey",
         "associations": "associations",
         "plot_associations": "associations",
         "gwaslab": "gwaslab"

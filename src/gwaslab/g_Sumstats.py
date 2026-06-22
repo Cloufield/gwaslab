@@ -146,6 +146,7 @@ from gwaslab.viz.viz_plot_effect import _plot_effect
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
 from gwaslab.viz.viz_plot_phenogram import _plot_phenogram
+from gwaslab.viz.viz_plot_sankey import plot_sankey
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
@@ -1450,6 +1451,11 @@ class Sumstats():
     @add_doc(_plot_associations)
     def plot_associations(self,**kwargs):
         _plot_associations(self.associations, **self._apply_viz_params(_plot_associations, kwargs, key="plot_associations"))
+
+    @add_doc(plot_sankey)
+    @suppress_display
+    def plot_sankey(self, **kwargs: Any) -> Any:
+        return plot_sankey(self, **self._apply_viz_params(plot_sankey, kwargs, key="plot_sankey"))
 
     def check_cis(self, gls=False, **kwargs):
         output = _check_cis(self,

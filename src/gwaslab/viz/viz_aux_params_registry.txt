@@ -495,6 +495,61 @@
         "yticklabel_kwargs": []
       }
     },
+    "plot_sankey": {
+      "allowed": [
+        "columns",
+        "column_map",
+        "weight",
+        "dropna",
+        "stage_labels",
+        "colors",
+        "color_by",
+        "palette",
+        "node_color_mode",
+        "beta_bins",
+        "link_alpha",
+        "node_width",
+        "ribbon_curvature",
+        "gap_frac",
+        "fig_kwargs",
+        "save",
+        "save_kwargs",
+        "fontsize",
+        "font_family",
+        "title",
+        "log",
+        "verbose"
+      ],
+      "defaults": {
+        "weight": "count",
+        "dropna": true,
+        "color_by": "first",
+        "palette": "auto",
+        "node_color_mode": "stacked",
+        "link_alpha": 0.55,
+        "node_width": 0.025,
+        "ribbon_curvature": 0.5,
+        "gap_frac": 0.02,
+        "fig_kwargs": {
+          "figsize": [
+            10,
+            6
+          ],
+          "dpi": 300
+        },
+        "save": false,
+        "save_kwargs": {
+          "dpi": 300,
+          "facecolor": "white"
+        },
+        "fontsize": 12,
+        "font_family": "Arial"
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": []
+      }
+    },
     "plot_gwheatmap": {
       "allowed": [
         "chrom",
