@@ -636,3 +636,92 @@ class Log():
         """
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Number of {description}: {count}", verbose=verbose, tag=tag)
+
+    def log_reference_file_info(
+        self,
+        info: Any,
+        ref_type: str = "file",
+        verbose: bool = True,
+        indent: int = 0,
+        tag: Optional[str] = None,
+    ) -> None:
+        """Log reference path with size, index, storage profile."""
+        from gwaslab.util.util_in_reference_run import format_bytes
+        indent_str = self._get_indent(indent)
+        path = getattr(info, "path", str(info))
+        size = getattr(info, "size_bytes", 0)
+        indexed = getattr(info, "indexed", False)
+        profile = getattr(info, "storage_profile", None)
+        profile_label = info.profile_label() if hasattr(info, "profile_label") else str(profile)
+        rec = getattr(info, "record_count", None)
+        parts = [f"{indent_str} -Reference {ref_type}: {path}"]
+        parts.append(f"({format_bytes(size)}")
+        if indexed:
+            parts.append(", indexed")
+        parts.append(f", {profile_label}")
+        if rec is not None:
+            parts.append(f", {rec:,} records")
+        parts.append(")")
+        self.write("".join(parts), verbose=verbose, tag=tag or "run_plan")
+
+    def log_compute_profile(self, profile: Any, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
+        indent_str = self._get_indent(indent)
+        cores = getattr(profile, "logical_cores", "?")
+        tier = profile.tier_label() if hasattr(profile, "tier_label") else getattr(profile, "tier", "?")
+        mhz = getattr(profile, "cpu_mhz", None)
+        mhz_s = f", {mhz:.0f} MHz" if mhz else ""
+        self.write(
+            f"{indent_str} -Compute: {cores} logical cores, tier {tier}{mhz_s}",
+            verbose=verbose,
+            tag=tag or "run_plan",
+        )
+
+    def log_run_plan(self, plan: Any, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
+        from gwaslab.util.util_in_reference_run import format_duration
+        indent_str = self._get_indent(indent)
+        op = getattr(plan, "operation", "reference run")
+        self.write(f"{indent_str} -Run plan ({op}):", verbose=verbose, tag=tag or "run_plan")
+        steps = getattr(plan, "steps", [])
+        for i, step in enumerate(steps, 1):
+            name = getattr(step, "name", "step")
+            detail = getattr(step, "detail", "")
+            lo = getattr(step, "estimate_seconds_low", 0)
+            hi = getattr(step, "estimate_seconds_high", 0)
+            cal = getattr(step, "calibrated", False)
+            cal_note = " [calibrated]" if cal else ""
+            est = f"est. {format_duration(lo)}–{format_duration(hi)}"
+            self.write(
+                f"{indent_str}  {i}. {name} ({detail}) — {est}{cal_note}",
+                verbose=verbose,
+                tag=tag or "run_plan",
+            )
+        lo = getattr(plan, "total_estimate_low", 0)
+        hi = getattr(plan, "total_estimate_high", 0)
+        n_cal = getattr(plan, "calibrated_from_n", 0)
+        note = "calibrated" if n_cal else "heuristic; ETA refines during run"
+        self.write(
+            f"{indent_str} -Total estimated: ~{format_duration(lo)}–{format_duration(hi)} ({note})",
+            verbose=verbose,
+            tag=tag or "run_plan",
+        )
+
+    def log_progress(
+        self,
+        done: int,
+        total: int,
+        label: Optional[str] = None,
+        elapsed_s: float = 0.0,
+        eta_s: Optional[float] = None,
+        verbose: bool = True,
+        indent: int = 0,
+        tag: Optional[str] = None,
+    ) -> None:
+        from gwaslab.util.util_in_reference_run import format_duration
+        indent_str = self._get_indent(indent)
+        lbl = label or ""
+        eta_str = format_duration(eta_s) if eta_s is not None else "?"
+        self.write(
+            f"{indent_str} -Progress: {done}/{total} {lbl} ({format_duration(elapsed_s)} elapsed, ETA ~{eta_str})",
+            verbose=verbose,
+            tag=tag or "progress",
+        )

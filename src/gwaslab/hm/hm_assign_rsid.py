@@ -28,8 +28,20 @@ import subprocess
 import shutil
 import os
 import tempfile
+import time
+import gc
+import shlex
+import gzip
+from multiprocessing import Pool
 from gwaslab.io.io_vcf import is_vcf_file
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.util.util_in_reference_run import (
+    collect_reference_file_info,
+    detect_compute_profile,
+    estimate_run_plan,
+    format_duration,
+    RunProgressTracker,
+)
 
 @with_logging(
     start_to_msg="assign rsID from reference",
@@ -46,6 +58,7 @@ def _assign_rsid(
     convert_to_bcf: bool = False,
     strip_info: bool = True,
     threads: int = 6,
+    extract_threads: int | None = None,
     rsid: str = "rsID",
     chrom: str = "CHR",
     pos: str = "POS",
@@ -55,6 +68,10 @@ def _assign_rsid(
     mapper: ChromosomeMapper | None = None,
     log: "Log" = Log(),
     verbose: bool = True,
+    log_run_plan: bool = True,
+    cpu_tier: str | None = None,
+    storage_profile: str | None = None,
+    reuse_lookup: bool = True,
 ):
     """
     Assign rsIDs to GWAS summary statistics using reference data with allele matching and STATUS filtering.
@@ -258,25 +275,35 @@ def _assign_rsid(
 
         log.write(" -Extracting new lookup TSV from: {}...".format(path_to_use), verbose=verbose)
 
-        # Optimize: only extract lookup for variants that need assignment
-        # Create a subset of sumstats with only variants that need rsID assignment
         variants_needing_rsid = sumstats.loc[to_assign_mask & sumstats[rsid].isna(), [chrom, pos]].rename(
             columns={chrom: "CHR", pos: "POS"}
         )
-        
-        # Auto-detect reference format from VCF file
         mapper.detect_reference_format(path_to_use)
-        
+
         lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
             vcf_path=path_to_use,
             sumstats=variants_needing_rsid,
             mapper=mapper,
-            assign_cols=["rsID"],  # ensures the lookup carries ID/rsID usable by assigner
+            assign_cols=["rsID"],
             out_lookup=lookup_path,
             threads=threads,
+            extract_threads=extract_threads,
             verbose=verbose,
             log=log,
+            log_run_plan=log_run_plan,
         )
+
+    lookup_size = os.path.getsize(lookup_tsv) if lookup_tsv and os.path.exists(lookup_tsv) else 0
+    if log_run_plan:
+        assign_plan = estimate_run_plan(
+            "lookup_assign",
+            target_variants=int(variants_needing_rsid.shape[0]) if ref_mode != "tsv" else int(to_assign_mask.sum()),
+            sumstats_rows=len(sumstats),
+            lookup_size_bytes=lookup_size,
+            cpu_tier=cpu_tier,
+            storage_profile_override=storage_profile,
+        )
+        log.log_run_plan(assign_plan, verbose=verbose)
 
     sumstats = _assign_from_lookup(
         sumstats=sumstats,
@@ -342,6 +369,7 @@ def _annotate_sumstats(
     assign_cols=("rsID",),
     mapper: ChromosomeMapper | None = None,
     threads=6,
+    extract_threads: int | None = None,
     chrom="CHR",
     pos="POS",
     ea="EA",
@@ -350,7 +378,8 @@ def _annotate_sumstats(
     convert_to_bcf=False,
     strip_info=True,
     verbose=True,
-    log=Log()
+    log=Log(),
+    log_run_plan: bool = True,
 ):
     """
     Annotate GWAS summary statistics by assigning fields (e.g., rsID, AF)
@@ -508,37 +537,30 @@ def _annotate_sumstats(
             else:
                 log.write(" -Already bcf", verbose=verbose)
 
-        log.write(" -Creating lookup table from VCF: {}...".format(path_to_use), verbose=verbose)
-        
-        # Optimize: only extract lookup for variants that need annotation
-        # Determine which variants need annotation (those with missing values in any assign_col)
-        # Since we already initialized missing columns above, all assign_cols should exist
         assign_cols_list = list(assign_cols)
         missing_mask = sumstats[assign_cols_list].isna().any(axis=1)
         if missing_mask.any():
-            # Only extract lookup for variants that need annotation
             variants_needing_annotation = sumstats.loc[missing_mask, [chrom, pos]].rename(
                 columns={chrom: "CHR", pos: "POS"}
             )
         else:
-            # All variants already have all annotations - this shouldn't happen after our early check
-            # but handle gracefully by using all variants
             variants_needing_annotation = sumstats[[chrom, pos]].rename(
                 columns={chrom: "CHR", pos: "POS"}
             )
-        
-        # Auto-detect reference format from VCF file
+
         mapper.detect_reference_format(path_to_use)
-        
+
         lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
-            vcf_path   = path_to_use,
-            sumstats   = variants_needing_annotation,
-            mapper     = mapper,
-            assign_cols= assign_cols,
-            out_lookup = lookup_path,
-            threads    = threads,
-            log        = log,
-            verbose    = verbose
+            vcf_path=path_to_use,
+            sumstats=variants_needing_annotation,
+            mapper=mapper,
+            assign_cols=assign_cols_list,
+            out_lookup=lookup_path,
+            threads=threads,
+            extract_threads=extract_threads,
+            verbose=verbose,
+            log=log,
+            log_run_plan=log_run_plan,
         )
 
     # ----------------------------------------------
@@ -769,70 +791,213 @@ def _extract_lookup_table_from_vcf_bcf_old(
 
     log.write(" -Lookup table created: {}...".format(out_lookup), verbose=verbose)
     return out_lookup, rm_out_lookup
-from io import StringIO
-import pandas as pd
-import subprocess, tempfile, os
+
+
+def _lookup_table_header(id_col, info_tags):
+    return "\t".join(["CHR", "POS", "REF", "ALT", id_col] + info_tags) + "\n"
+
 
 def _worker_bcf_lookup(args):
-    (chr_val, df_chr, vcf_path, fmt, split_by_chr,
-     mapper, info_tags, id_col, log, verbose) = args
+    """Run bcftools query for one chromosome; write TSV to a temp file (no in-memory buffer)."""
+    if len(args) >= 7:
+        chr_val, df_chr, vcf_path, fmt, split_by_chr, mapper, bcf_threads = args
+    else:
+        chr_val, df_chr, vcf_path, fmt, split_by_chr, mapper = args
+        bcf_threads = 1
+    bcf_threads = max(1, int(bcf_threads))
 
-    import tempfile, subprocess, os
-    import pandas as pd
-    from io import StringIO
-    # Convert reference chromosome back to sumstats format for logging
     orig_chr = mapper.reference_to_sumstats(chr_val, reference_file=vcf_path)
 
-    # Create per-chr target list
     tmp_targets = tempfile.NamedTemporaryFile(
         delete=False, suffix=f".{orig_chr}.targets.txt"
     )
     targets_path = tmp_targets.name
     tmp_targets.close()
 
-    # Don't sort targets - preserve original order to match VCF file order
-    # Sorting targets causes bcftools to output in sorted order, not VCF file order
-    # This is critical for matching the old method which processes variants in VCF order
-    # Sort targets by CHR:POS for efficient bcftools processing
-    # Note: This may cause bcftools to output in position-sorted order rather than
-    # original VCF file order, which can lead to different rsID selection when
-    # multiple rsIDs exist at the same position compared to the old method
-    # (which uses vcf_reader.fetch() and preserves VCF file order)
-    df_chr[["CHR","POS"]].sort_values(["CHR","POS"]) \
-        .to_csv(targets_path, sep="\t", header=False, index=False)
+    tmp_lookup = tempfile.NamedTemporaryFile(
+        delete=False, suffix=f".{orig_chr}.lookup.tsv"
+    )
+    lookup_path = tmp_lookup.name
+    tmp_lookup.close()
 
-    # FAST bcftools pipeline: uncompressed streaming (-Ou)
-    if split_by_chr:
-        cmd = (
-            f"bcftools view -r {chr_val} -T {targets_path} -Ou {vcf_path} | "
-            f'bcftools query -f "{fmt}"'
-        )
-    else:
-        cmd = (
-            f"bcftools view -T {targets_path} -Ou {vcf_path} | "
-            f"bcftools query -f '{fmt}'"
-        )
-
-    
-    # Run pipeline and capture text output
-    data = subprocess.check_output(cmd, shell=True, text=True)
-    log.write(f" {orig_chr}", verbose=verbose, end="", show_time=False)
-
-    # Convert to DataFrame
-    if data.strip() == "":
-        df_out = pd.DataFrame(columns=["CHR","POS","REF","ALT",id_col] + info_tags)
-    else:
-        df_out = pd.read_csv(StringIO(data), sep="\t", header=None)
-        df_out.columns = ["CHR","POS","REF","ALT",id_col] + info_tags
-
-    # cleanup only target file
     try:
-        os.remove(targets_path)
-    except:
+        df_chr[["CHR", "POS"]].sort_values(["CHR", "POS"]).to_csv(
+            targets_path, sep="\t", header=False, index=False
+        )
+
+        if split_by_chr:
+            cmd = (
+                f"bcftools view --threads {bcf_threads} -r {shlex.quote(str(chr_val))} "
+                f"-T {shlex.quote(targets_path)} -Ou {shlex.quote(vcf_path)} | "
+                f"bcftools query -f {shlex.quote(fmt)}"
+            )
+        else:
+            cmd = (
+                f"bcftools view --threads {bcf_threads} -T {shlex.quote(targets_path)} "
+                f"-Ou {shlex.quote(vcf_path)} | "
+                f"bcftools query -f {shlex.quote(fmt)}"
+            )
+
+        with open(lookup_path, "w"):
+            pass
+        subprocess.check_call(
+            f"{cmd} > {shlex.quote(lookup_path)}", shell=True
+        )
+
+        if os.path.getsize(lookup_path) == 0:
+            os.remove(lookup_path)
+            return None, str(orig_chr)
+
+        return lookup_path, str(orig_chr)
+    finally:
+        try:
+            os.remove(targets_path)
+        except OSError:
+            pass
+
+
+def _append_chr_lookup_file(out_f, chr_path, mapper, vcf_path):
+    """Stream bcftools query output into the lookup file; convert CHR to sumstats notation."""
+    rows = 0
+    with open(chr_path, "r") as inf:
+        for line in inf:
+            line = line.rstrip("\n\r")
+            if not line:
+                continue
+            parts = line.split("\t")
+            if parts:
+                converted = mapper.reference_to_sumstats(
+                    parts[0], reference_file=vcf_path
+                )
+                parts[0] = str(converted) if converted is not None else parts[0]
+            out_f.write("\t".join(parts) + "\n")
+            rows += 1
+    return rows
+
+
+def _consume_chr_lookup_file(out_f, lookup_path, mapper, vcf_path):
+    if lookup_path is None:
+        return 0
+    try:
+        return _append_chr_lookup_file(out_f, lookup_path, mapper, vcf_path)
+    finally:
+        try:
+            os.remove(lookup_path)
+        except OSError:
+            pass
+
+
+def _lookup_output_kind(path: str) -> str:
+    """Return lookup file kind: parquet, txt_gz, or txt."""
+    p = str(path).lower()
+    if p.endswith(".parquet"):
+        return "parquet"
+    if p.endswith(".gz"):
+        return "txt_gz"
+    return "txt"
+
+
+def _lookup_build_paths(out_lookup: str) -> tuple[str, str]:
+    """Return (final_path, streaming_build_path) for lookup extract."""
+    kind = _lookup_output_kind(out_lookup)
+    if kind == "parquet":
+        return out_lookup, f"{out_lookup}.build"
+    if kind == "txt_gz":
+        if out_lookup.endswith(".txt.gz"):
+            build_path = out_lookup[:-3]
+        else:
+            build_path = f"{out_lookup}.build"
+        return out_lookup, build_path
+    return out_lookup, out_lookup
+
+
+def _lookup_table_columns(lookup_table: str) -> list:
+    import pandas as pd
+
+    if _lookup_output_kind(lookup_table) == "parquet":
+        import pyarrow.parquet as pq
+
+        return list(pq.ParquetFile(lookup_table).schema.names)
+    return pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
+
+
+def _lookup_table_has_rows(lookup_table: str) -> bool:
+    import pandas as pd
+
+    if _lookup_output_kind(lookup_table) == "parquet":
+        import pyarrow.parquet as pq
+
+        meta = pq.ParquetFile(lookup_table).metadata
+        return meta is not None and meta.num_rows > 0
+    try:
+        first_row = pd.read_csv(lookup_table, sep="\t", nrows=1)
+        return not first_row.empty
+    except (pd.errors.EmptyDataError, pd.errors.ParserError):
+        return False
+
+
+def _iter_lookup_table_chunks(lookup_table, usecols, dtype, chunksize):
+    import pandas as pd
+
+    if _lookup_output_kind(lookup_table) == "parquet":
+        import pyarrow.parquet as pq
+
+        pf = pq.ParquetFile(lookup_table)
+        for batch in pf.iter_batches(batch_size=chunksize, columns=usecols):
+            chunk = batch.to_pandas()
+            for col, col_dtype in dtype.items():
+                if col not in chunk.columns:
+                    continue
+                if col_dtype == "category":
+                    chunk[col] = chunk[col].astype("category")
+                else:
+                    chunk[col] = chunk[col].astype(col_dtype)
+            yield chunk
+    else:
+        for chunk in pd.read_csv(
+            lookup_table,
+            sep="\t",
+            usecols=usecols,
+            dtype=dtype,
+            chunksize=chunksize,
+        ):
+            yield chunk
+
+
+def _finalize_lookup_parquet(build_path: str, out_parquet: str, compression: str = "zstd") -> None:
+    import pandas as pd
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    chunksize = 5_000_000
+    writer = None
+    for chunk in pd.read_csv(build_path, sep="\t", chunksize=chunksize):
+        table = pa.Table.from_pandas(chunk, preserve_index=False)
+        if writer is None:
+            writer = pq.ParquetWriter(
+                out_parquet, table.schema, compression=compression
+            )
+        writer.write_table(table)
+    if writer is not None:
+        writer.close()
+    else:
+        # Header-only or empty build file
+        empty = pd.read_csv(build_path, sep="\t", nrows=0)
+        table = pa.Table.from_pandas(empty, preserve_index=False)
+        pq.write_table(table, out_parquet, compression=compression)
+    try:
+        os.remove(build_path)
+    except OSError:
         pass
-    
-    return df_out
-from multiprocessing import Pool
+
+
+def _finalize_lookup_build_path(out_lookup, build_path):
+    if not str(out_lookup).endswith(".gz"):
+        return
+    with open(build_path, "rb") as f_in:
+        with gzip.open(out_lookup, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    os.remove(build_path)
 
 @with_logging(
     start_to_msg="extract lookup table from vcf/bcf",
@@ -849,10 +1014,16 @@ def _extract_lookup_table_from_vcf_bcf(
     verbose=True,
     rm_out_lookup=False,
     split_by_chr=True,
-    threads=6,     # <-- threads for Pool
+    threads=6,
+    extract_threads=None,
+    log_run_plan=True,
     log=Log()
 ):
     import os, shutil, tempfile, pandas as pd
+
+    if extract_threads is None:
+        extract_threads = 1
+    extract_threads = max(1, int(extract_threads))
 
     def is_indexed(p):
         return os.path.exists(p + ".tbi") or os.path.exists(p + ".csi")
@@ -875,7 +1046,7 @@ def _extract_lookup_table_from_vcf_bcf(
         assign_cols = []
 
     if out_lookup is None:
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".lookup.txt.gz")
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".lookup.parquet")
         out_lookup = tmp.name
         tmp.close()
 
@@ -889,57 +1060,85 @@ def _extract_lookup_table_from_vcf_bcf(
     # potentially leading to different rsID selection when multiple rsIDs exist at the same
     # position compared to the old method (which processes variants in sumstats order)
     chr_groups = {chr_val: df_chr for chr_val, df_chr in sorted(targets.groupby("CHR"))}
+    target_count = len(targets)
+
+    if log_run_plan:
+        ref_info = collect_reference_file_info(vcf_path)
+        log.log_reference_file_info(ref_info, ref_type="VCF/BCF", verbose=verbose)
+        log.log_compute_profile(detect_compute_profile(), verbose=verbose)
+        plan = estimate_run_plan(
+            "bcf_lookup_extract",
+            ref_info=ref_info,
+            threads=extract_threads,
+            task_count=len(chr_groups),
+            target_variants=target_count,
+        )
+        log.log_run_plan(plan, verbose=verbose)
+    extract_start = time.time()
 
     info_tags = [c for c in assign_cols if c not in ("ID","rsID")]
     id_col = "rsID" if ("rsID" in assign_cols) else "ID"
     fmt = "%CHROM\t%POS\t%REF\t%ALT\t%ID" + "".join([f"\t%INFO/{t}" for t in info_tags]) + "\n"
 
-    # Prepare args for pool
+    bcf_per_worker = max(1, min(4, int(threads) // extract_threads))
+
+    # Prepare args for pool (mapper only — cols encoded in fmt)
     tasks = []
     for chr_val, df_chr in chr_groups.items():
-        tasks.append((chr_val, df_chr, vcf_path, fmt, split_by_chr,
-                      mapper, info_tags, id_col, log, verbose))
+        tasks.append((chr_val, df_chr, vcf_path, fmt, split_by_chr, mapper, bcf_per_worker))
 
-    log.write(f" -Running multiprocessing: {threads} workers, {len(tasks)} chromosomes",
-              verbose=verbose)
+    log.write(
+        f" -Running multiprocessing: {extract_threads} workers, {len(tasks)} chromosomes",
+        verbose=verbose,
+    )
     
     if split_by_chr:
         log.write(" -Calling: "
                   "bcftools view -r <CHR> -T <TARGETS> -Ou <VCF>| "
                   "bcftools query -f '<FMT>'", verbose=verbose)
     else:
-        # TEMPLATE log
         log.write(" -Calling: bcftools view -T <TARGETS> -Ou <VCF> | "
                   "bcftools query -f '<FMT>'", verbose=verbose)
 
-    log.write(f" -Finished:",end="", verbose=verbose)
-    if threads <= 1:
-        dfs = [_worker_bcf_lookup(task) for task in tasks]
-    else:
-        with Pool(threads) as pool:
-            dfs = pool.map(_worker_bcf_lookup, tasks)
-    log.write(f"", verbose=verbose, show_time=False)
+    progress = RunProgressTracker(total=len(tasks), label="chromosomes")
+    out_lookup, build_path = _lookup_build_paths(out_lookup)
+    lookup_kind = _lookup_output_kind(out_lookup)
 
-    # Merge results - filter out empty DataFrames to avoid FutureWarning
-    dfs_filtered = [d for d in dfs if not d.empty]
-    if dfs_filtered:
-        df = pd.concat(dfs_filtered, ignore_index=True)
-    else:
-        # If all DataFrames are empty, create an empty DataFrame with the expected columns
-        df = pd.DataFrame(columns=["CHR","POS","REF","ALT",id_col] + info_tags)
-    
-    if not df.empty:
-        # Convert reference chromosomes back to sumstats format
-        log.write(" -Converting chromosome notation back to sumstats notation...", verbose=verbose)
-        df["CHR"] = mapper.reference_to_sumstats_series(df["CHR"], reference_file=vcf_path)
+    total_rows = 0
+    header_line = _lookup_table_header(id_col, info_tags)
+    with open(build_path, "w") as out_f:
+        out_f.write(header_line)
+        if extract_threads <= 1:
+            for task in tasks:
+                lookup_path, chr_label = _worker_bcf_lookup(task)
+                total_rows += _consume_chr_lookup_file(
+                    out_f, lookup_path, mapper, vcf_path
+                )
+                progress.update(chr_label)
+                progress.log_progress(log, verbose=verbose)
+        else:
+            with Pool(extract_threads, maxtasksperchild=1) as pool:
+                for lookup_path, chr_label in pool.imap_unordered(
+                    _worker_bcf_lookup, tasks
+                ):
+                    total_rows += _consume_chr_lookup_file(
+                        out_f, lookup_path, mapper, vcf_path
+                    )
+                    progress.update(chr_label)
+                    progress.log_progress(log, verbose=verbose)
 
-    if id_col == "rsID" and "ID" in df.columns:
-        df.rename(columns={"ID":"rsID"}, inplace=True)
+    if lookup_kind == "parquet":
+        _finalize_lookup_parquet(build_path, out_lookup)
+    elif lookup_kind == "txt_gz":
+        _finalize_lookup_build_path(out_lookup, build_path)
 
-    df.sort_values(["CHR","POS"], inplace=True)
-    df.to_csv(out_lookup, sep="\t", index=False, compression="infer")
-
+    extract_elapsed = time.time() - extract_start
+    log.write(
+        f" -Lookup extraction finished in {format_duration(extract_elapsed)} ({total_rows:,} rows)",
+        verbose=verbose,
+    )
     log.write(f" -Lookup table created: {out_lookup}", verbose=verbose)
+    gc.collect()
     return out_lookup, rm_out_lookup
 
 
@@ -1009,6 +1208,7 @@ def _assign_from_lookup(
     rm_tmp_lookup=False,
     mapper: ChromosomeMapper | None = None,
     reference_file: str | None = None,
+    log_run_plan: bool = False,
 ):
     """
     Assign annotation values from a lookup table to sumstats by matching CHR:POS:EA:NEA.
@@ -1032,8 +1232,7 @@ def _assign_from_lookup(
     # ============================================================================
     # Step 2: Read lookup table header to understand structure
     # ============================================================================
-    # Read only the header (0 rows) to get column names without loading data
-    lookup_header = pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
+    lookup_header = _lookup_table_columns(lookup_table)
 
     # ============================================================================
     # Step 3: Initialize ALLELE_FLIPPED column if not present
@@ -1047,14 +1246,7 @@ def _assign_from_lookup(
     # ============================================================================
     # Step 4: Check if lookup table has any data
     # ============================================================================
-    # Try to read first row to verify file contains data (not just headers)
-    try:
-        first_row = pd.read_csv(lookup_table, sep="\t", nrows=1)
-        if first_row.empty:
-            log.write(" -Lookup table is empty, skipping assignment...", verbose=verbose)
-            return sumstats
-    except (pd.errors.EmptyDataError, pd.errors.ParserError):
-        # Handle case where file exists but is empty or malformed
+    if not _lookup_table_has_rows(lookup_table):
         log.write(" -Lookup table is empty, skipping assignment...", verbose=verbose)
         return sumstats
 
@@ -1199,11 +1391,13 @@ def _assign_from_lookup(
     # Pre-compute unique chromosomes in sumstats for faster filtering (ints; matches normalized lookup CHR)
     sumstats_chr_int = pd.to_numeric(sumstats[chrom], errors="coerce")
     sumstats_chrs = {int(x) for x in sumstats_chr_int.dropna().unique()}
-    
-    # Iterate over chunks of the lookup table
-    for chunk in pd.read_csv(
-        lookup_table, sep="\t", usecols=usecols,
-        dtype=dtype, chunksize=chunksize
+
+    chr_row_index: dict[int, np.ndarray] = {}
+    for c in sumstats_chrs:
+        chr_row_index[c] = sumstats.index[sumstats_chr_int == c].to_numpy()
+
+    for chunk in _iter_lookup_table_chunks(
+        lookup_table, usecols, dtype, chunksize
     ):
         # ========================================================================
         # Step 14a: Skip empty chunks
@@ -1245,40 +1439,31 @@ def _assign_from_lookup(
         if not matching_chrs:
             log.write(" -No matching CHR in this chunk, skipping...", verbose=verbose)
             continue
-            
-        # Filter sumstats to only rows with matching chromosomes
-        ss_sub = sumstats[sumstats_chr_int.isin(matching_chrs)]
-        if ss_sub.empty:
+
+        idx = np.concatenate([chr_row_index[c] for c in sorted(matching_chrs)])
+        if len(idx) == 0:
             log.write(" -No matching CHR in this chunk, skipping...", verbose=verbose)
             continue
-        
-        # Create a copy because we'll modify allele columns (convert to categorical)
-        ss_sub = ss_sub.copy()
+
+        pos_idx = sumstats.index[idx]
 
         # ========================================================================
         # Step 14d: Create unified allele symbol space
         # ========================================================================
-        # Collect all unique allele symbols from both sumstats and lookup chunk
-        # This ensures categorical dtype includes all possible alleles for matching
         allele_space = set()
-        allele_space.update(ss_sub[ea].dropna().unique())
-        allele_space.update(ss_sub[nea].dropna().unique())
+        allele_space.update(sumstats.loc[pos_idx, ea].dropna().unique())
+        allele_space.update(sumstats.loc[pos_idx, nea].dropna().unique())
         allele_space.update(chunk[lookup_ea_col].dropna().unique())
         allele_space.update(chunk[lookup_nea_col].dropna().unique())
-        
+
         if not allele_space:
             log.write(" -No valid alleles in chunk, skipping...", verbose=verbose)
             continue
-            
-        # Convert to categorical dtype for efficient matching
-        # Categorical dtype allows fast equality comparisons
-        alleles = pd.CategoricalDtype(categories=list(allele_space), ordered=False)
 
-        # Convert all allele columns to the same categorical dtype
-        # This ensures allele symbols match exactly (e.g., "A" == "A" not "A" == "A ")
-        ss_sub[ea]  = ss_sub[ea].astype(alleles)
-        ss_sub[nea] = ss_sub[nea].astype(alleles)
-        chunk[lookup_ea_col]  = chunk[lookup_ea_col].astype(alleles)
+        alleles = pd.CategoricalDtype(categories=list(allele_space), ordered=False)
+        ea_sub = sumstats.loc[pos_idx, ea].astype(alleles)
+        nea_sub = sumstats.loc[pos_idx, nea].astype(alleles)
+        chunk[lookup_ea_col] = chunk[lookup_ea_col].astype(alleles)
         chunk[lookup_nea_col] = chunk[lookup_nea_col].astype(alleles)
 
         # ========================================================================
@@ -1306,11 +1491,11 @@ def _assign_from_lookup(
         # - key_rev: CHR:POS:EA:NEA (reverse orientation, matches if alleles are swapped)
         # This allows us to handle cases where sumstats and lookup have opposite allele orders
         key_fwd = pd.MultiIndex.from_arrays(
-            [ss_sub[chrom], ss_sub[pos], ss_sub[nea], ss_sub[ea]],
+            [sumstats.loc[pos_idx, chrom], sumstats.loc[pos_idx, pos], nea_sub, ea_sub],
             names=[chrom, pos, nea, ea]
         )
         key_rev = pd.MultiIndex.from_arrays(
-            [ss_sub[chrom], ss_sub[pos], ss_sub[ea], ss_sub[nea]],
+            [sumstats.loc[pos_idx, chrom], sumstats.loc[pos_idx, pos], ea_sub, nea_sub],
             names=[chrom, pos, ea, nea]
         )
 
@@ -1356,13 +1541,11 @@ def _assign_from_lookup(
         # ========================================================================
         # Only update rows where annotations are currently missing
         # This prevents overwriting existing annotations
-        missing_mask = sumstats.loc[ss_sub.index, assign_cols].isna().any(axis=1)
-        rows_now = ss_sub.index[missing_mask]
-        
-        # Also identify rows that have matches in lookup (for ALLELE_FLIPPED update)
-        # This includes rows with matches even if annotations are already present
+        missing_mask = sumstats.loc[pos_idx, assign_cols].isna().any(axis=1).to_numpy()
+        rows_now = pos_idx[missing_mask]
+
         has_match = pd.notna(vals_fwd).any(axis=1) | pd.notna(vals_rev).any(axis=1)
-        rows_with_match = ss_sub.index[has_match]
+        rows_with_match = pos_idx[has_match]
         
         # Debug: Count flipped variants in this chunk
         flipped_count = flipped.sum()
@@ -1452,7 +1635,7 @@ def _assign_from_lookup(
             try:
                 os.remove(lookup_table)
                 log.write(f" -Cleaning lookup: {lookup_table}...", verbose=verbose)
-            except:
+            except OSError:
                 pass
 
     # ============================================================================

@@ -25,6 +25,7 @@ def _infer_strand_with_annotation(
     assign_cols: tuple = ("AF",),
     mapper: ChromosomeMapper | None = None,
     threads: int = 6,
+    extract_threads: int | None = None,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
     strip_info: bool = True,
@@ -41,6 +42,7 @@ def _infer_strand_with_annotation(
     daf_tolerance: float = 0.20,
     log: "Log" = Log(),
     verbose: bool = True,
+    log_run_plan: bool = True,
 ) -> pd.DataFrame:
     """
     Annotate summary statistics with reference allele frequency and infer strand orientation.
@@ -206,6 +208,7 @@ def _infer_strand_with_annotation(
         assign_cols=assign_cols,
         mapper=mapper,
         threads=threads,
+        extract_threads=extract_threads,
         chrom=chrom,
         pos=pos,
         ea=ea,
@@ -215,6 +218,7 @@ def _infer_strand_with_annotation(
         strip_info=strip_info,
         verbose=verbose,
         log=log,
+        log_run_plan=log_run_plan,
     )
     
     # Rename annotated column to RAF (if different from source column name)

@@ -83,29 +83,30 @@ def _lambda_GC(insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
         sumstats = sumstats.loc[~sumstats["CHR"].isin(xymt),:]
 
     indata = sumstats[mode].values
-    if len(indata) == 0: 
+    if len(indata) == 0:
         log.write("  -No available variants to use for calculation.", verbose=verbose)
-        return np.nan   
-    if mode=="p" or mode=="P":
-        observedMedianChi2 = sp.stats.chi2.isf(np.nanmedian(indata),1)
-        expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
-        lambdagc=observedMedianChi2/expectedMedianChi2
-        log.write(" -Lambda GC (P mode) at "+ str(1 - level)+ " is"," ","{:.5f}".format(lambdagc), verbose=verbose)
-    elif mode=="mlog10p" or mode=="MLOG10P":
-        observedMedianChi2 = sp.stats.chi2.isf( np.nanmedian(np.power(10,-indata)) ,1)
-        expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
-        lambdagc=observedMedianChi2/expectedMedianChi2
-        log.write(" -Lambda GC (MLOG10P mode) at "+ str(1- level)+ " is"," ","{:.5f}".format(lambdagc), verbose=verbose)
-    elif mode=="z" or mode=="Z":
-        observedMedianChi2 = np.median((indata)**2)
-        expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
-        lambdagc=observedMedianChi2/expectedMedianChi2
-        if verbose:log.write(" -Lambda GC (Z mode) at "+ str(1- level)+ " is"," ","{:.5f}".format(lambdagc), verbose=verbose)
-    elif mode=="chi2" or mode=="CHISQ":
-        observedMedianChi2 = np.median(indata)
-        expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
-        lambdagc=observedMedianChi2/expectedMedianChi2
-        log.write(" -Lambda GC (CHISQ mode) at "+ str(1- level)+ " is"," ","{:.5f}".format(lambdagc), verbose=verbose)
+        return np.nan
+
+    from gwaslab.algorithm.core.genomic_control import (
+        lambda_gc_from_chisq,
+        lambda_gc_from_mlog10p,
+        lambda_gc_from_p,
+        lambda_gc_from_z,
+    )
+
+    if mode in ("p", "P"):
+        lambdagc = lambda_gc_from_p(indata, quantile=level)
+        log.write(" -Lambda GC (P mode) at " + str(1 - level) + " is", " ", "{:.5f}".format(lambdagc), verbose=verbose)
+    elif mode in ("mlog10p", "MLOG10P"):
+        lambdagc = lambda_gc_from_mlog10p(indata, quantile=level)
+        log.write(" -Lambda GC (MLOG10P mode) at " + str(1 - level) + " is", " ", "{:.5f}".format(lambdagc), verbose=verbose)
+    elif mode in ("z", "Z"):
+        lambdagc = lambda_gc_from_z(indata, quantile=level)
+        if verbose:
+            log.write(" -Lambda GC (Z mode) at " + str(1 - level) + " is", " ", "{:.5f}".format(lambdagc), verbose=verbose)
+    elif mode in ("chi2", "CHISQ"):
+        lambdagc = lambda_gc_from_chisq(indata, quantile=level)
+        log.write(" -Lambda GC (CHISQ mode) at " + str(1 - level) + " is", " ", "{:.5f}".format(lambdagc), verbose=verbose)
     else:
         return np.nan
     return lambdagc

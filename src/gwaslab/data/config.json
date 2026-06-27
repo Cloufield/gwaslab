@@ -1,0 +1,185 @@
+{
+    "downloaded": {
+        "1kg_eas_hg19": {
+            "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz",
+            "tbi": {
+                "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi",
+                "url": "https://www.dropbox.com/scl/fi/00bp5tsakihbembxginic/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=l1ci9ovi5bcelmsowl6pjsk8y&dl=1"
+            },
+            "url": "https://www.dropbox.com/scl/fi/ix7f2suqhkrzk7e3pliuk/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=w0fbu1qxjakh4vnwsjpje9nj7&dl=1",
+            "description": "1000 Genomes Project East Asian (1KG EAS) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
+            "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
+            "related_files": "",
+            "md5sum": "6162a93cb80935168c0bfa519748b054"
+        },
+        "ensembl_hg19_gtf": {
+            "local_path": "/home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz",
+            "url": "https://ftp.ensembl.org/pub/grch37/release-87/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz",
+            "description": "Ensembl annotation for hg19 (GRCh37) release 87, providing comprehensive gene models, transcript structures, and functional annotations for the human genome.",
+            "suggested_use": "Gene annotation and functional analysis",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "1kg_hm3_hg19_eaf": {
+            "local_path": "/home/yunye/.gwaslab/PAN.hapmap3.hg19.EAF.tsv.gz",
+            "url": "https://www.dropbox.com/scl/fi/dmv9wtfchv6ahim86d49r/PAN.hapmap3.hg19.EAF.tsv.gz?rlkey=ywne2gj1rlm2nj42q9lt2d99n&dl=1",
+            "description": "1KG HapMap3 hg19 EAF (GRCh37) provides allele frequency estimates for the HapMap3 populations on the hg19 reference genome, derived from 1000 Genomes Project data.",
+            "suggested_use": "Ancestry inference and population structure analysis",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "1kg_hm3_hg38_eaf": {
+            "local_path": "/home/yunye/.gwaslab/PAN.hapmap3.hg38.EAF.tsv.gz",
+            "url": "https://www.dropbox.com/scl/fi/ymkqfsaec6mwjzlvxsm45/PAN.hapmap3.hg38.EAF.tsv.gz?rlkey=p1auef5y1kk7ui41k6j3s8b0z&dl=1",
+            "description": "1KG HapMap3 hg38 EAF",
+            "suggested_use": "",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "eas_ld_scores": {
+            "local_path": "/home/yunye/tools/ldsc/ldscores/eas_ldscores/"
+        },
+        "1kgp_eur": {
+            "local_path": "/home/yunye/.gwaslab/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz",
+            "url": "",
+            "description": "1000 Genomes Project EUR population VCF file with normalized allele frequencies, split variants, and 30x depth coverage, hg38 reference.",
+            "suggested_use": "Used for imputation, fine-mapping, and variant quality control in European ancestry GWAS studies.",
+            "md5sum": "a1b2c3d4e5f67890abcdef1234567890",
+            "format": "vcf",
+            "tbi": {
+                "local_path": "/home/yunye/.gwaslab/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi"
+            }
+        },
+        "1kg_eas_hg38": {
+            "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz",
+            "tbi": {
+                "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi",
+                "url": "https://www.dropbox.com/scl/fi/3z1xnwdbqh4e9x5vkyxxp/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=44v0p4fkmbcfcs9px2n5gdswn&dl=1"
+            },
+            "url": "https://www.dropbox.com/scl/fi/yofz6xi6y7sttudcpaa3z/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=vf767oanqay96n6gd4mri5jry&dl=1",
+            "description": "1000 Genomes Project East Asian (1KG EAS) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
+            "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
+            "related_files": "",
+            "md5sum": "5360451ef7f31cb44471144e427e6cfe"
+        },
+        "refseq_hg38_gtf": {
+            "local_path": "/home/yunye/.gwaslab/GRCh38_latest_genomic.gtf.gz"
+        },
+        "19to38": {
+            "local_path": "/home/yunye/.gwaslab/hg19ToHg38.over.chain.gz",
+            "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz",
+            "description": "LiftOver chain file for converting genomic coordinates from hg19 (GRCh37) to hg38 (GRCh38) reference builds, enabling cross-reference genome analysis.",
+            "suggested_use": "Genome build conversion and coordinate remapping",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "refseq_hg19_gtf": {
+            "local_path": "/home/yunye/.gwaslab/GRCh37_latest_genomic.gtf.gz"
+        },
+        "ucsc_genome_hg19": {
+            "local_path": "/home/yunye/.gwaslab/hg19.fa.gz",
+            "url": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.fa.gz",
+            "description": "UCSC Genome reference sequence on hg19 (GRCh37), providing the complete human genome assembly used for alignment and variant annotation.",
+            "suggested_use": "Reference genome for alignment and annotation",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "ensembl_hg38_gtf": {
+            "local_path": "/home/yunye/.gwaslab/Homo_sapiens.GRCh38.109.chr.gtf.gz"
+        },
+        "ucsc_genome_hg38": {
+            "local_path": "/home/yunye/.gwaslab/hg38.fa.gz"
+        },
+        "1kg_eur_hg19": {
+            "local_path": "/home/yunye/.gwaslab/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz",
+            "tbi": {
+                "local_path": "/home/yunye/.gwaslab/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi",
+                "url": "https://www.dropbox.com/s/vscvkrflh6fc5a0/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1"
+            },
+            "url": "https://www.dropbox.com/s/1nbgqshknevseks/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1",
+            "description": "1000 Genomes Project European (1KG EUR) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EUR population.",
+            "suggested_use": "LD reference panel for creating region plot",
+            "related_files": "",
+            "md5sum": "734069d895009d38c2f962bfbb6fab52"
+        },
+        "dbsnp_hg19_b157": {
+            "local_path": "/home/yunye/CommonData/Reference/dbsnp/ftp.ncbi.nih.gov/snp/archive/b157/VCF/GCF_000001405.25.gz",
+            "url": "",
+            "description": "dbSNP hg19 dataset used for assigning rsID",
+            "suggested_use": "Assigning rsID to variants in GWAS summary statistics",
+            "md5sum": "",
+            "format": "vcf",
+            "tbi": {
+                "local_path": "/home/yunye/CommonData/Reference/dbsnp/ftp.ncbi.nih.gov/snp/archive/b157/VCF/GCF_000001405.25.gz.tbi"
+            }
+        },
+        "plink2_binary_1kg_eas_hg19": {
+            "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz",
+            "description": "1000 Genomes Project East Asian (1KG EAS) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
+            "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
+            "md5sum": null,
+            "format": "vcf",
+            "tbi": {
+                "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi"
+            }
+        },
+        "1kg_eas": {
+            "local_path": "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz",
+            "description": "1000 Genomes Project East Asian (1KG EAS) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
+            "suggested_use": "LD reference for clumping; infer strand for EAS population",
+            "md5sum": null,
+            "format": "vcf"
+        },
+        "recombination_hg38": {
+            "local_path": "/home/yunye/.gwaslab/recombination/hg38/recombination_hg38.tar.gz",
+            "url": "https://www.dropbox.com/s/vuo8mvqx0fpibzj/recombination_hg38.tar.gz?dl=1",
+            "description": "Recombination map for hg38 (GRCh38), providing genetic distance estimates in centimorgans used for linkage disequilibrium and haplotype analysis.",
+            "suggested_use": "Genetic mapping and LD calculations",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "recombination_hg19": {
+            "local_path": "/home/yunye/.gwaslab/recombination/hg19/recombination_hg19.tar.gz",
+            "url": "https://www.dropbox.com/s/wbesl8haxknonuc/recombination_hg19.tar.gz?dl=1",
+            "description": "Recombination map for hg19 (GRCh37), providing genetic distance estimates in centimorgans used for linkage disequilibrium and haplotype analysis.",
+            "suggested_use": "Genetic mapping and LD calculations",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": ""
+        },
+        "1kg_dbsnp151_hg19_auto": {
+            "local_path": "/home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz",
+            "url": "https://www.dropbox.com/s/37p2u1xwmux4gwo/1kg_dbsnp151_hg19_auto.txt.gz?dl=1",
+            "description": "1KG dbSNP151 hg19 auto variants table containing SNP ID, chromosome, position, effect allele, non-effect allele, and rsID mappings for autosomal variants.",
+            "suggested_use": "SNP annotation and rsID mapping",
+            "related_files": "",
+            "tbi": "",
+            "md5sum": "7d1e7624fb6e4df7a2f6f05558d436b4"
+        },
+        "GCST90270929": {
+            "local_path": "/home/yunye/work/github/gwaslab-skills/examples/prompt_2/input/GCST90270929/GCST90270929.h.tsv.gz",
+            "description": "GWAS Catalog summary statistics for GCST90270929",
+            "suggested_use": "Use as external GWAS summary statistics for downstream analyses.",
+            "source": "GWAS Catalog",
+            "url": "https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90270001-GCST90271000/GCST90270929/harmonised/GCST90270929.h.tsv.gz",
+            "format": "tsv.gz",
+            "gcst_id": "GCST90270929",
+            "harmonised_requested": true,
+            "harmonised_downloaded": true,
+            "meta_yaml": {
+                "local_path": "/home/yunye/work/github/gwaslab-skills/examples/prompt_2/input/GCST90270929/GCST90270929.h.tsv.gz-meta.yaml"
+            },
+            "md5_file": {
+                "local_path": "/home/yunye/work/github/gwaslab-skills/examples/prompt_2/input/GCST90270929/md5sum.txt"
+            },
+            "md5sum": "5632c1982bc24ab730315dee6f427d74",
+            "md5_verified": true
+        }
+    }
+}

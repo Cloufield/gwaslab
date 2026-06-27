@@ -859,6 +859,8 @@ def filter_by_maf(sig_list_merged, maf_level, log, verbose):
 
 
 def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose=False):
+    from gwaslab.algorithm.heterogeneity.meta import cochran_q_from_studies
+
     w1="Weight_1"
     w2="Weight_2"
     beta="BETA_FE"
@@ -869,10 +871,13 @@ def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose
     df[w1]=1/(df[se1])**2
     df[w2]=1/(df[se2])**2
     df[beta] =(df[w1]*df[beta1] + df[w2]*df[beta2])/(df[w1]+df[w2])
-    
-    # Cochran(1954)
-    df[q] = df[w1]*(df[beta1]-df[beta])**2 + df[w2]*(df[beta2]-df[beta])**2
-    df[pq] = ss.chi2.sf(df[q], 1)
+
+    q_vals, het_p, i2_vals = cochran_q_from_studies(
+        df[beta1].to_numpy(), df[se1].to_numpy(), df[beta2].to_numpy(), df[se2].to_numpy(),
+    )
+    df[q] = q_vals
+    df[pq] = het_p
+    df[i2] = i2_vals
     df["Edge_color"]="white"
     
     if is_q_mc=="fdr":
@@ -889,45 +894,15 @@ def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose
 
     df.loc[df[pq]<q_level,"Edge_color"]="black"
     df.drop(columns=["Weight_1","Weight_2","BETA_FE"],inplace=True)
-    # Huedo-Medina, T. B., Sánchez-Meca, J., Marín-Martínez, F., & Botella, J. (2006). Assessing heterogeneity in meta-analysis: Q statistic or I² index?. Psychological methods, 11(2), 193.
-    
-    # calculate I2
-    df[i2] = (df[q] - 1)/df[q]
-    df.loc[df[i2]<0,i2] = 0 
     
     return df
 
 def jackknife_r(df,x="EFFECT_1",y="EFFECT_2_aligned"):
-    """Jackknife estimation of se for rsq
+    """Jackknife estimation of se for rsq"""
+    from gwaslab.algorithm.heterogeneity.jackknife import jackknife_correlation_se
 
-    """
-
-    # dropna
     df_nona = df.loc[:,[x,y]].dropna()
-    
-    # non-empty entries
-    n=len(df)
-    
-    # assign row number
-    df_nona["nrow"] = range(n)
-    
-    # a list to store r2
-    r_list=[]
-    
-    # estimate r
-    for i in range(n):
-        # exclude 1 record
-        records_to_use = df_nona["nrow"]!=i
-        # estimate r
-        reg_jackknife = ss.linregress(df_nona.loc[records_to_use, x],df_nona.loc[records_to_use,y])
-        # add r_i to list
-        r_list.append(reg_jackknife[2])
-
-    # convert list to array
-    rs = np.array(r_list)
-    # https://en.wikipedia.org/wiki/Jackknife_resampling
-    r_se = np.sqrt( (n-1)/n * np.sum((rs - np.mean(rs))**2) )
-    return r_se
+    return jackknife_correlation_se(df_nona[x].to_numpy(), df_nona[y].to_numpy())
 
 def drop_duplicate_and_na(df,snpid="SNPID",sort_by=False,log=Log(),ascending=True,verbose=True):
     

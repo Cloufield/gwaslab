@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "src")
-PANELS_DIR = os.path.join(ROOT, "examples", "_development", "panels")
+FIXTURES_DIR = os.path.join(ROOT, "test", "fixtures")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
-if PANELS_DIR not in sys.path:
-    sys.path.insert(0, PANELS_DIR)
+if FIXTURES_DIR not in sys.path:
+    sys.path.insert(0, FIXTURES_DIR)
 
 import gwaslab as gl
 from gwaslab.viz.viz_plot_alphagenome import plot_ag_contact

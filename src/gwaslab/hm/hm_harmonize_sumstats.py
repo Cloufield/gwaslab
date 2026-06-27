@@ -20,6 +20,12 @@ from gwaslab.qc.qc_fix_sumstats import _fix_pos
 from gwaslab.qc.qc_fix_sumstats import _sort_column
 from gwaslab.qc.qc_fix_sumstats import _df_split
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.util.util_in_reference_run import (
+    collect_reference_file_info,
+    detect_compute_profile,
+    estimate_run_plan,
+    RunProgressTracker,
+)
 from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -919,7 +925,10 @@ def _check_ref(
     mapper: Optional['ChromosomeMapper'] = None,
     remove: bool = False,
     verbose: bool = True,
-    log: Log = Log()
+    log: Log = Log(),
+    log_run_plan: bool = True,
+    cpu_tier: Optional[str] = None,
+    storage_profile: Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Check if non-effect allele (NEA) is aligned with reference genome.
@@ -1019,9 +1028,25 @@ def _check_ref(
     
     # Convert chroms_in_sumstats to set for O(1) lookup (compute set directly from unique)
     chroms_in_sumstats_set = set(sumstats[chrom].unique())  # load records from Fasta file only for the chromosomes present in the sumstats
+
+    valid_pos_mask = ~sumstats[pos].isna() & (sumstats[pos] > 0)
+    valid_alleles_mask = ~sumstats[nea].isna() & ~sumstats[ea].isna()
+    to_check_est = int((valid_pos_mask & valid_alleles_mask).sum())
+
+    if log_run_plan:
+        ref_info = collect_reference_file_info(ref_seq, storage_profile=storage_profile)
+        log.log_reference_file_info(ref_info, ref_type="FASTA", verbose=verbose)
+        plan = estimate_run_plan(
+            "fasta_load_check",
+            ref_info=ref_info,
+            chroms_loaded=len(chroms_in_sumstats_set),
+            variants_to_check=to_check_est,
+            cpu_tier=cpu_tier,
+            storage_profile_override=storage_profile,
+        )
+        log.log_run_plan(plan, verbose=verbose)
     
     # Load, filter, and build FASTA records in a single pass for maximum performance
-    # This avoids creating intermediate FastaRecord objects
     record, starting_positions_dict, records_len_dict = load_and_build_fasta_records(
         ref_seq,
         chromlist_set,
@@ -1029,38 +1054,33 @@ def _check_ref(
         mapper=mapper,
         pos_as_dict=True,
         log=log,
-        verbose=verbose
+        verbose=verbose,
     )
 
-    # Early filtering: combine all conditions in one pass
-    # Cache these masks for reuse later in status counting and available_to_check computation
-    valid_pos_mask = ~sumstats[pos].isna() & (sumstats[pos] > 0)
-    valid_alleles_mask = ~sumstats[nea].isna() & ~sumstats[ea].isna()
-    
-    # Track if we actually checked any records
     checked_any_records = False
-    
+
     if len(records_len_dict) > 0:
         log.write(" -Checking records", verbose=verbose)
-        # Convert dict keys to set for faster isin() operation
         all_records_keys_set = set(records_len_dict.keys())
         valid_chrom_mask = sumstats[chrom].isin(all_records_keys_set)
-        
+
         to_check_ref = valid_chrom_mask & valid_pos_mask & valid_alleles_mask
-        
+
         if to_check_ref.any():
-            sumstats_to_check = sumstats.loc[to_check_ref,[chrom,pos,ea,nea,status]]
-            # Pass pre-built records directly to check_status for better performance
-            sumstats.loc[to_check_ref,status] = check_status(
-                sumstats_to_check, 
+            sumstats_to_check = sumstats.loc[to_check_ref, [chrom, pos, ea, nea, status]]
+            sumstats.loc[to_check_ref, status] = check_status(
+                sumstats_to_check,
                 record=record,
                 starting_positions_dict=starting_positions_dict,
                 records_len_dict=records_len_dict,
-                log=log, 
-                verbose=verbose
+                log=log,
+                verbose=verbose,
             )
             checked_any_records = True
-        log.write(" -Finished checking records", verbose=verbose) 
+        log.write(" -Finished checking records", verbose=verbose)
+
+    del record, starting_positions_dict, records_len_dict
+    gc.collect()
     
     # Convert STATUS to integer only if we checked records or need to compute statistics
     # Optimize: check dtype once and convert directly, reuse status_int for digit extraction
@@ -1221,7 +1241,10 @@ def _parallelize_assign_rsid(
     overwrite: str = "empty",
     verbose: bool = True,
     log: Log = Log(),
-    mapper: Optional['ChromosomeMapper'] = None
+    mapper: Optional['ChromosomeMapper'] = None,
+    log_run_plan: bool = True,
+    cpu_tier: Optional[str] = None,
+    storage_profile: Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Assign rsID to variants by matching with reference file.
@@ -1346,14 +1369,38 @@ def _parallelize_assign_rsid(
 
         if to_assign.sum()>0:
             if to_assign.sum()<10000: threads=1
-            #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
+            n_assign = int(to_assign.sum())
+            if log_run_plan:
+                ref_info = collect_reference_file_info(path, storage_profile=storage_profile)
+                log.log_reference_file_info(ref_info, ref_type="VCF", verbose=verbose)
+                plan = estimate_run_plan(
+                    "tabix_vcf_query",
+                    ref_info=ref_info,
+                    threads=threads,
+                    task_count=max(1, threads),
+                    target_variants=n_assign,
+                    cpu_tier=cpu_tier,
+                    storage_profile_override=storage_profile,
+                )
+                log.log_run_plan(plan, verbose=verbose)
             df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
             map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,mapper=mapper)
+            progress = RunProgressTracker(total=len(df_split), label="workers")
             if threads <= 1:
-                assigned_rsid = pd.concat([map_func(chunk) for chunk in df_split])
+                chunks_out = []
+                for chunk in df_split:
+                    chunks_out.append(map_func(chunk))
+                    progress.update("worker")
+                    progress.log_progress(log, verbose=verbose)
+                assigned_rsid = pd.concat(chunks_out)
             else:
                 with Pool(threads) as pool:
-                    assigned_rsid = pd.concat(pool.map(map_func,df_split))
+                    chunks_out = []
+                    for result in pool.imap_unordered(map_func, df_split):
+                        chunks_out.append(result)
+                        progress.update("worker")
+                        progress.log_progress(log, verbose=verbose)
+                assigned_rsid = pd.concat(chunks_out)
             sumstats.loc[to_assign,rsid] = assigned_rsid.values
         gc.collect()
         ##################################################################################################################
@@ -1382,22 +1429,34 @@ def _parallelize_assign_rsid(
         pre_number = (~sumstats[rsid].isna()).sum()
         log.write(" -"+str(to_assign.sum()) +" rsID could be possibly fixed...", verbose=verbose)
         if to_assign.sum()>0:
+            if log_run_plan:
+                ref_info = collect_reference_file_info(path, storage_profile=storage_profile)
+                plan = estimate_run_plan(
+                    "tsv_chunked_scan",
+                    ref_info=ref_info,
+                    target_variants=int(to_assign.sum()),
+                    chunksize=chunksize,
+                    storage_profile_override=storage_profile,
+                )
+                log.log_run_plan(plan, verbose=verbose)
             sumstats = sumstats.set_index(snpid)  
             dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_snpid,ref_rsid],
                               chunksize=chunksize,index_col=ref_snpid,
                               dtype={ref_snpid:"string",ref_rsid:"string"})
 
+            ref_bytes = os.path.getsize(path) if os.path.exists(path) else 0
+            est_blocks = max(1, int(ref_bytes / max(chunksize, 1)) + 1)
+            block_progress = RunProgressTracker(total=est_blocks, label="TSV blocks")
             log.write(" -Setting block size: ",chunksize,verbose=verbose)
-            log.write(" -Loading block: ",end="",verbose=verbose)     
             for i,dic in enumerate(dic_chuncks):
                 gc.collect()
-                log.write(i," ",end=" ",show_time=False)  
+                block_progress.update(f"block {i}")
+                block_progress.log_progress(log, verbose=verbose)
                 dic = dic.rename(index={ref_snpid:snpid})
                 dic = dic.rename(columns={ref_rsid:rsid})  
                 dic = dic.loc[~dic.index.duplicated(keep=False),:]
                 sumstats.update(dic,overwrite=True)
 
-            log.write("\n",end="",show_time=False,verbose=verbose) 
             sumstats = sumstats.reset_index()
             sumstats = sumstats.rename(columns = {'index':snpid})
 
@@ -1667,20 +1726,17 @@ def check_unkonwn_indel_cache(
 
                                                
 def get_reverse_complementary_allele(a: str) -> str:
-    dic = str.maketrans({
-       "A":"T",
-       "T":"A",
-       "C":"G",
-       "G":"C"})
-    return a[::-1].translate(dic)
+    from gwaslab.algorithm.allele.complement import reverse_complement
+    return reverse_complement(a)
                                                  
 def is_palindromic(sumstats: pd.DataFrame, a1: str = "EA", a2: str = "NEA") -> pd.Series:
-    gc= (sumstats[a1]=="G") & (sumstats[a2]=="C")
-    cg= (sumstats[a1]=="C") & (sumstats[a2]=="G")
-    at= (sumstats[a1]=="A") & (sumstats[a2]=="T")
-    ta= (sumstats[a1]=="T") & (sumstats[a2]=="A")
-    palindromic = gc | cg | at | ta 
-    return palindromic
+    from gwaslab.algorithm.allele.palindrome import is_palindromic_alleles
+    return pd.Series(
+        is_palindromic_alleles(sumstats[a1].to_numpy(), sumstats[a2].to_numpy()),
+        index=sumstats.index,
+    )
+
+
 ##################################################################################################################################################
 #single df assignment
 

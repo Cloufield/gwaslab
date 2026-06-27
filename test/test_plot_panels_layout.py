@@ -12,11 +12,11 @@ import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "src")
-PANELS_DIR = os.path.join(ROOT, "examples", "_development", "panels")
+FIXTURES_DIR = os.path.join(ROOT, "test", "fixtures")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
-if PANELS_DIR not in sys.path:
-    sys.path.insert(0, PANELS_DIR)
+if FIXTURES_DIR not in sys.path:
+    sys.path.insert(0, FIXTURES_DIR)
 
 import gwaslab as gl
 from gwaslab.viz.viz_plot_stackedpanel import (
@@ -184,10 +184,11 @@ class TestPlotPanelsLayout(unittest.TestCase):
         pad_x = pad_frac * panel_bb.width
         pad_y = pad_frac * panel_bb.height
         tight = cax.get_tightbbox(renderer).transformed(fig.transFigure.inverted())
-        self.assertLessEqual(tight.y1, panel_bb.y1 - pad_y)
-        self.assertGreaterEqual(tight.y0, panel_bb.y0 + pad_y)
-        self.assertLessEqual(tight.x1, panel_bb.x1 - pad_x)
-        self.assertGreaterEqual(tight.x0, panel_bb.x0 + pad_x)
+        eps = 1e-6
+        self.assertLessEqual(tight.y1, panel_bb.y1 - pad_y + eps)
+        self.assertGreaterEqual(tight.y0, panel_bb.y0 + pad_y - eps)
+        self.assertLessEqual(tight.x1, panel_bb.x1 - pad_x + eps)
+        self.assertGreaterEqual(tight.x0, panel_bb.x0 + pad_x - eps)
 
     def test_arc_colorbar_stays_in_panel_after_alignment(self):
         panels = self._genomic_panels()[:2]

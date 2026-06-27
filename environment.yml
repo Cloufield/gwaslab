@@ -6,7 +6,7 @@ dependencies:
   - pip=24.0
   - jupyter==1.0.0
   - pip:
-      - gwaslab==3.6.3
+      - gwaslab==4.2.0
       - adjusttext==0.8
       - matplotlib>=3.8,<3.9
       - numpy>=1.21.2,<2

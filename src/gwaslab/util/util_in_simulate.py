@@ -17,47 +17,12 @@ import polars as pl
 
 
 # =============================================================================
-# Small math helpers (NO SciPy dependency)
+# Small math helpers (delegates to gwaslab.algorithm.core.simulation)
 # =============================================================================
 
-def _norm_sf(x: np.ndarray) -> np.ndarray:
-    """
-    Survival function of standard normal: sf(x) = P(Z > x), Z~N(0,1)
-
-    sf(x) = 0.5 * erfc(x/sqrt(2))
-    Uses scipy.special.erfc for vectorized computation (much faster than np.vectorize).
-    
-    Handles edge cases:
-    - Very large |x| values to prevent underflow
-    - NaN/Inf inputs
-    """
-    # Clip extreme values to prevent numerical issues
-    # For |x| > 37, erfc is effectively 0 or 1
-    x_clipped = np.clip(x, -37.0, 37.0)
-    result = 0.5 * erfc(x_clipped / sqrt(2.0))
-    # Ensure result is finite
-    result = np.where(np.isfinite(result), result, 0.0)
-    return result
-
-
-def _p_from_z(z: np.ndarray) -> np.ndarray:
-    """
-    Two-sided p-value from Z:
-        P = 2 * sf(|Z|)
-    """
-    return 2.0 * _norm_sf(np.abs(z))
-
-
-def _z_to_mlog10p(z: np.ndarray) -> np.ndarray:
-    """
-    Convert Z-score to -log10(P-value) using log-space for numerical precision.
-    Uses the same approach as util_in_fill_data.py for consistency.
-    """
-    z_arr = np.asarray(z, dtype=np.float64)
-    # Two-sided test: log_pvalue = log(2) + norm.logsf(|z|)
-    log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z_arr))
-    mlog10p = log_pvalue / np.log(10)
-    return -mlog10p
+from gwaslab.algorithm.core.simulation import norm_sf as _norm_sf
+from gwaslab.algorithm.core.simulation import p_from_z as _p_from_z
+from gwaslab.algorithm.core.simulation import z_to_mlog10p as _z_to_mlog10p
 
 
 def _make_blocks_by_bp(pos: np.ndarray, window_bp: int) -> List[Tuple[int, int]]:

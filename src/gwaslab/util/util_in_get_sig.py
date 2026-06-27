@@ -310,17 +310,16 @@ def _collect_leads_generic(
     # Return empty immediately if the input is empty
     if len(df) == 0:
         return []
+    valid_coords = df[chrom].notna() & df[pos].notna()
+    df = df.loc[valid_coords].copy()
+    if len(df) == 0:
+        return []
     # Convert window size from kb to base pairs
     threshold = windowsizekb * 1000
-    # Identify starts of new clusters when chromosome changes
-    # Fill NA with True because first row (where shift() gives NaN) should start a new cluster
-    new_chr = df[chrom].ne(df[chrom].shift()).fillna(True)
-    # Compute position difference within chromosome; reset at new chromosome
-    pos_diff = df[pos].diff().mask(new_chr, 0).fillna(0)
-    # A new cluster starts on chromosome change or if gap exceeds threshold
-    breaks = new_chr | (pos_diff > threshold)
-    # Assign a cluster id by cumulative sum of break flags
-    cluster_id = breaks.cumsum()
+    from gwaslab.algorithm.leads.window import cluster_ids_from_positions
+    cluster_id = cluster_ids_from_positions(
+        df[chrom].to_numpy(), df[pos].to_numpy(), threshold,
+    )
     # Choose the lead index per cluster by maximizing or minimizing the score
     # Check if score_col has any valid (non-NaN) values
     if df[score_col].notna().sum() == 0:

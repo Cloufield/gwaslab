@@ -1567,12 +1567,8 @@ def normalizae_chunk(sumstats: pd.DataFrame, pos: str = "POS", nea: str = "NEA",
 ###############################################################################################################
 # 20220426
 def get_reverse_complementary_allele(a: str) -> str:
-    dic = str.maketrans({
-       "A":"T",
-       "T":"A",
-       "C":"G",
-       "G":"C"})
-    return a[::-1].translate(dic)
+    from gwaslab.algorithm.allele.complement import reverse_complement
+    return reverse_complement(a)
 
 def flip_direction(series: pd.Series) -> pd.Series:
     """

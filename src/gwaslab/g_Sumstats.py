@@ -98,6 +98,10 @@ from gwaslab.util.util_in_get_sig import (
     _check_novel_set,
 )
 from gwaslab.util.util_in_fill_data import _fill_data
+from gwaslab.util.util_in_reference_run import (
+    detect_compute_profile,
+    plan_harmonize_reference_steps,
+)
 from gwaslab.view.view_sumstats import _view_sumstats
 from gwaslab.view.view_report import generate_qc_report
 from gwaslab.util.util_ex_phewwas import _extract_associations
@@ -673,6 +677,7 @@ class Sumstats():
               ref_maf_threshold = 0.4,
               maf_threshold=0.40,
               threads=1,
+              extract_threads=None,
               remove=False,
               check_ref_kwargs={},
               remove_dup_kwargs={},
@@ -687,7 +692,7 @@ class Sumstats():
               sanity_check_stats_kwargs={},
               normalize_allele_kwargs={},
               verbose=True,
-              sweep_mode=False
+              sweep_mode=False,
               ):
         """
         Standard pipeline for harmonizing sumstats including:
@@ -716,6 +721,9 @@ class Sumstats():
             MAF threshold (applied to sumstats) for strand inference
         threads : int, optional
             Number of threads for parallel processing
+        extract_threads : int, optional
+            Worker count for VCF/BCF lookup extraction during infer_strand2 and
+            assign_rsid2 sweep mode. Defaults to 1 inside extract (memory-safe).
         remove : bool, optional
             Whether to remove bad variants during QC
         check_ref_kwargs : dict, optional
@@ -770,18 +778,56 @@ class Sumstats():
             gc.collect()
         
         #####################################################
-        #part 2 : annotating and flipping
-        #    2.1  ref check -> flip allele and allel-specific stats
-        #    2.2  assign rsid
-        #    2.3 infer strand for palindromic SNP
-        #
-        ########## liftover ###############
-        #    3 : liftover by chr and pos to target build  -> reset status
-        ###################################
-        #   3.1 ref check (target build) -> flip allele and allel-specific stats  
-        #   3.2  assign rsid (target build)
-        #   3.2 infer strand for palindromic SNP (target build)
+        # Reference harmonization run plan (before heavy I/O)
+        if ref_seq is not None or ref_infer is not None or ref_rsid_tsv is not None or ref_rsid_vcf is not None:
+            cpu_tier = (
+                assign_rsid_kwargs.get("cpu_tier")
+                or infer_strand_kwargs.get("cpu_tier")
+                or check_ref_kwargs.get("cpu_tier")
+            )
+            storage_profile = (
+                assign_rsid_kwargs.get("storage_profile")
+                or infer_strand_kwargs.get("storage_profile")
+                or check_ref_kwargs.get("storage_profile")
+            )
+            n_rows = len(self.data)
+            chrom_col = "CHR"
+            n_chr = int(self.data[chrom_col].nunique()) if chrom_col in self.data.columns else 22
+
+            self.log.log_compute_profile(
+                detect_compute_profile(cpu_tier=cpu_tier), verbose=verbose
+            )
+            _plan_extract = extract_threads
+            if _plan_extract is None:
+                _plan_extract = infer_strand_kwargs.get("extract_threads") or assign_rsid_kwargs.get("extract_threads")
+            _target_infer = n_rows if (sweep_mode and ref_infer is not None) else max(1, n_rows // 10)
+            ref_plan = plan_harmonize_reference_steps(
+                ref_seq=ref_seq,
+                ref_infer=ref_infer,
+                ref_rsid_vcf=ref_rsid_vcf,
+                ref_rsid_tsv=ref_rsid_tsv,
+                sweep_mode=sweep_mode,
+                threads=threads,
+                extract_threads=_plan_extract,
+                sumstats_rows=n_rows,
+                target_infer=_target_infer,
+                target_rsid=n_rows,
+                variants_check_ref=n_rows,
+                chroms_in_sumstats=n_chr,
+                cpu_tier=cpu_tier,
+                storage_profile=storage_profile,
+            )
+            self.log.log_run_plan(ref_plan, verbose=verbose)
+            check_ref_kwargs.setdefault("log_run_plan", False)
+            infer_strand_kwargs.setdefault("log_run_plan", False)
+            assign_rsid_kwargs.setdefault("log_run_plan", False)
+
+        if extract_threads is not None:
+            infer_strand_kwargs.setdefault("extract_threads", extract_threads)
+            assign_rsid_kwargs.setdefault("extract_threads", extract_threads)
+
         #####################################################
+        #part 2 : annotating and flipping
         if ref_seq is not None:
             check_ref_kwargs = remove_overlapping_kwargs(check_ref_kwargs,{"log", "ref_seq"})
             self.data = _check_ref(self,ref_seq,log=self.log,**check_ref_kwargs)
@@ -793,12 +839,14 @@ class Sumstats():
             gc.collect()
             
         if ref_infer is not None: 
-            infer_strand_kwargs = remove_overlapping_kwargs(infer_strand_kwargs,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","threads","path","assign_cols"})
+            _inf_extract = infer_strand_kwargs.get("extract_threads", extract_threads)
+            infer_strand_kwargs = remove_overlapping_kwargs(infer_strand_kwargs,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","threads","extract_threads","path","assign_cols"})
             if sweep_mode:
                 self.data = _infer_strand_with_annotation(self, 
                                                         path = ref_infer, 
                                                         assign_cols = ref_alt_freq, 
                                                         threads=threads,
+                                                        extract_threads=_inf_extract,
                                                         log=self.log,
                                                         verbose=verbose,
                                                         **infer_strand_kwargs)
@@ -824,7 +872,7 @@ class Sumstats():
         #####################################################
         
         if ref_rsid_tsv is not None:
-            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","log","verbose"})
+            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose"})
             self.data = _parallelize_assign_rsid(self,path=ref_rsid_tsv,ref_mode="tsv",
                                                  threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)
 
@@ -832,10 +880,11 @@ class Sumstats():
             gc.collect()
 
         if ref_rsid_vcf is not None:
-            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","log","verbose"})
+            _rsid_extract = assign_rsid_kwargs.get("extract_threads", extract_threads)
+            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose"})
 
             if sweep_mode:
-                self.data = _assign_rsid(self, path = ref_rsid_vcf, threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)
+                self.data = _assign_rsid(self, path = ref_rsid_vcf, threads=threads, extract_threads=_rsid_extract, log=self.log,verbose=verbose,**assign_rsid_kwargs)
             else:
                 self.data = _parallelize_assign_rsid(self,path=ref_rsid_vcf,ref_mode="vcf",
                                                      threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)   

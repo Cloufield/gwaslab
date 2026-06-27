@@ -52,11 +52,15 @@ def _get_ess(
     
     if type(method) is str:
         if method =="metal":
+            from gwaslab.algorithm.core.ess import metal_effective_sample_size
+
             log.write(" - Method: {} ".format(method), verbose=verbose)
             log.write(" - Referencec: {} ".format("Willer, C. J., Li, Y., & Abecasis, G. R. (2010)"), verbose=verbose)
             log.write(" - Equation: {} ".format(" N_EFF = 4 * N_CASE * N_CONTROL / (N_CASE + N_CONTROL)"), verbose=verbose)
-            # Willer, C. J., Li, Y., & Abecasis, G. R. (2010). METAL: fast and efficient meta-analysis of genomewide association scans. Bioinformatics, 26(17), 2190-2191.
-            sumstats["N_EFF"] =  4 / (1/sumstats["N_CASE"] + 1/sumstats["N_CONTROL"])
+            sumstats["N_EFF"] = metal_effective_sample_size(
+                sumstats["N_CASE"].to_numpy(),
+                sumstats["N_CONTROL"].to_numpy(),
+            )
     else:
         sumstats["N_EFF"] =  method
     return sumstats

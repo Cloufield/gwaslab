@@ -348,29 +348,10 @@ def create_reg_string(reg: Any, r_se_jackknife_string: str) -> str:
     return reg_string
 
 def jackknife_r(df: pd.DataFrame, x: str, y: str, log: Log, verbose: bool) -> float:
-    """Jackknife estimation of se for rsq
-    """
+    """Jackknife estimation of se for rsq"""
+    from gwaslab.algorithm.heterogeneity.jackknife import jackknife_correlation_se
 
-    # dropna
     df_nona = df.loc[:,[x,y]].dropna()
-    # non-empty entries
-    n=len(df)
-    # assign row number
-    df_nona["_NROW"] = range(n)
-    # a list to store r2
-    r_list=[]
-    # estimate r
-    for i in range(n):
-        # exclude 1 record
-        records_to_use = df_nona["_NROW"]!=i
-        # estimate r
-        reg_jackknife = ss.linregress(df_nona.loc[records_to_use, x],df_nona.loc[records_to_use,y])
-        # add r_i to list
-        r_list.append(reg_jackknife[2])
-
-    # convert list to array
-    rs = np.array(r_list)
-    # https://en.wikipedia.org/wiki/Jackknife_resampling
-    r_se = np.sqrt( (n-1)/n * np.sum((rs - np.mean(rs))**2) )
+    r_se = jackknife_correlation_se(df_nona[x].to_numpy(), df_nona[y].to_numpy())
     log.write(" -R se (jackknife) = {:.2e}".format(r_se), verbose=verbose)
     return r_se

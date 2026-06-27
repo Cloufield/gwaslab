@@ -1,0 +1,2 @@
+7	havana	gene	126500000	126550000	.	+	.	gene_id "ENSG00000100001"; gene_name "DEMOGENE1"; gene_biotype "protein_coding";
+7	havana	gene	127200000	127250000	.	-	.	gene_id "ENSG00000100002"; gene_name "DEMOGENE2"; gene_biotype "protein_coding";

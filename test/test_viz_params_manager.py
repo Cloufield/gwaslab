@@ -1098,79 +1098,49 @@ class TestRegistryVsArgsPriority(unittest.TestCase):
         2. Args are loaded next (Update Layer)
         3. Args update the registry (overwrite defaults)
         """
-        registry_file = "src/gwaslab/viz/viz_aux_params_registry.txt"
-        args_file = "src/gwaslab/viz/viz_aux_params.txt"
-        
-        # Backup existing files if they exist
-        backup_registry = None
-        backup_args = None
-        
-        if os.path.exists(registry_file):
-            with open(registry_file, 'r') as f:
-                backup_registry = f.read()
-                
-        if os.path.exists(args_file):
-            with open(args_file, 'r') as f:
-                backup_args = f.read()
-        
-        try:
-            # 1. Create dummy registry
-            registry_content = {
-                "registry": {
-                    "plot_test": {
-                        "allowed": ["reg_arg"],
-                        "defaults": {"reg_arg": "reg_val", "shared_arg": "reg_shared"}
-                    }
+        import tempfile
+
+        registry_content = {
+            "registry": {
+                "plot_test": {
+                    "allowed": ["reg_arg"],
+                    "defaults": {"reg_arg": "reg_val", "shared_arg": "reg_shared"},
                 }
             }
-            os.makedirs(os.path.dirname(registry_file), exist_ok=True)
-            with open(registry_file, 'w') as f:
-                json.dump(registry_content, f)
-                
-            # 2. Create dummy args
-            args_content = {
-                "args": {
-                    "args_arg": {
-                        "plots": ["plot_test"],
-                        "default": "args_val"
-                    },
-                    "shared_arg": {
-                        "plots": ["plot_test"],
-                        "default": "args_shared"  # Should overwrite reg_shared
-                    }
-                }
+        }
+        args_content = {
+            "args": {
+                "args_arg": {
+                    "plots": ["plot_test"],
+                    "default": "args_val",
+                },
+                "shared_arg": {
+                    "plots": ["plot_test"],
+                    "default": "args_shared",
+                },
             }
-            os.makedirs(os.path.dirname(args_file), exist_ok=True)
-            with open(args_file, 'w') as f:
-                json.dump(args_content, f)
-                
-            # 3. Load config
-            load_viz_config(self.pm, path=args_file)
-            
-            # 4. Verify
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            args_path = os.path.join(tmpdir, "viz_aux_params.txt")
+            with open(args_path, "w", encoding="utf-8") as handle:
+                json.dump(args_content, handle)
+
+            def side_effect(filename, *args, **kwargs):
+                if str(filename) == args_path:
+                    return mock_open(read_data=json.dumps(args_content)).return_value
+                if "viz_aux_params_registry.txt" in str(filename):
+                    return mock_open(read_data=json.dumps(registry_content)).return_value
+                return mock_open()()
+
+            with patch("builtins.open", side_effect=side_effect):
+                with patch("gwaslab.viz.viz_aux_params.os.path.exists", return_value=True):
+                    load_viz_config(self.pm, path=args_path)
+
             defaults = self.pm.defaults("plot_test")
-            
-            # Registry-only arg should be present
             self.assertEqual(defaults.get("reg_arg"), "reg_val")
-            
-            # Args-only arg should be present
             self.assertEqual(defaults.get("args_arg"), "args_val")
-            
-            # Shared arg should be overwritten by args (Update Layer)
             self.assertEqual(defaults.get("shared_arg"), "args_shared")
-        finally:
-            # Restore files
-            if backup_registry:
-                with open(registry_file, 'w') as f:
-                    f.write(backup_registry)
-            elif os.path.exists(registry_file):
-                os.remove(registry_file)
-                
-            if backup_args:
-                with open(args_file, 'w') as f:
-                    f.write(backup_args)
-            elif os.path.exists(args_file):
-                os.remove(args_file)
     
     def test_load_config_no_plots(self):
         """Test that no_plots from config file is correctly loaded and applied."""

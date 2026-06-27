@@ -1,57 +1,20 @@
-from typing import Union, Tuple, Optional
+from typing import Optional, Tuple, Union
 import numpy as np
 from scipy.stats import norm
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.algorithm.core.h2 import (
+    h2_obs_to_liab as _h2_obs_to_liab,
+    h2_se_to_p,
+    per_snp_r2_from_se,
+    per_snp_r2_quantitative,
+    population_allele_frequency as get_population_allele_frequency,
+)
+
 
 def h2_obs_to_liab(h2_obs: float, P: float, K: float, se_obs: Optional[float] = None) -> Union[float, Tuple[float, float]]:
-    '''
-    Adopted from ldsc
-    Reference:
-    Estimating Missing Heritability for Disease from Genome-wide Association Studies
-    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/
-    
-    Converts heritability on the observed scale in an ascertained sample to heritability
-    on the liability scale in the population.
-    Parameters
-    ----------
-    h2_obs : float
-        Heritability on the observed scale in an ascertained sample.
-    P : float in (0,1)
-        Prevalence of the phenotype in the sample.
-    K : float in (0,1)
-        Prevalence of the phenotype in the population.
-    se_obe:float
-        se of h2_obs
-    '''
-    
-    if np.isnan(P) and np.isnan(K):
-        return h2_obs
-    if K <= 0 or K >= 1:
-        raise ValueError('K must be in the range (0,1)')
-    if P <= 0 or P >= 1:
-        raise ValueError('P must be in the range (0,1)')
-    
-    # the fraction of y that is larger than t is K
-    t = norm.isf(K)
-    #z the height of the normal curve at point t
-    z = norm.pdf(t)
-    #Equation 23
-    numerator= K**2 * (1-K)**2
-    denominator= P*(1-P) * z**2
-    conversion_factor = numerator/denominator
-    
-    if se_obs:
-        se_lia = conversion_factor * se_obs
-    if se_obs:
-        return h2_obs * conversion_factor, se_lia
-    return h2_obs * conversion_factor
-
-def h2_se_to_p(h2: float, se: float) -> float:
-    """Convert heritability and standard error to p-value."""
-    z = h2 / se
-    return norm.sf(abs(z))
-    
+    """Convert observed-scale h2 to liability scale (delegates to ``gwaslab.algorithm``)."""
+    return _h2_obs_to_liab(h2_obs, p_sample=P, k_pop=K, se_obs=se_obs)
 
 from typing import TYPE_CHECKING
 import pandas as pd
@@ -144,11 +107,17 @@ def _get_per_snp_r2(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
             
             if type(vary) is int or type(vary) is float:
                 log.write(" -Var(y) is provided: {}...".format(vary), verbose=verbose)
-                sumstats["SNPR2"] = sumstats["_VAR(BETAX)"] / vary
+                sumstats["SNPR2"] = per_snp_r2_quantitative(
+                    sumstats[beta].to_numpy(), sumstats[af].to_numpy(), float(vary),
+                )
             elif vary=="se":
                 log.write(" -Var(y) is estimated from VAR(BETA * X), N, MAF, SE: {}...".format(vary), verbose=verbose)
-                sumstats["_SIGMA2"] = sumstats[se]**2 * 2*(sumstats[n])*sumstats[af]*(1-sumstats[af])
-                sumstats["SNPR2"] = sumstats["_VAR(BETAX)"] / (sumstats["_SIGMA2"] + sumstats["_VAR(BETAX)"]) 
+                sumstats["SNPR2"] = per_snp_r2_from_se(
+                    sumstats[beta].to_numpy(),
+                    sumstats[se].to_numpy(),
+                    sumstats[n].to_numpy(),
+                    sumstats[af].to_numpy(),
+                )
         else:
             log.warning("Not enough information for calculation.")
     
@@ -181,36 +150,3 @@ def _get_per_snp_r2(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
         
     log.write("Finished calculating per-SNP heritability!", verbose=verbose)
     return sumstats
-def get_population_allele_frequency(af: float, prop: float, odds_ratio: float, prevalence: float, eps: float = 1e-15) -> float:
-    #OR = (a × d)/(b × c)
-
-    #https://stats.stackexchange.com/questions/241384/how-to-derive-2x2-cell-counts-from-contingency-table-margins-and-the-odds-ratio
-    
-    # ax2 + bx + c = 0 -> sovle x
-
-    a = odds_ratio - 1 
-    b = (af+prop)*(1-odds_ratio)-1
-    c = odds_ratio*af*prop
-
-    d = (b**2) - (4*a*c)
-    sol1 = (-b-np.sqrt(d))/(2*a)
-    sol2 = (-b+np.sqrt(d))/(2*a) 
-    
-    for i in [sol1, sol2]:
-        #             case    control      Total
-        #  allele1     a        b            af
-        #  allele2     c        d            1- af
-        #   total     prop      1-prop       1
-
-        a = sol1      # AF case allele1
-        c = prop-a    # AF case allele2
-        b = af-a      # AF control allele1
-        d = 1+a-af-prop # AF control allele2
-        
-        if min([a,b,c,d])>=0:
-            af_case = a / (a+c)
-            af_control = b / (b+d)
-            pop_af = af_case*prevalence + (1-prevalence )*af_control
-            return pop_af
-    else:
-        return np.nan

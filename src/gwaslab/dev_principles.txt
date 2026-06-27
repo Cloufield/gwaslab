@@ -160,3 +160,10 @@
   - `tempfile.mkdtemp()` for directories (with prefix/suffix)
   - `tempfile.NamedTemporaryFile()` or `tempfile.mkstemp()` for files
   - Ensure proper cleanup (context managers or try/finally blocks)
+
+## Algorithm layer
+
+- Pure GWAS calculations live under `src/gwaslab/algorithm/` (numpy/scipy only).
+- `util_in_*`, `qc/`, `hm/`, and `viz/` orchestrate DataFrames, logging, and I/O; they delegate math to `algorithm/`.
+- Large third-party tool ports remain in `extension/` (LDSC, MR, MTAG, etc.).
+- New code under `gwaslab/algorithm/` must follow `algorithm/STYLE.md` (NumPy docstrings, type hints, References).

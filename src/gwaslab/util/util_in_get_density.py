@@ -4,6 +4,11 @@ import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 import gc
+from gwaslab.algorithm.density.signal import (
+    density_all_variants,
+    density_from_signals,
+    density_summary,
+)
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
@@ -91,7 +96,6 @@ def _get_signal_density2(
         
         # Initialize density to 0 for all variants
         densities = pd.Series(0, index=sumstats.index, dtype="Int32")
-        counter = 0
         
         # For each significant variant, count how many variants in insumstats are within window
         for chrom_i, sig_chr in sig_sumstats.loc[sig_valid_mask, :].groupby(chrom, sort=False):
@@ -107,31 +111,13 @@ def _get_signal_density2(
             chr_data = sumstats.loc[chr_mask, :]
             chr_positions = chr_data[pos].to_numpy()
             sig_positions = sig_chr_valid[pos].to_numpy()
-            
-            # For each significant variant, find all variants within window
-            for sig_pos in sig_positions:
-                counter += 1
-                # Find variants within window: [sig_pos - wsize, sig_pos + wsize]
-                left_idx = np.searchsorted(chr_positions, sig_pos - wsize, side="left")
-                right_idx = np.searchsorted(chr_positions, sig_pos + wsize, side="right")
-                # Increment density for variants in this window
-                chr_indices = chr_data.index[left_idx:right_idx]
-                densities.loc[chr_indices] += 1
-                
-                if counter % 1000 == 0:
-                    log.write(f" -Processed {counter//1000}k signals", verbose=verbose)
-                    gc.collect()
+            density_chr = density_from_signals(chr_positions, sig_positions, wsize)
+            densities.loc[chr_data.index] = density_chr
     else:
-        # Original behavior: calculate density based on all variants
         for chrom_i, df_chr in sumstats.loc[valid_mask, :].groupby(chrom, sort=False):
             df_chr_valid = df_chr.loc[df_chr[pos].notna(), :]
             positions = df_chr_valid[pos].to_numpy()
-            # Use searchsorted to find right edges efficiently
-            # For each variant, find the rightmost index within +window
-            right_idx = np.searchsorted(positions, positions + wsize, side="right")
-            left_idx = np.searchsorted(positions, positions - wsize, side="left")
-            # Count how many fall within window (excluding itself)
-            density_chr = (right_idx - left_idx - 1).astype(np.int32)
+            density_chr = density_all_variants(positions, wsize)
             densities[df_chr_valid.index] = density_chr
 
     sumstats["DENSITY"] = densities

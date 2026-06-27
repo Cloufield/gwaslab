@@ -34,12 +34,8 @@ if TYPE_CHECKING:
 ###############################################################################################################
 # 20220426
 def get_reverse_complementary_allele(a):
-    dic = str.maketrans({
-       "A":"T",
-       "T":"A",
-       "C":"G",
-       "G":"C"})
-    return a[::-1].translate(dic)
+    from gwaslab.algorithm.allele.complement import reverse_complement
+    return reverse_complement(a)
 
 def flip_direction(string):
     flipped_string=""

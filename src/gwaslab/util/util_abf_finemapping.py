@@ -8,8 +8,7 @@ from gwaslab.util.util_in_filter_value import _get_flanking_by_id
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
-# Calculate PIP based on approximate Bayesian factor (ABF)
-# Wakefield, J. A bayesian measure of the probability of false discovery in genetic epidemiology studies. Am J Hum Genet 81, 208–227 (2007).
+from gwaslab.algorithm.finemapping.abf import log_abf_from_summary, pip_from_log_abf
 
 
 def calc_abf(
@@ -19,26 +18,16 @@ def calc_abf(
     verbose: bool = True,
     **kwargs: Any
 ) -> pd.DataFrame:
-
-
-
-    log.write("Start to calculate approximate Bayesian factor for {} variants".format(len(insumstats)),verbose=verbose)
-    log.write(" - Reference: akefield, J. A bayesian measure of the probability of false discovery in genetic epidemiology studies. Am J Hum Genet 81, 208–227 (2007).",verbose=verbose)
-    log.write(" - Priors for the standard deviation W of the effect size parameter β : {} ".format(w),verbose=verbose)
-    # binary -> w=0.2
-    # quant  -> w=0.15
-    omega = w**2
-    se = insumstats["SE"]
-    v = se**2
-    r = omega / (omega+v)
-    beta = insumstats["BETA"]
-    z = beta/se
+    log.write("Start to calculate approximate Bayesian factor for {} variants".format(len(insumstats)), verbose=verbose)
+    log.write(" - Priors for the standard deviation W of the effect size parameter β : {} ".format(w), verbose=verbose)
     insumstats = insumstats.copy()
-
-    # (6) ABF -> reciprocal
-    insumstats.loc[:, "log_ABF"] = 1/2* (np.log(1-r) + (r * z**2))
-    
+    insumstats.loc[:, "log_ABF"] = log_abf_from_summary(
+        insumstats["BETA"].to_numpy(),
+        insumstats["SE"].to_numpy(),
+        w=w,
+    )
     return insumstats
+
 
 def calc_PIP(
     insumstats: pd.DataFrame,
@@ -46,14 +35,10 @@ def calc_PIP(
     verbose: bool = True,
     **kwargs: Any
 ) -> pd.DataFrame:
-    # Calculate the logarithmic sum of each ABF to find the logarithm of total_abf
-    log_total_abf = np.log(np.sum(np.exp(insumstats["log_ABF"] - np.max(insumstats["log_ABF"])))) + np.max(insumstats["log_ABF"])
     insumstats = insumstats.copy()
-    log.write("Start to calculate PIP for {} variants".format(len(insumstats)),verbose=verbose)
-    # Calculate PIP on a logarithmic scale by subtracting log_total_abf from each log_abf
-    insumstats.loc[:, "log_PIP"] = insumstats['log_ABF'] - log_total_abf
-    # Convert PIP on logarithmic scale to exponential and back to normal scale
-    insumstats.loc[:, "PIP"] = np.exp(insumstats['log_PIP'])
+    log.write("Start to calculate PIP for {} variants".format(len(insumstats)), verbose=verbose)
+    insumstats.loc[:, "PIP"] = pip_from_log_abf(insumstats["log_ABF"].to_numpy())
+    insumstats.loc[:, "log_PIP"] = np.log(insumstats["PIP"].clip(lower=np.finfo(float).tiny))
     return insumstats
 
 def _abf_finemapping(

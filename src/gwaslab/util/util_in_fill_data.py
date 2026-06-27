@@ -9,7 +9,8 @@ import gc
 #from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.info.g_version import _get_version
 from gwaslab.qc.qc_check_datatype import check_datatype
-from scipy.special import erfcinv
+from gwaslab.algorithm._compat import map_array_func
+from gwaslab.algorithm.core import conversions as _conv
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
@@ -466,246 +467,75 @@ def _log_round_results(
 ###Base functions########################################################################################
 
 def _convert_betase_to_z(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA/SE to Z-score."""
-    if isinstance(beta, pd.Series):
-        result = beta / se
-        return result
-    else:
-        beta_arr = np.asarray(beta, dtype=np.float64)
-        se_arr = np.asarray(se, dtype=np.float64)
-        result = beta_arr / se_arr
-        # Return scalar if both inputs were scalars
-        if isinstance(beta, (int, float)) and isinstance(se, (int, float)):
-            return float(result)
-        return result 
+    return map_array_func(_conv.betase_to_z, beta, se)
+
 
 def _convert_betase_to_p(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA/SE to P-value."""
-    # Convert to numpy arrays for computation
-    if isinstance(beta, pd.Series):
-        beta_arr = np.asarray(beta, dtype=np.float64)
-        se_arr = np.asarray(se, dtype=np.float64)
-        index = beta.index
-    else:
-        beta_arr = np.asarray(beta, dtype=np.float64)
-        se_arr = np.asarray(se, dtype=np.float64)
-        index = None
-    
-    # Handle division by zero and NaN cases
-    with np.errstate(divide='ignore', invalid='ignore'):
-        z_arr = beta_arr / se_arr
-    
-    # Convert z to p using vectorized norm.sf (faster than chi2.sf)
-    # For two-sided test: chi2.sf(z^2, 1) = 2 * norm.sf(abs(z))
-    p_arr = 2 * norm.sf(np.abs(z_arr))
-    
-    # Preserve input type
-    if isinstance(beta, pd.Series):
-        return pd.Series(p_arr, index=index, dtype=np.float64)
-    elif isinstance(beta, (int, float)) and isinstance(se, (int, float)):
-        return float(p_arr)
-    else:
-        return p_arr
+    return map_array_func(_conv.betase_to_p, beta, se)
+
 
 def _convert_betase_to_mlog10p(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA/SE to -log10(P-value)."""
-    z = _convert_betase_to_z(beta, se)
-    mlog10p = _convert_z_to_mlog10p(z)
-    return mlog10p
+    return map_array_func(_conv.betase_to_mlog10p, beta, se)
+
 
 def _convert_p_to_chisq(p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert P-value to chi-square statistic."""
-    if isinstance(p, pd.Series):
-        result = ss.chi2.isf(p, 1)
-        return result
-    else:
-        result = ss.chi2.isf(p, 1)
-        # Return scalar if input was scalar
-        if isinstance(p, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.p_to_chisq, p)
+
 
 def _convert_z_to_chisq(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert Z-score to chi-square statistic."""
-    if isinstance(z, pd.Series):
-        result = z ** 2
-        return result
-    else:
-        result = np.asarray(z) ** 2
-        # Return scalar if input was scalar
-        if isinstance(z, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.z_to_chisq, z)
+
 
 def _convert_z_to_p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert Z-score to P-value."""
-    # Performance optimization: Use norm.sf directly (faster than chi2.sf)
-    # For two-sided test: chi2.sf(z^2, 1) = 2 * norm.sf(abs(z))
-    if isinstance(z, pd.Series):
-        z_arr = np.asarray(z, dtype=np.float64)
-        p_arr = 2 * norm.sf(np.abs(z_arr))
-        return pd.Series(p_arr, index=z.index, dtype=np.float64)
-    else:
-        z_arr = np.asarray(z, dtype=np.float64)
-        result = 2 * norm.sf(np.abs(z_arr))
-        # Return scalar if input was scalar
-        if isinstance(z, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result 
+    return map_array_func(_conv.z_to_p, z)
+
 
 def _convert_z_to_mlog10p(z: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert Z-score to -log10(P-value)."""
-    if isinstance(z, pd.Series):
-        z_arr = np.asarray(z, dtype=np.float64)
-        log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z_arr))  # two-sided
-        mlog10p = log_pvalue / np.log(10)
-        return pd.Series(-mlog10p, index=z.index, dtype=np.float64)
-    else:
-        z_arr = np.asarray(z, dtype=np.float64)
-        log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z_arr))  # two-sided
-        mlog10p = log_pvalue / np.log(10)
-        result = -mlog10p
-        # Return scalar if input was scalar
-        if isinstance(z, (int, float)):
-            return float(result)
-        return result 
+    return map_array_func(_conv.z_to_mlog10p, z)
+
 
 def _convert_chisq_to_p(chisq: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert chi-square statistic to P-value."""
-    if isinstance(chisq, pd.Series):
-        result = ss.chi2.sf(chisq, 1)
-        return result
-    else:
-        result = ss.chi2.sf(chisq, 1)
-        # Return scalar if input was scalar
-        if isinstance(chisq, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.chisq_to_p, chisq)
+
 
 def _convert_mlog10p_to_p(mlog10p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert -log10(P-value) to P-value."""
-    if isinstance(mlog10p, pd.Series):
-        result = np.power(10, -mlog10p)
-        return result
-    else:
-        result = np.power(10, -mlog10p)
-        # Return scalar if input was scalar
-        if isinstance(mlog10p, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.mlog10p_to_p, mlog10p)
+
 
 def _convert_p_to_mlog10p(p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert P-value to -log10(P-value)."""
-    if isinstance(p, pd.Series):
-        result = -np.log10(p)
-        return result
-    else:
-        result = -np.log10(p)
-        # Return scalar if input was scalar
-        if isinstance(p, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result 
+    return map_array_func(_conv.p_to_mlog10p, p)
+
 
 def _convert_or_to_beta(OR: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert Odds Ratio to BETA (log-odds)."""
-    if isinstance(OR, pd.Series):
-        result = np.log(OR)
-        return result
-    else:
-        result = np.log(OR)
-        # Return scalar if input was scalar
-        if isinstance(OR, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result  
+    return map_array_func(_conv.or_to_beta, OR)
+
 
 def _convert_beta_to_or(beta: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA (log-odds) to Odds Ratio."""
-    if isinstance(beta, pd.Series):
-        result = np.exp(beta)
-        return result
-    else:
-        result = np.exp(beta)
-        # Return scalar if input was scalar
-        if isinstance(beta, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.beta_to_or, beta)
+
 
 def _convert_betase_to_or_95l(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA/SE to OR_95L (lower bound of 95% confidence interval)."""
-    z_critical = ss.norm.ppf(0.975)
-    if isinstance(beta, pd.Series):
-        result = np.exp(beta - z_critical * se)
-        return result
-    else:
-        result = np.exp(beta - z_critical * se)
-        # Return scalar if both inputs were scalars
-        if isinstance(beta, (int, float)) and isinstance(se, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.betase_to_or_95l, beta, se)
+
 
 def _convert_betase_to_or_95u(beta: Union[pd.Series, np.ndarray, float], se: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA/SE to OR_95U (upper bound of 95% confidence interval)."""
-    z_critical = ss.norm.ppf(0.975)
-    if isinstance(beta, pd.Series):
-        result = np.exp(beta + z_critical * se)
-        return result
-    else:
-        result = np.exp(beta + z_critical * se)
-        # Return scalar if both inputs were scalars
-        if isinstance(beta, (int, float)) and isinstance(se, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.betase_to_or_95u, beta, se)
+
 
 def _convert_betap_to_se(beta: Union[pd.Series, np.ndarray, float], p: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert BETA/P to SE."""
-    abs_z = np.sqrt(2) * erfcinv(p)
-    if isinstance(beta, pd.Series):
-        result = np.abs(beta / abs_z)
-        return result
-    else:
-        result = np.abs(beta / abs_z)
-        # Return scalar if both inputs were scalars
-        if isinstance(beta, (int, float)) and isinstance(p, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.betap_to_se, beta, p)
+
 
 def _convert_or_or95u_to_se(or_val: Union[pd.Series, np.ndarray, float], or_95u: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert OR/OR_95U to SE."""
-    z_critical = ss.norm.ppf(0.975)
-    if isinstance(or_val, pd.Series):
-        result = (np.log(or_95u) - np.log(or_val)) / z_critical
-        return result
-    else:
-        result = (np.log(or_95u) - np.log(or_val)) / z_critical
-        # Return scalar if both inputs were scalars
-        if isinstance(or_val, (int, float)) and isinstance(or_95u, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.or_or95u_to_se, or_val, or_95u)
+
 
 def _convert_or_or95l_to_se(or_val: Union[pd.Series, np.ndarray, float], or_95l: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert OR/OR_95L to SE."""
-    z_critical = ss.norm.ppf(0.975)
-    if isinstance(or_val, pd.Series):
-        result = (np.log(or_val) - np.log(or_95l)) / z_critical
-        return result
-    else:
-        result = (np.log(or_val) - np.log(or_95l)) / z_critical
-        # Return scalar if both inputs were scalars
-        if isinstance(or_val, (int, float)) and isinstance(or_95l, (int, float)):
-            return float(result) if hasattr(result, '__len__') else float(result)
-        return result
+    return map_array_func(_conv.or_or95l_to_se, or_val, or_95l)
+
 
 def _convert_eaf_to_maf(eaf: Union[pd.Series, np.ndarray, float]) -> Union[pd.Series, np.ndarray, float]:
-    """Convert EAF (Effect Allele Frequency) to MAF (Minor Allele Frequency)."""
-    if isinstance(eaf, pd.Series):
-        # Use np.minimum for consistency and performance (handles NaN automatically)
-        maf_series = pd.Series(np.minimum(eaf.values, 1 - eaf.values), index=eaf.index)
-        return maf_series
-    else:
-        # Handle scalar or array
-        eaf_arr = np.asarray(eaf)
-        maf_arr = np.minimum(eaf_arr, 1 - eaf_arr)
-        return maf_arr
+    return map_array_func(_conv.eaf_to_maf, eaf)
 
 def rank_based_int(series: pd.Series, c: float = 3/8) -> pd.Series:
     """

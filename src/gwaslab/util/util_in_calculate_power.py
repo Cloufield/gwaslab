@@ -91,6 +91,8 @@ def get_power(
         log.write("  -Significance level: {}".format(sig_level), verbose=verbose)
         
         # Skol, A. D., Scott, L. J., Abecasis, G. R., & Boehnke, M. (2006). Joint analysis is more efficient than replication-based analysis for two-stage genome-wide association studies. Nature genetics, 38(2), 209-213.
+        from gwaslab.algorithm.core.power import or_to_rr, power_binary
+
         aaf = daf**2
         abf = 2 * (daf) * (1 - daf)
         bbf = (1- daf)**2
@@ -103,8 +105,7 @@ def get_power(
             else:
                 if genotype_or is None:
                     genotype_or = np.exp(beta)
-                genotype_rr = genotype_or/ ((1-prevalence)+(genotype_or*prevalence))
-                # https://jamanetwork.com/journals/jama/fullarticle/188182
+                genotype_rr = or_to_rr(genotype_or, prevalence)
         
             if or_to_rr ==False:
                 log.write(" -Alogorithm: Skol, Andrew D., et al. Nature genetics 38.2 (2006): 209-213....", verbose=verbose)
@@ -124,27 +125,19 @@ def get_power(
         log.write(" - Individuals with AB genotype: {}".format(abp), verbose=verbose)
         log.write(" - Individuals with BB genotype: {}".format(bbp), verbose=verbose)
         
-        pcase= (aap * aaf + abp * abf*0.5) / prevalence
-        pcontrol=((1-aap )* aaf + (1-abp )* abf*0.5) / (1 - prevalence)
-
-        vcase = pcase *(1-pcase)
-        vcontrol =pcontrol *(1-pcontrol)
-        log.write("Expected risk allele frequency:", verbose=verbose)
-        log.write(" - In cases: {}".format(pcase), verbose=verbose)
-        log.write(" - In controls: {}".format(pcontrol), verbose=verbose)
-
-        num= (pcase - pcontrol)
-        for_sqrt = (vcase/ncase +  vcontrol/ncontrol)*0.5
-        if np.iterable(for_sqrt):
-            for_sqrt[for_sqrt < 0] = np.nan
-        den= np.sqrt( for_sqrt )
-        u = num / den
-
-        c = ss.norm.isf(sig_level/2)
-        power = 1 - ss.norm.cdf(c-u) + ss.norm.cdf(-c-u)
+        power = power_binary(
+            genotype_rr=genotype_rr,
+            daf=daf,
+            ncase=ncase,
+            ncontrol=ncontrol,
+            prevalence=prevalence,
+            sig_level=sig_level,
+        )
         log.write("Expected power: {}".format(power), verbose=verbose)
 
     elif mode=="q":
+        from gwaslab.algorithm.core.power import power_quantitative
+
         if beta is None:
             beta = 0.1
 
@@ -154,9 +147,7 @@ def get_power(
         log.write("  -BETA: {}".format(beta), verbose=verbose)
         log.write("  -N: {}".format(n), verbose=verbose)
         log.write("  -SNPR2: {}".format(2*eaf*(1-eaf)*(beta**2)), verbose=verbose)
-        c = ss.chi2.isf(sig_level,df=1)
-        NCP = n * 2*eaf*(1-eaf)*(beta**2)/vary
-        power = 1 - ss.ncx2.cdf(c, df=1, nc=NCP)
+        power = power_quantitative(beta=beta, eaf=eaf, n=n, sig_level=sig_level, phenotypic_variance=vary)
     log.write("Finished calculating statistical power.", verbose=verbose)
     return power
 

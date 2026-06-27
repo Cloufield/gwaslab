@@ -518,11 +518,8 @@ def _simple_meta_analysis(
     """
     # Calculate weights (inverse variance)
     weights = 1 / (se ** 2)
-    total_weight = weights.sum()
-    
-    # Fixed effect estimate
-    beta_fixed = (beta * weights).sum() / total_weight
-    se_fixed = np.sqrt(1 / total_weight)
+    from gwaslab.algorithm.heterogeneity.meta import fixed_effect_meta
+    beta_fixed, se_fixed, _, _ = fixed_effect_meta(np.asarray(beta, float), np.asarray(se, float))
     
     # Create summary DataFrame
     results = []

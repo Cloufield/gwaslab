@@ -3,6 +3,7 @@ import pandas as pd
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_ancestry_ref import resolve_ancestry_af
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.algorithm.population.fst import fst_from_allele_frequencies as calculate_fst
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
@@ -127,31 +128,3 @@ def _infer_ancestry(
     closest_ancestry = mean_fst.idxmin()
     log.write("Finished inferring ancestry.", verbose=verbose)
     return closest_ancestry.split("_")[1]
-
-def calculate_fst(p_1: float, p_2: float) -> float:
-    # https://bios1140.github.io/understanding-fst-the-fixation-index.html
-    # calculate q1 and q2
-    q_1 = 1 - p_1
-    q_2 = 1 - p_2
-
-    # calculate total allele frequency
-    p_t = (p_1 + p_2)/2
-    q_t = 1 - p_t
-
-    # calculate expected heterozygosity
-    # first calculate expected heterozygosity for the two populations
-    # pop1
-    hs_1 = 2*p_1*q_1
-    # pop2
-    hs_2 = 2*p_2*q_2
-    # then take the mean of this
-    hs = (hs_1 + hs_2)/2
-
-    # next calculate expected heterozygosity for the metapopulations
-    ht = 2*p_t*q_t
-
-    # calculate fst
-    fst = (ht - hs)/ht
-
-    # return output
-    return fst
