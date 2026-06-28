@@ -86,7 +86,7 @@ def _plot_regional(
     taf=[4,0,0.95,1,1],
     pos="POS",
     ld_link=False,
-    ld_link_thr=0,
+    ld_link_thr=0.8,
     ld_link_color="blue",
     ld_link_alpha_scale=0.2,
     ld_link_linewidth=1.0,
@@ -96,300 +96,76 @@ def _plot_regional(
     verbose=True,
     log=Log()
 ):
-    """
-    Create an Region plot. By default lead variant will be selected as reference variant for LD coloring.
-    Parameters
-    ----------
-    vcf_path : str, optional, default=None
-        Path to VCF file for LD reference in regional plot analysis. Default is None.
+    """Create a regional locus plot with optional LD coloring and gene tracks.
 
-    gtf_path : str, optional, default='ensembl'
-        Path to GTF file for gene annotation in regional plots. 
-        gtf_path options:
-        - 'ensembl' : GTF from ensembl. `build` should be specified. 
-        - 'refseq' : GTF from refseq. `build` should be specified.
-        - str : path for user provided gtf
+    By default the lead variant in the region is used as the reference for LD
+    coloring.
 
-    scaled : bool, optional, default=False
-        Whether P-values are already scaled.
-    scatter_kwargs : dict, optional
-        Arguments for scatter plot styling. Default is None.
-    scatterargs : dict, optional
-        Alternative name for scatter plot styling. Default is None.
-    region : tuple or list, required
-        Genomic region specification (chr, start, end) for regional plots. Note start < end. No numeric expression is allowed.
-        Region can be determined using `get_region_start_and_end`.
-    region_title : str, optional
-        Title for regional plot. Default is None.
-    region_title_kwargs : dict, optional
-        Arguments for regional plot title styling. Default is None.
-    region_ref : str or list, optional
-        Reference variant(s) for regional plot. If not provided, the lead variant
-        in the region (highest `scaled_P`) is auto-selected as the default reference.
-    region_ref2 : str, optional
-        Second reference variant for regional plot. Default is None.
-    region_ref_second : str, optional,optional
-        Alternative name for second reference variant. Default is None.
-    region_step : int,optional, default=21
-        Step size for regional plot grid.
-    region_grid : bool, optional,default=False
-        Whether to show grid lines in regional plots.
-    region_grid_line : dict,optional, default={"linewidth": 2,"linestyle":"--"}
-        Styling arguments for regional plot grid lines.
-    region_lead_grid : bool, optional,default=True
-        Whether to show lead variant grid in regional plots.
-    region_lead_grid_line : dict,optional, default={"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
-        Styling arguments for lead variant grid lines.
-    region_hspace : float,optional, default=0.02
-        Horizontal space between regional plot panels.
-    region_ld_threshold : list,optional, default=[0.2,0.4,0.6,0.8]
-        LD thresholds for regional plot coloring.
-    region_ld_legend : bool, optional,default=True
-        Whether to show LD legend in regional plot.
-    region_ld_colors : list, optional,default=["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
-        Colors for LD levels in regional plot. Maps to r² categories: missing data, low LD (r²<0.2),
-        moderate LD (0.2-0.4), medium LD (0.4-0.6), high LD (0.6-0.8), very high LD (≥0.8),
-        and reference variant highlighting.
-    region_ld_colors_m : list, optional, default=["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
-        Colors for multi-lead variant regional plots.
-    region_recombination : bool,optional, default=True
-        Whether to plot recombination rate in regional plot.
-    region_flank_factor : float, optional,default=0.05
-        Flanking factor for regional plot.
-    region_anno_bbox_kwargs : dict, optional,default={"ec":"None","fc":"None"}
-        Bounding box arguments for regional plot annotations.
-    region_marker_shapes : list, optional,default=['X', 'o', '^', 's', 'D', '*', 'P',  'h', '8']
-        Shapes for markers in regional plot. First one (index 0) is for variants with missing LD,
-        the second one (index 1) is for variants with LD, the third one (index 2) is for the first reference variant, and so on.
-    region_legend_marker : bool, optional,default=True
-        Whether to show marker legend in regional plot.
-    region_ref_alias : dict, optional
-        Alias mapping for reference variants in regional plot. Default is None.
-    cbar_title : str, default='LD $\\mathregular{r^2}$ with variant'
-        Title for color bar.
-    cbar_fontsize : int, optional
-        Font size for color bar labels. Default is None.
-    cbar_scale : bool, default=True
-        Whether to scale color bar.
-    cbar_font_family : str, optional
-        Font family for color bar. Default is None.
-    cbar_bbox_to_anchor : tuple,optional, default=(0,0,1,1)
-        Bounding box anchor for color bar.
-    cbar_equal_aspect : bool, optional,default=True
-        Whether to keep equal aspect in color bar.
-    cbar_w_scale : float,optional, default=1
-        Width scale for color bar.
-    cbar_h_scale : float,optional, default=1
-        Height scale for color bar.
-    cbar_downward_offset : float, optional,default=1.3
-        Downward offset for color bar.
-    cbar_borderpad : float, optional
-        Border padding for color bar. Default is None.
-    track_n : int,optional, default=4
-        Number of tracks in regional plot.
-    track_n_offset : int,optional,default=0
-        Track offset in regional plot.
-    track_fontsize_ratio : float,optional, default=0.95
-        Font size ratio for tracks.
-    track_exon_ratio : int,optional, default=1
-        Exon ratio for tracks.
-    track_text_offset : int, optional,default=1
-        Text offset for tracks.
-    track_font_family : str, optional
-        Font family for tracks. Default is None.
-    windowsizekb : int, optional,default=500
-        Window size in kb for obtainning significant variant.
-    anno : str, optional,default=None.
-        Annotation source (e.g., 'GENENAME'). Default is None.
-    anno_set : list, optional
-        Set of variants to annotate. Default is None.
-    anno_alias : dict, optional
-        Alias mapping for annotations. Default is None.
-    anno_d : dict, optional
-        Additional annotation data. Default is None.
-    anno_kwargs : dict, optional
-        Arguments for annotation styling. Default is None.
-    anno_kwargs_single : dict, optional
-        Arguments for single annotation styling. Default is None.
-    anno_style : str, optional,default='right'
-        Annotation style.
-    anno_fixed_arm_length : float, optional
-        Fixed arm length for annotations. Default is None.
-    anno_adjust : bool, default=False
-        Whether to adjust annotation positions for tight style.
-    anno_xshift : float, optional
-        X-axis shift for annotations. Default is None.
-    anno_max_iter : int, optional, default=100
-        Maximum iterations for annotation adjustment.
-    arrow_kwargs : dict, optional
-        Arguments for annotation arrows. Default is None.
-    arm_offset : float, optional
-        Offset for annotation arms. Default is None.
-    arm_scale : float, optional,default=1
-        Scale for annotation arms.
-    anno_height : float, optional,default=1
-        Height for annotations.
-    arm_scale_d : float, optional
-        Scale for annotation arms in density plots. Default is None.
-    cut : float, optional,default=0
-        Cut value for shrinking variants above threshold.
-    skip : float,optional, default=0
-        Skip variants with -log10(P) < skip.
-    ystep : float, optional,default=0
-        Step size for y-axis.
-    ylabels : list, optional
-        Custom y-axis labels. Default is None.
-    ytick3 : bool, optional,default=True
-        Whether to use 3 y-axis ticks.
-    cutfactor : int, optional,default=10
-        Factor for shrinking cut line.
-    cut_line_color : str, optional,default='#ebebeb'
-        Color for cut line.
-    cut_log : bool,optional, default=False
-        Whether to use log scale for cut line.
-    sig_line : bool, optional,default=True
-        Whether to show significance line.
-    sig_level : float, optional, default=5e-8
-        Significance level threshold to plot a line on the plot.
-    anno_sig_level : float,optional, default=5e-8
-        Significance level for lead variants.
-    sig_line_color : str, optional,default='grey'
-        Color for significance line.
-    suggestive_sig_line : bool,optional, default=False
-        Whether to show suggestive significance line.
-    suggestive_sig_level : float,optional, default=5e-6
-        Suggestive significance level.
-    suggestive_sig_line_color : str,optional, default='grey'
-        Color for suggestive significance line.
-    additional_line : list, optional
-        Additional lines to plot. Default is None.
-    additional_line_color : list, optional
-        Colors for additional lines. Default is None.
-    sc_linewidth : int,optional, default=2
-        Line width for significance lines.
-    pinpoint : list, optional
-        List of variants to pinpoint. Default is None.
-    pinpoint_color : str, optional,default='red'
-        Color for pinpointed variants.
-    ylim : tuple, optional
-        Y-axis limits for plot. Default is None.
-    xpad : float, optional
-        X-axis padding proportion. Default is None.
-    xpadl : float, optional
-        Left X-axis padding proportion. Default is None.
-    xpadr : float, optional
-        Right X-axis padding proportion. Default is None.
-    xtight : bool, optional,default=False
-        Whether to use tight X-axis padding.
-    chrpad : float, optional,default=0.03
-        Chromosome padding factor.
-    title : str, optional
-        Plot title. Default is None.
-    xlabel : str, optional
-        X-axis label. Default is None.
-    title_pad : float,optional,default=1.08
-        Padding for plot title.
-    title_fontsize : int,optional, default=13
-        Font size for title.
-    fontsize : int, optional,default=9
-        Base font size for plot elements.
-    font_family : str, optional
-        Font family for text elements. Default is None.
-    fontfamily : str, optional,default='Arial'
-        Alternative name for font family.
-    math_fontfamily : str, optional,default='dejavusans'
-        Font family for math text.
-    anno_fontsize : int, optional,default=9
-        Font size for annotations.
-    figargs : dict, optional
-        Figure arguments for subplots. Default is None.
-    fig_kwargs : dict, optional
-        Alternative name for figure arguments. Default is None.
-    colors : list,optional, default=['#597FBD','#74BAD3']
-        Color palette for plot.
-    marker_size : tuple, optional,default=(45,65)
-        Size range for markers.
-    verbose : bool, optional,default=True
-        Whether to show progress.
-    repel_force : float, optional,default=0.03
-        Force for repelling overlapping labels.
-    build : str, optional
-        Genomic build version. Default is None.
-    dpi : int, optional, default=200
-        Dots per inch for figure resolution.
-    save : str, optional
-        File path to save plot. Default is None.
-    save_kwargs : dict, optional,default={"dpi":600,"transparent":True}
-        Arguments for saving the plot.
-    saveargs : dict, optional
-        Alternative name for save arguments. Default is None.
-    
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-        The created matplotlib figure object.
-    log : gwaslab.Log
-        Updated logging object with operation records.
-    lead_snp_is, lead_snp_is_color : tuple (optional)
-        Lead SNP positions and colors returned only in regional ('r') mode.
+Parameters
+----------
+sumstats : pandas.DataFrame
+    Summary statistics for the locus.
+fig, ax1, ax3 : matplotlib axes
+    Figure and axes created by the caller (MQQ/regional driver).
+region : tuple or list
+    Genomic region as ``(chrom, start, end)`` or equivalent structure.
+vcf_path : str or None
+    Path to reference VCF for LD lookup.
+build : str
+    Genome build (``"19"`` or ``"38"``).
+region_ref : str or None, optional
+    Reference variant for LD coloring; auto-selected from the lead when
+    ``None``.
+sig_level : float, default 5e-8
+    Genome-wide significance threshold for highlighting.
+verbose : bool, default True
+    Print progress messages.
+log : gwaslab.Log, default Log()
+    Logging object.
+taf : list, default [4, 0, 0.95, 1, 1]
+    Track axis fractions for multi-panel layout.
+gtf_path : str, default "default"
+    GTF path for gene annotation, or ``"default"`` for built-in annotation.
+gtf_chr_dict : dict, optional
+    Map sumstats chromosome integers to GTF contig names.
+gtf_gene_name : str, optional
+    Gene name column in GTF data when using custom recombination tracks.
+rr_path : str, default "default"
+    Recombination-rate source: ``"default"`` (HapMap3) or a file path.
+rr_header_dict, rr_chr_dict : dict, optional
+    Column and chromosome mapping for user-supplied recombination data.
+rr_lim : tuple, default (0, 100)
+    Y-axis limits for the recombination-rate track.
+rr_ylabel : bool, default True
+    Show the recombination-rate y-axis label.
+ld_path, ld_map_path : str, optional
+    Precomputed LD matrix and map paths for regional LD display.
+ld_fmt : str, default "npz"
+    LD file format.
+ld_if_square, ld_if_add_T : bool, default False
+    LD matrix layout options.
+ld_map_rename_dic, ld_map_kwargs : dict, optional
+    LD map column rename and loader kwargs.
+jagged, jagged_len, jagged_wid : bool or float, optional
+    Jagged y-axis styling for truncated Manhattan panels.
+anno_source : str, default "ensembl"
+    Annotation source identifier.
+anno_gtf_path : str, optional
+    Custom GTF path for variant annotation.
+ylabel : str, optional
+    Override y-axis label text.
+tabix : str, optional
+    Path to tabix executable for indexed VCF access.
 
-    Less used parameters
-    -------
-    taf : dict, optional
-        Track annotation file. Default is None.
-    vcf_chr_dict : dict, optional
-        Sumstats CHR (int) to VCF contig (str) dict for loading VCF data. 
-        If None, it will be auto-detected (prefered). 
-    gtf_chr_dict : dict, optional
-        Sumstats CHR (int) to GTF chromosome (str) dict. Default is None. 
-        Only used when user provided recombination rate data was used. Default is None. 
-    gtf_gene_name : str, optional
-        Gene name column in GTF data. Default is None.
-        Only used when user provided recombination rate data was used.
-    rr_path : str, optional
-        Path to recombination rate data. Default is 'default'.
-        rr_path options:
-        - 'default' : data from hapmap3. `build` should be specified. (preferred)
-        - str : path for user provided recombination rate data
-    rr_header_dict : dict, optional
-        Header mapping dictionary for recombination data. Default is None. 
-        Only used when user provided recombination rate data was used.
-    rr_chr_dict : dict, optional
-        Sumstats CHR (int) to recombination data chromosome (string) dict. Default is None. 
-        Only used when user provided recombination rate data was used.
-    rr_lim : tuple, optional, default=(0,100)
-        Recombination rate limits.
-    rr_ylabel : bool,optional, default=True
-        Whether to show recombination rate y-label.
-    ld_path : str, optional,default=None
-        Path to precomputed LD matrix for regional plot. Default is None.
-    ld_map_path : str, optional,default=None
-        Path to LD map data. Default is None.
-    ld_fmt : str, default='npz'
-        Format of LD data file.
-    ld_if_square : bool, optional,default=False
-        Whether LD matrix is square.
-    ld_if_add_T : bool,optional, default=False
-        Whether to add transpose for LD matrix.
-    ld_map_rename_dic : dict, optional
-        Dictionary to rename LD map columns. Default is None.
-    ld_map_kwargs : dict, optional
-        Additional arguments for LD map. Default is None.
-    jagged : bool,optional, default=False
-        Whether to make y-axis jagged.
-    jagged_len : float, optional,default=0.01
-        Length of jagged line.
-    jagged_wid : float, optional,default=0.01
-        Width of jagged line.
-    anno_source : str,optional, default='ensembl'
-        Source for annotations.
-    anno_gtf_path : str, optional
-        Path to GTF file for annotations. Default is None.
-    ylabel : str, optional
-        Y-axis label. Default is None.
-    tabix : str, optional
-        Path to tabix executable. Default is None.
-    """
+Returns
+-------
+fig : matplotlib.figure.Figure
+    The figure containing the regional plot.
+log : gwaslab.Log
+    Updated logging object.
+lead_snp_is, lead_snp_is_color : tuple, optional
+    Lead SNP positions and colors; returned only in regional (``"r"``) mode.
+"""
     style = set_plot_style(
         plot="plot_region",
         mode="r",
@@ -659,8 +435,7 @@ def regional_mode_setup(
     log=Log(),
     verbose=True,
 ):
-    """
-    Set up regional plotting parameters and filter data for regional association plots.
+    """Set up regional plotting parameters and filter data for regional association plots.
 
     This function configures the color palette, markers, and data filtering for regional
     plots. It handles LD-based coloring and ensures the reference variant is properly
@@ -701,48 +476,23 @@ def regional_mode_setup(
     - Reference variants are plotted separately as pinpoint markers with distinct styling
     - This prevents visual overlap and ensures clear highlighting of reference variants
 
-    Parameters
-    ----------
-    sumstats : pandas.DataFrame
-        Summary statistics DataFrame containing variant data with processed P-values.
-    region_ref : list
-        List of reference variant identifiers. For single-reference mode, the first
-        element determines which variant to highlight. Can contain None for automatic
-        lead variant detection.
-    region_ld_colors : list
-        Color palette for LD categories in single-reference regional plots.
-    region_marker_shapes : list
-        Marker shapes for different LD categories and reference variants.
-    region_ld_colors_m : list
-        Color palettes for multi-reference regional plots.
-    region_ld_threshold : list
-        LD (r²) thresholds for color categorization.
-    vcf_path : str or None
-        Path to VCF file for LD calculations.
-    ld_path : str or None
-        Path to pre-computed LD file.
-    log : gwaslab.Log
-        Logging object for recording messages.
-    verbose : bool
-        Whether to print progress messages.
-
-    Returns
-    -------
-    legend : dict or None
-        Legend configuration for the plot.
-    linewidth : int
-        Line width for plot elements.
-    palette : dict
-        Color mapping for LD categories.
-    style : str
-        Column name for marker style mapping.
-    markers : dict
-        Marker shape mapping for LD categories.
-    to_plot : pandas.DataFrame
-        Filtered DataFrame with reference variants removed from main scatter plot.
-    edgecolor : str
-        Edge color for markers.
-    """
+Returns
+-------
+legend : dict or None
+    Legend configuration for the plot.
+linewidth : int
+    Line width for plot elements.
+palette : dict
+    Color mapping for LD categories.
+style : str
+    Column name for marker style mapping.
+markers : dict
+    Marker shape mapping for LD categories.
+to_plot : pandas.DataFrame
+    Filtered DataFrame with reference variants removed from main scatter plot.
+edgecolor : str
+    Edge color for markers.
+"""
     legend = None
     linewidth = 1
     style = None
@@ -800,25 +550,13 @@ def regional_mode_setup(
 
 # + ###########################################################################################################################################################################
 def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
-    """
-    Retrieve the lead variant index from sumstats based on rsID/SNPID/CHR:POS:NEA:EA in region_ref.
-    
-    Parameters
-    ----------
-    sumstats : pandas.DataFrame, optional
-        Summary statistics DataFrame containing variant data.
-    region_ref : str or list, optional
-        Reference variant(s) to search for. If None, uses the variant with maximum scaled P-value.
-    log : gwaslab.Log, optional
-        Logging object for recording messages. Default is None.
-    verbose : bool, optional
-        Whether to show progress. Default is True.
-    
-    Returns
-    -------
-    lead_id : int or None
-        Index of the lead variant if found, otherwise None.
-    """
+    """Retrieve the lead variant index from sumstats based on rsID/SNPID/CHR:POS:NEA:EA in region_ref.
+
+Returns
+-------
+lead_id : int or None
+    Index of the lead variant if found, otherwise None.
+"""
     region_ref_to_check = copy.copy(region_ref)
     # region_ref_single (not none) -> specified variant ID
     # convert region_ref_single -> lead_id(index)
@@ -890,10 +628,11 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
     return lead_id
 
 def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, marker_size, log, verbose, region_marker_shapes):
-    """
-    Extract lead_id
-    Draw a single marker for the lead_id
-    """
+    """Overlay reference variant(s) removed from the bulk scatter plot.
+
+    Single-ref: shape from ``region_marker_shapes[SHAPE + 1]``; multi-ref:
+    ``region_marker_shapes[SHAPE]``. Size: ``marker_size[1] * 1.5`` with black edge.
+"""
     if region_ref is None:
         log.write(" -Extracting lead variant..." , verbose=verbose)
         lead_id = sumstats["scaled_P"].idxmax()
@@ -928,6 +667,8 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
                    cbar_fontsize= None,cbar_scale=False,cbar_equal_aspect=True,cbar_w_scale=1,cbar_h_scale=1,palette =None, 
                    cbar_downward_offset =1.2, cbar_borderpad=None,
                    cbar_bbox_to_anchor=(0, 0, 1, 1),region_ref_alias=None):
+    """Draw LD r² colorbar inset. When ``region_legend_marker`` is True, add reference marker glyphs.
+"""
 
     scale = 1
     if cbar_scale:
@@ -1072,50 +813,19 @@ def _plot_ld_score_annotation(
     log=Log(),
     verbose=True
 ):
-    """
-    Annotate ref variants with LD scores and draw links from each variant to ref variants.
+    """Annotate ref variants with LD scores and draw links from each variant to ref variants.
     
     LD score is calculated using the LDSC unbiased estimator: 
     l_j = Σ[r²_{j,k} - (1-r²_{j,k})/(n-2)] for all k ≠ j, where r²_{j,k} is the squared 
     correlation (linkage disequilibrium) between ref variant j and variant k, and n is the 
     reference panel sample size (from VCF). If VCF sample size is not available, uses raw 
     r² values: l_j = Σ(r²_{j,k}).
-    
-    Parameters
-    ----------
-    ax : matplotlib.axes.Axes
-        Axes to plot on
-    sumstats : pandas.DataFrame
-        Summary statistics with LD information (RSQ_0, RSQ_1, etc.)
-        RSQ columns contain r² values between each variant and the corresponding ref variant
-    region_ref : list
-        List of reference variant identifiers
-    lead_ids : list
-        List of lead variant indices in sumstats
-    region_ld_threshold : list
-        LD r² thresholds for color categories
-    region_ld_colors : list
-        Colors for each LD category
-    palette : dict
-        Color palette dictionary
-    link_alpha_scale : float
-        Scaling factor for line transparency
-    link_linewidth : float
-        Line width for links
-    pos : str
-        Column name for position
-    vcf_n_samples : int, optional
-        Reference panel sample size from VCF. If provided and > 2, applies LDSC bias correction.
-    log : gwaslab.Log
-        Logging object
-    verbose : bool
-        Whether to show progress
-    
-    Returns
-    -------
-    ax : matplotlib.axes.Axes
-        Modified axes
-    """
+
+Returns
+-------
+ax : matplotlib.axes.Axes
+    Modified axes
+"""
     log.write("Adding LD score annotations and links...", verbose=verbose)
     
     # Use region_ld_colors if provided, otherwise extract from palette, otherwise use default
@@ -1140,7 +850,8 @@ def _plot_ld_score_annotation(
     
     # Function to get color index based on LD value
     def get_ld_color_index(ld_value):
-        """Get color index for LD value based on thresholds."""
+        """Get color index for LD value based on thresholds.
+"""
         if pd.isna(ld_value) or ld_value <= 0:
             return 0
         for idx in range(len(region_ld_threshold) - 1, -1, -1):

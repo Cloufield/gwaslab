@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 
 
 def _edges_from_centers(x):
-    """Convert center coordinates (length n) into edge coordinates (length n+1)."""
+    """Convert center coordinates (length n) into edge coordinates (length n+1).
+"""
     x = np.asarray(x, dtype=float)
     if x.size < 2:
         # arbitrary edge padding
@@ -43,22 +44,21 @@ def _prepare_ld_data_from_vcf(
     log: Log,
     verbose: bool
 ) -> Tuple[np.ndarray, pd.DataFrame, pd.DataFrame, bool, Optional[np.ndarray]]:
-    """
-    Extract LD matrix from VCF and prepare data for plotting.
+    """Extract LD matrix from VCF and prepare data for plotting.
     
-    Returns
-    -------
-    ld_matrix : np.ndarray
-        LD matrix from VCF (only matched variants).
-    matched_sumstats : pd.DataFrame
-        Matched sumstats from VCF.
-    region_sumstats : pd.DataFrame
-        All variants in region from sumstats.
-    use_i_coordinate : bool
-        Whether "i" coordinate system is available.
-    all_i_positions : np.ndarray or None
-        "i" coordinates for all variants in region, if available.
-    """
+Returns
+-------
+ld_matrix : np.ndarray
+    LD matrix from VCF (only matched variants).
+matched_sumstats : pd.DataFrame
+    Matched sumstats from VCF.
+region_sumstats : pd.DataFrame
+    All variants in region from sumstats.
+use_i_coordinate : bool
+    Whether "i" coordinate system is available.
+all_i_positions : np.ndarray or None
+    "i" coordinates for all variants in region, if available.
+"""
     if sumstats is None:
         raise ValueError("sumstats must be provided when using vcf_path and region")
     
@@ -120,31 +120,15 @@ def _prepare_ld_matrix(
     log: Log,
     verbose: bool
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Prepare full LD matrix with all variant positions, filling in LD values for matched variants.
-    
-    Parameters
-    ----------
-    ld_matrix : np.ndarray
-        LD matrix from VCF (only matched variants).
-    matched_sumstats : pd.DataFrame
-        Matched sumstats from VCF.
-    region_sumstats : pd.DataFrame
-        All variants in region from sumstats.
-    pos_col : str
-        Position column name.
-    log : Log
-        Logger instance.
-    verbose : bool
-        Whether to print log messages.
-    
-    Returns
-    -------
-    full_ld_matrix : np.ndarray
-        Full LD matrix (n_all x n_all) with NaN for empty positions.
-    all_positions : np.ndarray
-        All variant positions in region, sorted.
-    """
+    """Prepare full LD matrix with all variant positions, filling in LD values for matched variants.
+
+Returns
+-------
+full_ld_matrix : np.ndarray
+    Full LD matrix (n_all x n_all) with NaN for empty positions.
+all_positions : np.ndarray
+    All variant positions in region, sorted.
+"""
     # Get all positions from region_sumstats (all variants in region, sorted by position)
     region_sumstats = region_sumstats.sort_values(pos_col)
     all_positions = region_sumstats[pos_col].values.astype(float)
@@ -201,23 +185,13 @@ def _calculate_regional_xlim(
     sumstats: Union[pd.DataFrame, 'Sumstats'],
     pos_col: str
 ) -> Tuple[float, float]:
-    """
-    Calculate xlim for regional plot mode to align with regional plot's x-axis.
-    
-    Parameters
-    ----------
-    region : tuple
-        Region specification (chromosome, start, end).
-    sumstats : DataFrame or Sumstats
-        Sumstats filtered to region.
-    pos_col : str
-        Position column name.
-    
-    Returns
-    -------
-    xlim : tuple
-        (xmin, xmax) for x-axis limits.
-    """
+    """Calculate xlim for regional plot mode to align with regional plot's x-axis.
+
+Returns
+-------
+xlim : tuple
+    (xmin, xmax) for x-axis limits.
+"""
     if hasattr(sumstats, 'data'):
         region_sumstats = sumstats.data
     else:
@@ -243,23 +217,11 @@ def _set_axis_limits(
     ld_tri: np.ma.MaskedArray,
     mode: str
 ) -> None:
-    """
-    Set xlim and ylim for the plot based on mode.
+    """Set xlim and ylim for the plot based on mode.
     
     Uses edge coordinates (not center coordinates) to prevent clipping of cell corners.
     Now uses ranks for uniform cell sizes.
-    
-    Parameters
-    ----------
-    ax : Axes
-        Axes object to set limits on.
-    ranks : np.ndarray
-        Variant rank array (length n), should be [0, 1, 2, ..., n-1].
-    ld_tri : np.ma.MaskedArray
-        Masked LD matrix (upper triangle).
-    mode : str
-        'regional' or 'standalone'.
-    """
+"""
     # Calculate edge coordinates (same as used in pcolormesh)
     # These are the actual coordinates used by pcolormesh, so we need to include them
     e = _edges_from_centers(ranks)  # (n+1,)
@@ -305,37 +267,17 @@ def _plot_ld_triangle(
     i_coords: Optional[np.ndarray] = None,
     **kwargs
 ) -> Tuple[matplotlib.collections.QuadMesh, np.ma.MaskedArray]:
-    """
-    Plot the LD triangle using pcolormesh with 45° rotation.
+    """Plot the LD triangle using pcolormesh with 45° rotation.
     Uses variant ranks (0, 1, 2, ..., n-1) for uniform cell sizes.
     In regional mode, can transform ranks to i coordinates for x-axis alignment.
-    
-    Parameters
-    ----------
-    ax : Axes
-        Axes object to plot on.
-    ld : np.ndarray
-        LD matrix (n x n).
-    ranks : np.ndarray
-        Variant rank array (length n), should be [0, 1, 2, ..., n-1] for uniform cells.
-    cmap : str or Colormap
-        Colormap for LD values.
-    vmin : float
-        Minimum value for colormap.
-    vmax : float
-        Maximum value for colormap.
-    i_coords : np.ndarray, optional
-        Deprecated: Always uses ranks for uniform cells. This parameter is ignored.
-    **kwargs
-        Additional arguments passed to pcolormesh.
-    
-    Returns
-    -------
-    QuadMesh
-        The pcolormesh object.
-    ld_tri : np.ma.MaskedArray
-        Masked LD matrix (upper triangle).
-    """
+
+Returns
+-------
+QuadMesh
+    The pcolormesh object.
+ld_tri : np.ma.MaskedArray
+    Masked LD matrix (upper triangle).
+"""
     # Mask lower triangle (keep diagonal + upper triangle)
     mask_lower = np.tril(np.ones((ld.shape[0], ld.shape[0]), dtype=bool), k=-1)
     # Also mask NaN values (empty positions) - these will appear white
@@ -383,33 +325,9 @@ def _plot_position_bar(
     region: Optional[Tuple[Union[int, str], int, int]] = None,
     position_bar_bg: bool = True
 ) -> None:
-    """
-    Plot a position bar showing actual chromosome positions.
+    """Plot a position bar showing actual chromosome positions.
     Points are positioned according to their actual basepair positions.
-    
-    Parameters
-    ----------
-    ax_pos : Axes
-        Axes object for the position bar (typically above the LD block).
-    actual_positions : np.ndarray
-        Actual chromosome positions (length n).
-    ranks : np.ndarray
-        Variant ranks (length n), should be [0, 1, 2, ..., n-1].
-    fontsize : float
-        Font size for labels. Default: 10.
-    font_family : str
-        Font family. Default: "Arial".
-    show_xticks : bool
-        Whether to show x-axis ticks. Default: True.
-    region_step : int
-        Number of x-axis tick positions. Default: 21.
-    xlabel : str, optional
-        Label for x-axis. If None, will be set based on region if provided. Default: None.
-    region : tuple, optional
-        Region specification (chromosome, start, end). If provided, xlabel will include chromosome number. Default: None.
-    position_bar_bg : bool
-        Whether to show the gray background bar. Default: True.
-    """
+"""
     n = len(ranks)
     
     # Use actual positions for x-axis (not ranks)
@@ -482,36 +400,9 @@ def _add_annotation_lines(
     lead_snp_is: Optional[list] = None,
     lead_snp_is_color: Optional[list] = None
 ) -> None:
-    """
-    Add annotation lines connecting position bar to LD block cell right top corners.
+    """Add annotation lines connecting position bar to LD block cell right top corners.
     Annotates all variants if n_lines is None, otherwise annotates n_lines variants.
-    
-    Parameters
-    ----------
-    ax_ld : Axes
-        Axes object for the LD block plot.
-    ax_pos : Axes
-        Axes object for the position bar.
-    ranks : np.ndarray
-        Variant ranks (length n), should be [0, 1, 2, ..., n-1].
-    actual_positions : np.ndarray
-        Actual chromosome positions (length n).
-    n_lines : int, optional
-        Number of annotation lines to draw. If None, draws lines for all variants.
-        Default: None (all variants).
-    line_color : str
-        Color for annotation lines. Default: 'gray'.
-    line_alpha : float
-        Alpha (transparency) for annotation lines. Default: 0.3.
-    line_style : str
-        Line style for annotation lines. Default: '--'.
-    line_width : float
-        Line width for annotation lines. Default: 0.5.
-    lead_snp_is : list, optional
-        List of lead SNP i-coordinates (x-axis positions). Default: None.
-    lead_snp_is_color : list, optional
-        List of colors corresponding to lead SNPs. Default: None.
-    """
+"""
     n = len(ranks)
     
     # Create a mapping from actual positions to lead SNP colors
@@ -585,19 +476,8 @@ def _draw_ld_block_grid(
     ranks: np.ndarray,
     grid_kwargs: Optional[dict] = None
 ) -> None:
-    """
-    Draw grid lines on the LD block plot.
-    
-    Parameters
-    ----------
-    ax : Axes
-        Axes object for the LD block plot.
-    ranks : np.ndarray
-        Variant rank array (length n).
-    grid_kwargs : dict, optional
-        Additional keyword arguments for grid lines (e.g., {'color': 'gray', 'linewidth': 0.5, 'alpha': 0.5}).
-        Default: None.
-    """
+    """Draw grid lines on the LD block plot.
+"""
     n = len(ranks)
     
     # Get edge coordinates (same as used in _plot_ld_triangle)
@@ -677,46 +557,10 @@ def _annotate_ld_block_left_side(
     offset: float = 0.05,
     ld_block_anno_kwargs: Optional[dict] = None
 ) -> None:
-    """
-    Add annotations on the left side of the LD block triangle.
+    """Add annotations on the left side of the LD block triangle.
     Annotations are placed along the left vertical edge of the triangle and styled like axis ticks and labels.
     Font size is automatically calculated to prevent overlapping between annotations.
-    
-    Parameters
-    ----------
-    ax : Axes
-        Axes object for the LD block plot.
-    ranks : np.ndarray
-        Variant rank array (length n).
-    actual_positions : np.ndarray
-        Actual chromosome positions (length n).
-    region : tuple, optional
-        Region specification (chromosome, start, end). Used to get chromosome if not in sumstats.
-    region_sumstats : pd.DataFrame, optional
-        Sumstats DataFrame that may contain CHR, SNPID, and annotation columns.
-    pos_col : str
-        Position column name. Default: "POS".
-    snpid_col : str
-        SNPID column name for filtering. Default: "SNPID".
-    anno_col : str, optional
-        Column name to use for annotation text. If None, uses "chr:pos" format. Default: None.
-    anno_set : list, set, or np.ndarray, optional
-        List of SNPIDs to annotate. If None, annotates all variants. Default: None.
-    fontsize : float
-        Initial font size for annotations. Will be auto-reduced if needed to prevent overlap.
-        Default: 8.
-    font_family : str
-        Font family for annotations. Default: "Arial".
-    color : str
-        Text and tick color. Default: "black".
-    tick_length : float
-        Length of tick marks as fraction of y-axis range. Default: 0.02.
-    offset : float
-        Horizontal offset from the left edge as fraction of x-axis range. Default: 0.05.
-    ld_block_anno_kwargs : dict, optional
-        Additional keyword arguments for text annotations. If 'fontsize' is explicitly set here,
-        it will override the auto-calculation. Default: None.
-    """
+"""
     n = len(ranks)
     
     # Get annotation text for each variant
@@ -995,31 +839,8 @@ def _annotate_ld_cells(
     color: str = "black",
     anno_cell_kwargs: Optional[dict] = None
 ) -> None:
-    """
-    Add text annotations to LD cells showing the r² values.
-    
-    Parameters
-    ----------
-    ax : Axes
-        Axes object for the LD block plot.
-    ld : np.ndarray
-        LD matrix (n x n).
-    ranks : np.ndarray
-        Variant rank array (length n).
-    ld_tri : np.ma.MaskedArray
-        Masked LD matrix (upper triangle).
-    anno_cell_fmt : str
-        Format string for cell annotations. Default: "{:.2f}".
-    fontsize : float
-        Font size for annotations. Default: 8.
-    font_family : str
-        Font family for annotations. Default: "Arial".
-    color : str
-        Text color. Default: "black".
-    anno_cell_kwargs : dict, optional
-        Additional keyword arguments for text annotations. Default: None.
-        These will override default text styling (fontsize, fontfamily, color, etc.).
-    """
+    """Add text annotations to LD cells showing the r² values.
+"""
     n = len(ranks)
     
     # Get edge coordinates (same as used in _plot_ld_triangle)
@@ -1116,119 +937,20 @@ def plot_ld_block(
     verbose: bool = True,
     **kwargs
 ) -> Tuple['Figure', 'Axes']:
-    """
-    Plot the upper triangle of an LD matrix as a 45°-rotated inverted triangle.
+    """Plot the upper triangle of an LD matrix as a 45°-rotated inverted triangle.
     
     This function supports two modes:
     1. **Standalone mode**: Creates its own figure and plots LD block independently.
     2. **Regional mode**: Plots on provided axes (typically from plot_mqq) and aligns
        x-axis with regional plot using "i" coordinate system.
-    
-    Parameters
-    ----------
-    mode : str, optional
-        Plot mode: 'regional' or 'standalone'. If None, automatically determines
-        based on whether ax is provided and i-coordinates are available.
-        Default: None (auto-detect).
-    ld : np.ndarray, optional
-        (n, n) array (e.g., r^2), symmetric LD matrix. If None, will be extracted
-        from VCF file when vcf_path and region are provided.
-    pos : np.ndarray, optional
-        Length n positions for x-axis (bp or index). If None, uses np.arange(n) or
-        extracts from sumstats when using VCF.
-    vcf_path : str, optional
-        Path to VCF file for LD calculation. If provided, region must also be provided.
-    region : tuple, optional
-        Region specification (chromosome, start, end) for extracting LD from VCF.
-        Example: (1, 1000000, 2000000) for chr1:1000000-2000000.
-    sumstats : pd.DataFrame or Sumstats, optional
-        Sumstats object or DataFrame for matching variants with VCF. Required when
-        using vcf_path. Should contain POS, NEA, and EA columns.
-    pos_col : str, optional
-        Column name for position in sumstats. Default: "POS".
-    nea_col : str, optional
-        Column name for non-effect allele in sumstats. Default: "NEA".
-    ea_col : str, optional
-        Column name for effect allele in sumstats. Default: "EA".
-    tabix : bool, optional
-        Whether to use tabix indexing for VCF. If None, auto-detects.
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome name conversion. If None, creates
-        a default mapper with automatic format detection.
-    ax : matplotlib.axes.Axes, optional
-        Axes object to plot on. If None, creates a new figure (standalone mode).
-        If provided with region/sumstats/i-coordinates, uses regional mode.
-    cmap : str or matplotlib.colors.Colormap, optional
-        Colormap for the LD values. Default: continuous gradient matching region plot
-        LD categories (dark blue -> light blue -> green -> orange -> red).
-    vmin : float, optional
-        Minimum value for colormap scaling. Default: 0.0.
-    vmax : float, optional
-        Maximum value for colormap scaling. Default: 1.0.
-    xlabel : str, optional
-        Label for x-axis. Default: "Genomic position".
-    title : str, optional
-        Title for the plot. Default: None (no title).
-    cbar : bool, optional
-        Whether to draw a colorbar. Default: True.
-    cbar_label : str, optional
-        Label for the colorbar. Default: "LD $\\mathregular{r^2}$".
-    cbar_kwargs : dict, optional
-        Additional arguments for colorbar. Default: None.
-    fig_kwargs : dict, optional
-        Additional arguments for figure creation. Default: None.
-    save : bool or str, optional
-        Whether to save the figure. If str, path to save file. Default: None.
-    save_kwargs : dict, optional
-        Additional arguments for saving the figure. Default: None.
-    fontsize : float, optional
-        Font size for labels. Default: 12.
-    font_family : str, optional
-        Font family. Default: "Arial".
-    region_step : int, optional
-        Number of x-axis tick positions for regional mode. Default: 21.
-    lead_snp_is : list, optional
-        List of lead SNP i-coordinates for colored annotation lines. Default: None.
-    lead_snp_is_color : list, optional
-        List of colors corresponding to lead SNPs. Default: None.
-    anno_cell : bool, optional
-        Whether to annotate cells with LD r² values. Default: False.
-    anno_cell_fmt : str, optional
-        Format string for cell annotations (e.g., "{:.2f}" for 2 decimal places).
-        Default: "{:.2f}".
-    anno_cell_kwargs : dict, optional
-        Additional keyword arguments for text annotations (e.g., {'fontsize': 10, 'weight': 'bold'}).
-        Default: None.
-    ld_block_anno : bool or str, optional
-        Whether to add annotations on the left side of the LD block triangle.
-        If True, uses 'chr:pos' format. If a string (e.g., 'SNPID', 'rsID'), uses that column for annotation text.
-        Annotations are styled like axis ticks and labels, with right-aligned text.
-        Default: False.
-    ld_block_anno_kwargs : dict, optional
-        Additional keyword arguments for left-side annotations (e.g., {'fontsize': 8, 'color': 'black'}).
-        Default: None.
-    ld_block_anno_set : list, set, or np.ndarray, optional
-        List of SNPIDs to annotate. If None, annotates all variants. Variants are matched by SNPID column.
-        Default: None.
-    ld_block_anno_max_rows : int, optional
-        Maximum number of variants to annotate. If the number of variants to annotate exceeds this limit,
-        annotations will be skipped. Default: 100.
-    position_bar_bg : bool, optional
-        Whether to show the gray background bar in the position bar. Default: True.
-    log : Log, optional
-        Logger instance. Default: Log().
-    verbose : bool, optional
-        Whether to print log messages. Default: True.
-    **kwargs
-        Additional arguments passed to pcolormesh.
-    
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-        Figure object.
-    ax : matplotlib.axes.Axes
-        Axes object.
-    """
+
+Returns
+-------
+fig : matplotlib.figure.Figure
+    Figure object.
+ax : matplotlib.axes.Axes
+    Axes object.
+"""
     embedded_axes = ax is not None
 
     log.write("Start to create LD block plot (45° rotated inverted triangle)...", verbose=verbose)

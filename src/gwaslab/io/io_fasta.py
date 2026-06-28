@@ -1,5 +1,4 @@
-"""
-Simplified FASTA I/O module for gwaslab.
+"""Simplified FASTA I/O module for gwaslab.
 
 This module provides simplified functions for reading and writing FASTA format files.
 Uses pysam FastxFile for fast FASTA reading (3-4x faster than previous implementation).
@@ -44,23 +43,21 @@ _FASTA_TRANSLATE_TABLE = _maketrans(_FASTA_MAPPING)
 
 
 class FastaRecord:
-    """
-    Simple FASTA record class.
+    """Simple FASTA record class.
     
     This class provides compatibility with code that expects FASTA record objects
     with .id and .seq._data attributes.
-    """
+"""
     def __init__(self, id: str, seq: str):
-        """
-        Initialize a FastaRecord.
+        """Initialize a FastaRecord.
         
-        Parameters
-        ----------
-        id : str
-            Record identifier (title line without '>')
-        seq : str
-            Sequence string
-        """
+Parameters
+----------
+id : str
+    Record identifier (title line without '>')
+seq : str
+    Sequence string
+"""
         self.id = id
         self.seq = _Sequence(seq)
     
@@ -69,9 +66,8 @@ class FastaRecord:
 
 
 class _Sequence:
-    """
-    Internal class to provide sequence with _data attribute.
-    """
+    """Internal class to provide sequence with _data attribute.
+"""
     def __init__(self, seq: str):
         # Store as bytes for compatibility with translate() operations
         if isinstance(seq, str):
@@ -84,25 +80,23 @@ class _Sequence:
 
 
 def _open_fasta_handle(path: str) -> TextIO:
-    """
-    Open a FASTA file handle, automatically detecting compression.
+    """Open a FASTA file handle, automatically detecting compression.
     
-    Parameters
-    ----------
-    path : str
-        Path to FASTA file. Supports .fa, .fasta, .fa.gz, .fasta.gz
-        Note: .bgz files are treated as .gz files (using gzip decompression)
+Parameters
+----------
+path : str
+    Path to FASTA file. Supports .fa, .fasta, .fa.gz, .fasta.gz
+Note : .bgz files are treated as .gz files (using gzip decompression)
+Returns
+-------
+TextIO
+    File handle opened in text mode
         
-    Returns
-    -------
-    TextIO
-        File handle opened in text mode
-        
-    Raises
-    ------
+Raises
+------
     ValueError
         If file extension is not recognized
-    """
+"""
     path_lower = path.lower()
     
     # BGZF (bgzip) detection - treat as gzip
@@ -132,30 +126,28 @@ def _open_fasta_handle(path: str) -> TextIO:
 
 
 def parse_fasta_simple(handle: TextIO) -> Iterator[Tuple[str, str]]:
-    """
-    Iterate over FASTA records as string tuples (title, sequence).
+    """Iterate over FASTA records as string tuples (title, sequence).
     
     This is a simplified FASTA parser (fallback implementation when pysam is not available).
     For each record, returns a tuple of (title, sequence) where:
     - title: The FASTA title line without the leading '>' character
     - sequence: The sequence with whitespace removed
     
-    Parameters
-    ----------
-    handle : TextIO
-        Input stream opened in text mode
+Parameters
+----------
+handle : TextIO
+    Input stream opened in text mode
+Yields
+------
+tuple[str, str]
+    Tuple of (title, sequence) for each FASTA record
         
-    Yields
-    ------
-    tuple[str, str]
-        Tuple of (title, sequence) for each FASTA record
-        
-    Examples
-    --------
+Examples
+--------
     >>> with open("example.fasta") as handle:
     ...     for title, seq in parse_fasta_simple(handle):
     ...         print(f"{title}: {seq[:10]}...")
-    """
+"""
     # Skip any text before the first record (e.g. blank lines, comments)
     title = None
     for line in handle:
@@ -186,29 +178,27 @@ def parse_fasta_simple(handle: TextIO) -> Iterator[Tuple[str, str]]:
 
 
 def parse_fasta(path: str, as_dict: bool = True) -> Union[Dict[str, str], Iterator[Tuple[str, str]]]:
-    """
-    Parse a FASTA file and return records.
+    """Parse a FASTA file and return records.
     
     Uses pysam FastxFile for fast reading (3-4x faster than previous implementation).
     Falls back to slower implementation if pysam is not available.
     
-    Parameters
-    ----------
-    path : str
-        Path to FASTA file. Supports plain and gzipped formats.
-    as_dict : bool, optional
-        If True (default), return a dictionary mapping titles to sequences.
-        If False, return an iterator of (title, sequence) tuples.
-        Note: When as_dict=False, the file handle is kept open until iteration completes.
+Parameters
+----------
+path : str
+    Path to FASTA file. Supports plain and gzipped formats.
+as_dict : bool, optional
+    If True (default), return a dictionary mapping titles to sequences.
+    If False, return an iterator of (title, sequence) tuples.
+Note : When as_dict=False, the file handle is kept open until iteration completes.
+Returns
+-------
+dict[str, str] or Iterator[tuple[str, str]]
+    If as_dict=True: Dictionary mapping record titles to sequences.
+    If as_dict=False: Iterator yielding (title, sequence) tuples.
         
-    Returns
-    -------
-    dict[str, str] or Iterator[tuple[str, str]]
-        If as_dict=True: Dictionary mapping record titles to sequences.
-        If as_dict=False: Iterator yielding (title, sequence) tuples.
-        
-    Examples
-    --------
+Examples
+--------
     >>> # Load as dictionary
     >>> records = parse_fasta("reference.fasta")
     >>> print(records["chr1"][:10])
@@ -216,7 +206,7 @@ def parse_fasta(path: str, as_dict: bool = True) -> Union[Dict[str, str], Iterat
     >>> # Load as iterator (memory efficient for large files)
     >>> for title, seq in parse_fasta("reference.fasta", as_dict=False):
     ...     print(f"{title}: {len(seq)} bp")
-    """
+"""
     if PYSAM_AVAILABLE:
         # Use pysam FastxFile for fast reading
         if as_dict:
@@ -273,8 +263,7 @@ def parse_fasta(path: str, as_dict: bool = True) -> Union[Dict[str, str], Iterat
 
 
 def load_fasta_auto(path: str, as_seqrecord: bool = True):
-    """
-    Automatically load FASTA or gzipped FASTA files.
+    """Automatically load FASTA or gzipped FASTA files.
     
     This function is compatible with the existing load_fasta_auto in hm_harmonize_sumstats.py.
     Returns an iterator of FastaRecord objects or (title, sequence) tuples.
@@ -283,21 +272,20 @@ def load_fasta_auto(path: str, as_seqrecord: bool = True):
     Note: The file handle is kept open until iteration completes. For proper resource
     management, ensure you consume the entire iterator or use it within a context manager.
     
-    Parameters
-    ----------
-    path : str
-        Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
-    as_seqrecord : bool, optional
-        If True (default), return FastaRecord objects with .id and .seq._data attributes.
-        If False, return (title, sequence) tuples.
+Parameters
+----------
+path : str
+    Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
+as_seqrecord : bool, optional
+    If True (default), return FastaRecord objects with .id and .seq._data attributes.
+    If False, return (title, sequence) tuples.
+Returns
+-------
+Iterator[FastaRecord] or Iterator[tuple[str, str]]
+    Iterator yielding FastaRecord objects or (title, sequence) tuples.
         
-    Returns
-    -------
-    Iterator[FastaRecord] or Iterator[tuple[str, str]]
-        Iterator yielding FastaRecord objects or (title, sequence) tuples.
-        
-    Examples
-    --------
+Examples
+--------
     >>> # Get FastaRecord objects
     >>> for record in load_fasta_auto("reference.fasta.gz"):
     ...     print(f"{record.id}: {len(record.seq._data)} bp")
@@ -305,7 +293,7 @@ def load_fasta_auto(path: str, as_seqrecord: bool = True):
     >>> # Get simple tuples
     >>> for title, seq in load_fasta_auto("reference.fasta.gz", as_seqrecord=False):
     ...     print(f"{title}: {len(seq)} bp")
-    """
+"""
     def _load_generator():
         if PYSAM_AVAILABLE:
             try:
@@ -354,35 +342,33 @@ def load_fasta_filtered(
     log: Log = Log(),
     verbose: bool = True
 ) -> Dict[str, FastaRecord]:
-    """
-    Load and filter FASTA records in a single pass for better performance.
+    """Load and filter FASTA records in a single pass for better performance.
     
     This function combines loading and filtering to avoid creating FastaRecord objects
     for records that will be filtered out. Only creates records for chromosomes that
     are needed.
     Uses pysam FastxFile for fast reading (3-4x faster than previous implementation).
     
-    Parameters
-    ----------
-    path : str
-        Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
-    chromlist_set : set
-        Set of valid chromosome identifiers (supposed to be integers)
-    chroms_in_sumstats_set : set
-        Set of chromosomes (supposed to be integers) present in the summary statistics
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided, creates a default mapper.
-    log : gwaslab.g_Log.Log, default=Log()
-        Logging object
-    verbose : bool, default=True
-        If True, print progress messages
-        
-    Returns
-    -------
-    dict[str, FastaRecord]
-        Dictionary mapping chromosome identifiers to FastaRecord objects
-    """
+Parameters
+----------
+path : str
+    Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
+chromlist_set : set
+    Set of valid chromosome identifiers (supposed to be integers)
+chroms_in_sumstats_set : set
+    Set of chromosomes (supposed to be integers) present in the summary statistics
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided, creates a default mapper.
+log : gwaslab.g_Log.Log, default Log()
+    Logging object
+verbose : bool, default True
+    If True, print progress messages
+Returns
+-------
+dict[str, FastaRecord]
+    Dictionary mapping chromosome identifiers to FastaRecord objects
+"""
     # Create mapper if not provided
     if mapper is None:
         mapper = ChromosomeMapper(log=log, verbose=verbose)
@@ -547,24 +533,22 @@ def write_fasta(
     wrap: int = 60,
     mode: str = "w"
 ) -> None:
-    """
-    Write FASTA records to a file.
+    """Write FASTA records to a file.
     
-    Parameters
-    ----------
-    records : dict[str, str] or Iterator[tuple[str, str]]
-        FASTA records to write. Can be:
-        - Dictionary mapping titles to sequences
-        - Iterator of (title, sequence) tuples
-    path : str
-        Output file path. Supports plain and gzipped formats based on extension.
-    wrap : int, optional
-        Line length for sequence wrapping. Default is 60. Use 0 or None for no wrapping.
-    mode : str, optional
-        File open mode. Default is "w" (write). Use "a" for append.
-        
-    Examples
-    --------
+Parameters
+----------
+records : dict[str, str] or Iterator[tuple[str, str]]
+    FASTA records to write. Can be:
+    - Dictionary mapping titles to sequences
+    - Iterator of (title, sequence) tuples
+path : str
+    Output file path. Supports plain and gzipped formats based on extension.
+wrap : int, optional
+    Line length for sequence wrapping. Default is 60. Use 0 or None for no wrapping.
+mode : str, optional
+    File open mode. Default is "w" (write). Use "a" for append.
+Examples
+--------
     >>> # Write from dictionary
     >>> records = {"chr1": "ATCGATCG", "chr2": "GCTAGCTA"}
     >>> write_fasta(records, "output.fasta")
@@ -572,7 +556,7 @@ def write_fasta(
     >>> # Write from iterator
     >>> records = [("chr1", "ATCGATCG"), ("chr2", "GCTAGCTA")]
     >>> write_fasta(records, "output.fasta.gz", wrap=80)
-    """
+"""
     # Determine if we should compress based on extension
     path_lower = path.lower()
     if path_lower.endswith((".bgz", ".bgzf")):
@@ -614,30 +598,28 @@ def write_fasta(
 
 
 def get_fasta_record(path: str, title: str) -> Optional[str]:
-    """
-    Get a specific FASTA record by title.
+    """Get a specific FASTA record by title.
     
     Uses pysam FastxFile for fast reading. For indexed files, could use pysam FastaFile
     for even faster random access, but FastxFile is sufficient for single record lookup.
     
-    Parameters
-    ----------
-    path : str
-        Path to FASTA file
-    title : str
-        Title of the record to retrieve (without the '>' character)
+Parameters
+----------
+path : str
+    Path to FASTA file
+title : str
+    Title of the record to retrieve (without the '>' character)
+Returns
+-------
+str or None
+    Sequence for the requested record, or None if not found.
         
-    Returns
-    -------
-    str or None
-        Sequence for the requested record, or None if not found.
-        
-    Examples
-    --------
+Examples
+--------
     >>> seq = get_fasta_record("reference.fasta", "chr1")
     >>> if seq:
     ...     print(f"chr1 length: {len(seq)}")
-    """
+"""
     if PYSAM_AVAILABLE:
         try:
             with pysam.FastxFile(path) as fastx:
@@ -670,39 +652,37 @@ def load_and_build_fasta_records(
     log: Log = Log(),
     verbose: bool = True
 ):
-    """
-    Load, filter, and build numpy fasta records in a single pass for maximum performance.
+    """Load, filter, and build numpy fasta records in a single pass for maximum performance.
     
     This function combines loading, filtering, and numpy array conversion in one pass,
     avoiding the creation of intermediate FastaRecord objects. This is significantly
     faster than loading and then building records separately.
     
-    Parameters
-    ----------
-    path : str
-        Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
-    chromlist_set : set
-        Set of valid chromosome identifiers
-    chroms_in_sumstats_set : set
-        Set of chromosomes present in the summary statistics
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided, creates a default mapper.
-    pos_as_dict : bool, default=True
-        If True, return starting_positions and records_len as dictionaries
-    log : gwaslab.g_Log.Log, default=Log()
-        Logging object
-    verbose : bool, default=True
-        If True, print progress messages
-        
-    Returns
-    -------
-    tuple
-        (record, starting_positions, records_len_dict) where:
-        - record: concatenated numpy array of uint8 integers
-        - starting_positions: dict or array of starting positions for each chromosome
-        - records_len_dict: dict or array of lengths for each chromosome
-    """
+Parameters
+----------
+path : str
+    Path to FASTA file. Supports: .fa, .fasta, .fa.gz, .fasta.gz, .fa.bgz, .fasta.bgz
+chromlist_set : set
+    Set of valid chromosome identifiers
+chroms_in_sumstats_set : set
+    Set of chromosomes present in the summary statistics
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided, creates a default mapper.
+pos_as_dict : bool, default True
+    If True, return starting_positions and records_len as dictionaries
+log : gwaslab.g_Log.Log, default Log()
+    Logging object
+verbose : bool, default True
+    If True, print progress messages
+Returns
+-------
+tuple
+    (record, starting_positions, records_len_dict) where:
+    - record: concatenated numpy array of uint8 integers
+    - starting_positions: dict or array of starting positions for each chromosome
+    - records_len_dict: dict or array of lengths for each chromosome
+"""
     log.write("   -Loading and building numpy fasta records:", end="", verbose=verbose)
     
     # Create mapper if not provided (for backward compatibility)
@@ -889,31 +869,29 @@ def load_and_build_fasta_records(
 
 
 def build_fasta_records(fasta_records_dict, pos_as_dict=True, log=Log(), verbose=True):
-    """
-    Build numpy fasta records from a dictionary of FastaRecord objects.
+    """Build numpy fasta records from a dictionary of FastaRecord objects.
     
     This function converts FASTA records to a single numpy array of integers for fast lookup.
     It uses a translation table to map nucleotides to integer codes.
     
-    Parameters
-    ----------
-    fasta_records_dict : dict
-        Dictionary mapping chromosome names to FastaRecord objects
-    pos_as_dict : bool, default=True
-        If True, return starting_positions and records_len as dictionaries
-    log : gwaslab.g_Log.Log, default=Log()
-        Logging object
-    verbose : bool, default=True
-        If True, print progress messages
-        
-    Returns
-    -------
-    tuple
-        (record, starting_positions, records_len_dict) where:
-        - record: concatenated numpy array of uint8 integers
-        - starting_positions: dict or array of starting positions for each chromosome
-        - records_len_dict: dict or array of lengths for each chromosome
-    """
+Parameters
+----------
+fasta_records_dict : dict
+    Dictionary mapping chromosome names to FastaRecord objects
+pos_as_dict : bool, default True
+    If True, return starting_positions and records_len as dictionaries
+log : gwaslab.g_Log.Log, default Log()
+    Logging object
+verbose : bool, default True
+    If True, print progress messages
+Returns
+-------
+tuple
+    (record, starting_positions, records_len_dict) where:
+    - record: concatenated numpy array of uint8 integers
+    - starting_positions: dict or array of starting positions for each chromosome
+    - records_len_dict: dict or array of lengths for each chromosome
+"""
     log.write("   -Building numpy fasta records from dict", verbose=verbose)
 
     # Convert the fasta record to a numpy array of integers in a very fast way.

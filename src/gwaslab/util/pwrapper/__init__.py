@@ -1,5 +1,4 @@
-"""
-Python Script Execution Wrapper
+"""Python Script Execution Wrapper
 
 Provides utilities for executing Python scripts with proper error handling,
 timeout support, and result management.

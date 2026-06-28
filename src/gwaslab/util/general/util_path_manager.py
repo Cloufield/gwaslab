@@ -7,15 +7,14 @@ from gwaslab.info.g_Log import Log
 
 
 def _sanitize_path_component(component: str) -> str:
-    """
-    Sanitize a path component by removing or replacing invalid filesystem characters.
+    """Sanitize a path component by removing or replacing invalid filesystem characters.
     
-    Parameters:
+Parameters
     component (str): Path component to sanitize
     
-    Returns:
+Returns
     str: Sanitized path component safe for filesystem use
-    """
+"""
     if not isinstance(component, str):
         component = str(component)
     
@@ -46,15 +45,14 @@ def _sanitize_path_component(component: str) -> str:
 
 
 def _generate_unique_id(use_uuid: bool = True) -> str:
-    """
-    Generate a unique identifier for file paths.
+    """Generate a unique identifier for file paths.
     
-    Parameters:
+Parameters
     use_uuid (bool): If True, use UUID. If False, use timestamp-based ID.
     
-    Returns:
+Returns
     str: Unique identifier string
-    """
+"""
     if use_uuid:
         # Use short UUID (first 8 characters) for brevity
         return uuid.uuid4().hex[:8]
@@ -66,16 +64,15 @@ def _generate_unique_id(use_uuid: bool = True) -> str:
 
 
 def _handle_path_collision(path: str, max_attempts: int = 1000) -> str:
-    """
-    Handle path collisions by appending a unique suffix if the path already exists.
+    """Handle path collisions by appending a unique suffix if the path already exists.
     
-    Parameters:
+Parameters
     path (str): Original file path
     max_attempts (int): Maximum number of attempts to find a unique path
     
-    Returns:
+Returns
     str: Unique file path that doesn't exist
-    """
+"""
     if not os.path.exists(path):
         return path
     
@@ -108,16 +105,15 @@ def _handle_path_collision(path: str, max_attempts: int = 1000) -> str:
 
 
 def _validate_path_length(path: str, max_length: int = 4096) -> str:
-    """
-    Validate and truncate path if it exceeds filesystem limits.
+    """Validate and truncate path if it exceeds filesystem limits.
     
-    Parameters:
+Parameters
     path (str): File path to validate
     max_length (int): Maximum path length (default 4096 for most filesystems)
     
-    Returns:
+Returns
     str: Validated path (truncated if necessary)
-    """
+"""
     if len(path) <= max_length:
         return path
     
@@ -179,11 +175,10 @@ def _path(*args: Any,
                  log: Log = Log(),
                  verbose: bool = True
                  ) -> str:
-    """
-    Create a file path for gwaslab-generated files based on various components.
+    """Create a file path for gwaslab-generated files based on various components.
     Supports both general file paths and downstream analysis result files.
 
-    Parameters:
+Parameters
     out (str): Full path to output file or directory. If provided, it takes precedence over other path components.
     directory (str): Directory path where the file should be saved. Overrides any directory in 'out'.
     tmp (bool): If True, adds '_gwaslab' prefix, uses temporary directory logic, and adds unique ID.
@@ -215,9 +210,9 @@ def _path(*args: Any,
     log (Log): Logging object for progress messages.
     verbose (bool): If True, logs progress messages.
 
-    Returns:
+Returns
     str: Constructed file path based on provided components, with appropriate directory and suffix.
-    """
+"""
     out_basename = ""
 
     if out is not None:

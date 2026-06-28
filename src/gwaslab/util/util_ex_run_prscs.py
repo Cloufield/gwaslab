@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-"""
-PRS-CS: a polygenic prediction method that infers posterior SNP effect sizes under continuous shrinkage (CS) priors
+"""PRS-CS: a polygenic prediction method that infers posterior SNP effect sizes under continuous shrinkage (CS) priors
 using GWAS summary statistics and an external LD reference panel.
 
 Reference: T Ge, CY Chen, Y Ni, YCA Feng, JW Smoller. Polygenic Prediction via Bayesian Regression and Continuous Shrinkage Priors.
@@ -12,7 +11,6 @@ Usage:
 python PRScs.py --ref_dir=PATH_TO_REFERENCE --bim_prefix=VALIDATION_BIM_PREFIX --sst_file=SUM_STATS_FILE --n_gwas=GWAS_SAMPLE_SIZE --out_dir=OUTPUT_DIR
                 [--a=PARAM_A --b=PARAM_B --phi=PARAM_PHI --n_iter=MCMC_ITERATIONS --n_burnin=MCMC_BURNIN --thin=MCMC_THINNING_FACTOR
                  --chrom=CHROM --write_psi=WRITE_PSI --write_pst=WRITE_POSTERIOR_SAMPLES --seed=SEED]
-
 """
 
 from typing import TYPE_CHECKING, Optional, Union, Any
@@ -35,20 +33,18 @@ DEFAULT_SEED = 123
 
 
 def _process_chromosome(args):
-    """
-    Process a single chromosome. This function is designed to be called in parallel.
+    """Process a single chromosome. This function is designed to be called in parallel.
     
-    Parameters:
-    -----------
-    args : tuple
-        Tuple containing all arguments needed to process a chromosome:
-        (chrom, ref_dir, bim_prefix, sst_file, param_dict, mcmc2, debug, seed_offset)
-    
-    Returns:
-    --------
-    chrom : int
-        Chromosome number (for result tracking)
-    """
+Parameters
+----------
+args : tuple
+    Tuple containing all arguments needed to process a chromosome:
+    (chrom, ref_dir, bim_prefix, sst_file, param_dict, mcmc2, debug, seed_offset)
+Returns
+-------
+chrom : int
+    Chromosome number (for result tracking)
+"""
     chrom, ref_dir, bim_prefix, sst_file, param_dict, mcmc2, debug, seed_offset = args
     
     # Create a simple logger for this process (log object may not be pickleable)

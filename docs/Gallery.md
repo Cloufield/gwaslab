@@ -31,3 +31,19 @@
 
 <img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/0e9c92d4-3bea-4734-8ba6-76f7fc6e329b">
 
+## Lead overlap plot (Venn / UpSet)
+
+See [Lead Overlap Plot](LeadOverlapPlot.md) and the [workflow example](visualization_lead_overlap.md).
+
+<img width="600" alt="Lead overlap Venn" src="images/notebooks/visualization_lead_overlap_venn.png">
+
+<img width="600" alt="Lead overlap UpSet" src="images/notebooks/visualization_lead_overlap_upset.png">
+
+## Sankey plot
+
+See [Sankey Plot](SankeyPlot.md) and the [workflow example](visualization_sankey.md).
+
+<img width="600" alt="Sankey preset stages" src="images/notebooks/visualization_sankey_preset.png">
+
+<img width="600" alt="Sankey subtype funnel" src="images/notebooks/visualization_sankey_subtype.png">
+

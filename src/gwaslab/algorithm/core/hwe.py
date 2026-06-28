@@ -1,4 +1,5 @@
-"""Exact Hardy-Weinberg equilibrium test."""
+"""Exact Hardy-Weinberg equilibrium test.
+"""
 
 from __future__ import annotations
 
@@ -6,32 +7,30 @@ import numpy as np
 
 
 def snphwe(obs_hets: int, obs_hom1: int, obs_hom2: int) -> float:
-    """
-    Compute exact Hardy-Weinberg equilibrium P-value for a SNP.
+    """Compute exact Hardy-Weinberg equilibrium P-value for a SNP.
 
     Uses the Wigginton et al. (2005) exact test via a combinatorial
     recurrence (Python port of Jeremy McRae's C++ implementation).
 
-    Parameters
-    ----------
-    obs_hets : int
-        Observed heterozygote count.
-    obs_hom1 : int
-        Observed homozygote count for the first allele.
-    obs_hom2 : int
-        Observed homozygote count for the second allele.
+Parameters
+----------
+obs_hets : int
+    Observed heterozygote count.
+obs_hom1 : int
+    Observed homozygote count for the first allele.
+obs_hom2 : int
+    Observed homozygote count for the second allele.
+Returns
+-------
+float
+    Two-sided HWE P-value capped at 1.0.
 
-    Returns
-    -------
-    float
-        Two-sided HWE P-value capped at 1.0.
-
-    References
-    ----------
+References
+----------
     Wigginton, J. E., Cutler, D. J., & Abecasis, G. R. (2005). A note on exact
     tests of Hardy-Weinberg equilibrium. American Journal of Human Genetics,
     76(5), 887-893.
-    """
+"""
     if obs_hom1 < 0 or obs_hom2 < 0 or obs_hets < 0:
         raise ValueError("snphwe: negative allele count")
 

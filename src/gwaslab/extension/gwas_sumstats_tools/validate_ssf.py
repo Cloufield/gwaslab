@@ -1,5 +1,4 @@
-"""
-Simplified SSF format validator using only pandas/numpy (no external dependencies).
+"""Simplified SSF format validator using only pandas/numpy (no external dependencies).
 This module replicates the original gwas_sumstats_tools validation behavior as closely as possible.
 """
 from pathlib import Path
@@ -38,31 +37,29 @@ def validate_ssf_file(
     sample_size: int = 100_000,
     chunksize: int = 1_000_000
 ) -> Tuple[bool, str, Optional[List[str]]]:
-    """
-    Validate an SSF format file - replicates original validator behavior.
+    """Validate an SSF format file - replicates original validator behavior.
     
-    Parameters
-    ----------
-    filename : Path
-        Path to the SSF file to validate
-    log : Log, optional
-        Logger instance for messages
-    verbose : bool, default True
-        Whether to print validation messages
-    minimum_rows : int, default 100_000
-        Minimum number of rows required
-    pval_zero : bool, default False
-        Whether to allow p-values of zero
-    sample_size : int, default 100_000
-        Number of rows to sample for initial validation
-    chunksize : int, default 1_000_000
-        Chunk size for reading large files
-        
-    Returns
-    -------
+Parameters
+----------
+filename : Path
+    Path to the SSF file to validate
+log : Log, optional
+    Logger instance for messages
+verbose : bool, default True
+    Whether to print validation messages
+minimum_rows : int, default 100_000
+    Minimum number of rows required
+pval_zero : bool, default False
+    Whether to allow p-values of zero
+sample_size : int, default 100_000
+    Number of rows to sample for initial validation
+chunksize : int, default 1_000_000
+    Chunk size for reading large files
+Returns
+-------
     Tuple[bool, str, Optional[List[str]]]
         (is_valid, message, error_list)
-    """
+"""
     errors = []
     primary_error_type = None
     
@@ -207,7 +204,8 @@ def validate_ssf_file(
 
 
 def _detect_effect_field(header: List[str]) -> Optional[str]:
-    """Detect effect field from header - matches original logic (checks index 4)."""
+    """Detect effect field from header - matches original logic (checks index 4).
+"""
     if len(header) > 4:
         field_4 = header[4]
         if field_4 in SSF_EFFECT_FIELDS:
@@ -222,7 +220,8 @@ def _detect_effect_field(header: List[str]) -> Optional[str]:
 
 
 def _detect_p_value_field(header: List[str]) -> Optional[str]:
-    """Detect p-value field from header - matches original logic (checks index 7)."""
+    """Detect p-value field from header - matches original logic (checks index 7).
+"""
     if len(header) > 7:
         field_7 = header[7]
         if field_7 in SSF_PVALUE_FIELDS:
@@ -237,7 +236,8 @@ def _detect_p_value_field(header: List[str]) -> Optional[str]:
 
 
 def _get_required_field_order(effect_field: str, p_value_field: str) -> List[str]:
-    """Get required field order matching original schema.field_order()."""
+    """Get required field order matching original schema.field_order().
+"""
     # Base required fields (excluding effect and p-value which vary)
     base_fields = [
         "chromosome",
@@ -258,11 +258,10 @@ def _validate_chromosomes(
     log: Log,
     verbose: bool
 ) -> Tuple[bool, str]:
-    """
-    Validate chromosomes - matches original logic:
+    """Validate chromosomes - matches original logic:
     - Requires all autosomes (1-22)
     - Treats 23-25 (X, Y, MT) as optional
-    """
+"""
     if "chromosome" not in header:
         return False, "Chromosome column is missing from the input file."
     
@@ -301,7 +300,8 @@ def _validate_chromosomes(
 
 
 def _read_ssf_sample(filename: Path, nrows: int) -> pd.DataFrame:
-    """Read a sample of rows from SSF file with type coercion."""
+    """Read a sample of rows from SSF file with type coercion.
+"""
     na_values = ["", "#NA", "NA", "N/A", "NaN", "NR"]
     
     if str(filename).endswith('.gz'):
@@ -316,7 +316,8 @@ def _read_ssf_sample(filename: Path, nrows: int) -> pd.DataFrame:
 
 
 def _coerce_numeric_types(df: pd.DataFrame) -> pd.DataFrame:
-    """Coerce string numbers to appropriate numeric types."""
+    """Coerce string numbers to appropriate numeric types.
+"""
     df = df.copy()
     
     # Numeric columns
@@ -341,7 +342,8 @@ def _coerce_numeric_types(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _count_rows(filename: Path) -> int:
-    """Count total rows in file (excluding header)."""
+    """Count total rows in file (excluding header).
+"""
     if str(filename).endswith('.gz'):
         with gzip.open(filename, 'rt') as f:
             return sum(1 for _ in f) - 1  # Subtract header
@@ -361,7 +363,8 @@ def _validate_file_chunks(
     log: Log,
     verbose: bool
 ) -> List[Dict[str, str]]:
-    """Validate file in chunks."""
+    """Validate file in chunks.
+"""
     errors = []
     na_values = ["", "#NA", "NA", "N/A", "NaN", "NR"]
     
@@ -400,10 +403,9 @@ def _validate_dataframe(
     log: Log,
     verbose: bool
 ) -> List[Dict[str, str]]:
-    """
-    Validate a pandas DataFrame against SSF requirements.
+    """Validate a pandas DataFrame against SSF requirements.
     Matches original Pandera validation logic.
-    """
+"""
     errors = []
     
     # Split p-values into mantissa and exponent for precision (CRITICAL)
@@ -526,11 +528,10 @@ def _validate_dataframe(
 
 
 def _pval_to_mantissa_and_exponent(df: pd.DataFrame, p_value_field: str) -> pd.DataFrame:
-    """
-    Split p-values into mantissa and exponent for precision validation.
+    """Split p-values into mantissa and exponent for precision validation.
     This is CRITICAL for handling very small p-values that would round to 0 in float64.
     Matches original pval_to_mantissa_and_exponent() logic.
-    """
+"""
     df = df.copy()
     
     if p_value_field not in df.columns:

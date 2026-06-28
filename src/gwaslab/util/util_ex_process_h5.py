@@ -1,5 +1,4 @@
-"""
-VCF to HDF5 Processing Module
+"""VCF to HDF5 Processing Module
 
 This module provides optimized functions to convert VCF files to HDF5 format for efficient
 rsID to CHR:POS lookup. Each chromosome is stored in a separate HDF5 file for maximum
@@ -57,19 +56,17 @@ import shutil
 from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
 
 def _is_valid_hdf5_file(file_path):
-    """
-    Check if an HDF5 file is valid and can be opened.
+    """Check if an HDF5 file is valid and can be opened.
     
-    Parameters
-    ----------
-    file_path : str
-        Path to HDF5 file
-        
-    Returns
-    -------
-    bool
-        True if file is valid, False if corrupted or cannot be opened
-    """
+Parameters
+----------
+file_path : str
+    Path to HDF5 file
+Returns
+-------
+bool
+    True if file is valid, False if corrupted or cannot be opened
+"""
     if not os.path.exists(file_path):
         return False
     
@@ -83,19 +80,17 @@ def _is_valid_hdf5_file(file_path):
         return False
 
 def _process_chromosome_bcftools(args):
-    """
-    Process a single chromosome using bcftools and write to chromosome-specific HDF5 file.
+    """Process a single chromosome using bcftools and write to chromosome-specific HDF5 file.
     
-    Parameters
-    ----------
-    args : tuple
-        (chr_name, vcf_path, chr_dict, h5_dir, chr_num, complevel, overwrite, log, verbose)
-        
-    Returns
-    -------
-    int
-        Number of rows processed
-    """
+Parameters
+----------
+args : tuple
+    (chr_name, vcf_path, chr_dict, h5_dir, chr_num, complevel, overwrite, log, verbose)
+Returns
+-------
+int
+    Number of rows processed
+"""
     (chr_name, vcf_path, chr_dict, h5_dir, chr_num, complevel, overwrite, log, verbose) = args
     
     # Get process/thread ID for logging
@@ -274,38 +269,36 @@ def process_vcf_to_hfd5(vcf: str,
                                  overwrite: bool = False,
                                  log: Log = Log(),
                                  verbose: bool = True) -> str:
-    """
-    Process VCF file to HDF5 using bcftools to extract chromosomes in parallel.
+    """Process VCF file to HDF5 using bcftools to extract chromosomes in parallel.
     
     This function uses bcftools to extract each chromosome separately and process
     them in parallel, which is much faster for large indexed VCF files.
     
-    Parameters
-    ----------
-    vcf : str
-        Path to VCF/BCF file (must be indexed with .tbi or .csi)
-    directory : str, optional
-        Output directory for HDF5 file
-    chr_dict : dict, optional
-        Dictionary for chromosome mapping
-    complevel : int, default=3
-        Compression level for HDF5 (0-9). Level 3 provides a good balance between compression ratio and processing speed.
-    threads : int, default=1
-        Number of threads for parallel processing
-    chr_list : list, optional
-        List of chromosomes to process. If None, processes all chromosomes 1-25
-    overwrite : bool, default=False
-        If True, overwrite existing HDF5 files. If False, skip processing if files exist.
-    log : Log, optional
-        Logging object
-    verbose : bool, default=True
-        Verbose output
-        
-    Returns
-    -------
-    str
-        Path to output HDF5 file
-    """
+Parameters
+----------
+vcf : str
+    Path to VCF/BCF file (must be indexed with .tbi or .csi)
+directory : str, optional
+    Output directory for HDF5 file
+chr_dict : dict, optional
+    Dictionary for chromosome mapping
+complevel : int, default 3
+    Compression level for HDF5 (0-9). Level 3 provides a good balance between compression ratio and processing speed.
+threads : int, default 1
+    Number of threads for parallel processing
+chr_list : list, optional
+    List of chromosomes to process. If None, processes all chromosomes 1-25
+overwrite : bool, default False
+    If True, overwrite existing HDF5 files. If False, skip processing if files exist.
+log : Log, optional
+    Logging object
+verbose : bool, default True
+    Verbose output
+Returns
+-------
+str
+    Path to output HDF5 file
+"""
     
     # Check if bcftools is available
     if not shutil.which("bcftools"):

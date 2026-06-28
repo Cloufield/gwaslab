@@ -62,30 +62,14 @@ color_dict_i={
 
 def _load_chromatin_file(file_path: str, target_chr: int, target_start: int, target_end: int, 
                          log: Log, verbose: bool) -> pd.DataFrame:
-    """
-    Load and filter chromatin state data from a BED file.
-    
-    Parameters
-    ----------
-    file_path : str
-        Path to chromatin state BED file
-    target_chr : int
-        Target chromosome number
-    target_start : int
-        Region start position
-    target_end : int
-        Region end position
-    log : Log
-        Logger instance
-    verbose : bool
-        Whether to show progress messages
-    
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with columns: STATE_i, START, END
-        Contains only records overlapping the target region
-    """
+    """Load and filter chromatin state data from a BED file.
+
+Returns
+-------
+pd.DataFrame
+    DataFrame with columns: STATE_i, START, END
+    Contains only records overlapping the target region
+"""
     log.write(f" -Loading: {file_path}", verbose=verbose)
     
     # Read BED file
@@ -116,26 +100,16 @@ def _load_chromatin_file(file_path: str, target_chr: int, target_start: int, tar
 
 
 def _calculate_line_width(fig, ax, row_height: float = 0.1) -> float:
-    """
-    Calculate appropriate line width for chromatin state bars.
+    """Calculate appropriate line width for chromatin state bars.
     
     The line width is calculated to match the visual height of each row,
     ensuring bars appear as solid rectangles rather than thin lines.
-    
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        Figure object for DPI calculation
-    ax : matplotlib.axes.Axes
-        Axes object for coordinate transformation
-    row_height : float, default=0.1
-        Height of each row in data coordinates
-    
-    Returns
-    -------
-    float
-        Line width in points
-    """
+
+Returns
+-------
+float
+    Line width in points
+"""
     # Get pixel height for row_height in data coordinates
     pixel_height = abs(
         ax.transData.transform([0, 0])[1] - 
@@ -164,57 +138,17 @@ def _plot_chromatin_state(
     log: Log = Log(),
     verbose: bool = True
 ):
-    """
-    Plot chromatin state tracks from Roadmap 15-state model files.
+    """Plot chromatin state tracks from Roadmap 15-state model files.
     
     This function visualizes chromatin states from Roadmap Epigenomics Project
     15-state core marks files. Each state is displayed as a colored horizontal
     bar, with different tissues/cell types shown as separate rows.
-    
-    Parameters
-    ----------
-    region_chromatin_files : list of str
-        List of paths to Roadmap 15_coreMarks_mnemonics.bed.gz files.
-        Each file should contain chromatin state annotations in BED format.
-    region : tuple of (int, int, int)
-        Genomic region as (chromosome, start, end) in 1-based coordinates.
-        Example: (1, 1000000, 2000000) for chr1:1000000-2000000
-    region_chromatin_labels : list of str, optional
-        List of labels for each chromatin file (one label per file).
-        Should match the length of region_chromatin_files.
-        If None, labels are automatically extracted from filenames by splitting
-        on "_" and using the first part (e.g., "E098_15_coreMarks_mnemonics.bed.gz" -> "E098").
-    fig : matplotlib.figure.Figure, optional
-        Figure object to plot on. If None, a new figure will be created.
-        If ax is provided but fig is None, fig will be extracted from ax.
-    ax : matplotlib.axes.Axes, optional
-        Axes object to plot on. If None, a new figure and axes will be created.
-    xlim_i : list of float, optional
-        X-axis limit offset. If None, defaults to [0].
-        Used for aligning with other plots in stacked panels.
-    fontsize : int, default=12
-        Font size for labels.
-    font_family : str, default="Arial"
-        Font family for text labels.
-    fig_kwargs : dict, optional
-        Additional keyword arguments for figure creation (e.g., {'figsize': (10, 4), 'dpi': 200}).
-        Only used when creating a new figure. Default figsize is (10, 2 + 0.3 * n_tracks).
-    save : str, bool, or None, optional
-        If str: file path to save figure.
-        If True: save to default path.
-        If None/False: skip saving.
-    save_kwargs : dict, optional
-        Additional arguments for saving (e.g., {'dpi': 300, 'bbox_inches': 'tight'}).
-    log : Log, default=Log()
-        Logger instance for messages.
-    verbose : bool, default=True
-        Whether to show progress messages.
-    
-    Returns
-    -------
-    matplotlib.figure.Figure
-        The figure object.
-    """
+
+Returns
+-------
+matplotlib.figure.Figure
+    The figure object.
+"""
     # Calculate number of tracks for default figsize
     n_tracks = len(region_chromatin_files)
     

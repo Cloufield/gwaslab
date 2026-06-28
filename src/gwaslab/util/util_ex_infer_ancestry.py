@@ -55,31 +55,30 @@ def _infer_ancestry(
     compares the effective allele frequencies from the sumstats with those from 1kg data
     to determine the closest ancestry. Inconsistency may suggest mislabeling of EAF.
 
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    ancestry_af : str, optional
-        Path to allele frequency file, or keywords ``1kg_hm3_hg19_eaf`` / ``1kg_hm3_hg38_eaf``.
-        If None, uses downloaded full PAN when available, otherwise the builtin core panel.
-    build : str, optional
-        Genome build version. Options are "19" or "38". Required when ``ancestry_af`` is None.
-    _core : bool, optional
-        Internal flag. If True, force use of the builtin core EAF panel and skip downloaded
-        reference lookup.
-    verbose : bool, optional
-        If True, write log messages. Default is True.
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+ancestry_af : str, optional
+    Path to allele frequency file, or keywords ``1kg_hm3_hg19_eaf`` / ``1kg_hm3_hg38_eaf``.
+    If None, uses downloaded full PAN when available, otherwise the builtin core panel.
+build : str, optional
+    Genome build version. Options are "19" or "38". Required when ``ancestry_af`` is None.
+_core : bool, optional
+    Internal flag. If True, force use of the builtin core EAF panel and skip downloaded
+    reference lookup.
+verbose : bool, optional
+    If True, write log messages. Default is True.
+Returns
+-------
+str
+    The closest ancestry determined by the minimum average Fst value, derived from
+    the header name of the corresponding column.
 
-    Returns
-    -------
-    str
-        The closest ancestry determined by the minimum average Fst value, derived from
-        the header name of the corresponding column.
-
-    Notes
-    -----
+Notes
+-----
     This function internally uses `calculate_fst` to compute Fst values for each variant.
-    """
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe

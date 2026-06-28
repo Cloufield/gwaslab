@@ -514,6 +514,94 @@ class TestBannedArguments(unittest.TestCase):
         allowed = self.pm.allowed('plot_mqq', 'r')
         # highlight should not be in allowed set for plot_mqq:r
         self.assertNotIn('highlight', allowed if allowed else set())
+
+    def test_param_groups_highlight_loaded(self):
+        """param_groups.highlight defines the full highlight family."""
+        group = self.pm._param_groups.get("highlight", frozenset())
+        expected = frozenset({
+            "highlight",
+            "highlight_chrpos",
+            "highlight_color",
+            "highlight_anno_kwargs",
+            "highlight_anno_args",
+            "highlight_lim",
+            "highlight_lim_mode",
+            "highlight_windowkb",
+        })
+        self.assertEqual(group, expected)
+
+    def test_no_plots_group_removes_highlight_family_from_allowed(self):
+        """no_plots_group cascades to all highlight_* siblings for regional."""
+        allowed = self.pm.allowed("plot_region", "r") or set()
+        highlight_family = {n for n in allowed if n.startswith("highlight")}
+        self.assertEqual(highlight_family, set())
+
+    def test_no_plots_group_filter_strips_sibling_kwargs(self):
+        """User-passed highlight_color is not kept for plot_region:r."""
+        filtered = self.pm.filter(
+            _mqqplot,
+            {"highlight_color": "red", "region": (1, 100, 200)},
+            key="plot_region",
+            mode="r",
+            log=Log(),
+            verbose=False,
+        )
+        self.assertNotEqual(filtered.get("highlight_color"), "red")
+
+    def test_regional_panel_groups_loaded(self):
+        """Direction A param groups are loaded with expected keys."""
+        for name in ("ld", "rr", "region_panel", "qq_panel", "mqq_layout", "brisbane"):
+            self.assertIn(name, self.pm._param_groups)
+        self.assertIn("region", self.pm._param_groups["region_panel"])
+        self.assertIn("ld_block", self.pm._param_groups["ld"])
+        self.assertIn("qtitle", self.pm._param_groups["qq_panel"])
+
+    def test_param_groups_members_disjoint(self):
+        seen = {}
+        for group_name, members in self.pm._param_groups.items():
+            for name in members:
+                prior = seen.get(name)
+                self.assertIsNone(prior, f"{name} in both {prior} and {group_name}")
+                seen[name] = group_name
+
+    def test_manhattan_allowed_excludes_regional_panel(self):
+        allowed = self.pm.allowed("plot_manhattan", None) or set()
+        self.assertNotIn("region", allowed)
+        self.assertNotIn("ld_block", allowed)
+        self.assertNotIn("vcf_path", allowed)
+        self.assertNotIn("rr_path", allowed)
+
+    def test_region_allowed_excludes_qq_panel(self):
+        allowed = self.pm.allowed("plot_region", "r") or set()
+        for name in ("qtitle", "mqqratio", "qq_scatter_kwargs", "density_color", "pinpoint"):
+            self.assertNotIn(name, allowed)
+
+    def test_manhattan_filter_strips_regional_kwarg(self):
+        filtered = self.pm.filter(
+            _mqqplot,
+            {"ld_link_thr": 0.5, "sig_level": 5e-8},
+            key="plot_manhattan",
+            mode=None,
+            log=Log(),
+            verbose=False,
+        )
+        self.assertNotEqual(filtered.get("ld_link_thr"), 0.5)
+
+    def test_region_filter_strips_qq_kwarg(self):
+        filtered = self.pm.filter(
+            _mqqplot,
+            {"qtitle": "My QQ", "region": (1, 100, 200)},
+            key="plot_region",
+            mode="r",
+            log=Log(),
+            verbose=False,
+        )
+        self.assertNotEqual(filtered.get("qtitle"), "My QQ")
+
+    def test_pipcs_keeps_region_not_ld(self):
+        allowed = self.pm.allowed("plot_pipcs", None) or set()
+        self.assertIn("region", allowed)
+        self.assertNotIn("ld_block", allowed)
     
     def test_banned_arg_default_preserved(self):
         """Test that defaults for banned args are preserved."""
@@ -521,6 +609,18 @@ class TestBannedArguments(unittest.TestCase):
         # highlight default should exist even though it's banned
         self.assertIn('highlight', defaults)
         self.assertEqual(defaults['highlight'], [])
+
+    def test_regional_marker_defaults(self):
+        """Regional mode marker_size and region_marker_shapes match runtime defaults."""
+        defaults = self.pm.defaults('plot_mqq', 'r')
+        self.assertEqual(defaults['marker_size'], [40, 65])
+        self.assertEqual(defaults['region_marker_shapes'][0], 'X')
+        self.assertTrue(defaults.get('region_legend_marker', True))
+
+    def test_regional_ld_link_thr_default(self):
+        """Regional ld_link_thr matches signature and viz_aux_params.txt."""
+        defaults = self.pm.defaults('plot_mqq', 'r')
+        self.assertEqual(defaults['ld_link_thr'], 0.8)
     
     def test_banned_arg_passes_through_with_default(self):
         """Test that banned args with defaults pass through filter."""
@@ -1292,6 +1392,109 @@ class TestUnknownModeInheritance(unittest.TestCase):
         # However, base plot should have "RegistryBase"
         d_base = self.pm.defaults("plotA", None)
         self.assertEqual(d_base.get('arg1'), "RegistryBase")
+
+
+class TestUserKeysFilterLogging(unittest.TestCase):
+    """Log only user-supplied args that were filtered, not registry defaults."""
+
+    def setUp(self):
+        self.pm = VizParamsManager()
+        load_viz_config(self.pm)
+        self.log = Log()
+
+    def _filter_log_lines(self):
+        return [
+            entry["message"]
+            for entry in self.log.log_entries
+            if "Filtered out args for" in entry["message"]
+        ]
+
+    def test_registry_defaults_not_logged(self):
+        override = {"anno": "SNPID", "skip": 3, "anno_kwargs_single": {"rs1": {"c": "red"}}}
+        merged = self.pm.merge("plot_mqq", override, mode=None)
+        user_keys = set(override.keys())
+        self.pm.filter(
+            _mqqplot,
+            merged,
+            key="plot_mqq",
+            mode=None,
+            log=self.log,
+            verbose=True,
+            user_keys=user_keys,
+        )
+        self.assertEqual(self._filter_log_lines(), [])
+
+    def test_user_banned_arg_logged(self):
+        override = {
+            "region": (7, 126253550, 128253550),
+            "highlight": ["rs1"],
+        }
+        merged = self.pm.merge("plot_mqq", override, mode="r")
+        user_keys = set(override.keys())
+        self.pm.filter(
+            _mqqplot,
+            merged,
+            key="plot_mqq",
+            mode="r",
+            log=self.log,
+            verbose=True,
+            user_keys=user_keys,
+        )
+        lines = self._filter_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertIn("highlight", lines[0])
+        self.assertNotIn("gtf_path", lines[0])
+
+    def test_user_regional_arg_on_manhattan_logged(self):
+        override = {"gtf_path": "custom.gtf", "sig_level": 5e-8}
+        merged = self.pm.merge("plot_mqq", override, mode=None)
+        user_keys = set(override.keys())
+        self.pm.filter(
+            _mqqplot,
+            merged,
+            key="plot_mqq",
+            mode=None,
+            log=self.log,
+            verbose=True,
+            user_keys=user_keys,
+        )
+        lines = self._filter_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertIn("gtf_path", lines[0])
+        self.assertNotIn("sig_level", lines[0])
+
+    def test_object_preset_filtered_is_logged(self):
+        self.pm.update("plot_mqq", {"gtf_path": "preset.gtf"}, mode=None)
+        user_keys = set(self.pm.get("plot_mqq", None).keys())
+        merged = self.pm.merge("plot_mqq", {"anno": "SNPID"}, mode=None)
+        user_keys |= {"anno"}
+        self.pm.filter(
+            _mqqplot,
+            merged,
+            key="plot_mqq",
+            mode=None,
+            log=self.log,
+            verbose=True,
+            user_keys=user_keys,
+        )
+        lines = self._filter_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertIn("gtf_path", lines[0])
+
+    def test_no_user_keys_keeps_legacy_log_behavior(self):
+        merged = self.pm.merge("plot_mqq", {"anno": "SNPID"}, mode=None)
+        self.pm.filter(
+            _mqqplot,
+            merged,
+            key="plot_mqq",
+            mode=None,
+            log=self.log,
+            verbose=True,
+            user_keys=None,
+        )
+        lines = self._filter_log_lines()
+        self.assertEqual(len(lines), 1)
+        self.assertIn("gtf_path", lines[0])
 
 
 class TestEdgeCases(unittest.TestCase):

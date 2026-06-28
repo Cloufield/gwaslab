@@ -13,11 +13,11 @@ import pandas as pd
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "src")
-FIXTURES_DIR = os.path.join(ROOT, "test", "fixtures")
+SCRIPTS_DIR = os.path.join(ROOT, "scripts")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
-if FIXTURES_DIR not in sys.path:
-    sys.path.insert(0, FIXTURES_DIR)
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
 
 import gwaslab as gl
 from gwaslab.g_Sumstats import Sumstats
@@ -177,7 +177,7 @@ class TestDiseaseSubtypeFixture(unittest.TestCase):
         plt.close("all")
 
     def test_disease_subtype_sankey_example(self):
-        from sankey_demo_fixtures import (  # noqa: WPS433
+        from sankey_demo_data import (  # noqa: WPS433
             simulate_disease_subtype_sumstats,
             overall_signal_colors,
         )

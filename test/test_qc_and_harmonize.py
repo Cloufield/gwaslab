@@ -44,6 +44,45 @@ class TestBasicCheck(unittest.TestCase):
         self.assertGreater(len(gl.data), 0)
 
 
+class TestUnifiedQcPipeline(unittest.TestCase):
+    """basic_check and harmonize(basic_check=True) share _run_qc_core."""
+
+    def test_qc_steps_match_between_basic_check_and_harmonize(self):
+        path = os.path.join(RAW_DIR, "dirty_sumstats.tsv")
+        gl_bc = Sumstats(
+            sumstats=path, fmt=None, tab_fmt="tsv", snpid="SNPID", chrom="CHR", pos="POS",
+            ea="EA", nea="NEA", p="P", eaf="EAF", verbose=False,
+        )
+        gl_hm = Sumstats(
+            sumstats=path, fmt=None, tab_fmt="tsv", snpid="SNPID", chrom="CHR", pos="POS",
+            ea="EA", nea="NEA", p="P", eaf="EAF", verbose=False,
+        )
+        gl_bc.data = gl_bc.data.iloc[::15].reset_index(drop=True)
+        gl_hm.data = gl_hm.data.iloc[::15].reset_index(drop=True)
+        gl_bc.basic_check(verbose=False)
+        gl_hm.harmonize(basic_check=True, verbose=False)
+        qc_bc = gl_bc.check_sumstats_qc_status()["qc_and_harmonization_status"]["qc"]
+        qc_hm = gl_hm.check_sumstats_qc_status()["qc_and_harmonization_status"]["qc"]
+        for step in ("id", "chr", "pos", "allele", "sanity", "consistency", "normalize", "sort_coord", "sort_column"):
+            self.assertEqual(
+                qc_bc[step]["performed"],
+                qc_hm[step]["performed"],
+                msg=f"QC step {step} differs between basic_check and harmonize",
+            )
+
+    def test_consistency_not_marked_when_skipped(self):
+        path = os.path.join(RAW_DIR, "dirty_sumstats.tsv")
+        gl = Sumstats(
+            sumstats=path, fmt=None, tab_fmt="tsv", snpid="SNPID", chrom="CHR", pos="POS",
+            ea="EA", nea="NEA", p="P", verbose=False,
+        )
+        gl.data = gl.data.iloc[::20].reset_index(drop=True)
+        from gwaslab.qc.qc_pipeline import _run_qc_core
+        report = _run_qc_core(gl, include_consistency=False, normalize=False, remove_dup=False, verbose=False)
+        self.assertFalse(report.steps.get("consistency", True))
+        self.assertTrue(report.steps.get("sanity", False))
+
+
 class TestRemoveDup(unittest.TestCase):
     def test_remove_dup_on_duplicate(self):
         path = os.path.join(RAW_DIR, "duplicate.tsv")

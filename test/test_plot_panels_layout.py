@@ -81,6 +81,17 @@ class TestPlotPanelsLayout(unittest.TestCase):
             ),
         ]
 
+    def test_single_panel_without_height_ratios(self):
+        panels = self._genomic_panels()[:1]
+        fig, axes = gl.plot_panels(
+            panels,
+            region=self.region,
+            fig_kwargs={"figsize": (8, 3), "dpi": 80},
+            verbose=False,
+        )
+        self.assertIsNotNone(fig)
+        self.assertEqual(len(axes), 1)
+
     def test_user_figsize_width_not_capped(self):
         panels = self._genomic_panels()[:1]
         fig, _ = gl.plot_panels(

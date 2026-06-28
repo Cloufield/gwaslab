@@ -1,5 +1,4 @@
-"""
-GWAS Catalog API v2 Extension Module
+"""GWAS Catalog API v2 Extension Module
 
 This module provides an interface to interact with the GWAS Catalog REST API v2.
 It allows querying studies, associations, variants, traits, and other GWAS Catalog data.

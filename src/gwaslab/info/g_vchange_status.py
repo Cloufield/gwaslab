@@ -1,5 +1,4 @@
-"""
-Status code manipulation functions for GWASLab.
+"""Status code manipulation functions for GWASLab.
 
 Status codes are 7-digit integers where:
 - Digit 1-2: Build number (e.g., 13 for hg13, 19 for hg19, 38 for hg38)
@@ -28,19 +27,17 @@ INTEGER_DTYPES = ['int64', 'Int64', 'int32', 'Int32']
 # ============================================================================
 
 def _normalize_to_integer_series(status: Union[int, pd.Series, List[int]]) -> pd.Series:
-    """
-    Convert status to integer Series, handling various input types.
+    """Convert status to integer Series, handling various input types.
     
-    Parameters:
-    -----------
-    status : int, Series, or array-like
-        Status code(s) to normalize
-        
-    Returns:
-    --------
-    pd.Series
-        Integer Series with status codes (Int64 if NaN values present, int64 otherwise)
-    """
+Parameters
+----------
+status : int, Series, or array-like
+    Status code(s) to normalize
+Returns
+-------
+pd.Series
+    Integer Series with status codes (Int64 if NaN values present, int64 otherwise)
+"""
     if isinstance(status, pd.Series):
         if status.dtype in INTEGER_DTYPES:
             return status
@@ -91,21 +88,19 @@ def _normalize_to_integer_series(status: Union[int, pd.Series, List[int]]) -> pd
 
 
 def ensure_status_int(sumstats: pd.DataFrame, status_col: str = "STATUS") -> pd.DataFrame:
-    """
-    Ensure STATUS column is integer type (Int64), converting from categorical or other types if needed.
+    """Ensure STATUS column is integer type (Int64), converting from categorical or other types if needed.
     
-    Parameters:
-    -----------
-    sumstats : pd.DataFrame
-        DataFrame with STATUS column
-    status_col : str, default="STATUS"
-        Name of the status column
-        
-    Returns:
-    --------
-    pd.DataFrame
-        DataFrame with STATUS column as Int64
-    """
+Parameters
+----------
+sumstats : pd.DataFrame
+    DataFrame with STATUS column
+status_col : str, default "STATUS"
+    Name of the status column
+Returns
+-------
+pd.DataFrame
+    DataFrame with STATUS column as Int64
+"""
     if status_col in sumstats.columns:
         if sumstats[status_col].dtype.name == 'category':
             sumstats[status_col] = sumstats[status_col].astype(str).astype('Int64')
@@ -118,58 +113,52 @@ def ensure_status_int(sumstats: pd.DataFrame, status_col: str = "STATUS") -> pd.
 
 
 def _calculate_powers(digit: int) -> Tuple[int, int]:
-    """
-    Calculate powers of 10 for extracting/replacing digits at position.
+    """Calculate powers of 10 for extracting/replacing digits at position.
     
-    Parameters:
-    -----------
-    digit : int
-        Digit position (1-indexed, 1=leftmost, 7=rightmost)
-        
-    Returns:
-    --------
-    tuple
-        (power_left, power_right) for digit extraction
-    """
+Parameters
+----------
+digit : int
+    Digit position (1-indexed, 1=leftmost, 7=rightmost)
+Returns
+-------
+tuple
+    (power_left, power_right) for digit extraction
+"""
     power_right = 10**(STATUS_CODE_LENGTH - digit)
     power_left = 10**(STATUS_CODE_LENGTH - digit + 1)
     return power_left, power_right
 
 
 def _extract_digit(status_int: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
-    """
-    Extract a specific digit from integer status code(s).
+    """Extract a specific digit from integer status code(s).
     
-    Parameters:
-    -----------
-    status_int : int or Series
-        Status code(s) as integer
-    digit : int
-        Digit position (1-indexed)
-        
-    Returns:
-    --------
-    int or Series
-        Extracted digit(s) at position
-    """
+Parameters
+----------
+status_int : int or Series
+    Status code(s) as integer
+digit : int
+    Digit position (1-indexed)
+Returns
+-------
+int or Series
+    Extracted digit(s) at position
+"""
     power_left, power_right = _calculate_powers(digit)
     return (status_int // power_right) % 10
 
 
 def _parse_pattern_for_digit_constraints(pattern: str) -> Optional[List[Tuple[int, List[int]]]]:
-    """
-    Parse regex pattern to extract digit position constraints.
+    """Parse regex pattern to extract digit position constraints.
     
-    Parameters:
-    -----------
-    pattern : str
-        Regex pattern like r'\\w\\w\\w\\w\\w[35]\\w'
-        
-    Returns:
-    --------
-    tuple or None
-        (digit_positions, allowed_digits_list) if parseable, None otherwise
-    """
+Parameters
+----------
+pattern : str
+    Regex pattern like r'\w\w\w\w\w[35]\w'
+Returns
+-------
+tuple or None
+    (digit_positions, allowed_digits_list) if parseable, None otherwise
+"""
     pattern_clean = pattern.strip('^$')
     
     # Check for literal digits (not in character classes) - if found, fall back to string matching
@@ -216,30 +205,28 @@ def _parse_pattern_for_digit_constraints(pattern: str) -> Optional[List[Tuple[in
 # ============================================================================
 
 def status_match(status: Union[int, pd.Series], digit: int, to_match: Union[int, List[int]]) -> Union[bool, pd.Series]:
-    """
-    Check if a specific digit in status code(s) matches given value(s).
+    """Check if a specific digit in status code(s) matches given value(s).
     
-    Parameters:
-    -----------
-    status : int or Series
-        Status code(s) to check
-    digit : int
-        Digit position (1-indexed, 1=leftmost, 7=rightmost)
-    to_match : int or list of int
-        Digit value(s) to match against
+Parameters
+----------
+status : int or Series
+    Status code(s) to check
+digit : int
+    Digit position (1-indexed, 1=leftmost, 7=rightmost)
+to_match : int or list of int
+    Digit value(s) to match against
+Returns
+-------
+bool or Series
+    True where digit matches, False otherwise
         
-    Returns:
-    --------
-    bool or Series
-        True where digit matches, False otherwise
-        
-    Examples:
-    --------
+Examples
+--------
     >>> status_match(1234567, 6, [3, 5])
     False
     >>> status_match(1234537, 6, [3, 5])
     True
-    """
+"""
     status_int = _normalize_to_integer_series(status)
     power_left, power_right = _calculate_powers(digit)
     middle = (status_int // power_right) % 10
@@ -260,33 +247,31 @@ def status_match(status: Union[int, pd.Series], digit: int, to_match: Union[int,
 
 
 def vchange_status(status: Union[int, pd.Series], digit: int, before: Union[str, List[str]], after: Union[str, List[str]]) -> Union[int, pd.Series]:
-    """
-    Change specific digits in status code(s) based on mapping.
+    """Change specific digits in status code(s) based on mapping.
     
     Replaces digits at position 'digit' that match 'before' with corresponding
     values from 'after'. Uses integer arithmetic for optimal performance.
     
-    Parameters:
-    -----------
-    status : int or Series
-        Status code(s) to modify
-    digit : int
-        Digit position to change (1-indexed, 1=leftmost, 7=rightmost)
-    before : str or list
-        Digit values to match (e.g., "45" or ["4", "5"])
-    after : str or list
-        Replacement digit values (e.g., "12" or ["1", "2"])
+Parameters
+----------
+status : int or Series
+    Status code(s) to modify
+digit : int
+    Digit position to change (1-indexed, 1=leftmost, 7=rightmost)
+before : str or list
+    Digit values to match (e.g., "45" or ["4", "5"])
+after : str or list
+    Replacement digit values (e.g., "12" or ["1", "2"])
+Returns
+-------
+int or Series
+    Modified status code(s) as integers
         
-    Returns:
-    --------
-    int or Series
-        Modified status code(s) as integers
-        
-    Examples:
-    --------
+Examples
+--------
     >>> vchange_status(1234547, 6, "45", "12")
     1234517  # digit 6 changed from 4 to 1
-    """
+"""
     # Normalize inputs
     if isinstance(before, list):
         before = ''.join(str(b) for b in before)
@@ -329,28 +314,26 @@ def vchange_status(status: Union[int, pd.Series], digit: int, before: Union[str,
 
 
 def set_status_digit(status: Union[int, pd.Series], digit: int, value: Union[int, str]) -> Union[int, pd.Series]:
-    """
-    Set a specific digit in status code(s) to a given value.
+    """Set a specific digit in status code(s) to a given value.
     
-    Parameters:
-    -----------
-    status : int or Series
-        Status code(s) to modify
-    digit : int
-        Digit position (1-indexed, 1=leftmost, 7=rightmost)
-    value : int or str
-        New digit value (0-9)
+Parameters
+----------
+status : int or Series
+    Status code(s) to modify
+digit : int
+    Digit position (1-indexed, 1=leftmost, 7=rightmost)
+value : int or str
+    New digit value (0-9)
+Returns
+-------
+int or Series
+    Status code(s) with digit replaced (returns same type as input)
         
-    Returns:
-    --------
-    int or Series
-        Status code(s) with digit replaced (returns same type as input)
-        
-    Examples:
-    --------
+Examples
+--------
     >>> set_status_digit(1234567, 6, 0)
     1234507
-    """
+"""
     # Preserve input type (scalar vs Series)
     is_scalar = not isinstance(status, pd.Series)
     
@@ -376,28 +359,26 @@ def set_status_digit(status: Union[int, pd.Series], digit: int, value: Union[int
 
 
 def copy_status(from_status: Union[int, pd.Series], to_status: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
-    """
-    Copy a specific digit from one status code to another.
+    """Copy a specific digit from one status code to another.
     
-    Parameters:
-    -----------
-    from_status : int or Series
-        Source status code(s)
-    to_status : int or Series
-        Target status code(s)
-    digit : int
-        Digit position to copy (1-indexed)
+Parameters
+----------
+from_status : int or Series
+    Source status code(s)
+to_status : int or Series
+    Target status code(s)
+digit : int
+    Digit position to copy (1-indexed)
+Returns
+-------
+int or Series
+    to_status with digit replaced from from_status
         
-    Returns:
-    --------
-    int or Series
-        to_status with digit replaced from from_status
-        
-    Examples:
-    --------
+Examples
+--------
     >>> copy_status(1234567, 9999999, 6)
     9999969  # digit 6 (value 6) copied from first to second
-    """
+"""
     from_status_int = _normalize_to_integer_series(from_status)
     to_status_int = _normalize_to_integer_series(to_status)
     
@@ -416,27 +397,25 @@ def copy_status(from_status: Union[int, pd.Series], to_status: Union[int, pd.Ser
 
 
 def get_status_prefix(status: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
-    """
-    Get the prefix (left part) of status code before a specific digit.
+    """Get the prefix (left part) of status code before a specific digit.
     
-    Parameters:
-    -----------
-    status : int or Series
-        Status code(s)
-    digit : int
-        Digit position (1-indexed)
+Parameters
+----------
+status : int or Series
+    Status code(s)
+digit : int
+    Digit position (1-indexed)
+Returns
+-------
+int or Series
+    Prefix part (as integer, needs to be multiplied by appropriate power)
+    Returns same type as input
         
-    Returns:
-    --------
-    int or Series
-        Prefix part (as integer, needs to be multiplied by appropriate power)
-        Returns same type as input
-        
-    Examples:
-    --------
+Examples
+--------
     >>> get_status_prefix(1234567, 4)
     123  # left part before digit 4
-    """
+"""
     is_scalar = not isinstance(status, pd.Series)
     if is_scalar:
         status_int = int(status)
@@ -449,27 +428,25 @@ def get_status_prefix(status: Union[int, pd.Series], digit: int) -> Union[int, p
 
 
 def get_status_suffix(status: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
-    """
-    Get the suffix (right part) of status code after a specific digit.
+    """Get the suffix (right part) of status code after a specific digit.
     
-    Parameters:
-    -----------
-    status : int or Series
-        Status code(s)
-    digit : int
-        Digit position (1-indexed)
+Parameters
+----------
+status : int or Series
+    Status code(s)
+digit : int
+    Digit position (1-indexed)
+Returns
+-------
+int or Series
+    Suffix part (as integer)
+    Returns same type as input
         
-    Returns:
-    --------
-    int or Series
-        Suffix part (as integer)
-        Returns same type as input
-        
-    Examples:
-    --------
+Examples
+--------
     >>> get_status_suffix(1234567, 4)
     567  # right part after digit 4
-    """
+"""
     is_scalar = not isinstance(status, pd.Series)
     if is_scalar:
         status_int = int(status)
@@ -486,38 +463,36 @@ def get_status_suffix(status: Union[int, pd.Series], digit: int) -> Union[int, p
 # ============================================================================
 
 def match_status(status: Union[int, pd.Series, List[int]], pattern: str, na: bool = False) -> Union[bool, pd.Series]:
-    """
-    Match status codes against a regex pattern using integer arithmetic.
+    """Match status codes against a regex pattern using integer arithmetic.
     
     For simple digit-based patterns, uses fast integer arithmetic.
     For complex patterns, falls back to string matching.
     
-    Parameters:
-    -----------
-    status : int, Series, or array-like
-        Status code(s) to match
-    pattern : str
-        Regex pattern (e.g., r'\\w\\w\\w\\w\\w[35]\\w' for digit 6 in [3,5])
-    na : bool
-        How to handle NA values (default: False = treat as non-matching)
+Parameters
+----------
+status : int, Series, or array-like
+    Status code(s) to match
+pattern : str
+    Regex pattern (e.g., r'\w\w\w\w\w[35]\w' for digit 6 in [3,5])
+na : bool
+    How to handle NA values (default: False = treat as non-matching)
+Returns
+-------
+bool or Series
+    True where pattern matches, False otherwise
         
-    Returns:
-    --------
-    bool or Series
-        True where pattern matches, False otherwise
-        
-    Examples:
-    --------
-    >>> match_status(1234537, r'\\w\\w\\w\\w\\w[35]\\w')
+Examples
+--------
+    >>> match_status(1234537, r'\w\w\w\w\w[35]\w')
     True
-    >>> match_status(1234567, r'\\w\\w\\w\\w\\w[35]\\w')
+    >>> match_status(1234567, r'\w\w\w\w\w[35]\w')
     False
         
     Note:
     -----
     For best performance with integer status codes, use status_match() directly
     for simple digit checks, or combine multiple status_match() calls with & or |.
-    """
+"""
     # Normalize input to Series
     if not isinstance(status, pd.Series):
         status = pd.Series(status)
@@ -564,11 +539,10 @@ def match_status(status: Union[int, pd.Series, List[int]], pattern: str, na: boo
 # ============================================================================
 
 def change_status(status: int, digit: int, after: int) -> int:
-    """
-    Legacy function: Set a specific digit in status code.
+    """Legacy function: Set a specific digit in status code.
     
     Note: Prefer set_status_digit() for new code.
-    """
+"""
     power_left, power_right = _calculate_powers(digit)
     prefix = status // power_left
     suffix = status % power_right
@@ -576,11 +550,10 @@ def change_status(status: int, digit: int, after: int) -> int:
 
 
 def schange_status(status: pd.Series, digit: int, after: int) -> pd.Series:
-    """
-    Legacy function: Set digit using pandas eval (slower).
+    """Legacy function: Set digit using pandas eval (slower).
     
     Note: Prefer set_status_digit() for new code.
-    """
+"""
     prefix = status.floordiv(10**(STATUS_CODE_LENGTH - digit + 1))
     suffix = status.mod(10**(STATUS_CODE_LENGTH - digit))
     return pd.eval("prefix*10**(7-digit+1) + after*10**(7-digit) + suffix")

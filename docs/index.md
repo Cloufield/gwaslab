@@ -167,6 +167,7 @@ Documentation and tutorials for GWASLab are available at [https://cloufield.gith
 - **Miami plot**: Mirrored Manhattan plot
 - **Brisbane plot**: GWAS hits density plot
 - **Regional plot**: GWAS regional plot with LD information
+- **Phenogram plot**: Chromosome ideogram with lead variants on cytobands
 - **Genetic correlation heatmap**: LDSC-rg genetic correlation matrix
 - **Scatter plots**: 
   - Variant effect size comparison

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Markov Chain Monte Carlo (MCMC) sampler for polygenic prediction with continuous shrinkage (CS) priors.
-
+"""Markov Chain Monte Carlo (MCMC) sampler for polygenic prediction with continuous shrinkage (CS) priors.
 """
 import numpy as np
 from scipy import linalg 

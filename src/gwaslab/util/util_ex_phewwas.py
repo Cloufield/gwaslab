@@ -1,5 +1,4 @@
-"""
-Utilities for extracting and processing GWAS Catalog associations.
+"""Utilities for extracting and processing GWAS Catalog associations.
 
 This module provides functions to retrieve associations from the GWAS Catalog API v2
 and align them with summary statistics data.
@@ -89,19 +88,17 @@ SUMMARY_COLUMNS = [
 # ============================================================================
 
 def _extract_scalar_value(value: Any) -> Optional[Any]:
-    """
-    Extract scalar value from pandas Series, list, or array.
+    """Extract scalar value from pandas Series, list, or array.
     
-    Parameters
-    ----------
-    value : Any
-        Value that might be a Series, list, array, or scalar
-        
-    Returns
-    -------
-    Optional[Any]
-        Scalar value or None if extraction fails
-    """
+Parameters
+----------
+value : Any
+    Value that might be a Series, list, array, or scalar
+Returns
+-------
+Optional[Any]
+    Scalar value or None if extraction fails
+"""
     if value is None:
         return None
     
@@ -123,19 +120,17 @@ def _extract_scalar_value(value: Any) -> Optional[Any]:
 
 
 def _is_valid_value(value: Any) -> bool:
-    """
-    Check if a value is valid (not None, not NaN, not empty string).
+    """Check if a value is valid (not None, not NaN, not empty string).
     
-    Parameters
-    ----------
-    value : Any
-        Value to check
-        
-    Returns
-    -------
-    bool
-        True if value is valid, False otherwise
-    """
+Parameters
+----------
+value : Any
+    Value to check
+Returns
+-------
+bool
+    True if value is valid, False otherwise
+"""
     if value is None:
         return False
     
@@ -158,19 +153,17 @@ def _is_valid_value(value: Any) -> bool:
 
 
 def _extract_risk_allele(snp_effect_allele: Any) -> Optional[str]:
-    """
-    Extract risk allele base from snp_effect_allele field.
+    """Extract risk allele base from snp_effect_allele field.
     
-    Parameters
-    ----------
-    snp_effect_allele : Any
-        snp_effect_allele value (usually a list like ['rs123-A'])
-        
-    Returns
-    -------
-    Optional[str]
-        Risk allele base (e.g., 'A') or None
-    """
+Parameters
+----------
+snp_effect_allele : Any
+    snp_effect_allele value (usually a list like ['rs123-A'])
+Returns
+-------
+Optional[str]
+    Risk allele base (e.g., 'A') or None
+"""
     if not isinstance(snp_effect_allele, list) or len(snp_effect_allele) == 0:
         return None
     
@@ -184,19 +177,17 @@ def _extract_risk_allele(snp_effect_allele: Any) -> Optional[str]:
 
 
 def _extract_genes(mapped_genes: Any) -> Optional[str]:
-    """
-    Extract and join gene names from mapped_genes field.
+    """Extract and join gene names from mapped_genes field.
     
-    Parameters
-    ----------
-    mapped_genes : Any
-        mapped_genes value (list of strings, some may be comma-separated)
-        
-    Returns
-    -------
-    Optional[str]
-        Comma-separated gene names or None
-    """
+Parameters
+----------
+mapped_genes : Any
+    mapped_genes value (list of strings, some may be comma-separated)
+Returns
+-------
+Optional[str]
+    Comma-separated gene names or None
+"""
     if not isinstance(mapped_genes, list):
         return None
     
@@ -210,19 +201,17 @@ def _extract_genes(mapped_genes: Any) -> Optional[str]:
 
 
 def _extract_chr_pos_from_locations(locations: Any) -> Tuple[Optional[str], Optional[int]]:
-    """
-    Extract chromosome and position from locations field.
+    """Extract chromosome and position from locations field.
     
-    Parameters
-    ----------
-    locations : Any
-        Locations value (usually a list like ['12:111803962'])
-        
-    Returns
-    -------
-    Tuple[Optional[str], Optional[int]]
-        (chromosome, position) or (None, None) if extraction fails
-    """
+Parameters
+----------
+locations : Any
+    Locations value (usually a list like ['12:111803962'])
+Returns
+-------
+Tuple[Optional[str], Optional[int]]
+    (chromosome, position) or (None, None) if extraction fails
+"""
     if not isinstance(locations, list) or len(locations) == 0:
         return None, None
     
@@ -244,19 +233,17 @@ def _extract_chr_pos_from_locations(locations: Any) -> Tuple[Optional[str], Opti
 
 
 def _extract_trait_names(efo_traits: Any) -> str:
-    """
-    Extract trait names from efo_traits field.
+    """Extract trait names from efo_traits field.
     
-    Parameters
-    ----------
-    efo_traits : Any
-        efo_traits value (list of dicts)
-        
-    Returns
-    -------
-    str
-        Comma-separated trait names
-    """
+Parameters
+----------
+efo_traits : Any
+    efo_traits value (list of dicts)
+Returns
+-------
+str
+    Comma-separated trait names
+"""
     if not isinstance(efo_traits, list):
         return ""
     
@@ -272,21 +259,19 @@ def _extract_trait_names(efo_traits: Any) -> str:
 
 def _transform_to_gcv2_format(df: pd.DataFrame, 
                              columns: Optional[list] = None) -> pd.DataFrame:
-    """
-    Transform API response to GWASLab format with _GCV2 suffix.
+    """Transform API response to GWASLab format with _GCV2 suffix.
     
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Association DataFrame from API
-    columns : list, optional
-        List of _GCV2 columns to include. If None, includes all available.
-        
-    Returns
-    -------
-    pd.DataFrame
-        Transformed DataFrame with _GCV2 columns
-    """
+Parameters
+----------
+df : pd.DataFrame
+    Association DataFrame from API
+columns : list, optional
+    List of _GCV2 columns to include. If None, includes all available.
+Returns
+-------
+pd.DataFrame
+    Transformed DataFrame with _GCV2 columns
+"""
     if len(df) == 0:
         return df
     
@@ -341,19 +326,17 @@ def _transform_to_gcv2_format(df: pd.DataFrame,
 
 
 def _normalize_association_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Normalize column names in association DataFrame.
+    """Normalize column names in association DataFrame.
     
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Association DataFrame with API v2 column names
-        
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with normalized column names
-    """
+Parameters
+----------
+df : pd.DataFrame
+    Association DataFrame with API v2 column names
+Returns
+-------
+pd.DataFrame
+    DataFrame with normalized column names
+"""
     df = df.copy()
     
     # Apply column mapping
@@ -409,44 +392,42 @@ def _extract_associations(
                          fetch_variants: Optional[bool] = None,
                          gcv2_columns: Optional[list] = None,
                          use_gcv2_format: bool = True) -> Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]:
-    """
-    Extract and process GWAS Catalog associations for variants in sumstats.
+    """Extract and process GWAS Catalog associations for variants in sumstats.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame with rsID column. Limited to 100 unique variants.
-        If more than 100 unique variants are provided, only the first 100 will be processed.
-    rsid : str, optional
-        Name of the rsID column (default: "rsID")
-    log : Log, optional
-        Logging object
-    verbose : bool, optional
-        Whether to print log messages
-    fetch_metadata : bool, optional
-        If True, fetch additional metadata (traits, studies, variants).
-        If False, only fetch associations (faster, fewer API calls).
-        Default: True
-    fetch_traits : bool, optional
-        If True, fetch traits. If False, skip traits.
-        If None, uses fetch_metadata value. Default: None
-    fetch_studies : bool, optional
-        If True, fetch studies. If False, skip studies.
-        If None, uses fetch_metadata value. Default: None
-    fetch_variants : bool, optional
-        If True, fetch variants. If False, skip variants.
-        If None, uses fetch_metadata value. Default: None
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame with rsID column. Limited to 100 unique variants.
+    If more than 100 unique variants are provided, only the first 100 will be processed.
+rsid : str, optional
+    Name of the rsID column (default: "rsID")
+log : Log, optional
+    Logging object
+verbose : bool, optional
+    Whether to print log messages
+fetch_metadata : bool, optional
+    If True, fetch additional metadata (traits, studies, variants).
+    If False, only fetch associations (faster, fewer API calls).
+Default : True
+fetch_traits : bool, optional
+    If True, fetch traits. If False, skip traits.
+    If None, uses fetch_metadata value. Default: None
+fetch_studies : bool, optional
+    If True, fetch studies. If False, skip studies.
+    If None, uses fetch_metadata value. Default: None
+fetch_variants : bool, optional
+    If True, fetch variants. If False, skip variants.
+    If None, uses fetch_metadata value. Default: None
+Returns
+-------
+Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]
+    (associations_full, associations_summary) or (None, None) if no associations
         
-    Returns
-    -------
-    Tuple[Optional[pd.DataFrame], Optional[pd.DataFrame]]
-        (associations_full, associations_summary) or (None, None) if no associations
-        
-    Note
-    ----
-    The input is limited to 100 unique variants to prevent excessive API calls.
-    If more variants are provided, only the first 100 will be processed and a warning will be issued.
-    """
+Note
+----
+The input is limited to 100 unique variants to prevent excessive API calls.
+If more variants are provided, only the first 100 will be processed and a warning will be issued.
+"""
     # Set individual flags based on fetch_metadata if not explicitly set
     if fetch_traits is None:
         fetch_traits = fetch_metadata
@@ -590,51 +571,49 @@ def get_associations_from_gwascatalog(sumstats: pd.DataFrame, rsid: str = "rsID"
                                      fetch_studies: Optional[bool] = None,
                                      fetch_variants: Optional[bool] = None,
                                      normalize_columns: bool = True) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    Get associations from GWAS Catalog API v2 for variants in sumstats.
+    """Get associations from GWAS Catalog API v2 for variants in sumstats.
     
     This function retrieves associations from the GWAS Catalog API v2 for each unique
     variant in the sumstats DataFrame. Optionally, it can also fetch additional metadata
     (traits, studies, variants) for each association.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame with rsID column. Limited to 100 unique variants.
-        If more than 100 unique variants are provided, only the first 100 will be processed.
-    rsid : str, optional
-        Name of the rsID column (default: "rsID")
-    log : Log, optional
-        Logging object
-    verbose : bool, optional
-        Whether to print log messages
-    fetch_metadata : bool, optional
-        If True, fetch additional metadata (traits, studies, variants) for each association.
-        If False, only fetch associations (faster, fewer API calls).
-        Default: True
-    fetch_traits : bool, optional
-        If True, fetch traits. If False, skip traits.
-        If None, uses fetch_metadata value. Default: None
-    fetch_studies : bool, optional
-        If True, fetch studies. If False, skip studies.
-        If None, uses fetch_metadata value. Default: None
-    fetch_variants : bool, optional
-        If True, fetch variants. If False, skip variants.
-        If None, uses fetch_metadata value. Default: None
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics DataFrame with rsID column. Limited to 100 unique variants.
+    If more than 100 unique variants are provided, only the first 100 will be processed.
+rsid : str, optional
+    Name of the rsID column (default: "rsID")
+log : Log, optional
+    Logging object
+verbose : bool, optional
+    Whether to print log messages
+fetch_metadata : bool, optional
+    If True, fetch additional metadata (traits, studies, variants) for each association.
+    If False, only fetch associations (faster, fewer API calls).
+Default : True
+fetch_traits : bool, optional
+    If True, fetch traits. If False, skip traits.
+    If None, uses fetch_metadata value. Default: None
+fetch_studies : bool, optional
+    If True, fetch studies. If False, skip studies.
+    If None, uses fetch_metadata value. Default: None
+fetch_variants : bool, optional
+    If True, fetch variants. If False, skip variants.
+    If None, uses fetch_metadata value. Default: None
+Returns
+-------
+Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
+    (associations, traits, studies, variants) DataFrames.
+    If metadata fetching is disabled, corresponding DataFrames will be empty.
         
-    Returns
-    -------
-    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
-        (associations, traits, studies, variants) DataFrames.
-        If metadata fetching is disabled, corresponding DataFrames will be empty.
+Note
+----
+The input is limited to 100 unique variants to prevent excessive API calls.
+If more variants are provided, only the first 100 will be processed and a warning will be issued.
         
-    Note
-    ----
-    The input is limited to 100 unique variants to prevent excessive API calls.
-    If more variants are provided, only the first 100 will be processed and a warning will be issued.
-        
-    Examples
-    --------
+Examples
+--------
     >>> # Fetch only associations (fastest)
     >>> assoc, traits, studies, variants = get_associations_from_gwascatalog(
     ...     sumstats, fetch_metadata=False
@@ -644,7 +623,7 @@ def get_associations_from_gwascatalog(sumstats: pd.DataFrame, rsid: str = "rsID"
     >>> assoc, traits, studies, variants = get_associations_from_gwascatalog(
     ...     sumstats, fetch_traits=True, fetch_studies=False, fetch_variants=False
     ... )
-    """
+"""
     from gwaslab.extension.gwascatalog import GWASCatalogClient
     
     # Set individual flags based on fetch_metadata if not explicitly set
@@ -700,27 +679,25 @@ def _fetch_associations(
     verbose: bool, 
     normalize_columns: bool = True
 ) -> pd.DataFrame:
-    """
-    Fetch associations from GWAS Catalog API for each variant.
+    """Fetch associations from GWAS Catalog API for each variant.
     
-    Parameters
-    ----------
-    client : GWASCatalogClient
-        GWAS Catalog API client
-    unique_sumstats : pd.DataFrame
-        DataFrame with unique variants
-    rsid : str
-        Name of the rsID column
-    log : Log
-        Logging object
-    verbose : bool
-        Whether to print log messages
-        
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with all associations
-    """
+Parameters
+----------
+client : GWASCatalogClient
+    GWAS Catalog API client
+unique_sumstats : pd.DataFrame
+    DataFrame with unique variants
+rsid : str
+    Name of the rsID column
+log : Log
+    Logging object
+verbose : bool
+    Whether to print log messages
+Returns
+-------
+pd.DataFrame
+    DataFrame with all associations
+"""
     association = pd.DataFrame()
     empty_variants = []
     
@@ -774,33 +751,31 @@ def _fetch_metadata(
     fetch_studies: bool = True,
     fetch_variants: bool = True
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    Fetch traits, studies, and variants metadata for each unique association.
+    """Fetch traits, studies, and variants metadata for each unique association.
     
-    Parameters
-    ----------
-    client : GWASCatalogClient
-        GWAS Catalog API client
-    association : pd.DataFrame
-        DataFrame with associations
-    rsid : str
-        Name of the rsID column
-    log : Log
-        Logging object
-    verbose : bool
-        Whether to print log messages
-    fetch_traits : bool, optional
-        If True, fetch traits. Default: True
-    fetch_studies : bool, optional
-        If True, fetch studies. Default: True
-    fetch_variants : bool, optional
-        If True, fetch variants. Default: True
-        
-    Returns
-    -------
-    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
-        (traits, studies, variants) DataFrames
-    """
+Parameters
+----------
+client : GWASCatalogClient
+    GWAS Catalog API client
+association : pd.DataFrame
+    DataFrame with associations
+rsid : str
+    Name of the rsID column
+log : Log
+    Logging object
+verbose : bool
+    Whether to print log messages
+fetch_traits : bool, optional
+    If True, fetch traits. Default: True
+fetch_studies : bool, optional
+    If True, fetch studies. Default: True
+fetch_variants : bool, optional
+    If True, fetch variants. Default: True
+Returns
+-------
+Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+    (traits, studies, variants) DataFrames
+"""
     traits = pd.DataFrame()
     studies = pd.DataFrame()
     variants = pd.DataFrame()
@@ -850,21 +825,19 @@ def _fetch_metadata(
 
 
 def _extract_traits(row: pd.Series, association_id: str) -> list:
-    """
-    Extract trait information from association row.
+    """Extract trait information from association row.
     
-    Parameters
-    ----------
-    row : pd.Series
-        Association row
-    association_id : str
-        Association ID
-        
-    Returns
-    -------
-    list
-        List of trait dictionaries
-    """
+Parameters
+----------
+row : pd.Series
+    Association row
+association_id : str
+    Association ID
+Returns
+-------
+list
+    List of trait dictionaries
+"""
     efo_traits = _extract_scalar_value(row.get('efo_traits'))
     
     if not isinstance(efo_traits, list):
@@ -885,27 +858,25 @@ def _extract_traits(row: pd.Series, association_id: str) -> list:
 
 def _extract_study(client, row: pd.Series, association_id: str,
                    log: Log, verbose: bool) -> Optional[dict]:
-    """
-    Extract study information for an association.
+    """Extract study information for an association.
     
-    Parameters
-    ----------
-    client : GWASCatalogClient
-        GWAS Catalog API client
-    row : pd.Series
-        Association row
-    association_id : str
-        Association ID
-    log : Log
-        Logging object
-    verbose : bool
-        Whether to print log messages
-        
-    Returns
-    -------
-    Optional[dict]
-        Study row dictionary or None
-    """
+Parameters
+----------
+client : GWASCatalogClient
+    GWAS Catalog API client
+row : pd.Series
+    Association row
+association_id : str
+    Association ID
+log : Log
+    Logging object
+verbose : bool
+    Whether to print log messages
+Returns
+-------
+Optional[dict]
+    Study row dictionary or None
+"""
     study_id = _extract_scalar_value(row.get('study_id') or row.get('accession_id'))
     
     if not _is_valid_value(study_id):
@@ -936,29 +907,27 @@ def _extract_study(client, row: pd.Series, association_id: str,
 
 def _extract_variant(client, row: pd.Series, association_id: str, rsid: str,
                     log: Log, verbose: bool) -> Optional[dict]:
-    """
-    Extract variant information for an association.
+    """Extract variant information for an association.
     
-    Parameters
-    ----------
-    client : GWASCatalogClient
-        GWAS Catalog API client
-    row : pd.Series
-        Association row
-    association_id : str
-        Association ID
-    rsid : str
-        Name of the rsID column
-    log : Log
-        Logging object
-    verbose : bool
-        Whether to print log messages
-        
-    Returns
-    -------
-    Optional[dict]
-        Variant row dictionary or None
-    """
+Parameters
+----------
+client : GWASCatalogClient
+    GWAS Catalog API client
+row : pd.Series
+    Association row
+association_id : str
+    Association ID
+rsid : str
+    Name of the rsID column
+log : Log
+    Logging object
+verbose : bool
+    Whether to print log messages
+Returns
+-------
+Optional[dict]
+    Variant row dictionary or None
+"""
     rs_id_for_variant = _extract_scalar_value(row.get('variant_rsID') or row.get(rsid))
     
     if not _is_valid_value(rs_id_for_variant):
@@ -985,19 +954,17 @@ def _extract_variant(client, row: pd.Series, association_id: str, rsid: str,
 # ============================================================================
 
 def _fix_beta(association: pd.DataFrame) -> pd.DataFrame:
-    """
-    Fix beta values by converting OR to beta or using range if beta is missing.
+    """Fix beta values by converting OR to beta or using range if beta is missing.
     
-    Parameters
-    ----------
-    association : pd.DataFrame
-        Association DataFrame
-        
-    Returns
-    -------
-    pd.DataFrame
-        Association DataFrame with fixed beta values
-    """
+Parameters
+----------
+association : pd.DataFrame
+    Association DataFrame
+Returns
+-------
+pd.DataFrame
+    Association DataFrame with fixed beta values
+"""
     association = association.copy()
     
     # Initialize missing columns
@@ -1021,19 +988,17 @@ def _fix_beta(association: pd.DataFrame) -> pd.DataFrame:
 
 
 def _parse_range(x: str) -> float:
-    """
-    Parse range string and return midpoint of log-transformed values.
+    """Parse range string and return midpoint of log-transformed values.
     
-    Parameters
-    ----------
-    x : str
-        Range string like "[0.5-2.0]"
-        
-    Returns
-    -------
-    float
-        Midpoint of log-transformed range
-    """
+Parameters
+----------
+x : str
+    Range string like "[0.5-2.0]"
+Returns
+-------
+float
+    Midpoint of log-transformed range
+"""
     try:
         range_list = x.strip("[|]").split("-")
         if len(range_list) != 2:
@@ -1047,21 +1012,19 @@ def _parse_range(x: str) -> float:
 
 
 def _extract_numeric_from_string(value: Any) -> Optional[float]:
-    """
-    Extract numeric value from string that may contain units and direction.
+    """Extract numeric value from string that may contain units and direction.
     
-    Parameters
-    ----------
-    value : Any
-        Value that might be a string like "0.0441029 unit increase" or 
-        "0.5526137 unit decrease" or a number
-        
-    Returns
-    -------
-    Optional[float]
-        Numeric value or None if extraction fails.
-        For strings containing "decrease", the value is negated.
-    """
+Parameters
+----------
+value : Any
+    Value that might be a string like "0.0441029 unit increase" or
+    "0.5526137 unit decrease" or a number
+Returns
+-------
+Optional[float]
+    Numeric value or None if extraction fails.
+    For strings containing "decrease", the value is negated.
+"""
     if pd.isna(value) or value is None:
         return None
     
@@ -1090,24 +1053,22 @@ def _extract_numeric_from_string(value: Any) -> Optional[float]:
 
 
 def _ensure_numeric_beta(df: pd.DataFrame, beta_col: str = "Beta") -> pd.DataFrame:
-    """
-    Ensure Beta column is numeric, extracting numbers from strings if needed.
+    """Ensure Beta column is numeric, extracting numbers from strings if needed.
     
     Handles strings like "0.5526137 unit increase" or "0.5526137 unit decrease"
     by extracting the numeric value and applying the appropriate sign.
     
-    Parameters
-    ----------
-    df : pd.DataFrame
-        DataFrame with Beta column
-    beta_col : str, optional
-        Name of the beta column (default: "Beta")
-        
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with numeric Beta column
-    """
+Parameters
+----------
+df : pd.DataFrame
+    DataFrame with Beta column
+beta_col : str, optional
+    Name of the beta column (default: "Beta")
+Returns
+-------
+pd.DataFrame
+    DataFrame with numeric Beta column
+"""
     if beta_col not in df.columns:
         return df
     
@@ -1126,25 +1087,23 @@ def _ensure_numeric_beta(df: pd.DataFrame, beta_col: str = "Beta") -> pd.DataFra
 
 def _align_beta(sumstats: pd.DataFrame, assoc_df: pd.DataFrame, 
                log: Log, verbose: bool) -> pd.DataFrame:
-    """
-    Align beta values between GWAS Catalog and sumstats.
+    """Align beta values between GWAS Catalog and sumstats.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame
-    assoc_df : pd.DataFrame
-        Association DataFrame from GWAS Catalog
-    log : Log
-        Logging object
-    verbose : bool
-        Whether to print log messages
-        
-    Returns
-    -------
-    pd.DataFrame
-        Association DataFrame with aligned beta values
-    """
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics DataFrame
+assoc_df : pd.DataFrame
+    Association DataFrame from GWAS Catalog
+log : Log
+    Logging object
+verbose : bool
+    Whether to print log messages
+Returns
+-------
+pd.DataFrame
+    Association DataFrame with aligned beta values
+"""
     # Merge with sumstats
     log.write("Merging GWAS Catalog associations with Sumstats...", verbose=verbose)
     

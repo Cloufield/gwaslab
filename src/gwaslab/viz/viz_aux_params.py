@@ -133,11 +133,13 @@ USAGE RULES AND PRIORITIES
       - Numeric suffixes are handled: "highlight2" is banned if "highlight" is banned
         * "highlight2" → replaced with default for "highlight"
         * "highlight10" → replaced with default for "highlight"
+      - param_groups: when a trigger arg has no_plots_group, all group members are
+        removed from allowed and filtered the same way (e.g. highlight → highlight_*)
    
    Example:
-     highlight is banned for plot_mqq:r
-     User passes: {'highlight': ['snp1'], 'highlight2': ['snp2']}
-     Result: {'highlight': [], 'highlight2': []}  # Both replaced with default []
+     highlight is banned for plot_mqq:r (no_plots_group: highlight)
+     User passes: {'highlight': ['snp1'], 'highlight_color': 'red'}
+     Result: highlight defaults applied; highlight_color removed or defaulted
    
    d) Banned args still pass through filter:
       - After whitelist filtering, banned args with defaults are added back
@@ -302,12 +304,12 @@ import json
 def _parse_plot_mode(plot_spec):
     """Parse plot specification into (plot, mode) tuple.
     
-    Args:
+Parameters
         plot_spec: str like "plot:mode" or "plot", or tuple/list [plot, mode]
     
-    Returns:
+Returns
         tuple: (plot_name, mode_name) where mode_name is "*" for wildcard or None
-    """
+"""
     if isinstance(plot_spec, str):
         if ":" in plot_spec:
             plot_name, mode_name = plot_spec.split(":", 1)
@@ -325,20 +327,51 @@ def _parse_plot_mode(plot_spec):
 def _parse_context_key(ctx_key):
     """Parse context key into (plot, mode) tuple.
     
-    Args:
+Parameters
         ctx_key: str like "plot:mode" or "plot"
     
-    Returns:
+Returns
         tuple: (plot_name, mode_name or None)
-    """
+"""
     if ":" in ctx_key:
         return ctx_key.split(":", 1)
     return (ctx_key, None)
 
 
 def _is_banned(plot, mode, no_plots_set):
-    """Check if (plot, mode) is banned by no_plots set."""
+    """Check if (plot, mode) is banned by no_plots set.
+"""
     return (plot, mode) in no_plots_set or (plot, "*") in no_plots_set
+
+
+def _banned_groups_for_context(pm, plot, mode):
+    """Return param_group names banned for a plot:mode via no_plots triggers.
+"""
+    banned_groups = set()
+    for arg_def in pm._arg_map.values():
+        if arg_def and _is_banned(plot, mode, arg_def.get("no_plots", set())):
+            group_name = arg_def.get("no_plots_group")
+            if group_name:
+                banned_groups.add(group_name)
+    return banned_groups
+
+
+def _is_arg_in_banned_group(pm, arg_name, banned_groups):
+    if not banned_groups:
+        return False
+    for group_name in banned_groups:
+        if arg_name in pm._param_groups.get(group_name, frozenset()):
+            return True
+    return False
+
+
+def _is_arg_banned_for_context(pm, arg_name, plot, mode):
+    """True if arg is directly no_plots-banned or in a banned param_group.
+"""
+    arg_def = pm._arg_map.get(arg_name)
+    if arg_def and _is_banned(plot, mode, arg_def.get("no_plots", set())):
+        return True
+    return _is_arg_in_banned_group(pm, arg_name, _banned_groups_for_context(pm, plot, mode))
 
 
 class VizParamsManager:
@@ -346,7 +379,7 @@ class VizParamsManager:
     
     Organizes and exposes relevant parameters for `viz_plot_*` functions.
     Supports per-plot and per-mode registrations of allowed keys and default values.
-    """
+"""
     
     def __init__(self):
         self._store = {}  # Object-level presets: {key:mode -> {params}}
@@ -355,13 +388,16 @@ class VizParamsManager:
         self._arg_map = {}  # Argument definitions: {name -> {plots: set, no_plots: set, default, ctx_defaults}}
         self._arg_desc = {}  # Argument descriptions: {name -> desc}
         self._arg_ctx_desc = {}  # Context-specific descriptions: {name -> {key:mode -> desc}}
+        self._param_groups = {}  # Named param groups for no_plots_group cascade: {name -> frozenset[str]}
     
     def _km(self, key, mode):
-        """Get registry key for plot:mode."""
+        """Get registry key for plot:mode.
+"""
         return key if mode is None else f"{key}:{mode}"
     
     def _get_registry_entry(self, key, mode):
-        """Get or create registry entry for plot:mode."""
+        """Get or create registry entry for plot:mode.
+"""
         km = self._km(key, mode)
         if km not in self._registry:
             self._registry[km] = {"allowed": set(), "defaults": {}, "banned_keys": {}}
@@ -370,7 +406,8 @@ class VizParamsManager:
     # ========== Core Registration Methods ==========
     
     def register(self, key, allowed=None, defaults=None, mode=None):
-        """Register allowed keys and defaults for a plot and optional mode."""
+        """Register allowed keys and defaults for a plot and optional mode.
+"""
         entry = self._get_registry_entry(key, mode)
         if allowed is not None:
             entry["allowed"] = set(allowed)
@@ -378,7 +415,8 @@ class VizParamsManager:
             entry["defaults"].update(defaults)
     
     def set(self, key, params, mode=None):
-        """Set object-level presets for a plot/mode, replacing existing values."""
+        """Set object-level presets for a plot/mode, replacing existing values.
+"""
         km = self._km(key, mode)
         if params is None:
             self._store[km] = {}
@@ -388,7 +426,8 @@ class VizParamsManager:
             raise TypeError("params must be a dict or None")
     
     def update(self, key, params, mode=None):
-        """Update object-level presets for a plot/mode."""
+        """Update object-level presets for a plot/mode.
+"""
         km = self._km(key, mode)
         if params is not None and isinstance(params, dict):
             self._store.setdefault(km, {}).update(params)
@@ -396,11 +435,13 @@ class VizParamsManager:
             raise TypeError("params must be a dict or None")
     
     def get(self, key, mode=None):
-        """Get object-level presets for a plot/mode."""
+        """Get object-level presets for a plot/mode.
+"""
         return dict(self._store.get(self._km(key, mode), {}))
     
     def defaults(self, key, mode=None):
-        """Get registered default values for a plot/mode (inherits from plot-level)."""
+        """Get registered default values for a plot/mode (inherits from plot-level).
+"""
         base = {}
         plot_key = self._km(key, None)
         if plot_key in self._registry:
@@ -412,7 +453,8 @@ class VizParamsManager:
         return base
     
     def allowed(self, key, mode=None):
-        """Get the registered allowed key set for a plot/mode."""
+        """Get the registered allowed key set for a plot/mode.
+"""
         km = self._km(key, mode)
         if km in self._registry:
             return self._registry[km].get("allowed")
@@ -436,21 +478,12 @@ class VizParamsManager:
         - If override contains None values and there are no defaults, None is used
         - All registered defaults for the key/mode are included in the base, ensuring they're available
           even if not explicitly passed in override
-        
-        Parameters
-        ----------
-        key : str
-            Plot identifier (e.g., "plot_mqq", "plot_region")
-        override : dict or None
-            Call-time kwargs to merge. If None, returns only defaults and object presets.
-        mode : str or None, optional
-            Mode identifier (e.g., "r", "m", "qq")
-        
-        Returns
-        -------
+
+Returns
+-------
         dict
             Merged parameters with defaults, object presets, and override values.
-        """
+"""
         # Check for deprecated *_args parameters
         if override is not None:
             for param_key in override:
@@ -488,7 +521,7 @@ class VizParamsManager:
         
         return merged
     
-    def filter(self, func, params, key=None, mode=None, log=None, verbose=True):
+    def filter(self, func, params, key=None, mode=None, log=None, verbose=True, user_keys=None):
         """Filter merged params by whitelist or function signature.
         
         Filters parameters to only include those allowed by the whitelist (if available)
@@ -501,27 +534,12 @@ class VizParamsManager:
         - If no whitelist: uses function signature to determine valid parameters
         - Registered defaults for valid (non-banned) parameters are added back if missing
         - Banned args with defaults are handled by _add_banned_defaults and pass through
-        
-        Parameters
-        ----------
-        func : callable
-            Target function to filter parameters for
-        params : dict
-            Merged parameters (typically from merge())
-        key : str or None, optional
-            Plot identifier for context
-        mode : str or None, optional
-            Mode identifier for context
-        log : Log or None, optional
-            Logger instance for verbose output
-        verbose : bool, default True
-            Whether to log filtered parameters
-        
-        Returns
-        -------
+
+Returns
+-------
         dict
             Filtered parameters that are valid for the function, with defaults preserved
-        """
+"""
         # Replace banned args with defaults
         params = self._apply_no_plots_filter(params, key, mode)
         
@@ -529,20 +547,18 @@ class VizParamsManager:
         # This ensures registered defaults are available even if not in params
         plot_defaults = self.defaults(key, mode)
         
-        # Helper to check if an arg is banned (no_plots)
+        # Helper to check if an arg is banned (no_plots or param_group)
         def is_banned_arg(arg_name):
             if not self._arg_map or key is None:
                 return False
-            arg_def = self._arg_map.get(arg_name)
-            if arg_def:
-                p_key, m_key = key, mode
-                return _is_banned(p_key, m_key, arg_def.get("no_plots", set()))
-            return False
+            return _is_arg_banned_for_context(self, arg_name, key, mode)
         
         allowed_keys = self.allowed(key, mode)
         if allowed_keys is not None:
             # Whitelist-based filtering: only allowed keys pass through
-            filtered = self._filter_by_whitelist(params, allowed_keys, key, mode, log, verbose)
+            filtered = self._filter_by_whitelist(
+                params, allowed_keys, key, mode, log, verbose, user_keys=user_keys
+            )
             # Add defaults for banned args so they pass through with default values
             # (banned args are not in allowed_keys but should still get defaults)
             self._add_banned_defaults(filtered, allowed_keys, key, mode)
@@ -554,7 +570,7 @@ class VizParamsManager:
             return filtered
         
         # Signature-based filtering: use function signature to determine valid parameters
-        filtered = self._filter_by_signature(func, params, key, log, verbose)
+        filtered = self._filter_by_signature(func, params, key, log, verbose, user_keys=user_keys)
         func_signature = inspect.signature(func)
         func_param_names = set(func_signature.parameters.keys())
         # Add back defaults for non-banned args that are valid function parameters but missing
@@ -569,7 +585,8 @@ class VizParamsManager:
         
         Also handles numeric suffixes: if "highlight2" is passed and "highlight" is banned,
         "highlight2" will be replaced with the default for "highlight".
-        """
+        Banned param_groups (no_plots_group) apply to all group members.
+"""
         if not self._arg_map or key is None:
             return params
         
@@ -578,13 +595,12 @@ class VizParamsManager:
         p_key, m_key = key, mode
         
         for arg_name in list(filtered.keys()):
-            # Check exact match first
             arg_def = self._arg_map.get(arg_name)
-            if arg_def and _is_banned(p_key, m_key, arg_def.get("no_plots", set())):
-                # Replace with default value
+
+            if _is_arg_banned_for_context(self, arg_name, p_key, m_key):
                 if arg_name in plot_defaults:
                     filtered[arg_name] = plot_defaults[arg_name]
-                elif arg_def.get("default") is not None:
+                elif arg_def and arg_def.get("default") is not None:
                     filtered[arg_name] = arg_def["default"]
                 else:
                     filtered.pop(arg_name, None)
@@ -594,12 +610,11 @@ class VizParamsManager:
             if arg_name:
                 base = arg_name.rstrip('0123456789')
                 if base != arg_name:  # Has numeric suffix
-                    base_def = self._arg_map.get(base)
-                    if base_def and _is_banned(p_key, m_key, base_def.get("no_plots", set())):
-                        # Replace with default value for base arg
+                    if _is_arg_banned_for_context(self, base, p_key, m_key):
+                        base_def = self._arg_map.get(base)
                         if base in plot_defaults:
                             filtered[arg_name] = plot_defaults[base]
-                        elif base_def.get("default") is not None:
+                        elif base_def and base_def.get("default") is not None:
                             filtered[arg_name] = base_def["default"]
                         else:
                             filtered.pop(arg_name, None)
@@ -607,7 +622,8 @@ class VizParamsManager:
         return filtered
     
     def _add_banned_defaults(self, filtered, allowed_keys, key, mode):
-        """Add default values for banned args that have defaults."""
+        """Add default values for banned args that have defaults.
+"""
         if not self._arg_map:
             return
         
@@ -616,16 +632,16 @@ class VizParamsManager:
         
         for arg_name, default_val in plot_defaults.items():
             if arg_name not in allowed_keys and arg_name not in filtered:
-                arg_def = self._arg_map.get(arg_name)
-                if arg_def and _is_banned(p_key, m_key, arg_def.get("no_plots", set())):
+                if _is_arg_banned_for_context(self, arg_name, p_key, m_key):
                     filtered[arg_name] = default_val
     
-    def _filter_by_whitelist(self, params, allowed_keys, key, mode, log, verbose):
+    def _filter_by_whitelist(self, params, allowed_keys, key, mode, log, verbose, user_keys=None):
         """Filter parameters using a whitelist and remove banned subkeys.
         
         Supports numeric suffixes: "highlight2" matches "highlight" if "highlight" is allowed.
         Strips all trailing digits (e.g., "highlight10" → "highlight").
-        """
+        When user_keys is set, only user-supplied keys are reported as filtered out.
+"""
         target_name = key or "unknown_plot"
         
         def is_allowed_key(arg_name):
@@ -641,6 +657,8 @@ class VizParamsManager:
         
         filtered_params = {k: v for k, v in params.items() if is_allowed_key(k)}
         dropped_keys = [k for k in params.keys() if not is_allowed_key(k)]
+        if user_keys is not None:
+            dropped_keys = [k for k in dropped_keys if k in user_keys]
         
         if log and dropped_keys:
             log.write(f"Filtered out args for `{target_name}`: {', '.join(dropped_keys)}", verbose=verbose)
@@ -662,8 +680,10 @@ class VizParamsManager:
         
         return filtered_params
     
-    def _filter_by_signature(self, func, params, key, log, verbose):
-        """Filter parameters based on the target function's signature."""
+    def _filter_by_signature(self, func, params, key, log, verbose, user_keys=None):
+        """Filter parameters based on the target function's signature.
+        When user_keys is set, only user-supplied keys are reported as filtered out.
+"""
         func_signature = inspect.signature(func)
         
         # If function accepts **kwargs, pass through unchanged
@@ -675,6 +695,8 @@ class VizParamsManager:
         
         filtered_params = {k: v for k, v in params.items() if k in func_param_names}
         dropped_keys = [k for k in params.keys() if k not in func_param_names]
+        if user_keys is not None:
+            dropped_keys = [k for k in dropped_keys if k in user_keys]
         
         if log and dropped_keys:
             log.write(f"Filtered out args for `{target_name}`: {', '.join(dropped_keys)}", verbose=verbose)
@@ -682,7 +704,8 @@ class VizParamsManager:
         return filtered_params
     
     def public(self, key, mode=None):
-        """Return exposed parameters (merged and filtered) for a plot/mode."""
+        """Return exposed parameters (merged and filtered) for a plot/mode.
+"""
         merged = self.merge(key, None, mode)
         allowed = self.allowed(key, mode)
         if allowed is None:
@@ -691,8 +714,9 @@ class VizParamsManager:
     
     # ========== Argument Registration Methods ==========
     
-    def register_arg(self, name, plots=None, default=None, no_plots=None):
-        """Register a single argument with plots and global default."""
+    def register_arg(self, name, plots=None, default=None, no_plots=None, no_plots_group=None):
+        """Register a single argument with plots and global default.
+"""
         entry = self._arg_map.setdefault(name, {"plots": set(), "no_plots": set(), "default": None})
         
         if plots:
@@ -706,6 +730,9 @@ class VizParamsManager:
                 parsed = _parse_plot_mode(p)
                 if parsed:
                     entry["no_plots"].add(parsed)
+
+        if no_plots_group is not None:
+            entry["no_plots_group"] = no_plots_group
         
         if default is not None:
             entry["default"] = default
@@ -713,18 +740,21 @@ class VizParamsManager:
         self._arg_map[name] = entry
     
     def attach_arg(self, name, key, mode=None):
-        """Attach an existing argument to an additional plot/mode."""
+        """Attach an existing argument to an additional plot/mode.
+"""
         entry = self._arg_map.setdefault(name, {"plots": set(), "default": None})
         entry["plots"].add((key, mode))
     
     def args_for_plot(self, key, mode=None):
-        """List argument names associated with a given plot/mode."""
+        """List argument names associated with a given plot/mode.
+"""
         return {arg for arg, entry in self._arg_map.items() if (key, mode) in entry.get("plots", set())}
     
     # ========== Compilation Method ==========
     
     def compile_from_kwargs(self, merge=True):
-        """Compile plot/mode allowed lists and defaults from registered args."""
+        """Compile plot/mode allowed lists and defaults from registered args.
+"""
         # Step 1: Collect known (plot, mode) pairs
         known_pairs = self._collect_known_plot_mode_pairs()
         
@@ -735,7 +765,8 @@ class VizParamsManager:
         self._merge_compiled_registry(compiled_registry, merge)
     
     def _collect_known_plot_mode_pairs(self):
-        """Collect all known (plot, mode) pairs from registry and arg_map."""
+        """Collect all known (plot, mode) pairs from registry and arg_map.
+"""
         known_pairs = set()
         
         # From existing registry
@@ -757,7 +788,8 @@ class VizParamsManager:
         return known_pairs
     
     def _compile_registry_from_args(self, known_pairs):
-        """Compile registry entries from argument definitions."""
+        """Compile registry entries from argument definitions.
+"""
         compiled_registry = {}
         
         def add_to_registry(plot_name, mode_name, arg_name, default_value):
@@ -800,7 +832,7 @@ class VizParamsManager:
         plot_effect) and the args file has a global default (e.g. {}), use
         ctx_defaults for that plot in the args file to restore the desired value
         after this merge (ctx_defaults are applied in load_viz_config step 4).
-        """
+"""
         for registry_key, compiled_data in compiled_registry.items():
             if merge and registry_key in self._registry:
                 entry = self._registry[registry_key]
@@ -817,25 +849,30 @@ class VizParamsManager:
     # ========== Description Methods ==========
     
     def set_arg_desc(self, name, desc):
-        """Set human-readable description for an argument."""
+        """Set human-readable description for an argument.
+"""
         self._arg_desc[name] = str(desc)
     
     def get_arg_desc(self, name):
-        """Get description for an argument, or empty string if missing."""
+        """Get description for an argument, or empty string if missing.
+"""
         return self._arg_desc.get(name, "")
     
     def set_arg_desc_for(self, name, key, mode, desc):
-        """Set plot/mode-specific description for an argument."""
+        """Set plot/mode-specific description for an argument.
+"""
         km = self._km(key, mode)
         self._arg_ctx_desc.setdefault(name, {})[km] = str(desc)
     
     def get_arg_desc_for(self, name, key, mode):
-        """Get plot/mode-specific description for an argument with fallback."""
+        """Get plot/mode-specific description for an argument with fallback.
+"""
         km = self._km(key, mode)
         return self._arg_ctx_desc.get(name, {}).get(km) or self.get_arg_desc(name)
     
     def na_kwargs(self):
-        """List argument names not attached to any plot/mode."""
+        """List argument names not attached to any plot/mode.
+"""
         return sorted([n for n, e in self._arg_map.items() if len(e.get("plots", set())) == 0])
 
 
@@ -849,7 +886,7 @@ def load_viz_config(pm, path=None, merge=True):
     4. Apply ctx_defaults (context-dependent defaults)
     5. Apply no_plots (ban args, but keep defaults)
     6. Apply banned_keys (nested sub-keys)
-    """
+"""
     # Step 1: Load Registry (Base Layer)
     _load_registry_file(pm)
     
@@ -860,14 +897,22 @@ def load_viz_config(pm, path=None, merge=True):
     with open(path, "r", encoding="utf-8") as f:
         config_data = json.loads(f.read())
     raw_args = config_data.get("args", {})
-    
+    raw_groups = config_data.get("param_groups", {})
+    pm._param_groups = {name: frozenset(members) for name, members in raw_groups.items()}
+
     # Register all args
     for arg_name, arg_entry in raw_args.items():
+        no_plots_group = arg_entry.get("no_plots_group")
+        if no_plots_group and no_plots_group not in pm._param_groups:
+            raise ValueError(
+                f"Unknown no_plots_group '{no_plots_group}' for arg '{arg_name}'"
+            )
         pm.register_arg(
             arg_name,
             plots=arg_entry.get("plots", []),
             default=arg_entry.get("default"),
-            no_plots=arg_entry.get("no_plots")
+            no_plots=arg_entry.get("no_plots"),
+            no_plots_group=no_plots_group,
         )
         
         # Descriptions
@@ -898,7 +943,8 @@ def load_viz_config(pm, path=None, merge=True):
 
 
 def _load_registry_file(pm):
-    """Load registry from viz_aux_params_registry.txt with inheritance support."""
+    """Load registry from viz_aux_params_registry.txt with inheritance support.
+"""
     registry_file_path = os.path.join(os.path.dirname(__file__), "viz_aux_params_registry.txt")
     if not os.path.exists(registry_file_path):
         return
@@ -954,16 +1000,16 @@ def _resolve_inheritance(key, entry, raw_entries, resolved_entries, visited=None
     - "banned_keys_inherit": inherits only banned_keys
     - "defaults_inherit": inherits only defaults
     
-    Args:
+Parameters
         key: Registry key (e.g., "plot_manhattan")
         entry: Entry dictionary with potential inheritance directives
         raw_entries: All raw entries from registry file
         resolved_entries: Cache of already resolved entries
         visited: Set of keys being resolved (for cycle detection)
     
-    Returns:
+Returns
         Resolved entry dictionary with inheritance applied
-    """
+"""
     if visited is None:
         visited = set()
     
@@ -1066,7 +1112,8 @@ def _resolve_inheritance(key, entry, raw_entries, resolved_entries, visited=None
 
 
 def _apply_ctx_defaults(pm, raw_args):
-    """Apply context-specific default overrides."""
+    """Apply context-specific default overrides.
+"""
     for arg_name, arg_entry in raw_args.items():
         if "ctx_defaults" not in arg_entry:
             continue
@@ -1080,7 +1127,8 @@ def _apply_ctx_defaults(pm, raw_args):
 
 
 def _apply_no_plots(pm):
-    """Apply no_plots exclusions (remove from allowed but keep defaults)."""
+    """Apply no_plots exclusions (remove from allowed but keep defaults).
+"""
     for registry_key in list(pm._registry.keys()):
         p_key, m_key = _parse_context_key(registry_key) if ":" in registry_key else (registry_key, None)
         entry = pm._registry[registry_key]
@@ -1090,10 +1138,17 @@ def _apply_no_plots(pm):
             continue
         
         args_to_remove = set()
+        banned_groups = set()
         for arg_name in current_allowed:
             arg_def = pm._arg_map.get(arg_name)
             if arg_def and _is_banned(p_key, m_key, arg_def.get("no_plots", set())):
                 args_to_remove.add(arg_name)
+                group_name = arg_def.get("no_plots_group")
+                if group_name:
+                    banned_groups.add(group_name)
+
+        for group_name in banned_groups:
+            args_to_remove |= pm._param_groups.get(group_name, frozenset()) & current_allowed
         
         if args_to_remove:
             entry["allowed"] -= args_to_remove
@@ -1106,7 +1161,8 @@ def _apply_no_plots(pm):
 
 
 def _apply_banned_keys(pm, raw_args):
-    """Apply banned_keys rules for nested sub-keys."""
+    """Apply banned_keys rules for nested sub-keys.
+"""
     # Collect all known plot/mode pairs
     known_pairs = set()
     for k in pm._registry.keys():

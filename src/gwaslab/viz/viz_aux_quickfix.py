@@ -8,9 +8,8 @@ from gwaslab.bd.bd_common_data import get_number_to_chr
 from math import ceil
 
 def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR", pos="POS", p="P", mlog10p="MLOG10P",log=Log(), verbose=True):
-    '''
-    quick sanity check for input sumstats
-    '''
+    '''quick sanity check for input sumstats
+'''
 
     # quick fix chr
     sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict, verbose=verbose, log=log)
@@ -28,9 +27,8 @@ def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR"
 
 
 def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=True, log=Log()):
-    '''
-    drop variants with bad P values
-    '''
+    '''drop variants with bad P values
+'''
     if scaled==True:
         # if scaled, add scaled P and P col 
         log.write(" -P values are already scaled...", verbose=verbose)
@@ -49,9 +47,8 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
 
 
 def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Log(), verbose=True):
-    '''
-    drop variants with bad -log10(P) values
-    '''
+    '''drop variants with bad -log10(P) values
+'''
     if scaled != True:
         log.write(" -Sumstats P values are being converted to -log10(P)...", verbose=verbose)
         # Use pd.to_numeric for better performance and error handling
@@ -73,9 +70,8 @@ def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Lo
 
 
 def _quick_fix_eaf(seires,log=Log(), verbose=True):
-    '''
-    conversion of eaf to maf
-    '''
+    '''conversion of eaf to maf
+'''
     # Early exit: Check if already numeric
     if pd.api.types.is_numeric_dtype(seires):
         log.write(" -EAF data type is already numeric. Skipping conversion...", verbose=verbose)
@@ -92,9 +88,8 @@ def _quick_fix_eaf(seires,log=Log(), verbose=True):
 
 
 def _quick_fix_chr(seires, chr_dict,log=Log(), verbose=True):
-    '''
-    conversion and check for chr
-    '''
+    '''conversion and check for chr
+'''
     # Early exit: Check if already numeric
     if pd.api.types.is_numeric_dtype(seires):
         return seires.astype('Int64')
@@ -107,9 +102,8 @@ def _quick_fix_chr(seires, chr_dict,log=Log(), verbose=True):
 
 
 def _quick_fix_pos(seires,log=Log(), verbose=True):
-    '''
-    force conversion for pos
-    '''
+    '''force conversion for pos
+'''
     # Early exit: Check if already numeric
     if pd.api.types.is_numeric_dtype(seires):
         return np.floor(seires).astype('Int64')
@@ -129,9 +123,8 @@ def _dropna_in_cols(sumstats, cols, log=Log(), verbose=True):
 
 
 def _get_largenumber(*args,log=Log(), verbose=True):
-    '''
-    get a helper large number, >> max(pos)
-    '''
+    '''get a helper large number, >> max(pos)
+'''
     large_number = 1000000000
     max_number = np.nanmax(args)
     for i in range(7):
@@ -334,43 +327,19 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",log=Log
     return sumstats
 
 def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_plot, log):
-    """
-    Shrink/compress extremely large y-axis values to prevent them from dominating the plot.
+    """Shrink/compress extremely large y-axis values to prevent them from dominating the plot.
     
     This function applies a "cut" transformation to values above a threshold, compressing them
     so that very high values (e.g., extremely significant p-values) don't take up most of the
     plot space. Two modes are available:
     - Linear mode: Values above cut are shrunk by dividing by cutfactor
     - Log mode: Values above cut are compressed using logarithmic scaling
-    
-    Parameters
-    ----------
-    series : pd.Series
-        The y-axis values to transform (typically -log10(P) values)
-    mode : str
-        Plot mode (e.g., "mqq", "b" for density plot)
-    cutfactor : float
-        Shrinkage factor for linear mode (default 10)
-    cut : float or bool
-        Threshold above which values are shrunk. If True, auto-determines cut value
-    skip : float
-        Minimum value to plot (values below skip are omitted)
-    ylabels : list or None
-        Custom y-axis tick labels to also transform
-    cut_log : bool
-        If True, use logarithmic compression; if False, use linear shrinkage
-    verbose : bool
-        Whether to print progress messages
-    lines_to_plot : array-like
-        Additional lines (e.g., significance thresholds) to also transform
-    log : Log
-        Logging object
-    
-    Returns
-    -------
-    tuple
-        (transformed_series, maxy, maxticker, cut, cutfactor, ylabels, lines_to_plot)
-    """
+
+Returns
+-------
+tuple
+    (transformed_series, maxy, maxticker, cut, cutfactor, ylabels, lines_to_plot)
+"""
     log.write(" -Converting data above cut line...",verbose=verbose)
     
     # Step 1: Prepare inputs - convert ylabels to Series if provided
@@ -486,8 +455,7 @@ def _set_yticklabels(cut,
                      log=Log(),
                      verbose=True
                      ):
-    """
-    Set y-axis tick positions and labels for plots with optional cut transformation.
+    """Set y-axis tick positions and labels for plots with optional cut transformation.
     
     This function handles the complex task of setting y-axis ticks and labels when a "cut"
     transformation has been applied. It creates separate tick sets for:
@@ -496,49 +464,12 @@ def _set_yticklabels(cut,
     
     For the compressed region, labels are reverse-transformed to show original values,
     while tick positions use the compressed coordinates.
-    
-    Parameters
-    ----------
-    cut : float
-        Threshold above which values were compressed (0 means no cut)
-    cutfactor : float
-        Shrinkage factor used in linear compression mode
-    cut_log : bool
-        Whether logarithmic compression was used (True) or linear (False)
-    ax1 : matplotlib.axes.Axes
-        The axes object to modify
-    skip : float
-        Minimum y-axis value (values below this are not plotted)
-    maxy : float
-        Maximum y-axis value after transformation
-    maxticker : int
-        Maximum original value before transformation (for label reverse-transformation)
-    ystep : float
-        Step size for y-axis ticks (0 means auto-calculate)
-    sc_linewidth : float
-        Line width for the cut line
-    cut_line_color : str
-        Color for the cut line
-    fontsize : float
-        Font size for tick labels
-    font_family : str
-        Font family for tick labels
-    ytick3 : bool
-        Whether to show intermediate ticks in the compressed region
-    ylabels : list or None
-        Custom y-axis labels (if provided, overrides auto-generated labels)
-    ylabels_converted : array-like
-        Converted positions for custom ylabels (if ylabels is provided)
-    log : Log
-        Logging object
-    verbose : bool
-        Whether to print progress messages
-    
-    Returns
-    -------
-    matplotlib.axes.Axes
-        The modified axes object
-    """
+
+Returns
+-------
+matplotlib.axes.Axes
+    The modified axes object
+"""
     log.write(" -Processing Y tick labels...",verbose=False)
     
     # Step 1: Handle case with no cut transformation

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Optimized random variate generator for the generalized inverse Gaussian distribution.
+"""Optimized random variate generator for the generalized inverse Gaussian distribution.
 
 Performance improvements:
 - Use ** operator instead of math.pow for better performance
@@ -15,7 +14,8 @@ from numpy import random
 
 
 def psi(x, alpha, lam):
-    """Optimized psi function using efficient operations."""
+    """Optimized psi function using efficient operations.
+"""
     cosh_x = math.cosh(x)
     exp_x = math.exp(x)
     f = -alpha * (cosh_x - 1.0) - lam * (exp_x - x - 1.0)
@@ -23,7 +23,8 @@ def psi(x, alpha, lam):
 
 
 def dpsi(x, alpha, lam):
-    """Optimized dpsi function using efficient operations."""
+    """Optimized dpsi function using efficient operations.
+"""
     sinh_x = math.sinh(x)
     exp_x = math.exp(x)
     f = -alpha * sinh_x - lam * (exp_x - 1.0)
@@ -31,7 +32,8 @@ def dpsi(x, alpha, lam):
 
 
 def g(x, sd, td, f1, f2):
-    """Optimized g function with efficient conditional checks."""
+    """Optimized g function with efficient conditional checks.
+"""
     if -sd <= x <= td:
         return 1.0
     elif x > td:
@@ -41,23 +43,21 @@ def g(x, sd, td, f1, f2):
 
 
 def gigrnd(p, a, b):
-    """
-    Optimized random variate generator for GIG distribution.
+    """Optimized random variate generator for GIG distribution.
     
-    Parameters:
-    -----------
-    p : float
-        Shape parameter
-    a : float
-        First scale parameter
-    b : float
-        Second scale parameter
-    
-    Returns:
-    --------
-    float
-        Random variate from GIG(p, a, b) distribution
-    """
+Parameters
+----------
+p : float
+    Shape parameter
+a : float
+    First scale parameter
+b : float
+    Second scale parameter
+Returns
+-------
+float
+    Random variate from GIG(p, a, b) distribution
+"""
     # setup -- sample from the two-parameter version gig(lam,omega)
     p = float(p)
     a = float(a)

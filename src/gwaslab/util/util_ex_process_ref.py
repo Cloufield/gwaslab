@@ -25,23 +25,21 @@ def _process_plink_input_files(chrlist: List[int],
                                load_bim: bool = False,
                                plink: str = "plink",
                                plink2: str = "plink2") -> Tuple[str, str, List[pd.DataFrame], str]:
-    """
-    Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
+    """Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
     
-    Parameters:
-    -----------
-    load_bim : bool, default=False
-        If True, load BIM/PVAR variant information into ref_bims list.
-        If False (default), ref_bims will be an empty list.
-        **Important**: Pass load_bim=True to populate ref_bims when using VCF or BGEN inputs.
-    
-    Returns:
-    --------
-    ref_file_prefix : prefix for either bfile or pfile.
-    plink_log : if plink was used, return the log. Otherwise, return an empty string.
-    ref_bims : if load_bim is True, return bim files as a list of pd.DataFrame. Otherwise, empty list.
-    filetype : either bfile or pfile.
-    """
+Parameters
+----------
+load_bim : bool, default False
+    If True, load BIM/PVAR variant information into ref_bims list.
+    If False (default), ref_bims will be an empty list.
+    **Important**: Pass load_bim=True to populate ref_bims when using VCF or BGEN inputs.
+Returns
+-------
+ref_file_prefix : prefix for either bfile or pfile.
+plink_log : if plink was used, return the log. Otherwise, return an empty string.
+ref_bims : if load_bim is True, return bim files as a list of pd.DataFrame. Otherwise, empty list.
+filetype : either bfile or pfile.
+"""
 
     # Step 1: Initialize list to store BIM/PVAR dataframes if load_bim is True
     ref_bims = []

@@ -1,33 +1,32 @@
-"""Population genetics statistics."""
+"""Population genetics statistics.
+"""
 
 from __future__ import annotations
 
 
 def fst_from_allele_frequencies(p_1: float, p_2: float) -> float:
-    """
-    Compute Wright's F_ST between two populations from allele frequencies.
+    """Compute Wright's F_ST between two populations from allele frequencies.
 
-    Parameters
-    ----------
-    p_1 : float
-        Allele frequency in population 1.
-    p_2 : float
-        Allele frequency in population 2.
+Parameters
+----------
+p_1 : float
+    Allele frequency in population 1.
+p_2 : float
+    Allele frequency in population 2.
+Returns
+-------
+float
+    F_ST estimate in [0, 1] for valid inputs with ``ht > 0``.
 
-    Returns
-    -------
-    float
-        F_ST estimate in [0, 1] for valid inputs with ``ht > 0``.
-
-    Notes
-    -----
+Notes
+-----
     Orchestration lives in ``util.util_ex_infer_ancestry``.
 
-    References
-    ----------
+References
+----------
     See fixation-index tutorials such as BIOS1140 F_ST notes for the
     heterozygosity formulation used here.
-    """
+"""
     q_1 = 1.0 - p_1
     q_2 = 1.0 - p_2
     p_t = (p_1 + p_2) / 2.0

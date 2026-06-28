@@ -64,22 +64,20 @@ def check_datatype_polars(sumstats: pl.DataFrame, verbose: bool = True, log: Log
     #    pass
 
 def verify_datatype(header: str, dtype: Any) -> str:
-    """
-    Verify a single column's dtype against expected dtypes for polars.
+    """Verify a single column's dtype against expected dtypes for polars.
     
-    Parameters
-    ----------
-    header : str
-        Column name to check.
-    dtype : Any
-        The polars dtype object.
-    
-    Returns
-    -------
-    str
-        "T" if dtype matches one of the expected entries, "F" if it does not,
-        and "NA" if the column is not recognized.
-    """
+Parameters
+----------
+header : str
+    Column name to check.
+dtype : Any
+    The polars dtype object.
+Returns
+-------
+str
+    "T" if dtype matches one of the expected entries, "F" if it does not,
+    and "NA" if the column is not recognized.
+"""
     if header in dtype_dict.keys():
         # Try direct comparison first (for polars type objects)
         if dtype in dtype_dict[header]:
@@ -128,29 +126,27 @@ def check_datatype_for_cols_polars(
     fix: bool = False,
     **fix_kwargs: Any
 ) -> Optional[pl.DataFrame]:
-    """
-    Verify dtypes for a specified subset of columns and optionally fix them.
+    """Verify dtypes for a specified subset of columns and optionally fix them.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstatsp or pl.DataFrame
-        Sumstats object or polars DataFrame containing the data to check.
-    cols : list[str] or None, default None
-        Column names to verify. If None, no columns are checked.
-    verbose : bool, default True
-        Whether to print log messages to stdout.
-    log : gwaslab.g_Log.Log
-        Logger used for messages and warnings.
-    fix : bool, default False
-        If True, attempt to fix incompatible dtypes automatically.
+Parameters
+----------
+sumstats_obj : Sumstatsp or pl.DataFrame
+    Sumstats object or polars DataFrame containing the data to check.
+cols : list[str] or None, default None
+    Column names to verify. If None, no columns are checked.
+verbose : bool, default True
+    Whether to print log messages to stdout.
+log : gwaslab.g_Log.Log
+    Logger used for messages and warnings.
+fix : bool, default False
+    If True, attempt to fix incompatible dtypes automatically.
     **fix_kwargs : dict
-        Additional keyword arguments to pass to fix functions.
-
-    Returns
-    -------
-    pl.DataFrame or None
-        Returns the DataFrame if fix=True and fixes were successful, None otherwise.
-    """
+    Additional keyword arguments to pass to fix functions.
+Returns
+-------
+pl.DataFrame or None
+    Returns the DataFrame if fix=True and fixes were successful, None otherwise.
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pl.DataFrame):
         sumstats = sumstats_obj

@@ -4,21 +4,19 @@ import pandas as pd
 import numpy as np
 
 def read_ldsc(filelist: Optional[List[str]] = None, mode: str = "h2") -> pd.DataFrame:
-    """
-    Read LDSC output files and parse heritability or genetic correlation results.
+    """Read LDSC output files and parse heritability or genetic correlation results.
     
-    Parameters
-    ----------
-    filelist : list of str, optional
-        List of paths to LDSC output files
-    mode : str, default "h2"
-        Mode to parse: "h2" for heritability, "rg" for genetic correlation
-        
-    Returns
-    -------
-    pd.DataFrame
-        Parsed LDSC results
-    """
+Parameters
+----------
+filelist : list of str, optional
+    List of paths to LDSC output files
+mode : str, default "h2"
+    Mode to parse: "h2" for heritability, "rg" for genetic correlation
+Returns
+-------
+pd.DataFrame
+    Parsed LDSC results
+"""
     if filelist is None:
         filelist = []
     #h2 mode
@@ -136,19 +134,17 @@ def read_ldsc(filelist: Optional[List[str]] = None, mode: str = "h2") -> pd.Data
 
 
 def read_popcorn(filelist: Optional[List[str]] = None) -> pd.DataFrame:
-    """
-    Read Popcorn output files and parse cross-population genetic correlation results.
+    """Read Popcorn output files and parse cross-population genetic correlation results.
     
-    Parameters
-    ----------
-    filelist : list of str, optional
-        List of paths to Popcorn output files
-        
-    Returns
-    -------
-    pd.DataFrame
-        Parsed Popcorn results
-    """
+Parameters
+----------
+filelist : list of str, optional
+    List of paths to Popcorn output files
+Returns
+-------
+pd.DataFrame
+    Parsed Popcorn results
+"""
     if filelist is None:
         filelist = []
     #h2 mode

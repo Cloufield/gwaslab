@@ -1,6 +1,8 @@
 import os
 import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "src")
@@ -97,6 +99,37 @@ class TestCompareEffect(unittest.TestCase):
         )
         self.assertIsInstance(result, pd.DataFrame)
         self.assertGreaterEqual(len(result), 0)
+
+    def test_compare_effect_does_not_write_merged_tsv_by_default(self):
+        label = ["Study1", "Study2", "Both", "Not-significant"]
+        out_path = Path("Study1_Study2_beta_sig_list_merged.tsv")
+        if out_path.exists():
+            out_path.unlink()
+        compare_effect(
+            path1=self.gl1,
+            path2=self.gl2,
+            mode="beta",
+            label=label,
+            sig_level=1,
+            verbose=False,
+        )
+        self.assertFalse(out_path.exists())
+
+    def test_compare_effect_save_merged_writes_tsv(self):
+        label = ["Study1", "Study2", "Both", "Not-significant"]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = Path(tmpdir) / "merged.tsv"
+            result, fig, log = compare_effect(
+                path1=self.gl1,
+                path2=self.gl2,
+                mode="beta",
+                label=label,
+                sig_level=1,
+                save_merged=str(out_path),
+                verbose=False,
+            )
+            self.assertTrue(out_path.exists())
+            self.assertEqual(len(result), len(pd.read_csv(out_path, sep="\t")))
 
 
 if __name__ == "__main__":

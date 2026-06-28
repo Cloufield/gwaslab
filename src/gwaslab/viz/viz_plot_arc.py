@@ -1,5 +1,4 @@
-"""
-Plot arcs for BEDPE contact pairs (e.g., Hi-C read-pairs).
+"""Plot arcs for BEDPE contact pairs (e.g., Hi-C read-pairs).
 
 This module provides functions for visualizing genomic contact pairs from BEDPE files
 as arcs connecting the two ends of each pair.
@@ -21,7 +20,8 @@ from gwaslab.info.g_Log import Log
 
 
 def _arc_cbar_locator(cax: plt.Axes):
-    """Return the inset locator underlying a colorbar axes, if present."""
+    """Return the inset locator underlying a colorbar axes, if present.
+"""
     locator = getattr(cax, "_axes_locator", None)
     if locator is not None and hasattr(locator, "_orig_locator"):
         return locator._orig_locator
@@ -35,10 +35,9 @@ def fit_arc_colorbar_inside_panel(
     max_iter: int = 12,
     reset_anchor: bool = True,
 ) -> None:
-    """
-    Shrink the inset anchor box so the horizontal colorbar and its labels
+    """Shrink the inset anchor box so the horizontal colorbar and its labels
     stay inside ``ax`` (works after plot_panels repositions the parent).
-    """
+"""
     orig = _arc_cbar_locator(cax)
     if orig is None:
         return
@@ -76,7 +75,8 @@ def fit_arc_colorbar_inside_panel(
 
 
 def refit_arc_colorbars(axes: Sequence[plt.Axes]) -> None:
-    """Re-fit score colorbars after stacked-panel layout / x-axis alignment."""
+    """Re-fit score colorbars after stacked-panel layout / x-axis alignment.
+"""
     for ax in axes:
         cax = getattr(ax, "_gwaslab_arc_cbar_axes", None)
         if cax is not None:
@@ -107,73 +107,21 @@ def plot_arc(
     verbose: bool = True,
     log: Log = Log()
 ) -> Tuple[plt.Axes, pd.DataFrame]:
-    """
-    Plot arcs connecting BEDPE contact pairs (cis contacts only).
+    """Plot arcs connecting BEDPE contact pairs (cis contacts only).
     
     This function reads a BEDPE file and visualizes cis contact pairs (same chromosome)
     as arcs connecting the two genomic regions. Arcs are drawn above the chromosome
     using Bezier curves for smooth appearance.
+
+Returns
+-------
+ax : matplotlib.axes.Axes
+    The axes object with arcs plotted.
+bedpe_df : pd.DataFrame
+    DataFrame with the BEDPE pairs that were plotted.
     
-    Parameters
-    ----------
-    bedpe_path : str
-        Path to BEDPE file. Supports uncompressed (.bedpe) and gzipped (.bedpe.gz) files.
-    region : tuple of (chromosome, start, end), optional
-        Genomic region to plot. If None, plots all pairs.
-        Example: (1, 1000000, 2000000) for chr1:1000000-2000000
-    ax : matplotlib.axes.Axes, optional
-        Axes object to plot on. If None, a new figure and axes will be created.
-    fig : matplotlib.figure.Figure, optional
-        Figure object. If None, a new figure will be created.
-        If ax is provided but fig is None, fig will be extracted from ax.
-    track_start_i : float, default=0.0
-        X-axis offset for track positioning. Used to align arcs with other plots.
-    region_flank_factor : float, default=0.05
-        Flanking factor for extending region boundaries when filtering pairs.
-    chr_dict : dict, optional
-        Dictionary mapping sumstats chromosome (int) to file chromosome (str).
-        If None, uses get_number_to_chr().
-    color : str, default="#020080"
-        Color for arcs (hex color code).
-    alpha : float, default=0.3
-        Transparency of arcs (0.0 to 1.0).
-    linewidth : float, default=0.5
-        Line width for arcs.
-    arc_height : float, default=0.1
-        Height of arcs as fraction of y-axis range. Larger values create taller arcs.
-    max_arcs : int, optional
-        Maximum number of arcs to plot. If None, plots all pairs.
-        Useful for large files to avoid overcrowding.
-    score_col : str, optional
-        Column name for score/weight. If provided, can be used for filtering or coloring.
-    score_threshold : float, optional
-        Minimum score to plot. Only pairs with score >= threshold are shown.
-    color_by_score : bool, default=False
-        If True, color arcs by score using cmap. Requires score_col to be present.
-    cmap : str, default="viridis"
-        Colormap for score-based coloring. Only used if color_by_score=True.
-    figsize : tuple of (float, float), default=(10, 2)
-        Figure size (width, height) in inches. Only used when creating a new figure.
-    region_step : int, default=21
-        Number of x-axis ticks to display. Used for formatting position labels in MB.
-    track_font_family : str, default="Arial"
-        Font family for axis labels.
-    fig_kwargs : dict, optional
-        Additional keyword arguments for matplotlib figure creation.
-    verbose : bool, default=True
-        Whether to show progress messages.
-    log : Log, default=Log()
-        Logger instance for messages.
-    
-    Returns
-    -------
-    ax : matplotlib.axes.Axes
-        The axes object with arcs plotted.
-    bedpe_df : pd.DataFrame
-        DataFrame with the BEDPE pairs that were plotted.
-    
-    Examples
-    --------
+Examples
+--------
     >>> import matplotlib.pyplot as plt
     >>> from gwaslab.viz.viz_plot_arc import plot_arc
     >>> 
@@ -203,14 +151,14 @@ def plot_arc(
     ... )
     >>> plt.show()
     
-    Notes
-    -----
+Notes
+-----
     - BEDPE files use 0-based, half-open intervals [chromStart, chromEnd)
     - The function converts BEDPE coordinates to 1-based for plotting
     - Only cis contacts (same chromosome) are plotted; trans contacts are filtered out
     - Arcs are drawn using Bezier curves for smooth appearance
     - X-axis formatting matches plot_track: positions in MB with rotated labels
-    """
+"""
     # Initialize fig_kwargs
     if fig_kwargs is None:
         fig_kwargs = {}
@@ -257,7 +205,8 @@ def plot_arc(
         
         # Normalize chromosome names for matching (handle both "chr10" and "10")
         def normalize_chr(chr_val):
-            """Normalize chromosome name for comparison."""
+            """Normalize chromosome name for comparison.
+"""
             if pd.isna(chr_val):
                 return None
             chr_str = str(chr_val).strip()

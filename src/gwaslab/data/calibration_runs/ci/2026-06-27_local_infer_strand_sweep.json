@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-06-27_local_infer_strand_sweep",
+  "timestamp": "2026-06-26T18:05:54Z",
+  "gwaslab_version": "v4.2.0",
+  "operation": "infer_strand2",
+  "success": true,
+  "machine": {
+    "hostname": "",
+    "cpu_model": "AMD Ryzen 5 3600X 6-Core Processor",
+    "logical_cores": 12,
+    "physical_cores": 6,
+    "threads_per_core": 2,
+    "cpu_mhz_current": 3800.036,
+    "cpu_tier_detected": "baseline",
+    "cpu_tier_override": null,
+    "ram_total_gb": 41.14369583129883,
+    "ram_available_gb_at_start": 37.97443389892578
+  },
+  "timing": {
+    "wall_seconds": 0.14492321014404297,
+    "steps": []
+  },
+  "memory": {
+    "peak_rss_mb": 465.5,
+    "delta_rss_mb": 0.13671875
+  },
+  "notes": "infer_strand_sweep",
+  "storage": {
+    "ref_path": "/home/yunye/work/gwaslab/test/ref/1kg_eas_hg19.chr7_126253550_128253550.vcf.gz",
+    "ref_size_bytes": 1869860,
+    "ref_kind": "vcf",
+    "indexed": true,
+    "record_count": 54234,
+    "workspace_device": "/dev/sdc",
+    "rotational": 1,
+    "storage_profile_detected": "hdd",
+    "storage_profile_override": null,
+    "mount_fstype": "ext4"
+  },
+  "workload": {
+    "sumstats_path": "/home/yunye/work/gwaslab/test/raw/realistic_sumstats.tsv",
+    "sumstats_rows": 12,
+    "threads_requested": 4,
+    "threads_effective": 4,
+    "sweep_mode": true
+  }
+}

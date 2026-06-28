@@ -6,23 +6,20 @@ def xrange(*args):
     return range(*args)
 
 def getBlockLefts(coords, max_dist):
-    '''
-    Converts coordinates + max block length to the a list of coordinates of the leftmost
+    '''Converts coordinates + max block length to the a list of coordinates of the leftmost
     SNPs to be included in blocks.
 
-    Parameters
-    ----------
-    coords : array
-        Array of coordinates. Must be sorted.
-    max_dist : float
-        Maximum distance between SNPs included in the same window.
-
-    Returns
-    -------
+Parameters
+----------
+coords : array
+    Array of coordinates. Must be sorted.
+max_dist : float
+    Maximum distance between SNPs included in the same window.
+Returns
+-------
     block_left : 1D np.ndarray with same length as block_left
         block_left[j] :=  min{k | dist(j, k) < max_dist}.
-
-    '''
+'''
     M = len(coords)
     j = 0
     block_left = np.zeros(M)
@@ -36,20 +33,17 @@ def getBlockLefts(coords, max_dist):
 
 
 def block_left_to_right(block_left):
-    '''
-    Converts block lefts to block rights.
+    '''Converts block lefts to block rights.
 
-    Parameters
-    ----------
-    block_left : array
-        Array of block lefts.
-
-    Returns
-    -------
+Parameters
+----------
+block_left : array
+    Array of block lefts.
+Returns
+-------
     block_right : 1D np.ndarray with same length as block_left
         block_right[j] := max {k | block_left[k] <= j}
-
-    '''
+'''
     M = len(block_left)
     j = 0
     block_right = np.zeros(M)
@@ -63,10 +57,9 @@ def block_left_to_right(block_left):
 
 
 class __GenotypeArrayInMemory__(object):
-    '''
-    Parent class for various classes containing interfaces for files with genotype
+    '''Parent class for various classes containing interfaces for files with genotype
     matrices, e.g., plink .bed files, etc
-    '''
+'''
     def __init__(self, fname, n, snp_list, keep_snps=None, keep_indivs=None, mafMin=None):
         self.m = len(snp_list.IDList)
         self.n = n
@@ -121,7 +114,8 @@ class __GenotypeArrayInMemory__(object):
         raise NotImplementedError
 
     def ldScoreVarBlocks(self, block_left, c, annot=None):
-        '''Computes an unbiased estimate of L2(j) for j=1,..,M.'''
+        '''Computes an unbiased estimate of L2(j) for j=1,..,M.
+'''
         func = lambda x: self.__l2_unbiased__(x, self.n)
         snp_getter = self.nextSNPs
         return self.__corSumVarBlocks__(block_left, c, func, snp_getter, annot)
@@ -138,33 +132,29 @@ class __GenotypeArrayInMemory__(object):
 
     # general methods for calculating sums of Pearson correlation coefficients
     def __corSumVarBlocks__(self, block_left, c, func, snp_getter, annot=None):
-        '''
-        Parameters
-        ----------
-        block_left : np.ndarray with shape (M, )
-            block_left[i] = index of leftmost SNP included in LD Score of SNP i.
-            if c > 1, then only entries that are multiples of c are examined, and it is
-            assumed that block_left[a*c+i] = block_left[a*c], except at
-            the beginning of the chromosome where the 0th SNP is included in the window.
-
-        c : int
-            Chunk size.
-        func : function
-            Function to be applied to the genotype correlation matrix. Before dotting with
-            annot. Examples: for biased L2, np.square. For biased L4,
-            lambda x: np.square(np.square(x)). For L1, lambda x: x.
-        snp_getter : function(int)
-            The method to be used to get the next SNPs (normalized genotypes? Normalized
-            genotypes with the minor allele as reference allele? etc)
-        annot: numpy array with shape (m,n_a)
-            SNP annotations.
-
-        Returns
-        -------
+        '''Parameters
+----------
+block_left : np.ndarray with shape (M, )
+    block_left[i] = index of leftmost SNP included in LD Score of SNP i.
+    if c > 1, then only entries that are multiples of c are examined, and it is
+    assumed that block_left[a*c+i] = block_left[a*c], except at
+    the beginning of the chromosome where the 0th SNP is included in the window.
+c : int
+    Chunk size.
+func : function
+    Function to be applied to the genotype correlation matrix. Before dotting with
+    annot. Examples: for biased L2, np.square. For biased L4,
+    lambda x: np.square(np.square(x)). For L1, lambda x: x.
+snp_getter : function(int)
+    The method to be used to get the next SNPs (normalized genotypes? Normalized
+    genotypes with the minor allele as reference allele? etc)
+annot : numpy array with shape (m,n_a)
+    SNP annotations.
+Returns
+-------
         cor_sum : np.ndarray with shape (M, num_annots)
             Estimates.
-
-        '''
+'''
         m, n = self.m, self.n
         block_sizes = np.array(np.arange(m) - block_left)
         block_sizes = np.ceil(block_sizes / c)*c
@@ -244,9 +234,8 @@ class __GenotypeArrayInMemory__(object):
 
 
 class PlinkBEDFile(__GenotypeArrayInMemory__):
-    '''
-    Interface for Plink .bed format
-    '''
+    '''Interface for Plink .bed format
+'''
     def __init__(self, fname, n, snp_list, keep_snps=None, keep_indivs=None, mafMin=None):
         self._bedcode = {
             2: ba.bitarray('11'),
@@ -305,8 +294,7 @@ class PlinkBEDFile(__GenotypeArrayInMemory__):
         return (z, m, n_new)
 
     def __filter_snps_maf__(self, geno, m, n, mafMin, keep_snps):
-        '''
-        Credit to Chris Chang and the Plink2 developers for this algorithm
+        '''Credit to Chris Chang and the Plink2 developers for this algorithm
         Modified from plink_filter.c
         https://github.com/chrchang/plink-ng/blob/master/plink_filter.c
 
@@ -331,8 +319,7 @@ class PlinkBEDFile(__GenotypeArrayInMemory__):
         het ct + missing ct = a + b - 2*c
 
         Why does bitarray not have >> ????
-
-        '''
+'''
         nru = self.nru
         m_poly = 0
         y = ba.bitarray()
@@ -360,26 +347,23 @@ class PlinkBEDFile(__GenotypeArrayInMemory__):
         return (y, m_poly, n, kept_snps, freq)
 
     def nextSNPs(self, b, minorRef=None):
-        '''
-        Unpacks the binary array of genotypes and returns an n x b matrix of floats of
+        '''Unpacks the binary array of genotypes and returns an n x b matrix of floats of
         normalized genotypes for the next b SNPs, where n := number of samples.
 
-        Parameters
-        ----------
-        b : int
-            Number of SNPs to return.
-        minorRef: bool, default None
-            Should we flip reference alleles so that the minor allele is the reference?
-            (This is useful for computing l1 w.r.t. minor allele).
-
-        Returns
-        -------
+Parameters
+----------
+b : int
+    Number of SNPs to return.
+minorRef : bool, default None
+    Should we flip reference alleles so that the minor allele is the reference?
+    (This is useful for computing l1 w.r.t. minor allele).
+Returns
+-------
         X : np.array with dtype float64 with shape (n, b), where n := number of samples
             Matrix of genotypes normalized to mean zero and variance one. If minorRef is
             not None, then the minor allele will be the positive allele (i.e., two copies
             of the minor allele --> a positive number).
-
-        '''
+'''
 
         try:
             b = int(b)

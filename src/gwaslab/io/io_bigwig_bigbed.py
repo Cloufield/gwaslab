@@ -1,5 +1,4 @@
-"""
-bigWig and bigBed I/O utilities for gwaslab.
+"""bigWig and bigBed I/O utilities for gwaslab.
 
 This module provides functions for reading and writing bigWig and bigBed format files
 using the pyBigWig library. bigWig files store continuous-valued data (e.g., signal tracks),
@@ -44,32 +43,30 @@ def _find_matching_chromosome(
     log: Optional[Log] = None,
     verbose: bool = False
 ) -> Optional[str]:
-    """
-    Find matching chromosome name in available chromosomes using ChromosomeMapper.
+    """Find matching chromosome name in available chromosomes using ChromosomeMapper.
     
     This function uses the same chromosome matching logic as BED files:
     - Strips "chr" or "CHR" prefixes
     - Uses ChromosomeMapper to convert to numeric and back
     - Handles case-insensitive matching
     
-    Parameters
-    ----------
-    chrom : str
-        Chromosome name to match (e.g., 'chr1', '1', 'Chr1')
-    available_chroms : dict
-        Dictionary of available chromosome names and sizes from bigWig/bigBed file
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance. If None, creates a new one.
-    log : Log, optional
-        Logger instance for messages
-    verbose : bool, default=False
-        Whether to show verbose messages
-    
-    Returns
-    -------
-    str or None
-        Matching chromosome name from available_chroms, or None if not found
-    """
+Parameters
+----------
+chrom : str
+    Chromosome name to match (e.g., 'chr1', '1', 'Chr1')
+available_chroms : dict
+    Dictionary of available chromosome names and sizes from bigWig/bigBed file
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance. If None, creates a new one.
+log : Log, optional
+    Logger instance for messages
+verbose : bool, default False
+    Whether to show verbose messages
+Returns
+-------
+str or None
+    Matching chromosome name from available_chroms, or None if not found
+"""
     if mapper is None:
         mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
     
@@ -114,45 +111,43 @@ def read_bigwig(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> Union[pd.DataFrame, List[float], np.ndarray]:
-    """
-    Read values from a bigWig file.
+    """Read values from a bigWig file.
     
-    Parameters
-    ----------
-    bw_path : str
-        Path to bigWig file (.bw, .bigwig, .bigWig)
-    chrom : str, optional
-        Chromosome name (e.g., 'chr1', '1'). If None, returns header information.
-    start : int, optional
-        Start position (0-based). Required if chrom is specified.
-    end : int, optional
-        End position (0-based, exclusive). Required if chrom is specified.
-    as_dataframe : bool, default=True
-        If True, returns a pandas DataFrame with columns: chrom, start, end, value.
-        If False, returns a list of values (one per base position).
-    numpy : bool, default=False
-        If True and as_dataframe=False, returns a numpy array instead of list.
-        Only works if pyBigWig was compiled with numpy support.
-    verbose : bool, default=False
-        If True, prints information about the operation.
-    log : Log, optional
-        Logger instance for messages.
+Parameters
+----------
+bw_path : str
+    Path to bigWig file (.bw, .bigwig, .bigWig)
+chrom : str, optional
+    Chromosome name (e.g., 'chr1', '1'). If None, returns header information.
+start : int, optional
+    Start position (0-based). Required if chrom is specified.
+end : int, optional
+    End position (0-based, exclusive). Required if chrom is specified.
+as_dataframe : bool, default True
+    If True, returns a pandas DataFrame with columns: chrom, start, end, value.
+    If False, returns a list of values (one per base position).
+numpy : bool, default False
+    If True and as_dataframe=False, returns a numpy array instead of list.
+    Only works if pyBigWig was compiled with numpy support.
+verbose : bool, default False
+    If True, prints information about the operation.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+pd.DataFrame, list, or np.ndarray
+    - If chrom/start/end specified and as_dataframe=True: DataFrame with columns
+      (chrom, start, end, value) for each interval
+    - If chrom/start/end specified and as_dataframe=False: List or array of values
+      (one per base position, NaN for uncovered positions)
+    - If chrom/start/end not specified: DataFrame with header information
+      (chromosomes and their sizes)
     
-    Returns
-    -------
-    pd.DataFrame, list, or np.ndarray
-        - If chrom/start/end specified and as_dataframe=True: DataFrame with columns
-          (chrom, start, end, value) for each interval
-        - If chrom/start/end specified and as_dataframe=False: List or array of values
-          (one per base position, NaN for uncovered positions)
-        - If chrom/start/end not specified: DataFrame with header information
-          (chromosomes and their sizes)
-    
-    Notes
-    -----
+Notes
+-----
     bigWig files use 0-based, half-open intervals [start, end).
     The values() function returns one value per base position in the range.
-    """
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -248,32 +243,30 @@ def read_bigwig_intervals(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Read intervals from a bigWig file for a specific region.
+    """Read intervals from a bigWig file for a specific region.
     
-    Parameters
-    ----------
-    bw_path : str
-        Path to bigWig file
-    chrom : str
-        Chromosome name
-    start : int
-        Start position (0-based)
-    end : int
-        End position (0-based, exclusive)
-    with_string : bool, default=True
-        If True, includes string values in intervals (for bigBed compatibility).
-        For bigWig, this is typically not used.
-    verbose : bool, default=False
-        If True, prints information about the operation.
-    log : Log, optional
-        Logger instance for messages.
-    
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with columns: chrom, start, end, value
-    """
+Parameters
+----------
+bw_path : str
+    Path to bigWig file
+chrom : str
+    Chromosome name
+start : int
+    Start position (0-based)
+end : int
+    End position (0-based, exclusive)
+with_string : bool, default True
+    If True, includes string values in intervals (for bigBed compatibility).
+    For bigWig, this is typically not used.
+verbose : bool, default False
+    If True, prints information about the operation.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+pd.DataFrame
+    DataFrame with columns: chrom, start, end, value
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -311,34 +304,32 @@ def read_bigwig_stats(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> Union[float, List[float]]:
-    """
-    Get statistics from a bigWig file for a region.
+    """Get statistics from a bigWig file for a region.
     
-    Parameters
-    ----------
-    bw_path : str
-        Path to bigWig file
-    chrom : str
-        Chromosome name
-    start : int
-        Start position (0-based)
-    end : int
-        End position (0-based, exclusive)
-    stat : str, default='mean'
-        Statistic to compute. Options: 'mean', 'std', 'min', 'max', 'coverage', 'sum'
-    n_bins : int, default=1
-        Number of bins to divide the region into. If 1, returns a single value.
-        If > 1, returns a list of values (one per bin).
-    verbose : bool, default=False
-        If True, prints information about the operation.
-    log : Log, optional
-        Logger instance for messages.
-    
-    Returns
-    -------
-    float or list of float
-        Statistic value(s) for the region
-    """
+Parameters
+----------
+bw_path : str
+    Path to bigWig file
+chrom : str
+    Chromosome name
+start : int
+    Start position (0-based)
+end : int
+    End position (0-based, exclusive)
+stat : str, default 'mean'
+    Statistic to compute. Options: 'mean', 'std', 'min', 'max', 'coverage', 'sum'
+n_bins : int, default 1
+    Number of bins to divide the region into. If 1, returns a single value.
+    If > 1, returns a list of values (one per bin).
+verbose : bool, default False
+    If True, prints information about the operation.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+float or list of float
+    Statistic value(s) for the region
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -380,49 +371,47 @@ def write_bigwig(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> str:
-    """
-    Write a bigWig file from a DataFrame of intervals.
+    """Write a bigWig file from a DataFrame of intervals.
     
-    Parameters
-    ----------
-    output_path : str
-        Path to output bigWig file (.bw, .bigwig, .bigWig)
-    intervals_df : pd.DataFrame, optional
-        DataFrame with columns: chrom, start, end, value.
-        If None, only creates header (requires chroms parameter).
-    chroms : list of tuples, optional
-        List of (chromosome_name, size) tuples for header.
-        Required if intervals_df doesn't contain all chromosomes.
-        Example: [("chr1", 1000000), ("chr2", 1500000)]
-    chrom_col : str, default='chrom'
-        Column name for chromosome in intervals_df
-    start_col : str, default='start'
-        Column name for start position in intervals_df
-    end_col : str, default='end'
-        Column name for end position in intervals_df
-    value_col : str, default='value'
-        Column name for value in intervals_df
-    max_zooms : int, default=10
-        Maximum number of zoom levels to create. Set to 0 to disable zoom levels
-        (not recommended as IGV and other tools require at least one zoom level).
-    validate : bool, default=True
-        If True, validates that entries are added in order.
-        Set to False for faster writing if you're sure entries are ordered.
-    verbose : bool, default=False
-        If True, prints information about the operation.
-    log : Log, optional
-        Logger instance for messages.
+Parameters
+----------
+output_path : str
+    Path to output bigWig file (.bw, .bigwig, .bigWig)
+intervals_df : pd.DataFrame, optional
+    DataFrame with columns: chrom, start, end, value.
+    If None, only creates header (requires chroms parameter).
+chroms : list of tuples, optional
+    List of (chromosome_name, size) tuples for header.
+    Required if intervals_df doesn't contain all chromosomes.
+Example : [("chr1", 1000000), ("chr2", 1500000)]
+chrom_col : str, default 'chrom'
+    Column name for chromosome in intervals_df
+start_col : str, default 'start'
+    Column name for start position in intervals_df
+end_col : str, default 'end'
+    Column name for end position in intervals_df
+value_col : str, default 'value'
+    Column name for value in intervals_df
+max_zooms : int, default 10
+    Maximum number of zoom levels to create. Set to 0 to disable zoom levels
+    (not recommended as IGV and other tools require at least one zoom level).
+validate : bool, default True
+    If True, validates that entries are added in order.
+    Set to False for faster writing if you're sure entries are ordered.
+verbose : bool, default False
+    If True, prints information about the operation.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+str
+    Path to the created bigWig file
     
-    Returns
-    -------
-    str
-        Path to the created bigWig file
-    
-    Notes
-    -----
+Notes
+-----
     Entries must be added in order (sorted by chromosome, then by start position).
     The function will automatically sort if validate=True, but this adds overhead.
-    """
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -506,41 +495,39 @@ def read_bigbed(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Read entries from a bigBed file.
+    """Read entries from a bigBed file.
     
-    Parameters
-    ----------
-    bb_path : str
-        Path to bigBed file (.bb, .bigbed, .bigBed)
-    chrom : str, optional
-        Chromosome name. If None, returns header information.
-    start : int, optional
-        Start position (0-based). Required if chrom is specified.
-    end : int, optional
-        End position (0-based, exclusive). Required if chrom is specified.
-    with_string : bool, default=True
-        If True, includes string values associated with each entry.
-        If False, returns only coordinates (saves memory).
-    verbose : bool, default=False
-        If True, prints information about the operation.
-    log : Log, optional
-        Logger instance for messages.
+Parameters
+----------
+bb_path : str
+    Path to bigBed file (.bb, .bigbed, .bigBed)
+chrom : str, optional
+    Chromosome name. If None, returns header information.
+start : int, optional
+    Start position (0-based). Required if chrom is specified.
+end : int, optional
+    End position (0-based, exclusive). Required if chrom is specified.
+with_string : bool, default True
+    If True, includes string values associated with each entry.
+    If False, returns only coordinates (saves memory).
+verbose : bool, default False
+    If True, prints information about the operation.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+pd.DataFrame
+    - If chrom/start/end specified: DataFrame with columns:
+      - chrom, start, end (always present)
+      - rest (string values) if with_string=True
+    - If chrom/start/end not specified: DataFrame with header information
+      (chromosomes and their sizes)
     
-    Returns
-    -------
-    pd.DataFrame
-        - If chrom/start/end specified: DataFrame with columns:
-          - chrom, start, end (always present)
-          - rest (string values) if with_string=True
-        - If chrom/start/end not specified: DataFrame with header information
-          (chromosomes and their sizes)
-    
-    Notes
-    -----
+Notes
+-----
     bigBed files use 0-based, half-open intervals [start, end).
     The 'rest' column contains the remaining fields from the BED entry.
-    """
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -632,46 +619,44 @@ def write_bigbed(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> str:
-    """
-    Write a bigBed file from a DataFrame of intervals.
+    """Write a bigBed file from a DataFrame of intervals.
     
-    Parameters
-    ----------
-    output_path : str
-        Path to output bigBed file (.bb, .bigbed, .bigBed)
-    intervals_df : pd.DataFrame
-        DataFrame with columns: chrom, start, end, and optionally rest (string values).
-        The 'rest' column should contain the remaining BED fields as strings.
-    chroms : list of tuples
-        List of (chromosome_name, size) tuples for header.
-        Example: [("chr1", 1000000), ("chr2", 1500000)]
-    chrom_col : str, default='chrom'
-        Column name for chromosome in intervals_df
-    start_col : str, default='start'
-        Column name for start position in intervals_df
-    end_col : str, default='end'
-        Column name for end position in intervals_df
-    rest_col : str, optional
-        Column name for rest (string values) in intervals_df.
-        If None, no string values are included.
-    max_zooms : int, default=10
-        Maximum number of zoom levels to create.
-    validate : bool, default=True
-        If True, validates that entries are added in order.
-    verbose : bool, default=False
-        If True, prints information about the operation.
-    log : Log, optional
-        Logger instance for messages.
+Parameters
+----------
+output_path : str
+    Path to output bigBed file (.bb, .bigbed, .bigBed)
+intervals_df : pd.DataFrame
+    DataFrame with columns: chrom, start, end, and optionally rest (string values).
+    The 'rest' column should contain the remaining BED fields as strings.
+chroms : list of tuples
+    List of (chromosome_name, size) tuples for header.
+Example : [("chr1", 1000000), ("chr2", 1500000)]
+chrom_col : str, default 'chrom'
+    Column name for chromosome in intervals_df
+start_col : str, default 'start'
+    Column name for start position in intervals_df
+end_col : str, default 'end'
+    Column name for end position in intervals_df
+rest_col : str, optional
+    Column name for rest (string values) in intervals_df.
+    If None, no string values are included.
+max_zooms : int, default 10
+    Maximum number of zoom levels to create.
+validate : bool, default True
+    If True, validates that entries are added in order.
+verbose : bool, default False
+    If True, prints information about the operation.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+str
+    Path to the created bigBed file
     
-    Returns
-    -------
-    str
-        Path to the created bigBed file
-    
-    Notes
-    -----
+Notes
+-----
     Entries must be added in order (sorted by chromosome, then by start position).
-    """
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -735,50 +720,48 @@ def bigwig_to_sumstats_coordinates(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Convert bigWig coordinates to sumstats-compatible format.
+    """Convert bigWig coordinates to sumstats-compatible format.
     
     Converts:
     - Chromosome notation: bigWig chrom → sumstats CHR format
     - Coordinates: bigWig 0-based [start, end) → 1-based [start+1, end] for matching
     
-    Parameters
-    ----------
-    bw_df : pd.DataFrame
-        bigWig DataFrame with chrom, start, end, value columns
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome conversion.
-        If None, creates a new mapper.
-    chrom_col : str, default='chrom'
-        Column name for chromosome in bigWig DataFrame
-    start_col : str, default='start'
-        Column name for start position in bigWig DataFrame
-    end_col : str, default='end'
-        Column name for end position in bigWig DataFrame
-    value_col : str, default='value'
-        Column name for value in bigWig DataFrame
-    verbose : bool, default=False
-        If True, prints conversion information
-    log : Log, optional
-        Logger instance for messages
+Parameters
+----------
+bw_df : pd.DataFrame
+    bigWig DataFrame with chrom, start, end, value columns
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance for chromosome conversion.
+    If None, creates a new mapper.
+chrom_col : str, default 'chrom'
+    Column name for chromosome in bigWig DataFrame
+start_col : str, default 'start'
+    Column name for start position in bigWig DataFrame
+end_col : str, default 'end'
+    Column name for end position in bigWig DataFrame
+value_col : str, default 'value'
+    Column name for value in bigWig DataFrame
+verbose : bool, default False
+    If True, prints conversion information
+log : Log, optional
+    Logger instance for messages
+Returns
+-------
+pd.DataFrame
+    DataFrame with converted coordinates:
+    - CHR: Chromosome in sumstats format
+    - START: Start position for matching (1-based, inclusive)
+    - END: End position for matching (1-based, inclusive)
+    - VALUE: Value from bigWig (preserved)
+    Original bigWig columns are preserved with '_bw' suffix.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with converted coordinates:
-        - CHR: Chromosome in sumstats format
-        - START: Start position for matching (1-based, inclusive)
-        - END: End position for matching (1-based, inclusive)
-        - VALUE: Value from bigWig (preserved)
-        Original bigWig columns are preserved with '_bw' suffix.
-    
-    Notes
-    -----
+Notes
+-----
     bigWig uses 0-based, half-open intervals [start, end).
     For matching with 1-based sumstats POS:
     - bigWig [start, end) in 0-based = [start+1, end] in 1-based
     - We convert to: START = start + 1, END = end (both inclusive for matching)
-    """
+"""
     if mapper is None:
         mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
     
@@ -834,48 +817,46 @@ def bigbed_to_sumstats_coordinates(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Convert bigBed coordinates to sumstats-compatible format.
+    """Convert bigBed coordinates to sumstats-compatible format.
     
     Converts:
     - Chromosome notation: bigBed chrom → sumstats CHR format
     - Coordinates: bigBed 0-based [start, end) → 1-based [start+1, end] for matching
     
-    Parameters
-    ----------
-    bb_df : pd.DataFrame
-        bigBed DataFrame with chrom, start, end columns (and optionally rest)
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome conversion.
-        If None, creates a new mapper.
-    chrom_col : str, default='chrom'
-        Column name for chromosome in bigBed DataFrame
-    start_col : str, default='start'
-        Column name for start position in bigBed DataFrame
-    end_col : str, default='end'
-        Column name for end position in bigBed DataFrame
-    verbose : bool, default=False
-        If True, prints conversion information
-    log : Log, optional
-        Logger instance for messages
+Parameters
+----------
+bb_df : pd.DataFrame
+    bigBed DataFrame with chrom, start, end columns (and optionally rest)
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance for chromosome conversion.
+    If None, creates a new mapper.
+chrom_col : str, default 'chrom'
+    Column name for chromosome in bigBed DataFrame
+start_col : str, default 'start'
+    Column name for start position in bigBed DataFrame
+end_col : str, default 'end'
+    Column name for end position in bigBed DataFrame
+verbose : bool, default False
+    If True, prints conversion information
+log : Log, optional
+    Logger instance for messages
+Returns
+-------
+pd.DataFrame
+    DataFrame with converted coordinates:
+    - CHR: Chromosome in sumstats format
+    - START: Start position for matching (1-based, inclusive)
+    - END: End position for matching (1-based, inclusive)
+    - REST: Rest column from bigBed (if present, preserved)
+    Original bigBed columns are preserved with '_bb' suffix.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with converted coordinates:
-        - CHR: Chromosome in sumstats format
-        - START: Start position for matching (1-based, inclusive)
-        - END: End position for matching (1-based, inclusive)
-        - REST: Rest column from bigBed (if present, preserved)
-        Original bigBed columns are preserved with '_bb' suffix.
-    
-    Notes
-    -----
+Notes
+-----
     bigBed uses 0-based, half-open intervals [start, end).
     For matching with 1-based sumstats POS:
     - bigBed [start, end) in 0-based = [start+1, end] in 1-based
     - We convert to: START = start + 1, END = end (both inclusive for matching)
-    """
+"""
     if mapper is None:
         mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
     

@@ -1,4 +1,5 @@
-"""Hardy-Weinberg equilibrium test (orchestration re-export)."""
+"""Hardy-Weinberg equilibrium test (orchestration re-export).
+"""
 
 from gwaslab.algorithm.core.hwe import snphwe
 

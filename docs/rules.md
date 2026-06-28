@@ -16,7 +16,51 @@ This document outlines the style and formatting rules for GWASLab documentation.
 - **Reserved headers**: Column names and reserved headers (like `SNPID`, `CHR`, `POS`, `EA`, `NEA`, `BETA`, `SE`, `P`, etc.) should be in **bold** format: `**SNPID**`, `**CHR**`, etc.
 - **Table headers**: Use `DataType` (camelCase, no space) consistently in all parameter/option tables, not `Type` or `Data Type`
 
-## Admonitions
+## Docstrings
+
+All Python docstrings must use **NumPy (numpydoc)** format. This matches [mkdocstrings](https://mkdocstrings.github.io/) (`docstring_style: numpy`) and drives the [API Reference](api/index.md).
+
+- **Section headers**: `Parameters`, `Returns`, `Notes`, `Raises`, `Examples` — no trailing colon
+- **Underlines**: match the header length (`Parameters` → ten dashes, `Returns` → seven, etc.)
+- **Parameters with defaults**: `name : bool, default False` (space after `default`, not `default=`)
+- **Parameters without defaults**: `name : str, optional`
+- **Descriptions**: indented four spaces under the parameter line
+
+Canonical template:
+
+```python
+"""
+One-line summary.
+
+Extended description if needed.
+
+Parameters
+----------
+name : bool, default False
+    What it does.
+other : str, optional
+    No default; describe behavior.
+
+Returns
+-------
+Sumstats or None
+    When ``inplace=True``, returns None.
+
+Notes
+-----
+Additional context.
+
+Examples
+--------
+>>> import gwaslab as gl
+>>> mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="plink2")
+>>> mysumstats.basic_check()
+```
+
+Plot function docstrings are generated from the visualization parameter registry via `gwaslab.info.g_numpy_doc` and `gwaslab.viz.viz_aux_doc`. Sumstats method wrappers use `@add_doc` in `gwaslab.info.g_object_helper` (adapted from implementation docstrings). For bulk docstring cleanup, use `gwaslab.info.g_numpy_doc.normalize_sections`.
+
+See also `src/gwaslab/dev_principles.txt` (Documentation section).
+
 
 !!! note "Note on Admonitions"
     The documentation system is transitioning from mkdocs-material to zensical. Use appropriate admonition blocks for different types of content:

@@ -18,31 +18,29 @@ def _get_ess(
     log: Log = Log(),
     verbose: bool = True
 ) -> pd.DataFrame:
-    """
-    Estimate effective sample size (N_EFF) for GWAS summary statistics. Summary statistics DataFrame containing N_CASE and N_CONTROL columns.
+    """Estimate effective sample size (N_EFF) for GWAS summary statistics. Summary statistics DataFrame containing N_CASE and N_CONTROL columns.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    method : str or float, optional
-        Method for ESS calculation:
-        - "metal": Uses formula from Willer et al. (2010)
-        - float: Directly uses the provided value
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+method : str or float, optional
+    Method for ESS calculation:
+    - "metal": Uses formula from Willer et al. (2010)
+    - float: Directly uses the provided value
+Returns
+-------
+pandas.DataFrame
+    Modified sumstats DataFrame with N_EFF column added.
+    When called via :meth:`Sumstats.get_ess()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
     
-    Returns
-    -------
-    pandas.DataFrame
-        Modified sumstats DataFrame with N_EFF column added.
-        When called via :meth:`Sumstats.get_ess()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    
-    References
-    ----------
+References
+----------
     Willer, C. J., Li, Y., & Abecasis, G. R. (2010). 
     METAL: fast and efficient meta-analysis of genomewide association scans. 
     Bioinformatics, 26(17), 2190-2191.
-    """
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):

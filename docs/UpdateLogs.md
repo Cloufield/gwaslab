@@ -1,11 +1,24 @@
 # Update Logs
 
-# v4.2.0 Coming soon
+# v4.2.0 
 
+- **Config / download consistency:** local registry (`config.json`) defaults to `~/.gwaslab/config.json` with automatic migration from legacy package-local config; `GWASLAB_DATA_DIR` / `GWASLAB_CONFIG` env overrides; persisted user settings in `~/.gwaslab/settings.json`
+- **Shared download layer:** `bd_io.stream_download()` (atomic `.part` rename) used by reference and GWAS Catalog sumstats downloads; fixed `md5sum` verification in `download_ref()`
+- **API / CLI:** `download_ref()` returns local path; exported `set_default_directory()` / `get_default_directory()` / `check_and_download()`; `gwaslab config set`; `gwaslab init` creates dirs, migrates config, optionally sets `data_directory`, then scans; `gwaslab list ref --source` / `--kind`; `gwaslab ref add|remove`; `gwaslab init --recursive`
+- **Registry:** entries tagged with `kind` (`ref` / `sumstats`); scan/register writes `source=catalog`; `get_path(..., raise_on_missing=True)`; `update_config` preserves full metadata; cache layout documented in Download_reference.md
+- **Metadata / QC refactor:** unified `_run_qc_core()` for `basic_check()` and `harmonize(basic_check=True)`; `@with_logging` now supports `meta_step` / `on_missing_cols` for automatic QC metadata hooks; `_sync_build()` keeps `_build`, `genome_build`, `genome_assembly`, and STATUS in sync; new `Sumstats.validate_meta()` and `update_meta()`; build property no longer auto-runs `infer_build()` (use `.infer_build()` or CLI `--infer-build` explicitly)
+- **Algorithm package:** new pure-math layer under `gwaslab.algorithm/` (`core/`, `heterogeneity/`, `finemapping/`, `allele/`, `leads/`, `density/`, `population/`); `get_power()` and related utilities now delegate to `algorithm.core.power` (same public API, testable internals)
+- **`assign_rsid2` lookup cache:** persistent chr-partitioned Parquet bundles under `~/.gwaslab/lookup/` via `hm_lookup_cache.py`; `reuse_lookup=True` reuses bundles across runs; lowers memory use vs monolithic TSV for large VCF/BCF references
+- **Documentation:** mkdocstrings-based [API Reference](api/index.md) (`pip install ".[docs]"`); NumPy docstring normalization via `gwaslab.info.g_numpy_doc.normalize_sections` ([Documentation Style Guide](rules.md#docstrings)); top-level `gl.plot_*` / `gl.compare_effect` docstrings generated from the viz parameter registry (`viz_aux_doc.build_gl_viz_docstring`)
+- **New plot guides:** Phenogram, Sankey, Lead overlap (plot pages + workflow examples under Examples); Gallery and CLI/download docs updated
 - Added `plot_lead_overlap()`: Venn (2–3 studies) or UpSet visualization of annotated lead-locus overlap across multiple Sumstats objects (`gl.plot_lead_overlap()`)
+- Added `plot_sankey()`: Sankey / alluvial diagrams for ordered categorical stages with MAF/P/BETA presets or custom columns (`gl.plot_sankey()`, `mysumstats.plot_sankey()`)
 - Added AlphaGenome panel types for `plot_panels()`: `ag_tracks`, `ag_overlay`, `ag_contact`, `ag_sashimi` via `viz_plot_alphagenome.py`; optional fetch through [gwaslab-alphagenome](https://github.com/Cloufield/gwaslab-alphagenome) with `ag_spec` on `gl.Panel`
 - Enhanced `plot_phenogram()`: refactored into `viz_aux_phenogram.py`; grouped marker shapes/colors with legend, text wrap/repel, and `include_sex_chr` / `only_anno_chr` layout options
 - Improved `plot_track()` and `plot_arc()`: gene-label collision avoidance, y-limit padding for track labels, and score-based arc coloring in stacked panel layouts
+- **`compare_effect()`:** new `save_merged` argument (`True` → default filename, path string, or `False` to skip writing merged table)
+- **`plot_sankey()` / viz wrappers:** `columns` is required when calling `gl.plot_sankey()` (raises `TypeError` if omitted); Sumstats method still accepts kwargs via viz params; mode-aware `VizParamsManager` merge for `plot_stacked_mqq` and `plot_power` (`mode='q'|'b'`)
+- **`download_sumstats()`:** `directory=` alias for `output_dir=`; catalog registration uses `source=gwas_catalog` and `kind=sumstats`
 - Fixed PLINK2 / PLINK2 GLM loading with `#CHROM` headers: `format_comment='#'` now skips only leading `##` meta lines (VCF header / PLINK comments) instead of using pandas `comment='#'`, which removed the `#CHROM` column row and produced empty Sumstats
 - Fixed `detect_sumstats_format()` misclassifying PLINK2 `.glm.*` output as VCF when the header starts with `#CHROM`; VCF fast-path now requires VCF column signatures (`QUAL`/`FILTER`/`INFO`/`FORMAT`) or `##fileformat=VCF`
 - I/O: shared `format_comment` handling in `io_read_tabular.py`; pandas and Polars preformat loaders apply the same skip logic for header preview and data read

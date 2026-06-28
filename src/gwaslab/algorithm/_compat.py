@@ -1,4 +1,5 @@
-"""Array coercion helpers shared by orchestration layers."""
+"""Array coercion helpers shared by orchestration layers.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +12,17 @@ T = TypeVar("T")
 
 
 def as_float_array(x: Union[float, np.ndarray, pd.Series]) -> np.ndarray:
-    """Coerce input to a float numpy array."""
+    """Coerce input to a float numpy array.
+
+Parameters
+----------
+x : float, numpy.ndarray, or pandas.Series
+    Input values to coerce.
+Returns
+-------
+numpy.ndarray
+    Float64 array with the same values as ``x``.
+"""
     if isinstance(x, pd.Series):
         return np.asarray(x, dtype=np.float64)
     arr = np.asarray(x, dtype=np.float64)
@@ -23,23 +34,21 @@ def map_array_func(
     *args: Union[float, np.ndarray, pd.Series],
     **kwargs,
 ) -> Union[float, np.ndarray, pd.Series]:
-    """
-    Apply a numpy-only ``func`` while preserving pandas Series index when present.
+    """Apply a numpy-only ``func`` while preserving pandas Series index when present.
 
-    Parameters
-    ----------
-    func : callable
-        Function accepting numpy arrays and returning numpy array or scalar.
+Parameters
+----------
+func : callable
+    Function accepting numpy arrays and returning numpy array or scalar.
     *args
-        Positional arguments that may be Series, ndarray, or scalar.
+    Positional arguments that may be Series, ndarray, or scalar.
     **kwargs
-        Keyword arguments forwarded to ``func``.
-
-    Returns
-    -------
-    float, numpy.ndarray, or pandas.Series
-        Same container style as the first Series argument, if any.
-    """
+    Keyword arguments forwarded to ``func``.
+Returns
+-------
+float, numpy.ndarray, or pandas.Series
+    Same container style as the first Series argument, if any.
+"""
     series_arg = next((a for a in args if isinstance(a, pd.Series)), None)
     np_args = tuple(as_float_array(a) if not isinstance(a, pd.Series) else as_float_array(a) for a in args)
     result = func(*np_args, **kwargs)

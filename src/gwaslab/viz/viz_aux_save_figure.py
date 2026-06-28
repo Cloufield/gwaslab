@@ -5,26 +5,8 @@ import os
 import functools
 
 def save_figure(fig, save, keyword, save_kwargs=None, log = Log(), verbose=True):
-    """
-    Save matplotlib figure to file.
-    
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        Figure object to save
-    save : str, bool, or None
-        If str: file path to save to
-        If True: save to default path
-        If None/False: skip saving
-    keyword : str
-        Keyword for default filename generation
-    save_kwargs : dict, optional
-        Additional arguments passed to fig.savefig()
-    log : Log, optional
-        Logging object
-    verbose : bool, optional
-        Whether to print verbose messages
-    """
+    """Save matplotlib figure to file.
+"""
     # Set verbose to False when save is None
     if save is None:
         verbose = False
@@ -83,21 +65,13 @@ def save_figure(fig, save, keyword, save_kwargs=None, log = Log(), verbose=True)
     log.write("Finished saving figure..." ,verbose=verbose)
 
 def get_default_path(keyword, fmt="png"):
-    """
-    Generate default file path for saving figures.
-    
-    Parameters
-    ----------
-    keyword : str
-        Keyword to look up in path_dictionary
-    fmt : str, optional
-        File format extension (default: "png")
-    
-    Returns
-    -------
-    str
-        Generated file path with timestamp and counter
-    """
+    """Generate default file path for saving figures.
+
+Returns
+-------
+str
+    Generated file path with timestamp and counter
+"""
     path_dictionary = { 
         "m": "manhattan",
         "qq": "qq",
@@ -141,22 +115,16 @@ def get_default_path(keyword, fmt="png"):
     return f"./gwaslab_{prefix}_{timestamp}_{count}.{fmt}"
 
 def safefig(func):
-    """
-    Decorator to safely handle matplotlib figures in case of exceptions.
+    """Decorator to safely handle matplotlib figures in case of exceptions.
     
     Closes all matplotlib figures if an exception occurs during function execution,
     preventing empty figure windows from being displayed.
-    
-    Parameters
-    ----------
-    func : callable
-        Function to wrap
-    
-    Returns
-    -------
-    callable
-        Wrapped function with exception handling
-    """
+
+Returns
+-------
+callable
+    Wrapped function with exception handling
+"""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:

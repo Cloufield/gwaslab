@@ -86,12 +86,17 @@ If plotting all variants, it may take several minutes. You can use `skip` to ski
 
 Note: use verbose=False to stop printing log and use check=False to skip sanity check for mqq plots
 
-4 patterns of layout: 
+4 patterns of Manhattan–QQ layout:
 
 - `mode= "mqq"` (default)
 - `mode= "qqm"`
 - `mode= "qq"` 
 - `mode= "m"`
+
+Additional modes (see dedicated docs):
+
+- `mode="r"` — regional plot ([RegionalPlot.md](RegionalPlot.md))
+- `mode="b"` / `mode="mb"` — Brisbane SNP density ([BrisbanePlot.md](BrisbanePlot.md))
 
 !!! example
     ```python
@@ -593,7 +598,7 @@ Instead of a list, you can provide a list of lists. Each member list is then a g
 - `fontsize`
 - `anno_fontsize`
 - `title_fontsize`
-- `marker_size`
+- `marker_size` — `(min, max)` tuple for Manhattan significance tiers (internal column `s`: 1=background, 2=P>5e-4, 3>suggestive, 4>sig_level). Fixed size: `marker_size=(20, 20)`. Regional mode default: `(40, 65)` — see [RegionalPlot.md](RegionalPlot.md).
 
 !!! example
     ```python

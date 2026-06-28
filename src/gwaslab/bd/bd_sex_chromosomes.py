@@ -1,12 +1,10 @@
-"""
-Chromosome and sex chromosome information for common species used in GWAS.
+"""Chromosome and sex chromosome information for common species used in GWAS.
 """
 
 class Chromosomes:
-    """
-    Class to manage chromosome numbers and sex chromosomes for common species.
+    """Class to manage chromosome numbers and sex chromosomes for common species.
     Uses self.chromosomes to store all chromosome identifiers.
-    """
+"""
     
     # Species chromosome data: (num_autosomes, sex_chromosomes, has_mitochondrial)
     # sex_chromosomes can be empty list, ["X", "Y"], or ["Z", "W"]
@@ -39,14 +37,13 @@ class Chromosomes:
     }
     
     def __init__(self, species="homo sapiens"):
-        """
-        Initialize chromosome information for a given species.
+        """Initialize chromosome information for a given species.
         
-        Parameters:
-        -----------
-        species : str, default="homo sapiens"
-            Species name (case-insensitive)
-        """
+Parameters
+----------
+species : str, default "homo sapiens"
+    Species name (case-insensitive)
+"""
         self.species = species.lower()
         self.chromosomes = list()
         self.autosomes = list()
@@ -56,7 +53,8 @@ class Chromosomes:
         self._initialize_species_data()
     
     def _initialize_species_data(self):
-        """Initialize chromosome data based on species."""
+        """Initialize chromosome data based on species.
+"""
         species_key = self.species
         
         # Get species data or use default (human)
@@ -91,19 +89,17 @@ class Chromosomes:
             self.chromosomes.append(self.mitochondrial)
     
     def get_sex_chromosomes_numeric(self, xymt_num=[23, 24, 25]):
-        """
-        Get sex chromosomes as numeric values (for compatibility with existing code).
+        """Get sex chromosomes as numeric values (for compatibility with existing code).
         
-        Parameters:
-        -----------
-        xymt_num : list, default=[23, 24, 25]
-            Numeric values for X, Y, MT chromosomes (human convention)
-            
-        Returns:
-        --------
+Parameters
+----------
+xymt_num : list, default [23, 24, 25]
+    Numeric values for X, Y, MT chromosomes (human convention)
+Returns
+-------
         list
             List of numeric sex chromosome identifiers
-        """
+"""
         if len(self.sex_chromosomes) >= 2:
             return [xymt_num[0], xymt_num[1]]  # First two sex chromosomes
         elif len(self.sex_chromosomes) == 1:
@@ -112,38 +108,34 @@ class Chromosomes:
             return []
     
     def get_all_sex_chromosomes_numeric(self, xymt_num=[23, 24, 25]):
-        """
-        Get all non-autosomal chromosomes (sex + mitochondrial) as numeric values.
+        """Get all non-autosomal chromosomes (sex + mitochondrial) as numeric values.
         
-        Parameters:
-        -----------
-        xymt_num : list, default=[23, 24, 25]
-            Numeric values for X, Y, MT chromosomes (human convention)
-            
-        Returns:
-        --------
+Parameters
+----------
+xymt_num : list, default [23, 24, 25]
+    Numeric values for X, Y, MT chromosomes (human convention)
+Returns
+-------
         list
             List of numeric non-autosomal chromosome identifiers
-        """
+"""
         sex_chr_numeric = self.get_sex_chromosomes_numeric(xymt_num)
         if self.mitochondrial:
             return sex_chr_numeric + [xymt_num[2]]  # Add MT
         return sex_chr_numeric
     
     def get_chromosome_mappings(self, xymt_num=[23, 24, 25]):
-        """
-        Get chromosome mappings as tuples (label, numeric_value) for x, y, mt.
+        """Get chromosome mappings as tuples (label, numeric_value) for x, y, mt.
         
-        Parameters:
-        -----------
-        xymt_num : list, default=[23, 24, 25]
-            Numeric values for X, Y, MT chromosomes (human convention)
-            
-        Returns:
-        --------
+Parameters
+----------
+xymt_num : list, default [23, 24, 25]
+    Numeric values for X, Y, MT chromosomes (human convention)
+Returns
+-------
         tuple
             (x_tuple, y_tuple, mt_tuple) where each tuple is (label, numeric_value)
-        """
+"""
         sex_chr_numeric = self.get_sex_chromosomes_numeric(xymt_num)
         all_sex_chr_numeric = self.get_all_sex_chromosomes_numeric(xymt_num)
         
@@ -169,14 +161,13 @@ class Chromosomes:
         return x, y, mt
     
     def get_min_chromosome(self):
-        """
-        Get the minimum autosome number.
+        """Get the minimum autosome number.
         
-        Returns:
-        --------
+Returns
+-------
         int
             Minimum autosome number, defaults to 1 if no autosomes
-        """
+"""
         if not self.autosomes:
             return 1
         
@@ -187,74 +178,66 @@ class Chromosomes:
             return 1
     
     def is_sex_chromosome(self, chrom):
-        """
-        Check if a chromosome identifier is a sex chromosome.
+        """Check if a chromosome identifier is a sex chromosome.
         
-        Parameters:
-        -----------
-        chrom : str or int
-            Chromosome identifier
-            
-        Returns:
-        --------
+Parameters
+----------
+chrom : str or int
+    Chromosome identifier
+Returns
+-------
         bool
             True if chromosome is a sex chromosome
-        """
+"""
         chrom_str = str(chrom).upper()
         return chrom_str in [c.upper() for c in self.sex_chromosomes]
     
     def is_autosome(self, chrom):
-        """
-        Check if a chromosome identifier is an autosome.
+        """Check if a chromosome identifier is an autosome.
         
-        Parameters:
-        -----------
-        chrom : str or int
-            Chromosome identifier
-            
-        Returns:
-        --------
+Parameters
+----------
+chrom : str or int
+    Chromosome identifier
+Returns
+-------
         bool
             True if chromosome is an autosome
-        """
+"""
         chrom_str = str(chrom)
         return chrom_str in self.autosomes
     
     def is_mitochondrial(self, chrom):
-        """
-        Check if a chromosome identifier is mitochondrial.
+        """Check if a chromosome identifier is mitochondrial.
         
-        Parameters:
-        -----------
-        chrom : str or int
-            Chromosome identifier
-            
-        Returns:
-        --------
+Parameters
+----------
+chrom : str or int
+    Chromosome identifier
+Returns
+-------
         bool
             True if chromosome is mitochondrial
-        """
+"""
         chrom_str = str(chrom).upper()
         return chrom_str == self.mitochondrial.upper() if self.mitochondrial else False
     
     def get_chr_to_number_dict(self, out_chr=False, xymt_num=[23, 24, 25], max_chr=200):
-        """
-        Create a dictionary mapping chromosome identifiers to numeric representations.
+        """Create a dictionary mapping chromosome identifiers to numeric representations.
         
-        Parameters:
-        -----------
-        out_chr : bool, default=False
-            If True, returns dictionary with string keys and values
-        xymt_num : list, default=[23, 24, 25]
-            Numeric values for X, Y, MT chromosomes (human convention)
-        max_chr : int, default=200
-            Maximum chromosome number to include in dictionary
-            
-        Returns:
-        --------
+Parameters
+----------
+out_chr : bool, default False
+    If True, returns dictionary with string keys and values
+xymt_num : list, default [23, 24, 25]
+    Numeric values for X, Y, MT chromosomes (human convention)
+max_chr : int, default 200
+    Maximum chromosome number to include in dictionary
+Returns
+-------
         dict
             Dictionary mapping chromosome identifiers to numeric values or strings
-        """
+"""
         sex_chr_numeric = self.get_sex_chromosomes_numeric(xymt_num)
         all_sex_chr_numeric = self.get_all_sex_chromosomes_numeric(xymt_num)
         
@@ -286,25 +269,23 @@ class Chromosomes:
         return dic
     
     def get_number_to_chr_dict(self, in_chr=False, xymt_num=[23, 24, 25], prefix="", max_chr=200):
-        """
-        Create a dictionary mapping chromosome numbers to string representations.
+        """Create a dictionary mapping chromosome numbers to string representations.
         
-        Parameters:
-        -----------
-        in_chr : bool, default=False
-            If True, returns dictionary with string keys and values
-        xymt_num : list, default=[23, 24, 25]
-            Numeric values for X, Y, MT chromosomes (human convention)
-        prefix : str, default=""
-            Optional prefix for chromosome identifiers
-        max_chr : int, default=200
-            Maximum chromosome number to include in dictionary
-            
-        Returns:
-        --------
+Parameters
+----------
+in_chr : bool, default False
+    If True, returns dictionary with string keys and values
+xymt_num : list, default [23, 24, 25]
+    Numeric values for X, Y, MT chromosomes (human convention)
+prefix : str, default ""
+    Optional prefix for chromosome identifiers
+max_chr : int, default 200
+    Maximum chromosome number to include in dictionary
+Returns
+-------
         dict
             Dictionary mapping chromosome numbers to string representations
-        """
+"""
         sex_chr_numeric = self.get_sex_chromosomes_numeric(xymt_num)
         all_sex_chr_numeric = self.get_all_sex_chromosomes_numeric(xymt_num)
         
@@ -334,21 +315,19 @@ class Chromosomes:
         return dic
     
     def get_chr_list(self, add_number=False, only_number=False):
-        """
-        Generate a list of chromosome identifiers for this species.
+        """Generate a list of chromosome identifiers for this species.
         
-        Parameters:
-        -----------
-        add_number : bool, default=False
-            If True, include both string and numeric representations
-        only_number : bool, default=False
-            If True, return only numeric chromosome numbers
-            
-        Returns:
-        --------
+Parameters
+----------
+add_number : bool, default False
+    If True, include both string and numeric representations
+only_number : bool, default False
+    If True, return only numeric chromosome numbers
+Returns
+-------
         list
             List of chromosome identifiers
-        """
+"""
         if only_number:
             # Return numeric autosomes only
             numeric_autosomes = [int(a) for a in self.autosomes if a.isdigit()]
@@ -371,17 +350,15 @@ class Chromosomes:
 
 from typing import Optional
 def get_sex_chromosomes(species: str = "homo sapiens") -> 'Chromosomes':
-    """
-    Convenience function to get chromosome information for a species.
+    """Convenience function to get chromosome information for a species.
     
-    Parameters:
-    -----------
-    species : str, default="homo sapiens"
-        Species name
-        
-    Returns:
-    --------
-    Chromosomes
-        Chromosomes instance for the specified species
-    """
+Parameters
+----------
+species : str, default "homo sapiens"
+    Species name
+Returns
+-------
+Chromosomes
+    Chromosomes instance for the specified species
+"""
     return Chromosomes(species)

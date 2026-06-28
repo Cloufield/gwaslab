@@ -1,5 +1,4 @@
-"""
-Plot stacked panels using Panel objects.
+"""Plot stacked panels using Panel objects.
 
 This module provides the plot_panels function for creating stacked multi-panel
 figures from Panel objects, supporting different panel types like tracks and arcs.
@@ -37,7 +36,8 @@ def _apply_shared_font_defaults(
     fontsize: int,
     font_family: str,
 ) -> None:
-    """Inject plot_panels-level font settings into per-panel kwargs when unset."""
+    """Inject plot_panels-level font settings into per-panel kwargs when unset.
+"""
     if panel_type in ("track", "arc", "region"):
         panel_kwargs.setdefault("track_font_family", font_family)
     if panel_type in ("chromatin", "pipcs", "ld_block", "region"):
@@ -56,7 +56,8 @@ def _as_axes_list(ax_or_axes: Union[plt.Axes, Sequence[plt.Axes]]) -> List[plt.A
 
 
 def _left_label_extent_fig_x(ax: plt.Axes, fig: plt.Figure, renderer) -> float:
-    """Leftmost figure-coordinate x of y-axis label and tick labels."""
+    """Leftmost figure-coordinate x of y-axis label and tick labels.
+"""
     extents = []
     ylab = ax.yaxis.get_label()
     if ylab.get_text().strip():
@@ -93,7 +94,8 @@ def _draw_margin_title(
     y: float,
     title_kwargs: Dict[str, Any],
 ) -> plt.Text:
-    """Draw one panel title in the left margin, left-aligned at ``title_left_x``."""
+    """Draw one panel title in the left margin, left-aligned at ``title_left_x``.
+"""
     kw = dict(title_kwargs)
     fontsize = kw.pop("fontsize", 9)
     family = kw.pop("family", kw.pop("fontfamily", "Arial"))
@@ -120,7 +122,8 @@ def _add_panel_title(
     renderer=None,
     title_left_x: Optional[float] = None,
 ) -> Optional[plt.Text]:
-    """Place a panel title outside the axes, left of y-axis labels."""
+    """Place a panel title outside the axes, left of y-axis labels.
+"""
     axes = _as_axes_list(ax_or_axes)
     ax = axes[0]
     kw = dict(title_kwargs)
@@ -129,7 +132,7 @@ def _add_panel_title(
     pad = kw.pop("pad", 6)
     xpad = kw.pop("xpad", 4)  # points between title column and y labels
 
-    if isinstance(title_pos, tuple):
+    if isinstance(title_pos, (tuple, list)) and len(title_pos) == 2:
         return ax.text(
             title_pos[0], title_pos[1], title,
             transform=ax.transAxes,
@@ -188,11 +191,17 @@ def _apply_panel_titles(
     title_pos: Optional[Union[str, Tuple[float, float]]],
     title_kwargs: Dict[str, Any],
 ) -> None:
-    """Draw panel titles after all panels are plotted and layout is final."""
+    """Draw panel titles after all panels are plotted and layout is final.
+"""
     if not pending_titles:
         return
 
-    if isinstance(title_pos, tuple) or title_pos not in (None, "left", "margin"):
+    if isinstance(title_pos, (tuple, list)) and len(title_pos) == 2:
+        for ax_or_axes, title in pending_titles:
+            _add_panel_title(fig, ax_or_axes, title, title_pos, title_kwargs)
+        return
+
+    if title_pos not in (None, "left", "margin"):
         for ax_or_axes, title in pending_titles:
             _add_panel_title(fig, ax_or_axes, title, title_pos, title_kwargs)
         return
@@ -247,8 +256,7 @@ def _apply_panel_titles(
 
 
 def _get_default_height_ratio(panel_type: str) -> float:
-    """
-    Get default height ratio for a panel type.
+    """Get default height ratio for a panel type.
     
     Different panel types have different default heights based on their content:
     - region: Large (4.0) - main regional plot with scatter and gene track
@@ -257,17 +265,12 @@ def _get_default_height_ratio(panel_type: str) -> float:
     - arc: Small (2.0) - contact arcs
     - chromatin: Small (1.0) - chromatin state bars
     - pipcs: Medium (3.0) - PIP and Credible Sets plots
-    
-    Parameters
-    ----------
-    panel_type : str
-        Type of panel (e.g., "track", "arc", "region", "ld_block", "chromatin", "pipcs")
-    
-    Returns
-    -------
-    float
-        Default height ratio for the panel type
-    """
+
+Returns
+-------
+float
+    Default height ratio for the panel type
+"""
     default_ratios = {
         "region": 4,
         "ld_block": 4,
@@ -284,7 +287,8 @@ def _get_default_height_ratio(panel_type: str) -> float:
 
 
 def _expand_height_ratio_for_panel(panel: Panel, ratio: float) -> List[float]:
-    """Expand one panel-level height ratio into per-subplot ratios."""
+    """Expand one panel-level height ratio into per-subplot ratios.
+"""
     panel_type = panel.get_type()
     if panel_type == "ld_block":
         return [ratio * 0.1, ratio]
@@ -307,34 +311,16 @@ def _auto_adjust_fig_kwargs(
     log: Log,
     verbose: bool = True
 ) -> Dict[str, Any]:
-    """
-    Automatically adjust fig_kwargs height based on panel number and types.
+    """Automatically adjust fig_kwargs height based on panel number and types.
     
     Only adjusts the height of the figure, preserving the width from user input
     or using default width if not provided.
-    
-    Parameters
-    ----------
-    fig_kwargs : dict
-        Current fig_kwargs dictionary
-    panels : list of Panel
-        List of Panel objects
-    total_subplot_count : int
-        Total number of subplots (including multi-axis panels)
-    height_ratios : list of float
-        Height ratios for each subplot
-    subplot_height : float
-        Base height per subplot in inches
-    log : Log
-        Logger instance
-    verbose : bool
-        Whether to show verbose messages
-    
-    Returns
-    -------
-    dict
-        Adjusted fig_kwargs dictionary (height adjusted, width preserved)
-    """
+
+Returns
+-------
+dict
+    Adjusted fig_kwargs dictionary (height adjusted, width preserved)
+"""
     # Make a copy to avoid modifying the original
     adjusted_kwargs = fig_kwargs.copy()
     
@@ -423,91 +409,26 @@ def plot_panels(
     log: Log = Log(),
     **kwargs
 ) -> Tuple[plt.Figure, List[plt.Axes]]:
-    """
-    Create a stacked figure from a list of Panel objects.
-    
+    """Create a stacked figure from a list of Panel objects.
+
     This function takes a list of Panel objects (e.g., track panels, arc panels)
     and creates a stacked figure with shared x-axis. Each panel is plotted
     using its stored parameters.
-    
-    Parameters
-    ----------
-    panels : list of Panel
-        List of Panel objects to plot. Each panel should have a panel_type
-        ("track", "arc", "ld_block", "region", "chromatin", "pipcs", etc.) and stored kwargs.
-        Note: "region" and "ld_block" panel types require 2 axes each.
-    region : tuple of (int, int, int), optional
-        Genomic region as (chromosome, start, end) in 1-based coordinates.
-        If None, will try to extract from panels. All panels should share
-        the same region for proper x-axis alignment.
-        Example: (1, 1000000, 2000000) for chr1:1000000-2000000
-    height_ratios : list of float, optional
-        Height ratios for each panel. If None, default ratios are used based on panel type:
-        - region: 4.0 (larger for regional plots)
-        - ld_block: 4.0 (medium-large for LD blocks)
-        - track: 2.0 (compact for tracks)
-        - arc: 2.0 (compact for arcs)
-        - chromatin: 1.0 (very compact for chromatin states)
-        - pipcs: 3.0 (medium for PIP and Credible Sets plots)
-        Length should match number of panels.
-    hspace : float, default=0.07
-        Space between subplots (vertical spacing).
-    subplot_height : float, default=2.0
-        Height of each subplot in inches. Used to calculate total figure height
-        if figsize is not provided in fig_kwargs.
-    titles : list of str, optional
-        List of titles for each panel. Length should match number of panels.
-    title_pos : str or tuple, default="left"
-        Title placement. ``"left"`` (alias ``"margin"``) draws the title outside
-        the panel, vertically centered and to the left of y-axis labels.
-        ``"above-left"``, ``"above-right"``, and ``"above-center"`` place titles
-        above the panel. A ``(x, y)`` tuple uses ``ax.text`` in transAxes.
-    title_kwargs : dict, optional
-        Title styling. ``fontsize``, ``family``, ``xpad`` (points left of y labels),
-        and ``margin_pad`` (figure fraction) are supported for margin titles.
-        ``pad`` applies to above-panel titles.
-    fig_kwargs : dict, optional
-        Additional keyword arguments for matplotlib figure creation
-        (e.g., {'figsize': (10, 8), 'dpi': 200}).
-    save : str, bool, or None, optional
-        If str: file path to save figure.
-        If True: save to default path.
-        If None/False: skip saving.
-    save_kwargs : dict, optional
-        Additional arguments for saving (e.g., {'dpi': 300, 'bbox_inches': 'tight'}).
-    fontsize : int, default=9
-        Shared font size for panel labels, legends, and titles. Propagated to
-        chromatin, pipcs, ld_block, and region panels (and ag_* panels) unless
-        overridden on individual ``Panel`` kwargs. Track/arc gene labels scale
-        via ``taf`` on the panel.
-    font_family : str, default="Arial"
-        Shared font family; also sets ``track_font_family`` on track/arc/region.
-    align_xaxis : bool, default=True
-        Whether to align x-axes across all panels. If True, applies consistent
-        xlim and tick positions to all main axes (excludes position bars and
-        gene tracks that use different coordinate systems).
-    region_step : int, default=21
-        Number of ticks to generate for x-axis when align_xaxis=True.
-        Used to calculate tick positions using np.linspace.
-    track_start_i : float, default=0.0
-        X-axis offset for track-based plots. Used when calculating xlim
-        for alignment: xlim = (track_start_i + region[1], track_start_i + region[2]).
-    verbose : bool, default=True
-        Whether to show progress messages.
-    log : Log, default=Log()
-        Logger instance for messages.
-    **kwargs
-        Additional keyword arguments passed to set_plot_style.
-    
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-        The created matplotlib figure object.
-    axes : list of matplotlib.axes.Axes
-        List of axes objects (one per panel).
-    
-    Examples
-    --------
+
+Parameters
+----------
+panels : list of Panel
+    Panel layout objects from :class:`gwaslab.Panel`.
+
+Returns
+-------
+matplotlib.figure.Figure
+    The created matplotlib figure object.
+list of matplotlib.axes.Axes
+    One axes object per panel.
+
+Examples
+--------
     >>> import gwaslab as gl
     >>> 
     >>> # Create panels
@@ -541,7 +462,7 @@ def plot_panels(
     ...     titles=["Genes", "Contacts", "Regional Plot"],
     ...     save="stacked_panels.png"
     ... )
-    """
+"""
     
     log.write("Start to create stacked panels plot...", verbose=verbose)
     

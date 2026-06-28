@@ -20,6 +20,7 @@ from gwaslab_cli.handlers import (
     load_sumstats,
     run_config,
     run_config_show,
+    run_config_set,
     run_path,
     run_fb_list,
     run_fb_show,
@@ -29,6 +30,8 @@ from gwaslab_cli.handlers import (
     run_download_ref,
     run_list_ref,
     run_init,
+    run_ref_add,
+    run_ref_remove,
     run_report,
 )
 
@@ -494,6 +497,10 @@ Examples:
     config_show = config_sub.add_parser("show", help="Show one configured path by keyword")
     config_show.add_argument("keyword", help="Path keyword (e.g., config, reference)")
     config_show.set_defaults(func=run_config_show)
+    config_set = config_sub.add_parser("set", help="Set a configuration path (persisted to settings.json)")
+    config_set.add_argument("key", choices=["data_directory", "config"], help="Configuration key")
+    config_set.add_argument("path", help="New path value")
+    config_set.set_defaults(func=run_config_set)
 
     # Path
     path_parser = subparsers.add_parser("path", help="Resolve path")
@@ -567,6 +574,16 @@ Examples:
         action="store_true",
         help="Show keywords registered in local config (downloaded references)",
     )
+    list_ref_parser.add_argument(
+        "--source",
+        choices=["catalog", "gwas_catalog", "local"],
+        help="Filter --downloaded entries by source metadata",
+    )
+    list_ref_parser.add_argument(
+        "--kind",
+        choices=["ref", "sumstats"],
+        help="Filter --downloaded entries by registry kind",
+    )
     list_ref_parser.add_argument("--json", action="store_true", help="Print JSON")
     list_ref_parser.add_argument("--quiet", "-q", action="store_true", help="Less logging")
     list_ref_parser.set_defaults(func=run_list_ref)
@@ -574,7 +591,7 @@ Examples:
     # Init — scan data directory for downloaded reference files
     init_parser = subparsers.add_parser(
         "init",
-        help="Scan data directory for reference files and register matches",
+        help="Prepare local reference registry (create dirs, migrate config, scan files)",
     )
     init_parser.add_argument(
         "--dir",
@@ -584,8 +601,34 @@ Examples:
         metavar="DIR",
         help="Directory to scan (default: GWASLab data directory, see gwaslab path data_directory)",
     )
+    init_parser.add_argument(
+        "--recursive",
+        "-r",
+        action="store_true",
+        help="Scan subdirectories recursively when registering files",
+    )
     init_parser.add_argument("--quiet", "-q", action="store_true", help="Less logging")
     init_parser.set_defaults(func=run_init)
+
+    ref_parser = subparsers.add_parser(
+        "ref",
+        help="Manage local reference registry entries",
+    )
+    ref_sub = ref_parser.add_subparsers(dest="ref_action", required=True)
+    ref_add = ref_sub.add_parser("add", help="Register a local file by keyword")
+    ref_add.add_argument("keyword", help="Registry keyword (e.g. 1kg_eas_hg19)")
+    ref_add.add_argument("path", help="Absolute or relative path to the local file")
+    ref_add.add_argument("--tbi", help="Path to .tbi index (VCF)")
+    ref_add.add_argument("--description", help="Human-readable description")
+    ref_add.set_defaults(func=run_ref_add)
+    ref_remove = ref_sub.add_parser("remove", help="Remove a registry entry")
+    ref_remove.add_argument("keyword", help="Registry keyword to remove")
+    ref_remove.add_argument(
+        "--delete-file",
+        action="store_true",
+        help="Also delete the registered file (and .tbi if recorded)",
+    )
+    ref_remove.set_defaults(func=run_ref_remove)
 
     pair_parser = subparsers.add_parser(
         "pair",
@@ -746,6 +789,10 @@ Examples:
 
     # Load sumstats
     s = load_sumstats(args.input, args.fmt, args.nrows, build=input_build)
+
+    if args.infer_build:
+        s.infer_build(verbose=not args.quiet)
+
     ran_basic_check = False
     coords_ready = False
 
@@ -848,9 +895,6 @@ Examples:
             threads=args.threads if args.threads > 1 else 4,
             verbose=not args.quiet,
         )
-
-    if args.infer_build:
-        s.infer_build(verbose=not args.quiet)
 
     if args.liftover:
         ensure_coords_ready()

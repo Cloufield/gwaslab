@@ -1,4 +1,5 @@
-"""Lead variant clustering by genomic distance."""
+"""Lead variant clustering by genomic distance.
+"""
 
 from __future__ import annotations
 
@@ -10,28 +11,26 @@ def cluster_ids_from_positions(
     pos: np.ndarray,
     window_bp: int,
 ) -> np.ndarray:
-    """
-    Assign cluster IDs from chromosome blocks and distance gaps.
+    """Assign cluster IDs from chromosome blocks and distance gaps.
 
-    Parameters
-    ----------
-    chrom : numpy.ndarray
-        Chromosome labels in row order.
-    pos : numpy.ndarray
-        Positions in row order.
-    window_bp : int
-        Maximum within-cluster distance in base pairs.
+Parameters
+----------
+chrom : numpy.ndarray
+    Chromosome labels in row order.
+pos : numpy.ndarray
+    Positions in row order.
+window_bp : int
+    Maximum within-cluster distance in base pairs.
+Returns
+-------
+numpy.ndarray
+    Integer cluster ID per row (0-based cumulative breaks).
 
-    Returns
-    -------
-    numpy.ndarray
-        Integer cluster ID per row (0-based cumulative breaks).
-
-    Notes
-    -----
+Notes
+-----
     Implementation note: GWASLab lead clustering. Pandas groupby orchestration
     lives in ``util.util_in_get_sig._collect_leads_generic``.
-    """
+"""
     chrom = np.asarray(chrom)
     pos_arr = np.asarray(pos)
     if pos_arr.size and np.issubdtype(pos_arr.dtype, np.floating):

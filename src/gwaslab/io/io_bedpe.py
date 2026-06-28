@@ -1,5 +1,4 @@
-"""
-UCSC BEDPE format I/O utilities.
+"""UCSC BEDPE format I/O utilities.
 
 This module provides functions for reading and processing BEDPE (Browser Extensible Data Paired-End)
 format files according to the UCSC Genome Browser specification.
@@ -43,42 +42,40 @@ def read_bedpe(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Read a BEDPE file into a pandas DataFrame.
+    """Read a BEDPE file into a pandas DataFrame.
     
     BEDPE files use 0-based, half-open intervals [chromStart, chromEnd) for both ends.
     The chromEnd position is exclusive (not included in the feature).
     
-    Parameters
-    ----------
-    bedpe_path : str
-        Path to BEDPE file. Supports uncompressed (.bedpe) and gzipped (.bedpe.gz) files.
-    usecols : list of int, optional
-        Column indices to read (0-based). If None, reads all columns.
-        Default columns: chrom1 (0), chromStart1 (1), chromEnd1 (2), chrom2 (3), 
-        chromStart2 (4), chromEnd2 (5), and optional fields.
-    header : bool, optional
-        Whether the file has a header line. BEDPE files typically don't have headers,
-        but custom tracks may have "browser" or "track" lines.
-        If None, auto-detects by checking for "browser" or "track" lines.
-    comment : str, optional
-        Character(s) that indicate comment lines to skip. Default is "#".
-        BEDPE custom tracks may have "browser" or "track" header lines.
-    verbose : bool, default=False
-        If True, prints information about the file being read.
-    log : Log, optional
-        Logger instance for messages.
+Parameters
+----------
+bedpe_path : str
+    Path to BEDPE file. Supports uncompressed (.bedpe) and gzipped (.bedpe.gz) files.
+usecols : list of int, optional
+    Column indices to read (0-based). If None, reads all columns.
+    Default columns: chrom1 (0), chromStart1 (1), chromEnd1 (2), chrom2 (3),
+    chromStart2 (4), chromEnd2 (5), and optional fields.
+header : bool, optional
+    Whether the file has a header line. BEDPE files typically don't have headers,
+    but custom tracks may have "browser" or "track" lines.
+    If None, auto-detects by checking for "browser" or "track" lines.
+comment : str, optional
+    Character(s) that indicate comment lines to skip. Default is "#".
+    BEDPE custom tracks may have "browser" or "track" header lines.
+verbose : bool, default False
+    If True, prints information about the file being read.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+pd.DataFrame
+    DataFrame with BEDPE data. Column names depend on number of columns:
+    - BEDPE6: chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2
+    - BEDPE7+: chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2, name, ...
+    Columns are named according to BEDPE specification.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with BEDPE data. Column names depend on number of columns:
-        - BEDPE6: chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2
-        - BEDPE7+: chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2, name, ...
-        Columns are named according to BEDPE specification.
-    
-    Notes
-    -----
+Notes
+-----
     BEDPE format specification:
     - chrom1/chrom2: Chromosome names (e.g., chr1, chrX, 1, X)
     - chromStart1/chromStart2: Starting positions (0-based)
@@ -90,10 +87,10 @@ def read_bedpe(
     - For example, chromStart=0, chromEnd=100 spans bases 0-99
     - In 1-based coordinates, this corresponds to positions 1-100
     
-    References
-    ----------
+References
+----------
     UCSC BEDPE format: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
-    """
+"""
     if not os.path.exists(bedpe_path):
         raise FileNotFoundError(f"BEDPE file not found: {bedpe_path}")
     
@@ -153,21 +150,19 @@ def read_bedpe(
 
 
 def _detect_bedpe_header(bedpe_path: str, is_gzipped: bool) -> bool:
-    """
-    Detect if BEDPE file has header lines (browser or track lines).
+    """Detect if BEDPE file has header lines (browser or track lines).
     
-    Parameters
-    ----------
-    bedpe_path : str
-        Path to BEDPE file
-    is_gzipped : bool
-        Whether the file is gzipped
-    
-    Returns
-    -------
-    bool
-        True if header lines are detected, False otherwise
-    """
+Parameters
+----------
+bedpe_path : str
+    Path to BEDPE file
+is_gzipped : bool
+    Whether the file is gzipped
+Returns
+-------
+bool
+    True if header lines are detected, False otherwise
+"""
     try:
         if is_gzipped:
             f = gzip.open(bedpe_path, 'rt')
@@ -190,19 +185,17 @@ def _detect_bedpe_header(bedpe_path: str, is_gzipped: bool) -> bool:
 
 
 def _validate_bedpe_coordinates(bedpe_df: pd.DataFrame) -> bool:
-    """
-    Validate BEDPE coordinates (chromStart < chromEnd for both ends).
+    """Validate BEDPE coordinates (chromStart < chromEnd for both ends).
     
-    Parameters
-    ----------
-    bedpe_df : pd.DataFrame
-        BEDPE DataFrame with chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2 columns
-    
-    Returns
-    -------
-    bool
-        True if all coordinates are valid, False otherwise
-    """
+Parameters
+----------
+bedpe_df : pd.DataFrame
+    BEDPE DataFrame with chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2 columns
+Returns
+-------
+bool
+    True if all coordinates are valid, False otherwise
+"""
     required_cols = ['chromStart1', 'chromEnd1', 'chromStart2', 'chromEnd2']
     if not all(col in bedpe_df.columns for col in required_cols):
         return False
@@ -225,56 +218,54 @@ def bedpe_to_sumstats_coordinates(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Convert BEDPE coordinates to sumstats-compatible format.
+    """Convert BEDPE coordinates to sumstats-compatible format.
     
     Converts:
     - Chromosome notation: BEDPE chrom1/chrom2 → sumstats CHR format
     - Coordinates: BEDPE 0-based [start, end) → 1-based [start+1, end] for matching
     
-    Parameters
-    ----------
-    bedpe_df : pd.DataFrame
-        BEDPE DataFrame with chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2 columns
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome conversion.
-        If None, creates a new mapper.
-    chrom1_col : str, default='chrom1'
-        Column name for chromosome 1 in BEDPE file
-    start1_col : str, default='chromStart1'
-        Column name for start position 1 in BEDPE file
-    end1_col : str, default='chromEnd1'
-        Column name for end position 1 in BEDPE file
-    chrom2_col : str, default='chrom2'
-        Column name for chromosome 2 in BEDPE file
-    start2_col : str, default='chromStart2'
-        Column name for start position 2 in BEDPE file
-    end2_col : str, default='chromEnd2'
-        Column name for end position 2 in BEDPE file
-    verbose : bool, default=False
-        If True, prints conversion information
-    log : Log, optional
-        Logger instance for messages
+Parameters
+----------
+bedpe_df : pd.DataFrame
+    BEDPE DataFrame with chrom1, chromStart1, chromEnd1, chrom2, chromStart2, chromEnd2 columns
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance for chromosome conversion.
+    If None, creates a new mapper.
+chrom1_col : str, default 'chrom1'
+    Column name for chromosome 1 in BEDPE file
+start1_col : str, default 'chromStart1'
+    Column name for start position 1 in BEDPE file
+end1_col : str, default 'chromEnd1'
+    Column name for end position 1 in BEDPE file
+chrom2_col : str, default 'chrom2'
+    Column name for chromosome 2 in BEDPE file
+start2_col : str, default 'chromStart2'
+    Column name for start position 2 in BEDPE file
+end2_col : str, default 'chromEnd2'
+    Column name for end position 2 in BEDPE file
+verbose : bool, default False
+    If True, prints conversion information
+log : Log, optional
+    Logger instance for messages
+Returns
+-------
+pd.DataFrame
+    DataFrame with converted coordinates:
+    - CHR1: Chromosome 1 in sumstats format
+    - START1: Start position 1 for matching (1-based, inclusive)
+    - END1: End position 1 for matching (1-based, inclusive)
+    - CHR2: Chromosome 2 in sumstats format
+    - START2: Start position 2 for matching (1-based, inclusive)
+    - END2: End position 2 for matching (1-based, inclusive)
+    Original BEDPE columns are preserved with '_bedpe' suffix.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with converted coordinates:
-        - CHR1: Chromosome 1 in sumstats format
-        - START1: Start position 1 for matching (1-based, inclusive)
-        - END1: End position 1 for matching (1-based, inclusive)
-        - CHR2: Chromosome 2 in sumstats format
-        - START2: Start position 2 for matching (1-based, inclusive)
-        - END2: End position 2 for matching (1-based, inclusive)
-        Original BEDPE columns are preserved with '_bedpe' suffix.
-    
-    Notes
-    -----
+Notes
+-----
     BEDPE uses 0-based, half-open intervals [chromStart, chromEnd).
     For matching with 1-based sumstats POS:
     - BEDPE [start, end) in 0-based = [start+1, end] in 1-based
     - We convert to: START = start + 1, END = end (both inclusive for matching)
-    """
+"""
     if mapper is None:
         mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
     
@@ -346,38 +337,36 @@ def bedpe_contains_position(
     end2_col: str = 'END2',
     mapper: Optional[ChromosomeMapper] = None
 ) -> bool:
-    """
-    Check if a position (chrom, pos) is contained in any BEDPE region (either end).
+    """Check if a position (chrom, pos) is contained in any BEDPE region (either end).
     
-    Parameters
-    ----------
-    bedpe_df : pd.DataFrame
-        BEDPE DataFrame with converted coordinates (from bedpe_to_sumstats_coordinates)
-    chrom : str or int
-        Chromosome identifier (in sumstats format)
-    pos : int
-        Position (1-based)
-    chrom1_col : str, default='CHR1'
-        Column name for chromosome 1 in converted BEDPE DataFrame
-    start1_col : str, default='START1'
-        Column name for start position 1 in converted BEDPE DataFrame
-    end1_col : str, default='END1'
-        Column name for end position 1 in converted BEDPE DataFrame
-    chrom2_col : str, default='CHR2'
-        Column name for chromosome 2 in converted BEDPE DataFrame
-    start2_col : str, default='START2'
-        Column name for start position 2 in converted BEDPE DataFrame
-    end2_col : str, default='END2'
-        Column name for end position 2 in converted BEDPE DataFrame
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome conversion.
-        If None, assumes chrom is already in the same format as bedpe_df[chrom1_col].
-    
-    Returns
-    -------
-    bool
-        True if position is contained in any BEDPE region (either end), False otherwise
-    """
+Parameters
+----------
+bedpe_df : pd.DataFrame
+    BEDPE DataFrame with converted coordinates (from bedpe_to_sumstats_coordinates)
+chrom : str or int
+    Chromosome identifier (in sumstats format)
+pos : int
+    Position (1-based)
+chrom1_col : str, default 'CHR1'
+    Column name for chromosome 1 in converted BEDPE DataFrame
+start1_col : str, default 'START1'
+    Column name for start position 1 in converted BEDPE DataFrame
+end1_col : str, default 'END1'
+    Column name for end position 1 in converted BEDPE DataFrame
+chrom2_col : str, default 'CHR2'
+    Column name for chromosome 2 in converted BEDPE DataFrame
+start2_col : str, default 'START2'
+    Column name for start position 2 in converted BEDPE DataFrame
+end2_col : str, default 'END2'
+    Column name for end position 2 in converted BEDPE DataFrame
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance for chromosome conversion.
+    If None, assumes chrom is already in the same format as bedpe_df[chrom1_col].
+Returns
+-------
+bool
+    True if position is contained in any BEDPE region (either end), False otherwise
+"""
     if len(bedpe_df) == 0:
         return False
     

@@ -1,4 +1,5 @@
-"""Sliding-window signal density on sorted genomic positions."""
+"""Sliding-window signal density on sorted genomic positions.
+"""
 
 from __future__ import annotations
 
@@ -16,26 +17,24 @@ class DensitySummary(TypedDict):
 
 
 def density_all_variants(positions: np.ndarray, window_bp: int) -> np.ndarray:
-    """
-    Count variants within a symmetric window for each sorted position.
+    """Count variants within a symmetric window for each sorted position.
 
-    Parameters
-    ----------
-    positions : numpy.ndarray
-        Genomic positions sorted ascending on one chromosome.
-    window_bp : int
-        Half-window size in base pairs.
+Parameters
+----------
+positions : numpy.ndarray
+    Genomic positions sorted ascending on one chromosome.
+window_bp : int
+    Half-window size in base pairs.
+Returns
+-------
+numpy.ndarray
+    Variant counts within ``±window_bp``, excluding self.
 
-    Returns
-    -------
-    numpy.ndarray
-        Variant counts within ``±window_bp``, excluding self.
-
-    Notes
-    -----
+Notes
+-----
     Implementation note: GWASLab sliding-window density using ``searchsorted``.
     Orchestration lives in ``util.util_in_get_density``.
-    """
+"""
     positions = np.asarray(positions, dtype=np.int64)
     n = positions.size
     if n == 0:
@@ -50,27 +49,25 @@ def density_from_signals(
     signal_positions: np.ndarray,
     window_bp: int,
 ) -> np.ndarray:
-    """
-    Increment density counts for variants near each signal position.
+    """Increment density counts for variants near each signal position.
 
-    Parameters
-    ----------
-    all_positions : numpy.ndarray
-        All variant positions on one chromosome (sorted).
-    signal_positions : numpy.ndarray
-        Significant variant positions (sorted not required).
-    window_bp : int
-        Half-window size in base pairs.
+Parameters
+----------
+all_positions : numpy.ndarray
+    All variant positions on one chromosome (sorted).
+signal_positions : numpy.ndarray
+    Significant variant positions (sorted not required).
+window_bp : int
+    Half-window size in base pairs.
+Returns
+-------
+numpy.ndarray
+    Count of signal-centered windows covering each variant.
 
-    Returns
-    -------
-    numpy.ndarray
-        Count of signal-centered windows covering each variant.
-
-    Notes
-    -----
+Notes
+-----
     Implementation note: GWASLab conditional density for ``sig_sumstats`` mode.
-    """
+"""
     all_positions = np.asarray(all_positions, dtype=np.int64)
     signal_positions = np.asarray(signal_positions, dtype=np.int64)
     counts = np.zeros(all_positions.shape[0], dtype=np.int32)
@@ -82,19 +79,17 @@ def density_from_signals(
 
 
 def density_summary(counts: np.ndarray) -> DensitySummary:
-    """
-    Summarize density count distribution.
+    """Summarize density count distribution.
 
-    Parameters
-    ----------
-    counts : numpy.ndarray
-        Density values (may contain NaN).
-
-    Returns
-    -------
-    DensitySummary
-        Mean, median, std, max, and argmax index.
-    """
+Parameters
+----------
+counts : numpy.ndarray
+    Density values (may contain NaN).
+Returns
+-------
+DensitySummary
+    Mean, median, std, max, and argmax index.
+"""
     valid = np.asarray(counts, dtype=float)
     valid = valid[np.isfinite(valid)]
     if valid.size == 0:

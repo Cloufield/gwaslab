@@ -1,4 +1,5 @@
-"""Phenogram plot entry point."""
+"""Phenogram plot entry point.
+"""
 
 from typing import Optional, Union, Dict, Any, List
 import pandas as pd
@@ -106,171 +107,15 @@ def _plot_phenogram(
     verbose: bool = True,
     log: Log = Log(),
 ) -> plt.Figure:
-    """
-    Create a phenogram plot showing cytobands for each chromosome with lead SNPs annotated.
-    
-    This function generates a karyotype-like visualization (phenogram) displaying:
-    - Cytogenetic bands for each chromosome
-    - Lead SNPs from the sumstats data
-    - Optional annotations for SNP IDs
-    
-    Parameters
-    ----------
-    mysumstats : Sumstats
-        Sumstats object containing the GWAS data
-    snpid : str, default="SNPID"
-        Column name for SNP identifier
-    chrom : str, default="CHR"
-        Column name for chromosome
-    pos : str, default="POS"
-        Column name for position
-    p : str, default="P"
-        Column name for p-value
-    mlog10p : str, default="MLOG10P"
-        Column name for -log10(p-value)
-    windowsizekb : int, default=500
-        Window size in kilobases for lead variant identification
-    sig_level : float, default=5e-8
-        Significance threshold for variant selection
-    cytoband_path : str, optional
-        Path to cytoband file. If None, uses default hg19 cytoband file
-    build : str, default="19"
-        Genome build version ("19" for hg19, "38" for hg38)
-    include_sex_chr : bool, default=False
-        If True, include chromosomes X and Y after autosomes when cytoband data is available.
-    only_anno_chr : bool, default=False
-        If True, plot only chromosomes containing phenogram lead/annotation rows.
-    ncols : int, default=11
-        Number of columns for arranging chromosomes
-    figsize : tuple, default=(20, 48)
-        Figure size in inches
-    dpi : int, default=400
-        Resolution of the figure
-    chr_width : float, default=0.35
-        Chromosome width in data coordinates
-    chr_x : float, default=0.0
-        Left x boundary of the chromosome in data coordinates
-    anno_x_pad : float, default=0.18
-        Extra horizontal gap between chromosome right edge and annotation area (data coords)
-    chr_label_pad : float, default=0.06
-        Vertical space reserved below each chromosome for the chromosome number label
-    use_lead_extraction : bool, default=True
-        If True, extract lead variants via ``_get_sig()``. If False, use every input row.
-    anno : None, bool, or str, default=None
-        Text label source (same as MQQ ``plot_mqq``):
+    """Create a karyotype-style phenogram with cytobands and lead variants.
 
-        - ``None``: draw lead bars only, no text labels
-        - ``True``: label as ``Chr{CHR}:{POS}``
-        - ``"GENENAME"``: nearest gene via reference annotation
-        - column name (e.g. ``"SNPID"``): label from that column
-    anno_set : list of str, optional
-        Restrict text labels to these SNPID values. All extracted leads still get bars.
-    anno_alias : dict, optional
-        Map SNPID to custom label text.
-    anno_source : str, default="ensembl"
-        Gene annotation source when ``anno="GENENAME"``.
-    anno_gtf_path : str, optional
-        Custom GTF path for ``anno="GENENAME"``.
-    anno_sig_level : float, default=5e-8
-        Significance threshold for lead extraction.
-    anno_max_rows : int, default=200
-        Maximum number of text labels (top by significance).
-    anno_kwargs : dict, optional
-        Default matplotlib text/connector styling for all labels (``fontsize``,
-        ``fontstyle``, ``arrow_shaft``, ``arrow_pad``, ``arrow_shrink_b``, etc.).
-    anno_kwargs_single : dict, optional
-        Per-SNPID overrides merged on top of ``anno_kwargs`` (MQQ-compatible).
-    arrow_kwargs : dict, optional
-        Matplotlib arrow/line styling for text-mode connectors (``color``,
-        ``lw``, ``arrowstyle``, etc.), merged into connector drawing.
-    anno_group : str, optional
-        Column for marker-mode grouping. If set, enables marker annotation mode.
-    anno_shape : str, optional
-        Column for marker shape; unique values auto-mapped to ``marker_shapes`` pool.
-    anno_color : str, optional
-        Column for marker color; unique values auto-mapped to ``marker_colors`` pool.
-    marker_shapes : list of str, optional
-        Pool of matplotlib marker codes for auto shape mapping.
-    marker_colors : list of str, optional
-        Pool of colors for auto color mapping.
-    marker_shape_map : dict, optional
-        Explicit override for shape value -> marker code.
-    marker_color_map : dict, optional
-        Explicit override for color value -> color.
-    marker_size : float, default=81
-        Scatter marker size for annotation markers.
-    marker_gap_pt : float, default=3
-        Fixed edge-to-edge gap between markers within a row, in points. Center spacing
-        is ``2 * marker_radius + marker_gap_pt``.
-    marker_label_gap_pt : float, default=2.75
-        Vertical gap between the bottom marker row and the group text label, in
-        points. Also sets the default spacing between adjacent annotation units
-        (marker cluster + label).
-    marker_max_per_row : int, default=4
-        Maximum markers on one row before wrapping to the next row within a group.
-    marker_row_gap_pt : float, default=2.5
-        Vertical gap between wrapped marker rows inside a group, in points.
-    marker_label_align : str, default="center"
-        Deprecated for group label placement: group labels are always
-        left-aligned at the fixed annotation column (``anno_col_x``).
-        Retained for API compatibility when ``anno_col_x`` is not passed.
-    marker_fontsize : float, default=11
-        Font size for marker-mode text labels.
-    marker_linewidth : float, default=0.6
-        Edge linewidth for marker scatter points.
-    marker_label_bbox : bool, default=True
-        If True, draw marker-mode labels with a white text outline (no filled box).
-    group_min_vertical_gap_pt : float, default=3.5
-        Optional floor for vertical spacing between annotation units, in points
-        (default inter-unit gap is ``marker_label_gap_pt``).
-    group_marker_to_marker_gap_pt : float, default=3
-        Optional floor for vertical spacing between adjacent units, in points.
-    group_label_box_pad_pt : float, default=1.5
-        Extra padding around label text for overlap calculations, in points.
-    show_legend : bool, default=True
-        If True, draw figure legend(s) above the plot in marker mode. When
-        ``anno_shape`` and ``anno_color`` are the same column, one combined
-        row ``Marker …`` is drawn; otherwise separate ``Shape …`` and
-        ``Color …`` rows are used.
-    legend_ncol : int, default=6
-        Deprecated for marker legends (each row is kept on one line). Retained
-        for API compatibility.
-    legend_kwargs : dict, optional
-        Extra keyword arguments passed to ``fig.legend()``.
-    anno_style : str, default="expand"
-        Annotation layout style for lead SNP labels
-    repel_force : float, default=0.5
-        Scales inter-unit vertical gap (based on ``marker_label_gap_pt``) for
-        crowded loci. Display-space spreading uses ``anno_max_iter`` iterations.
-    anno_max_iter : int, default=300
-        Maximum iterations for annotation repulsion / marker group spreading
-    anno_wrap : bool, default=True
-        If True, word-wrap long text-mode labels instead of truncating.
-    anno_wrap_width_pt : float, optional
-        Maximum label line width in points when ``anno_wrap_chars_per_line`` is
-        None. If both are None, width is derived from the annotation column.
-    anno_wrap_chars_per_line : int, optional, default=9
-        Maximum characters per line for text-mode labels. Set to ``None`` to
-        use width-based wrapping only.
-    anno_max_len : int, optional
-        Optional hard character limit applied after wrapping (text mode) or to
-        group labels (marker mode). When ``anno_wrap=False``, defaults to 20.
-    save : bool or str, default=False
-        If True or str, save the figure
-    save_kwargs : dict, optional
-        Additional keyword arguments for saving
-    fig_kwargs : dict, optional
-        Additional keyword arguments for figure creation
-    verbose : bool, default=True
-        If True, print progress messages
-    log : Log, default=Log()
-        Logging object
-        
-    Returns
-    -------
-    matplotlib.figure.Figure
-        The created matplotlib figure object
-    """
+    Registry-aligned parameters are on ``Sumstats.plot_phenogram()``.
+
+Returns
+-------
+matplotlib.figure.Figure
+    The phenogram figure.
+"""
     
     log.write("Start to create phenogram plot...", verbose=verbose)
     

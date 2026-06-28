@@ -2,6 +2,9 @@
 
 GWASLab can extract the lead variants based on **MLOG10P** values or **P** values (by default, GWASLab will use **MLOG10P** first since v3.4.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
 
+!!! tip "Multi-study overlap"
+    To compare lead-locus overlap across two or more studies visually, see [Lead Overlap Plot](LeadOverlapPlot.md) (`gl.plot_lead_overlap()`).
+
 ## .get_lead()
 
 ```python

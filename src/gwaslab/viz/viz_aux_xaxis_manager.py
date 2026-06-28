@@ -1,5 +1,4 @@
-"""
-X-Axis Alignment Manager for aligning x-axes across multiple panels.
+"""X-Axis Alignment Manager for aligning x-axes across multiple panels.
 
 This module provides the XAxisManager class for aligning x-axes in terms of
 data range (xlim) and tick positions/labels without using matplotlib's sharex.
@@ -18,60 +17,58 @@ except ImportError:
 
 
 class XAxisManager:
-    """
-    Manager for aligning x-axes across multiple matplotlib axes.
+    """Manager for aligning x-axes across multiple matplotlib axes.
     
     This class takes all axes in the figure and applies:
     - X-tick and label alignment to specified axes only
     - Vertical spacing adjustment to all axes
     
-    Parameters
-    ----------
-    all_axes : list of matplotlib.axes.Axes
-        List of ALL axes in the figure (preserves order from top to bottom).
-        all_axes[0] is the top panel, all_axes[-1] is the bottom panel.
-        Spacing adjustment is applied to all axes in this list.
-    xlim : tuple of (float, float), optional
-        Explicit x-axis limits (xmin, xmax). If None, will be calculated
-        from region parameter.
-    xticks : array-like, optional
-        Explicit tick positions. If None, will be calculated from region
-        and region_step.
-    xticklabels : list of str, optional
-        Explicit tick labels. If None, will be auto-generated or calculated
-        from region.
-    region : tuple of (int, int, int), optional
-        Genomic region as (chromosome, start, end) in 1-based coordinates.
-        Used to calculate xlim and ticks if not explicitly provided.
-    region_step : int, optional
-        Number of ticks to generate. Used with region to calculate tick
-        positions using np.linspace.
-    track_start_i : float, default=0.0
-        Offset for track-based plots (track, arc). The xlim will be calculated
-        as (track_start_i + region[1], track_start_i + region[2]).
-    gene_track_start_i : float, optional
-        Offset for gene track in regional plots. If None, uses track_start_i.
-    xlabel : str, optional
-        X-axis label to set on aligned axes. If None, preserves existing labels.
-    fontsize : float, optional
-        Font size for tick labels and xlabel.
-    font_family : str, optional
-        Font family for tick labels and xlabel.
-    fig : matplotlib.figure.Figure, optional
-        Figure object containing the axes. If None, will be extracted from
-        the first axis in all_axes. Required for adjusting vertical spacing.
-    adjust_spacing : bool, default=True
-        Whether to automatically adjust vertical spacing to prevent
-        overlapping tick labels and ensure proper spacing.
-    min_hspace : float, default=0.05
-        Minimum vertical spacing between subplots (as fraction of figure height).
-    verbose : bool, default=True
-        Whether to show progress messages.
-    log : Log, optional
-        Logger instance for messages.
-    
-    Examples
-    --------
+Parameters
+----------
+all_axes : list of matplotlib.axes.Axes
+    List of ALL axes in the figure (preserves order from top to bottom).
+    all_axes[0] is the top panel, all_axes[-1] is the bottom panel.
+    Spacing adjustment is applied to all axes in this list.
+xlim : tuple of (float, float), optional
+    Explicit x-axis limits (xmin, xmax). If None, will be calculated
+    from region parameter.
+xticks : array-like, optional
+    Explicit tick positions. If None, will be calculated from region
+    and region_step.
+xticklabels : list of str, optional
+    Explicit tick labels. If None, will be auto-generated or calculated
+    from region.
+region : tuple of (int, int, int), optional
+    Genomic region as (chromosome, start, end) in 1-based coordinates.
+    Used to calculate xlim and ticks if not explicitly provided.
+region_step : int, optional
+    Number of ticks to generate. Used with region to calculate tick
+    positions using np.linspace.
+track_start_i : float, default 0.0
+    Offset for track-based plots (track, arc). The xlim will be calculated
+    as (track_start_i + region[1], track_start_i + region[2]).
+gene_track_start_i : float, optional
+    Offset for gene track in regional plots. If None, uses track_start_i.
+xlabel : str, optional
+    X-axis label to set on aligned axes. If None, preserves existing labels.
+fontsize : float, optional
+    Font size for tick labels and xlabel.
+font_family : str, optional
+    Font family for tick labels and xlabel.
+fig : matplotlib.figure.Figure, optional
+    Figure object containing the axes. If None, will be extracted from
+    the first axis in all_axes. Required for adjusting vertical spacing.
+adjust_spacing : bool, default True
+    Whether to automatically adjust vertical spacing to prevent
+    overlapping tick labels and ensure proper spacing.
+min_hspace : float, default 0.05
+    Minimum vertical spacing between subplots (as fraction of figure height).
+verbose : bool, default True
+    Whether to show progress messages.
+log : Log, optional
+    Logger instance for messages.
+Examples
+--------
     >>> import matplotlib.pyplot as plt
     >>> from gwaslab.viz.viz_aux_xaxis_manager import XAxisManager
     >>> 
@@ -87,7 +84,7 @@ class XAxisManager:
     ... )
     >>> xm.register_align(axes[:2])  # Only align first 2 axes
     >>> xm.align()
-    """
+"""
     
     def __init__(
         self,
@@ -137,17 +134,11 @@ class XAxisManager:
         self.axes_to_align: List[plt.Axes] = []
     
     def register_align(self, ax: Union[List[plt.Axes], plt.Axes]) -> None:
-        """
-        Register axis(es) for x-tick and label alignment.
+        """Register axis(es) for x-tick and label alignment.
         
         These axes will have their xlim, xticks, and xticklabels aligned.
         Spacing is still applied to all axes in all_axes.
-        
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes or list of matplotlib.axes.Axes
-            Axis(es) to register for x-tick/label alignment.
-        """
+"""
         if isinstance(ax, plt.Axes):
             ax = [ax]
         
@@ -156,20 +147,15 @@ class XAxisManager:
                 self.axes_to_align.append(a)
     
     def register_align_many(self, axes: Union[List[plt.Axes], plt.Axes]) -> None:
-        """
-        Register multiple axes for x-tick and label alignment.
+        """Register multiple axes for x-tick and label alignment.
         
         Alias for register_align for backward compatibility.
-        
-        Parameters
-        ----------
-        axes : list of matplotlib.axes.Axes or matplotlib.axes.Axes
-            Axes to register for x-tick/label alignment.
-        """
+"""
         self.register_align(axes)
     
     def _calculate_xlim(self) -> Tuple[float, float]:
-        """Calculate xlim from region or use provided xlim."""
+        """Calculate xlim from region or use provided xlim.
+"""
         if self.xlim is not None:
             return self.xlim
         
@@ -186,7 +172,8 @@ class XAxisManager:
         return (xmin, xmax)
     
     def _calculate_xticks(self) -> np.ndarray:
-        """Calculate tick positions from region or use provided xticks."""
+        """Calculate tick positions from region or use provided xticks.
+"""
         if self.xticks is not None:
             return np.asarray(self.xticks)
         
@@ -201,7 +188,8 @@ class XAxisManager:
         return ticks
     
     def _calculate_xticklabels(self) -> Optional[List[str]]:
-        """Calculate tick labels from region or use provided labels."""
+        """Calculate tick labels from region or use provided labels.
+"""
         if self.xticklabels is not None:
             return self.xticklabels
         
@@ -217,7 +205,8 @@ class XAxisManager:
         return tick_labels
     
     def _calculate_xlabel(self) -> Optional[str]:
-        """Calculate xlabel from region or use provided label."""
+        """Calculate xlabel from region or use provided label.
+"""
         if self.xlabel is not None:
             return self.xlabel
         
@@ -229,19 +218,13 @@ class XAxisManager:
         return xlabel
     
     def _get_tick_position(self, ax: plt.Axes) -> str:
-        """
-        Determine if x-axis ticks are on top or bottom.
-        
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes
-            Axis to check.
-        
-        Returns
-        -------
+        """Determine if x-axis ticks are on top or bottom.
+
+Returns
+-------
         str
             'top' if ticks are on top, 'bottom' if ticks are on bottom.
-        """
+"""
         # Check tick_params to see where labels are shown
         try:
             # Check if labeltop is True (labels on top)
@@ -289,27 +272,19 @@ class XAxisManager:
         return 'bottom'
     
     def _calculate_required_space_for_labels(self, ax: plt.Axes, direction: str = 'below') -> float:
-        """
-        Calculate the space required for tick labels and xlabel.
+        """Calculate the space required for tick labels and xlabel.
         
         This method accounts for:
         - Rotation angle of tick labels
         - Actual bounding boxes of visible labels
         - X-axis label position
         - Tick position (top or bottom)
-        
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes
-            Axis to check for label space requirements.
-        direction : str, default='below'
-            'below' to calculate space below axis, 'above' to calculate space above axis.
-        
-        Returns
-        -------
+
+Returns
+-------
         float
             Required space in figure coordinates (0-1 range).
-        """
+"""
         if self.fig is None:
             self.fig = ax.figure
         
@@ -440,19 +415,13 @@ class XAxisManager:
         return required_space
     
     def _has_labels(self, ax: plt.Axes) -> bool:
-        """
-        Check if an axis has visible tick labels or xlabel.
-        
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes
-            Axis to check.
-        
-        Returns
-        -------
+        """Check if an axis has visible tick labels or xlabel.
+
+Returns
+-------
         bool
             True if axis has visible labels, False otherwise.
-        """
+"""
         # Check for tick labels
         tick_labels = ax.get_xticklabels()
         for label in tick_labels:
@@ -467,16 +436,8 @@ class XAxisManager:
         return False
     
     def _separate_overlapping_axes(self, axes_for_spacing: List[plt.Axes], compact_spacing: float) -> None:
-        """
-        Separate overlapping adjacent axes by moving them apart.
-        
-        Parameters
-        ----------
-        axes_for_spacing : List[plt.Axes]
-            List of axes to process (preserves order from top to bottom).
-        compact_spacing : float
-            Minimum spacing between axes.
-        """
+        """Separate overlapping adjacent axes by moving them apart.
+"""
         max_iterations = 10
         for _ in range(max_iterations):
             has_overlaps = False
@@ -506,25 +467,13 @@ class XAxisManager:
     
     def _calculate_required_gap(self, top_ax: plt.Axes, bottom_ax: plt.Axes, 
                                  axes_with_labels_set: set, compact_spacing: float) -> float:
-        """
-        Calculate the required gap between two axes based on their tick positions.
-        
-        Parameters
-        ----------
-        top_ax : plt.Axes
-            Top axis in the gap.
-        bottom_ax : plt.Axes
-            Bottom axis in the gap.
-        axes_with_labels_set : set
-            Set of axes that have labels (for spacing calculations).
-        compact_spacing : float
-            Minimum spacing when no labels are present.
-        
-        Returns
-        -------
+        """Calculate the required gap between two axes based on their tick positions.
+
+Returns
+-------
         float
             Required gap between the two axes.
-        """
+"""
         required_gap_below_top = compact_spacing
         required_gap_above_bottom = compact_spacing
         
@@ -541,8 +490,7 @@ class XAxisManager:
         return max(required_gap_below_top, required_gap_above_bottom, compact_spacing)
     
     def _adjust_figure_spacing(self) -> None:
-        """
-        Adjust vertical spacing by moving axes positions (moving approach).
+        """Adjust vertical spacing by moving axes positions (moving approach).
         
         This method:
         1. Separates overlapping axes
@@ -551,7 +499,7 @@ class XAxisManager:
         
         Spacing is applied to ALL axes in self.all_axes.
         Label calculations use self.axes_to_align (to determine spacing requirements).
-        """
+"""
         if not self.adjust_spacing:
             return
         
@@ -655,14 +603,13 @@ class XAxisManager:
         self.log.write("Finished adjusting vertical spacing.", verbose=self.verbose)
     
     def align(self) -> None:
-        """
-        Apply x-tick and label alignment to registered axes, and spacing to all axes.
+        """Apply x-tick and label alignment to registered axes, and spacing to all axes.
         
         This method:
         1. Calculates xlim, xticks, and xticklabels (if not explicitly provided)
         2. Applies x-tick and label alignment to axes_to_align only
         3. Applies vertical spacing adjustment to all axes in all_axes
-        """
+"""
         # Step 1: Calculate xlim, ticks, and labels
         try:
             xlim = self._calculate_xlim()

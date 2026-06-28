@@ -1,5 +1,4 @@
-"""
-Command Line / Bash Script Execution Wrapper
+"""Command Line / Bash Script Execution Wrapper
 
 Provides utilities for executing shell commands and bash scripts with proper
 error handling, timeout support, and result management.

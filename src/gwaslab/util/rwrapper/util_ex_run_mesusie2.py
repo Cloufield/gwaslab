@@ -18,19 +18,18 @@ def _prepare_paths(
     log: Log,
     verbose: bool
 ) -> Dict[str, str]:
-    """
-    Prepare all file paths needed for MESuSiE execution.
+    """Prepare all file paths needed for MESuSiE execution.
     
-    Args:
+Parameters
         filelist: DataFrame with study information
         output_dir: Output directory (if None, uses first sumstats directory)
         log: Log instance
         verbose: Verbose logging
     
-    Returns:
+Returns
         Dict with keys: output_prefix, pipcs_file, rds_file, diagnostic_files,
                        stacked_plot_file, working_dir, and basenames
-    """
+"""
     # Determine output directory from first sumstats file
     first_sumstats = filelist.iloc[0]["LOCUS_SUMSTATS"]
     working_dir = output_dir if output_dir is not None else (
@@ -156,10 +155,9 @@ def _build_r_script(
     L: int = 10,
     mesusie_kwargs: str = ""
 ) -> Tuple[str, str]:
-    """
-    Build R script content for MESuSiE execution.
+    """Build R script content for MESuSiE execution.
     
-    Args:
+Parameters
         filelist: DataFrame with study information
         ns: List of sample sizes for each study
         fillldna: Fill NA values in LD matrix with 0
@@ -167,9 +165,9 @@ def _build_r_script(
         L: Number of effects (default: 10)
         mesusie_kwargs: Additional kwargs for meSuSie_core
     
-    Returns:
+Returns
         Tuple of (rscript_content, mesusie_call_string)
-    """
+"""
     group = paths["group"]
     locus = paths["locus"]
     pipcs_basename = paths["pipcs_basename"]
@@ -298,10 +296,9 @@ def _process_mesusie_result(
     log: Log,
     verbose: bool
 ) -> Optional[pd.DataFrame]:
-    """
-    Process successful MESuSiE execution result.
+    """Process successful MESuSiE execution result.
     
-    Args:
+Parameters
         result: Execution result from R script
         result_manager: ResultManager instance
         filelist: DataFrame with study information
@@ -311,9 +308,9 @@ def _process_mesusie_result(
         log: Log instance
         verbose: Verbose logging
     
-    Returns:
+Returns
         DataFrame with results, or None if processing failed
-    """
+"""
     if not result.success:
         return None
     
@@ -373,10 +370,9 @@ def _create_execution_log(
     log: Log,
     verbose: bool
 ) -> None:
-    """
-    Create log file for R script execution.
+    """Create log file for R script execution.
     
-    Args:
+Parameters
         result_manager: ResultManager instance
         result: Execution result
         rscript: R script content
@@ -386,7 +382,7 @@ def _create_execution_log(
         r_path: Path to Rscript executable
         log: Log instance
         verbose: Verbose logging
-    """
+"""
     r_log_file = _path(
         out=f"{paths['group']}_{paths['locus']}_mesusie",
         result_type="log",
@@ -444,10 +440,9 @@ def _run_mesusie(
     group_name: Optional[str] = None,
     study_name: Optional[str] = None
 ) -> pd.DataFrame:
-    """
-    Run cross-ancestry finemapping using MESuSiE from command line using the RScriptRunner framework.
+    """Run cross-ancestry finemapping using MESuSiE from command line using the RScriptRunner framework.
     
-    Args:
+Parameters
         filepath: Path to filelist containing study information
         r: Path to Rscript executable (default: "Rscript")
         ns: List of sample sizes for each study (default: None, uses ncols if provided)
@@ -465,9 +460,9 @@ def _run_mesusie(
         group_name: Optional group name to add to results (default: None)
         study_name: Optional study name to add to results (default: None)
     
-    Returns:
+Returns
         DataFrame with finemapping results (processed with CHR/POS merged and GROUP/STUDY set if provided)
-    """
+"""
     # Log citation
     log.write(" -Citation: Gao, B., & Zhou, X. (2024). MESuSiE enables scalable and powerful multi-ancestry fine-mapping of causal variants in genome-wide association studies. Nature genetics, 56(1), 170-179.", verbose=verbose)
     

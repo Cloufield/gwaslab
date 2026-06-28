@@ -10,7 +10,8 @@ from gwaslab.bd.bd_common_data import get_format_dict
 def _pre_rename_dtype_map(
     meta_data: Mapping[str, Any], dtypes: Mapping[str, Any]
 ) -> Dict[Union[str, int], Any]:
-    """Map formatbook ``format_datatype`` keys to labels pandas used before rename."""
+    """Map formatbook ``format_datatype`` keys to labels pandas used before rename.
+"""
     if "format_header" in meta_data:
         fh = meta_data["format_header"]
         if fh is None or fh is False:
@@ -25,12 +26,11 @@ def _pre_rename_dtype_map(
 
 
 def format_comment_leading_skip_count(meta_data: Optional[Mapping[str, Any]], path: str) -> int:
-    """
-    Number of leading file lines to skip for formatbook ``format_comment``.
+    """Number of leading file lines to skip for formatbook ``format_comment``.
 
     ``format_comment='#'`` skips only consecutive ``##`` meta lines (VCF header /
     PLINK comments), preserving the ``#CHROM`` column header row.
-    """
+"""
     if not meta_data:
         return 0
     fc = meta_data.get("format_comment")
@@ -60,11 +60,10 @@ def apply_format_comment_readargs(
     path: Optional[str] = None,
     user_kwargs: Optional[Mapping[str, Any]] = None,
 ) -> None:
-    """
-    Apply formatbook ``format_comment`` to pandas read kwargs.
+    """Apply formatbook ``format_comment`` to pandas read kwargs.
 
     ``format_comment='#'`` must not become ``comment='#'`` (that drops ``#CHROM``).
-    """
+"""
     user_kwargs = user_kwargs or {}
     if not meta_data:
         return
@@ -85,13 +84,15 @@ def apply_format_comment_readargs(
 
 
 def build_path_skiprows(inpath: str, meta_data: Optional[Mapping[str, Any]]) -> Optional[list]:
-    """Leading skip row indices from ``format_comment`` (excludes vcf.gz handling)."""
+    """Leading skip row indices from ``format_comment`` (excludes vcf.gz handling).
+"""
     n = format_comment_leading_skip_count(meta_data, inpath) if inpath else 0
     return list(range(n)) if n else None
 
 
 def _count_leading_lines_with_prefix(path: str, prefix: str) -> int:
-    """Count initial lines starting with ``prefix`` (e.g. skip VCF/PLINK2 ``##`` meta)."""
+    """Count initial lines starting with ``prefix`` (e.g. skip VCF/PLINK2 ``##`` meta).
+"""
     n = 0
     if path.endswith(".gz"):
         with gzip.open(path, "rt", encoding="utf-8", errors="replace") as f:
@@ -115,12 +116,11 @@ def _multiline_header_skiprows(
     load_kwargs_dict: Dict[str, Any],
     user_kwargs: Mapping[str, Any],
 ) -> None:
-    """
-    Skip trailing header rows after the column-name row (formatbook ``format_header_lines``).
+    """Skip trailing header rows after the column-name row (formatbook ``format_header_lines``).
 
     Line 0 of the file (after any leading ``skiprows``) is the column header; lines
     ``lead + 1`` … ``lead + format_header_lines - 1`` are additional header lines to skip.
-    """
+"""
     if "skiprows" in user_kwargs:
         return
     raw_nl = meta_data.get("format_header_lines", 1)

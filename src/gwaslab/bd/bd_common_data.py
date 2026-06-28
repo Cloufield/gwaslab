@@ -20,7 +20,8 @@ from gwaslab.qc.qc_build import _process_build
 _NCBI_ACCESSION_IDS = None
 
 def _load_ncbi_accession_ids() -> Dict[Tuple[str, str], Dict[str, str]]:
-    """Load NCBI accession IDs from JSON file."""
+    """Load NCBI accession IDs from JSON file.
+"""
     global _NCBI_ACCESSION_IDS
     if _NCBI_ACCESSION_IDS is not None:
         return _NCBI_ACCESSION_IDS
@@ -47,26 +48,24 @@ def _load_ncbi_accession_ids() -> Dict[Tuple[str, str], Dict[str, str]]:
         return _NCBI_ACCESSION_IDS
 
 def _get_ncbi_accession_mapping(species: Optional[str], build: str, log: Optional[Log] = None, verbose: bool = True) -> Optional[Dict[str, str]]:
-    """
-    Get NCBI RefSeq accession ID mapping for a species and build.
+    """Get NCBI RefSeq accession ID mapping for a species and build.
     
-    Parameters
-    ----------
-    species : str
-        Species name (case-insensitive)
-    build : str
-        Genome build identifier (will be processed to normalized build code)
-    log : Log, optional
-        Logging object
-    verbose : bool, default True
-        Whether to print warnings
-    
-    Returns
-    -------
-    dict or None
-        Dictionary mapping chromosome identifiers to NCBI accession IDs,
-        or None if not available
-    """
+Parameters
+----------
+species : str
+    Species name (case-insensitive)
+build : str
+    Genome build identifier (will be processed to normalized build code)
+log : Log, optional
+    Logging object
+verbose : bool, default True
+    Whether to print warnings
+Returns
+-------
+dict or None
+    Dictionary mapping chromosome identifiers to NCBI accession IDs,
+    or None if not available
+"""
     # Load NCBI accession IDs from JSON if not already loaded
     ncbi_ids = _load_ncbi_accession_ids()
     
@@ -128,28 +127,26 @@ def _get_ncbi_accession_mapping(species: Optional[str], build: str, log: Optiona
 
 #hard-coded data
 def get_chr_to_NC(build: str, inverse: bool = False, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[str, str]:
-    """
-    Create a dictionary mapping chromosome identifiers to NCBI RefSeq accession IDs.
+    """Create a dictionary mapping chromosome identifiers to NCBI RefSeq accession IDs.
     
-    Parameters
-    ----------
-    build : str
-        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
-    inverse : bool, default False
-        If True, return NCBI ID to chromosome mapping
-    species : str, default "homo sapiens"
-        Species name (case-insensitive). Currently only human mappings are fully supported.
-    log : Log, optional
-        Logging object for warnings
-    verbose : bool, default True
-        Whether to print warnings
-    
-    Returns
-    -------
-    dict
-        Dictionary mapping chromosome identifiers (string) to NCBI accession IDs (string).
-        Returns empty dict for unsupported species/build combinations.
-    """
+Parameters
+----------
+build : str
+    Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+inverse : bool, default False
+    If True, return NCBI ID to chromosome mapping
+species : str, default "homo sapiens"
+    Species name (case-insensitive). Currently only human mappings are fully supported.
+log : Log, optional
+    Logging object for warnings
+verbose : bool, default True
+    Whether to print warnings
+Returns
+-------
+dict
+    Dictionary mapping chromosome identifiers (string) to NCBI accession IDs (string).
+    Returns empty dict for unsupported species/build combinations.
+"""
     if log is None:
         from gwaslab.info.g_Log import Log
         log = Log()
@@ -167,51 +164,47 @@ def get_chr_to_NC(build: str, inverse: bool = False, species: str = "homo sapien
     return dic
 
 def get_NC_to_chr(build: str, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[str, str]:
-    """
-    Create a dictionary mapping NCBI RefSeq accession IDs to chromosome identifiers.
+    """Create a dictionary mapping NCBI RefSeq accession IDs to chromosome identifiers.
     
-    Parameters
-    ----------
-    build : str
-        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
-    species : str, default "homo sapiens"
-        Species name (case-insensitive). Currently only human mappings are fully supported.
-    log : Log, optional
-        Logging object for warnings
-    verbose : bool, default True
-        Whether to print warnings
-    
-    Returns
-    -------
-    dict
-        Dictionary mapping NCBI accession IDs (string) to chromosome identifiers (string)
-    """
+Parameters
+----------
+build : str
+    Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+species : str, default "homo sapiens"
+    Species name (case-insensitive). Currently only human mappings are fully supported.
+log : Log, optional
+    Logging object for warnings
+verbose : bool, default True
+    Whether to print warnings
+Returns
+-------
+dict
+    Dictionary mapping NCBI accession IDs (string) to chromosome identifiers (string)
+"""
     return get_chr_to_NC(build=build, inverse=True, species=species, log=log, verbose=verbose)
 
 
 def get_number_to_NC(build: str, inverse: bool = False, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[Union[int, str], str]:
-    """
-    Create a dictionary mapping chromosome numbers (int) to NCBI RefSeq accession IDs (string).
+    """Create a dictionary mapping chromosome numbers (int) to NCBI RefSeq accession IDs (string).
     
-    Parameters
-    ----------
-    build : str
-        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
-    inverse : bool, default False
-        If True, return NCBI ID to chromosome number mapping
-    species : str, default "homo sapiens"
-        Species name (case-insensitive). Currently only human mappings are fully supported.
-    log : Log, optional
-        Logging object for warnings
-    verbose : bool, default True
-        Whether to print warnings
-    
-    Returns
-    -------
-    dict
-        Dictionary mapping chromosome numbers (int) to NCBI accession IDs (string).
-        Returns empty dict for unsupported species/build combinations.
-    """
+Parameters
+----------
+build : str
+    Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+inverse : bool, default False
+    If True, return NCBI ID to chromosome number mapping
+species : str, default "homo sapiens"
+    Species name (case-insensitive). Currently only human mappings are fully supported.
+log : Log, optional
+    Logging object for warnings
+verbose : bool, default True
+    Whether to print warnings
+Returns
+-------
+dict
+    Dictionary mapping chromosome numbers (int) to NCBI accession IDs (string).
+    Returns empty dict for unsupported species/build combinations.
+"""
     if log is None:
         from gwaslab.info.g_Log import Log
         log = Log()
@@ -243,49 +236,45 @@ def get_number_to_NC(build: str, inverse: bool = False, species: str = "homo sap
 
 
 def get_NC_to_number(build: str, species: str = "homo sapiens", log: Optional[Log] = None, verbose: bool = True) -> Dict[str, Union[int, str]]:
-    """
-    Create a dictionary mapping NCBI RefSeq accession IDs to chromosome numbers (int).
+    """Create a dictionary mapping NCBI RefSeq accession IDs to chromosome numbers (int).
     
-    Parameters
-    ----------
-    build : str
-        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
-    species : str, default "homo sapiens"
-        Species name (case-insensitive). Currently only human mappings are fully supported.
-    log : Log, optional
-        Logging object for warnings
-    verbose : bool, default True
-        Whether to print warnings
-    
-    Returns
-    -------
-    dict
-        Dictionary mapping NCBI accession IDs to chromosome numbers (int)
-    """
+Parameters
+----------
+build : str
+    Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+species : str, default "homo sapiens"
+    Species name (case-insensitive). Currently only human mappings are fully supported.
+log : Log, optional
+    Logging object for warnings
+verbose : bool, default True
+    Whether to print warnings
+Returns
+-------
+dict
+    Dictionary mapping NCBI accession IDs to chromosome numbers (int)
+"""
     return get_number_to_NC(build=build, inverse=True, species=species, log=log, verbose=verbose)
 
 def get_chr_list(add_number: bool = False, n: int = 25, only_number: bool = False, species: str = "homo sapiens") -> List[Union[str, int]]:
-    """
-    Generate a list of chromosome identifiers.
+    """Generate a list of chromosome identifiers.
     
-    Parameters:
-    -----------
-    add_number : bool, default=False
-        If True, include both string and numeric representations
-    n : int, default=25
-        Maximum chromosome number to include (deprecated, now uses species-specific chromosomes)
-    only_number : bool, default=False
-        If True, return only numeric chromosome numbers
-    species : str, default="homo sapiens"
-        Species name (case-insensitive). If provided, uses species-specific chromosomes.
-        Otherwise falls back to legacy behavior with n parameter.
-    
-    Returns:
-    --------
-    list
-        List of chromosome identifiers in string format by default, 
-        or numeric format if specified
-    """
+Parameters
+----------
+add_number : bool, default False
+    If True, include both string and numeric representations
+n : int, default 25
+    Maximum chromosome number to include (deprecated, now uses species-specific chromosomes)
+only_number : bool, default False
+    If True, return only numeric chromosome numbers
+species : str, default "homo sapiens"
+    Species name (case-insensitive). If provided, uses species-specific chromosomes.
+    Otherwise falls back to legacy behavior with n parameter.
+Returns
+-------
+list
+    List of chromosome identifiers in string format by default, 
+    or numeric format if specified
+"""
     # Use Chromosomes class if species is provided (or default to human)
     if species is not None:
         chromosomes_obj = Chromosomes(species=species)
@@ -301,29 +290,27 @@ def get_chr_list(add_number: bool = False, n: int = 25, only_number: bool = Fals
         chrom_list = [i for i in range(1, n+1)]
     return chrom_list
 def get_chr_to_number(out_chr: bool = False, xymt: Optional[List[str]] = None, xymt_num: Optional[List[int]] = None, species: str = "homo sapiens", max_chr: int = 200) -> Dict[str, Union[int, str]]:
-    """
-    Create a dictionary mapping chromosome identifiers to numeric representations.
+    """Create a dictionary mapping chromosome identifiers to numeric representations.
     
-    Parameters:
-    -----------
-    out_chr : bool, default=False
-        If True, returns dictionary with string keys and values
-    xymt : list, default=["X","Y","MT"]
-        List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
-    xymt_num : list, default=[23,24,25]
-        Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
-    species : str, default="homo sapiens"
-        Species name (case-insensitive). If provided, uses species-specific chromosomes.
-        Otherwise falls back to legacy behavior with xymt/xymt_num parameters.
-    max_chr : int, default=200
-        Maximum chromosome number to include in dictionary
-    
-    Returns:
-    --------
-    dict
-        Dictionary mapping chromosome identifiers to numeric values or strings
-        depending on the out_chr parameter
-    """
+Parameters
+----------
+out_chr : bool, default False
+    If True, returns dictionary with string keys and values
+xymt : list, default ["X","Y","MT"]
+    List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
+xymt_num : list, default [23,24,25]
+    Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
+species : str, default "homo sapiens"
+    Species name (case-insensitive). If provided, uses species-specific chromosomes.
+    Otherwise falls back to legacy behavior with xymt/xymt_num parameters.
+max_chr : int, default 200
+    Maximum chromosome number to include in dictionary
+Returns
+-------
+dict
+    Dictionary mapping chromosome identifiers to numeric values or strings
+    depending on the out_chr parameter
+"""
     if xymt is None:
         xymt = ["X","Y","MT"]
     if xymt_num is None:
@@ -353,30 +340,28 @@ def get_chr_to_number(out_chr: bool = False, xymt: Optional[List[str]] = None, x
             dic["M"] = xymt_num[2]
     return dic
 def get_number_to_chr(in_chr: bool = False, xymt: Optional[List[str]] = None, xymt_num: Optional[List[int]] = None, prefix: str = "", species: str = "homo sapiens", max_chr: int = 200) -> Dict[Union[int, str], str]:
-    """
-    Create a dictionary mapping chromosome numbers to string representations.
+    """Create a dictionary mapping chromosome numbers to string representations.
     
-    Parameters:
-    -----------
-    in_chr : bool, default=False
-        If True, returns dictionary with string keys and values
-    xymt : list, default=["X","Y","MT"]
-        List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
-    xymt_num : list, default=[23,24,25]
-        Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
-    prefix : str, default=""
-        Optional prefix for chromosome identifiers
-    species : str, default="homo sapiens"
-        Species name (case-insensitive). If provided, uses species-specific chromosomes.
-        Otherwise falls back to legacy behavior with xymt/xymt_num parameters.
-    max_chr : int, default=200
-        Maximum chromosome number to include in dictionary
-    
-    Returns:
-    --------
-    dict
-        Dictionary mapping chromosome numbers to string representations
-    """
+Parameters
+----------
+in_chr : bool, default False
+    If True, returns dictionary with string keys and values
+xymt : list, default ["X","Y","MT"]
+    List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
+xymt_num : list, default [23,24,25]
+    Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
+prefix : str, default ""
+    Optional prefix for chromosome identifiers
+species : str, default "homo sapiens"
+    Species name (case-insensitive). If provided, uses species-specific chromosomes.
+    Otherwise falls back to legacy behavior with xymt/xymt_num parameters.
+max_chr : int, default 200
+    Maximum chromosome number to include in dictionary
+Returns
+-------
+dict
+    Dictionary mapping chromosome numbers to string representations
+"""
     if xymt is None:
         xymt = ["X","Y","MT"]
     if xymt_num is None:
@@ -407,15 +392,14 @@ def get_number_to_chr(in_chr: bool = False, xymt: Optional[List[str]] = None, xy
 # reading from files    
 ###################################################################################################################    
 def get_high_ld(build: str = "19") -> str:
-    """
-    Get the path to the high LD region file for the specified genome build.
+    """Get the path to the high LD region file for the specified genome build.
     
-    Parameters:
+Parameters
     build (str): Genome build version ('19' or '38') indicating which reference genome to use
     
-    Returns:
+Returns
     str: Path to the high LD region BED file for the specified genome build
-    """
+"""
     if build=="19":
         #data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg19.bed.gz'
         data_path = path.join( Path(__file__).parents[1], "data","high_ld","high_ld_hla_hg19.bed.gz")
@@ -425,15 +409,14 @@ def get_high_ld(build: str = "19") -> str:
     return data_path
 
 def get_par(build: str = "19") -> str:
-    """
-    Get the path to the pseudo-autosomal region (PAR) file for the specified genome build.
+    """Get the path to the pseudo-autosomal region (PAR) file for the specified genome build.
     
-    Parameters:
+Parameters
     build (str): Genome build version ('19' or '38') indicating which reference genome to use
     
-    Returns:
+Returns
     str: Path to the PAR region BED file for the specified genome build
-    """
+"""
     if build=="19":
         data_path = path.join( Path(__file__).parents[1], "data","chrx_par","chrx_par_hg19.bed.gz")
     elif build=="38":
@@ -442,7 +425,8 @@ def get_par(build: str = "19") -> str:
 
 
 def _read_formatbook_entry(fmt: str) -> dict:
-    """Load one format spec object from the formatbook JSON."""
+    """Load one format spec object from the formatbook JSON.
+"""
     data_path = options.paths["formatbook"]
     if not path.exists(data_path):
         update_formatbook()
@@ -451,23 +435,23 @@ def _read_formatbook_entry(fmt: str) -> dict:
 
 
 def _format_dict_mapped_entries(dic_dict: dict) -> dict:
-    """Keep only raw→canonical pairs with a real canonical name (exclude JSON ``null`` / non-strings)."""
+    """Keep only raw→canonical pairs with a real canonical name (exclude JSON ``null`` / non-strings).
+"""
     return {k: v for k, v in dic_dict.items() if isinstance(v, str)}
 
 
 def get_format_dict(fmt: str, inverse: bool = False) -> tuple:
-    """
-    Retrieve format dictionary and metadata for a specified format.
+    """Retrieve format dictionary and metadata for a specified format.
 
-    Parameters:
+Parameters
     fmt (str): Format name to look up in the format book
     inverse (bool): If True, return inverted dictionary with value-key mapping
 
-    Returns:
+Returns
     tuple:
     - dict: Metadata associated with the format
     - dict: Format dictionary mapping fields, or inverted mapping if specified
-    """
+"""
     entry = _read_formatbook_entry(fmt)
     dic_meta = entry["meta_data"]
     mapped = _format_dict_mapped_entries(entry["format_dict"])
@@ -478,15 +462,14 @@ def get_format_dict(fmt: str, inverse: bool = False) -> tuple:
 
 
 def get_format_inverse_for_export(fmt: str) -> tuple:
-    """
-    Canonical→raw rename map plus ``format_dict_2`` coalesce rules for GWASLab→target export.
+    """Canonical→raw rename map plus ``format_dict_2`` coalesce rules for GWASLab→target export.
 
-    Returns:
+Returns
     tuple:
     - dict: format ``meta_data``
     - dict: inverse rename map (canonical→raw) excluding canonicals merged via coalesce
     - list: ``[{"raw": str, "canon_order": [primary, secondary, ...]}, ...]``
-    """
+"""
     entry = _read_formatbook_entry(fmt)
     dic_meta = entry["meta_data"]
     dic_dict = entry["format_dict"]
@@ -511,12 +494,11 @@ def get_format_inverse_for_export(fmt: str) -> tuple:
         inv_dic[v] = k
     return dic_meta, inv_dic, coalesce_groups
 def get_formats_list() -> List[str]:
-    """
-    Retrieve a list of available format names from the format book.
+    """Retrieve a list of available format names from the format book.
     
-    Returns:
+Returns
     list: Format names available in the format book
-    """
+"""
     #data_path =  path.dirname(__file__) + '/data/formatbook.json'
     data_path = options.paths["formatbook"]
     dicts = json.load(open(data_path))
@@ -527,7 +509,8 @@ _RECOMBINATION_RATE_CACHE = {}
 
 
 def _recombination_chrom_candidates(chrom: Union[str, int]) -> List[str]:
-    """Return filename chrom candidates to try for recombination map (supports both 23 and X, etc.)."""
+    """Return filename chrom candidates to try for recombination map (supports both 23 and X, etc.).
+"""
     if isinstance(chrom, str) and chrom.isdigit():
         c = int(chrom)
     else:
@@ -542,20 +525,19 @@ def _recombination_chrom_candidates(chrom: Union[str, int]) -> List[str]:
 
 
 def get_recombination_rate(chrom: Union[str, int], build: str = "19") -> pd.DataFrame:
-    """
-    Retrieve recombination rate data for a specific chromosome and genome build.
+    """Retrieve recombination rate data for a specific chromosome and genome build.
     
     Results are cached for faster subsequent access.
     For chr X/Y/MT, tries both numeric (chr23, chr24, chr25) and name (chrX, chrY, chrMT) filenames.
     
-    Parameters:
+Parameters
     chrom (str or int): Chromosome number or name (e.g. 23 or "X" for chr X)
     build (str): Genome build version ('19' or '38') to use
     
-    Returns:
+Returns
     pandas.DataFrame: Recombination rate data with columns 'Rate(cM/Mb)' and 'Position(bp)'
                      Returns empty DataFrame if build is not supported or data is unavailable
-    """
+"""
     cache_key = f"{build}_{chrom}"
     
     # Check cache first
@@ -608,24 +590,22 @@ def get_recombination_rate(chrom: Union[str, int], build: str = "19") -> pd.Data
     return recombination_rate
 ####################################################################################################################
 def get_chain(from_build: str = "19", to_build: str = "38") -> str:    
-    """
-    Get the path to a chain file for liftover between genome builds.
+    """Get the path to a chain file for liftover between genome builds.
     
     First checks for built-in chain files in the package data directory.
     If not found, falls back to downloading from reference.json.
     
-    Parameters
-    ----------
-    from_build : str
-        Source genome build (e.g., "19" for hg19/GRCh37)
-    to_build : str
-        Target genome build (e.g., "38" for hg38/GRCh38)
-    
-    Returns
-    -------
-    str
-        Path to the chain file
-    """
+Parameters
+----------
+from_build : str
+    Source genome build (e.g., "19" for hg19/GRCh37)
+to_build : str
+    Target genome build (e.g., "38" for hg38/GRCh38)
+Returns
+-------
+str
+    Path to the chain file
+"""
     # Map build numbers to chain file names
     chain_files = {
         ("19", "38"): "hg19ToHg38.over.chain.gz",
@@ -658,7 +638,7 @@ def _maketrans(complement_mapping: Dict[str, str]) -> bytes:
     the python string's translate method.
 
     Compatible with lower case and upper case sequences.
-    """
+"""
     keys = "".join(complement_mapping.keys()).encode("ASCII")
     values = "".join(complement_mapping.values()).encode("ASCII")
 

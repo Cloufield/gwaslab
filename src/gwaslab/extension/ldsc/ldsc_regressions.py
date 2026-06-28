@@ -1,11 +1,9 @@
-'''
-(c) 2014 Brendan Bulik-Sullivan and Hilary Finucane
+'''(c) 2014 Brendan Bulik-Sullivan and Hilary Finucane
 
 Estimators of heritability and genetic correlation.
 
 Shape convention is (n_snp, n_annot) for all classes.
 Last column = intercept.
-
 '''
 from __future__ import division
 import numpy as np
@@ -25,7 +23,8 @@ def xrange(*args):
     return range(*args)
 
 def update_separators(s, ii):
-    '''s are separators with ii masked. Returns unmasked separators.'''
+    '''s are separators with ii masked. Returns unmasked separators.
+'''
     maplist = np.arange(len(ii))[np.squeeze(ii)]
     mask_to_unmask = lambda i: maplist[i]
     t = np.apply_along_axis(mask_to_unmask, 0, s[1:-1])
@@ -34,7 +33,8 @@ def update_separators(s, ii):
 
 
 def p_z_norm(est, se):
-    '''Convert estimate and se to Z-score and P-value.'''
+    '''Convert estimate and se to Z-score and P-value.
+'''
     try:
         Z = est / se
     except (FloatingPointError, ZeroDivisionError):
@@ -45,25 +45,23 @@ def p_z_norm(est, se):
 
 
 def remove_brackets(x):
-    '''Get rid of brackets and trailing whitespace in numpy arrays.'''
+    '''Get rid of brackets and trailing whitespace in numpy arrays.
+'''
     return x.replace('[', '').replace(']', '').strip()
 
 
 def append_intercept(x):
-    '''
-    Appends an intercept term to the design matrix for a linear regression.
+    '''Appends an intercept term to the design matrix for a linear regression.
 
-    Parameters
-    ----------
-    x : np.matrix with shape (n_row, n_col)
-        Design matrix. Columns are predictors; rows are observations.
-
-    Returns
-    -------
+Parameters
+----------
+x : np.matrix with shape (n_row, n_col)
+    Design matrix. Columns are predictors; rows are observations.
+Returns
+-------
     x_new : np.matrix with shape (n_row, n_col+1)
         Design matrix with intercept term appended.
-
-    '''
+'''
     n_row = x.shape[0]
     intercept = np.ones((n_row, 1))
     x_new = np.concatenate((x, intercept), axis=1)
@@ -71,33 +69,31 @@ def append_intercept(x):
 
 
 def remove_intercept(x):
-    '''Removes the last column.'''
+    '''Removes the last column.
+'''
     n_col = x.shape[1]
     return x[:, 0:n_col - 1]
 
 
 def gencov_obs_to_liab(gencov_obs, P1, P2, K1, K2):
-    '''
-    Converts genetic covariance on the observed scale in an ascertained sample to genetic
+    '''Converts genetic covariance on the observed scale in an ascertained sample to genetic
     covariance on the liability scale in the population
 
-    Parameters
-    ----------
-    gencov_obs : float
-        Genetic covariance on the observed scale in an ascertained sample.
+Parameters
+----------
+gencov_obs : float
+    Genetic covariance on the observed scale in an ascertained sample.
     P1, P2 : float in (0,1)
-        Prevalences of phenotypes 1,2 in the sample.
+    Prevalences of phenotypes 1,2 in the sample.
     K1, K2 : float in (0,1)
-        Prevalences of phenotypes 1,2 in the population.
-
-    Returns
-    -------
+    Prevalences of phenotypes 1,2 in the population.
+Returns
+-------
     gencov_liab : float
         Genetic covariance between liabilities in the population.
 
     Note: if a trait is a QT, set P = K = None.
-
-    '''
+'''
     c1 = 1
     c2 = 1
     if P1 is not None and K1 is not None:
@@ -109,25 +105,22 @@ def gencov_obs_to_liab(gencov_obs, P1, P2, K1, K2):
 
 
 def h2_obs_to_liab(h2_obs, P, K):
-    '''
-    Converts heritability on the observed scale in an ascertained sample to heritability
+    '''Converts heritability on the observed scale in an ascertained sample to heritability
     on the liability scale in the population.
 
-    Parameters
-    ----------
-    h2_obs : float
-        Heritability on the observed scale in an ascertained sample.
-    P : float in (0,1)
-        Prevalence of the phenotype in the sample.
-    K : float in (0,1)
-        Prevalence of the phenotype in the population.
-
-    Returns
-    -------
+Parameters
+----------
+h2_obs : float
+    Heritability on the observed scale in an ascertained sample.
+P : float in (0,1)
+    Prevalence of the phenotype in the sample.
+K : float in (0,1)
+    Prevalence of the phenotype in the population.
+Returns
+-------
     h2_liab : float
         Heritability of liability in the population.
-
-    '''
+'''
     if np.isnan(P) and np.isnan(K):
         return h2_obs
     if K <= 0 or K >= 1:
@@ -251,7 +244,8 @@ class LD_Score_Regression(object):
         raise NotImplementedError
 
     def _delete_vals_tot(self, jknife, Nbar, M):
-        '''Get delete values for total h2 or gencov.'''
+        '''Get delete values for total h2 or gencov.
+'''
         n_annot = self.n_annot
         tot_delete_vals = jknife.delete_values[
             :, 0:n_annot]  # shape (n_blocks, n_annot)
@@ -260,12 +254,14 @@ class LD_Score_Regression(object):
         return tot_delete_vals
 
     def _delete_vals_part(self, jknife, Nbar, M):
-        '''Get delete values for partitioned h2 or gencov.'''
+        '''Get delete values for partitioned h2 or gencov.
+'''
         n_annot = self.n_annot
         return jknife.delete_values[:, 0:n_annot] / Nbar
 
     def _coef(self, jknife, Nbar):
-        '''Get coefficient estimates + cov from the jackknife.'''
+        '''Get coefficient estimates + cov from the jackknife.
+'''
         n_annot = self.n_annot
         coef = jknife.est[0, 0:n_annot] / Nbar
         coef_cov = jknife.jknife_cov[0:n_annot, 0:n_annot] / Nbar ** 2
@@ -273,21 +269,24 @@ class LD_Score_Regression(object):
         return coef, coef_cov, coef_se
 
     def _cat(self, jknife, M, Nbar, coef, coef_cov):
-        '''Convert coefficients to per-category h2 or gencov.'''
+        '''Convert coefficients to per-category h2 or gencov.
+'''
         cat = np.multiply(M, coef)
         cat_cov = np.multiply(np.dot(M.T, M), coef_cov)
         cat_se = np.sqrt(np.diag(cat_cov))
         return cat, cat_cov, cat_se
 
     def _tot(self, cat, cat_cov):
-        '''Convert per-category h2 to total h2 or gencov.'''
+        '''Convert per-category h2 to total h2 or gencov.
+'''
         tot = np.sum(cat)
         tot_cov = np.sum(cat_cov)
         tot_se = np.sqrt(tot_cov)
         return tot, tot_cov, tot_se
 
     def _prop(self, jknife, M, Nbar, cat, tot):
-        '''Convert total h2 and per-category h2 to per-category proportion h2 or gencov.'''
+        '''Convert total h2 and per-category h2 to per-category proportion h2 or gencov.
+'''
         n_annot = self.n_annot
         n_blocks = jknife.delete_values.shape[0]
         numer_delete_vals = np.multiply(
@@ -300,20 +299,23 @@ class LD_Score_Regression(object):
         return prop.est, prop.jknife_cov, prop.jknife_se
 
     def _enrichment(self, M, M_tot, cat, tot):
-        '''Compute proportion of SNPs per-category enrichment for h2 or gencov.'''
+        '''Compute proportion of SNPs per-category enrichment for h2 or gencov.
+'''
         M_prop = M / M_tot
         enrichment = np.divide(cat, M) / (tot / M_tot)
         return enrichment, M_prop
 
     def _intercept(self, jknife):
-        '''Extract intercept and intercept SE from block jackknife.'''
+        '''Extract intercept and intercept SE from block jackknife.
+'''
         n_annot = self.n_annot
         intercept = jknife.est[0, n_annot]
         intercept_se = jknife.jknife_se[0, n_annot]
         return intercept, intercept_se
 
     def _combine_twostep_jknives(self, step1_jknife, step2_jknife, M_tot, c, Nbar=1):
-        '''Combine free intercept and constrained intercept jackknives for --two-step.'''
+        '''Combine free intercept and constrained intercept jackknives for --two-step.
+'''
         n_blocks, n_annot = step1_jknife.delete_values.shape
         n_annot -= 1
         if n_annot > 2:
@@ -354,8 +356,7 @@ class Hsq(LD_Score_Regression):
                 self.intercept, self.intercept_se, self.mean_chisq)
 
     def _update_func(self, x, ref_ld_tot, w_ld, N, M, Nbar, intercept=None, ii=None):
-        '''
-        Update function for IRWLS
+        '''Update function for IRWLS
 
         x is the output of np.linalg.lstsq.
         x[0] is the regression coefficients
@@ -364,7 +365,7 @@ class Hsq(LD_Score_Regression):
 
         intercept is None --> free intercept
         intercept is not None --> constrained intercept
-        '''
+'''
         hsq = M * x[0][0] / Nbar
         if intercept is None:
             intercept = max(x[0][1])  # divide by zero error if intercept < 0
@@ -378,14 +379,16 @@ class Hsq(LD_Score_Regression):
         return w
 
     def _summarize_chisq(self, chisq):
-        '''Compute mean chi^2 and lambda_GC.'''
+        '''Compute mean chi^2 and lambda_GC.
+'''
         mean_chisq = np.mean(chisq)
         # median and matrix don't play nice
         lambda_gc = np.median(np.asarray(chisq)) / 0.4549
         return mean_chisq, lambda_gc
 
     def _ratio(self, intercept, intercept_se, mean_chisq):
-        '''Compute ratio (intercept - 1) / (mean chi^2 -1 ).'''
+        '''Compute ratio (intercept - 1) / (mean chi^2 -1 ).
+'''
         if mean_chisq > 1:
             ratio_se = intercept_se / (mean_chisq - 1)
             ratio = (intercept - 1) / (mean_chisq - 1)
@@ -396,7 +399,8 @@ class Hsq(LD_Score_Regression):
         return ratio, ratio_se
 
     def _overlap_output(self, category_names, overlap_matrix, M_annot, M_tot, print_coefficients):
-        '''LD Score regression summary for overlapping categories.'''
+        '''LD Score regression summary for overlapping categories.
+'''
         overlap_matrix_prop = np.zeros([self.n_annot,self.n_annot])
         for i in range(self.n_annot):
             overlap_matrix_prop[i, :] = overlap_matrix[i, :] / M_annot
@@ -446,7 +450,8 @@ class Hsq(LD_Score_Regression):
 
 
     def summary(self, ref_ld_colnames=None, P=None, K=None, overlap=False):
-        '''Print summary of the LD Score Regression.'''
+        '''Print summary of the LD Score Regression.
+'''
         if P is not None and K is not None:
             T = 'Liability'
             c = h2_obs_to_liab(1, P, K)
@@ -500,30 +505,27 @@ class Hsq(LD_Score_Regression):
 
     @classmethod
     def weights(cls, ld, w_ld, N, M, hsq, intercept=None, ii=None):
-        '''
-        Regression weights.
+        '''Regression weights.
 
-        Parameters
-        ----------
-        ld : np.matrix with shape (n_snp, 1)
-            LD Scores (non-partitioned).
-        w_ld : np.matrix with shape (n_snp, 1)
-            LD Scores (non-partitioned) computed with sum r^2 taken over only those SNPs included
-            in the regression.
-        N :  np.matrix of ints > 0 with shape (n_snp, 1)
-            Number of individuals sampled for each SNP.
-        M : float > 0
-            Number of SNPs used for estimating LD Score (need not equal number of SNPs included in
-            the regression).
-        hsq : float in [0,1]
-            Heritability estimate.
-
-        Returns
-        -------
+Parameters
+----------
+ld : np.matrix with shape (n_snp, 1)
+    LD Scores (non-partitioned).
+w_ld : np.matrix with shape (n_snp, 1)
+    LD Scores (non-partitioned) computed with sum r^2 taken over only those SNPs included
+    in the regression.
+N : np.matrix of ints > 0 with shape (n_snp, 1)
+    Number of individuals sampled for each SNP.
+M : float > 0
+    Number of SNPs used for estimating LD Score (need not equal number of SNPs included in
+    the regression).
+hsq : float in [0,1]
+    Heritability estimate.
+Returns
+-------
         w : np.matrix with shape (n_snp, 1)
             Regression weights. Approx equal to reciprocal of conditional variance function.
-
-        '''
+'''
         M = float(M)
         if intercept is None:
             intercept = 1
@@ -561,7 +563,8 @@ class Gencov(LD_Score_Regression):
         self.mean_z1z2 = np.mean(np.multiply(z1, z2))
 
     def summary(self, ref_ld_colnames, P=None, K=None):
-        '''Print summary of the LD Score regression.'''
+        '''Print summary of the LD Score regression.
+'''
         out = []
         if P is not None and K is not None and\
                 all((i is not None for i in P)) and all((i is not None for i in K)):
@@ -592,14 +595,12 @@ class Gencov(LD_Score_Regression):
         return remove_brackets('\n'.join(out))
 
     def _update_func(self, x, ref_ld_tot, w_ld, N, M, Nbar, intercept=None, ii=None):
-        '''
-        Update function for IRWLS
+        '''Update function for IRWLS
         x is the output of np.linalg.lstsq.
         x[0] is the regression coefficients
         x[0].shape is (# of dimensions, 1)
         the last element of x[0] is the intercept.
-
-        '''
+'''
         rho_g = M * x[0][0] / Nbar
         if intercept is None:  # if the regression includes an intercept
             intercept = x[0][1]
@@ -617,7 +618,8 @@ class Gencov(LD_Score_Regression):
                          intercept, self.intercept_hsq1, self.intercept_hsq2, ii)
 
     def _update_weights(self, ld, w_ld, sqrt_n1n2, M, rho_g, intercept, ii=None):
-        '''Weight function with the same signature for Hsq and Gencov.'''
+        '''Weight function with the same signature for Hsq and Gencov.
+'''
         w = self.weights(ld, w_ld, self.N1, self.N2, M, self.hsq1, self.hsq2, rho_g,
                          intercept, self.intercept_hsq1, self.intercept_hsq2)
         return w
@@ -625,34 +627,31 @@ class Gencov(LD_Score_Regression):
     @classmethod
     def weights(cls, ld, w_ld, N1, N2, M, h1, h2, rho_g, intercept_gencov=None,
                 intercept_hsq1=None, intercept_hsq2=None, ii=None):
-        '''
-        Regression weights.
+        '''Regression weights.
 
-        Parameters
-        ----------
-        ld : np.matrix with shape (n_snp, 1)
-            LD Scores (non-partitioned)
-        w_ld : np.matrix with shape (n_snp, 1)
-            LD Scores (non-partitioned) computed with sum r^2 taken over only those SNPs included
-            in the regression.
-        M : float > 0
-            Number of SNPs used for estimating LD Score (need not equal number of SNPs included in
-            the regression).
-        N1, N2 :  np.matrix of ints > 0 with shape (n_snp, 1)
-            Number of individuals sampled for each SNP for each study.
-        h1, h2 : float in [0,1]
-            Heritability estimates for each study.
-        rhog : float in [0,1]
-            Genetic covariance estimate.
-        intercept : float
-            Genetic covariance intercept, on the z1*z2 scale (so should be Ns*rho/sqrt(N1*N2)).
-
-        Returns
-        -------
+Parameters
+----------
+ld : np.matrix with shape (n_snp, 1)
+    LD Scores (non-partitioned)
+w_ld : np.matrix with shape (n_snp, 1)
+    LD Scores (non-partitioned) computed with sum r^2 taken over only those SNPs included
+    in the regression.
+M : float > 0
+    Number of SNPs used for estimating LD Score (need not equal number of SNPs included in
+    the regression).
+    N1, N2 :  np.matrix of ints > 0 with shape (n_snp, 1)
+    Number of individuals sampled for each SNP for each study.
+    h1, h2 : float in [0,1]
+    Heritability estimates for each study.
+rhog : float in [0,1]
+    Genetic covariance estimate.
+intercept : float
+    Genetic covariance intercept, on the z1*z2 scale (so should be Ns*rho/sqrt(N1*N2)).
+Returns
+-------
         w : np.matrix with shape (n_snp, 1)
             Regression weights. Approx equal to reciprocal of conditional variance function.
-
-        '''
+'''
         M = float(M)
         if intercept_gencov is None:
             intercept_gencov = 0
@@ -715,7 +714,8 @@ class RG(object):
             self.p, self.z = p_z_norm(self.rg_ratio, self.rg_se)
 
     def summary(self, silly=False):
-        '''Print output of Gencor object.'''
+        '''Print output of Gencor object.
+'''
         out = []
         if self._negative_hsq:
             out.append(log_prefix_short+'Genetic Correlation: nan (nan) (h2  out of bounds) ')

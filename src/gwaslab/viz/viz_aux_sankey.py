@@ -1,5 +1,4 @@
-"""
-Helpers for Sankey / alluvial diagrams from categorical sumstats columns.
+"""Helpers for Sankey / alluvial diagrams from categorical sumstats columns.
 """
 
 from __future__ import annotations
@@ -199,9 +198,8 @@ def assign_sankey_colors(
     colors: Optional[Dict[str, str]] = None,
     beta_bins: Sequence[float] = DEFAULT_BETA_BINS,
 ) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """
-    Assign flow colors keyed by first-stage category and optional node_id overrides.
-    """
+    """Assign flow colors keyed by first-stage category and optional node_id overrides.
+"""
     if work_df.empty or "_stage_0" not in work_df.columns:
         return {}, {}
 

@@ -54,6 +54,7 @@
         "legend_kwargs",
         "save",
         "save_kwargs",
+        "save_merged",
         "verbose",
         "clean_output",
         "log"
@@ -84,7 +85,8 @@
         "legend_title": "$\\mathregular{ P < 5 x 10^{-8}}$ in:",
         "legend_title2": "Heterogeneity test:",
         "legend_pos": "upper left",
-        "save": false
+        "save": false,
+        "save_merged": false
       },
       "banned_keys": {
         "fig_kwargs": [],
@@ -407,8 +409,8 @@
         "verbose"
       ],
       "defaults": {
-        "legend_mode": "auto",
-        "ncol": 1,
+        "legend_mode": 1,
+        "ncol": 2,
         "gap": 0.3,
         "fig_kwargs": {
           "figsize": [
@@ -465,7 +467,10 @@
         "fontsize",
         "font_family",
         "log",
-        "verbose"
+        "verbose",
+        "beta_col",
+        "se_col",
+        "colors"
       ],
       "defaults": {
         "fig_kwargs": {
@@ -497,7 +502,6 @@
     },
     "plot_sankey": {
       "allowed": [
-        "columns",
         "column_map",
         "weight",
         "dropna",
@@ -903,7 +907,7 @@
         "ld_if_square": false,
         "ld_block": false,
         "ld_link": false,
-        "ld_link_thr": 0.0,
+        "ld_link_thr": 0.8,
         "ld_link_color": "blue",
         "ld_link_alpha_scale": 0.2,
         "ld_link_linewidth": 1.0,
@@ -1081,7 +1085,7 @@
       "banned_keys_inherit": "plot_mqq:mqq",
       "defaults": {
         "marker_size": [
-          45,
+          40,
           65
         ],
         "region_step": 21,
@@ -1174,7 +1178,6 @@
     "plot_pipcs": {
       "allowed": [
         "region",
-        "locus",
         "figax",
         "xtick_chr_dict",
         "pip",
@@ -1185,8 +1188,6 @@
         "cs_category",
         "legend_title",
         "marker_size",
-        "palette",
-        "edgecolor",
         "fig_kwargs",
         "scatter_kwargs",
         "fontsize",
@@ -1194,7 +1195,9 @@
         "save",
         "save_kwargs",
         "log",
-        "verbose"
+        "verbose",
+        "title",
+        "title_kwargs"
       ],
       "defaults": {
         "marker_size": 40
@@ -1307,7 +1310,8 @@
         "ld_block_anno_max_rows",
         "position_bar_bg",
         "log",
-        "verbose"
+        "verbose",
+        "mode"
       ],
       "defaults": {
         "pos_col": "POS",
@@ -1418,7 +1422,7 @@
       }
     },
     "plot_snp_density": {
-      "inherit":"plot_mqq:mqq",
+      "inherit": "plot_mqq:mqq",
       "defaults": {
         "bwindowsizekb": 100,
         "density_color": false,
@@ -1509,20 +1513,33 @@
         "size",
         "sizes",
         "hue",
-        "style",
         "xlabel",
         "ylabel",
         "title",
         "font_family",
         "fontsize",
-        "marker_size",
         "scatter_kwargs",
         "fig_kwargs",
         "save",
         "save_kwargs",
         "build",
         "log",
-        "verbose"
+        "verbose",
+        "anno_set",
+        "anno_alias",
+        "anno_d",
+        "anno_kwargs",
+        "anno_style",
+        "anno_source",
+        "anno_max_iter",
+        "arm_scale",
+        "repel_force",
+        "xticks",
+        "xticklabels",
+        "yticks",
+        "yticklabels",
+        "sort",
+        "title_fontsize"
       ],
       "defaults": {
         "mode": "b"
@@ -1577,20 +1594,33 @@
         "size",
         "sizes",
         "hue",
-        "style",
         "xlabel",
         "ylabel",
         "title",
         "font_family",
         "fontsize",
-        "marker_size",
         "scatter_kwargs",
         "fig_kwargs",
         "save",
         "save_kwargs",
         "build",
         "log",
-        "verbose"
+        "verbose",
+        "anno_set",
+        "anno_alias",
+        "anno_d",
+        "anno_kwargs",
+        "anno_style",
+        "anno_source",
+        "anno_max_iter",
+        "arm_scale",
+        "repel_force",
+        "xticks",
+        "xticklabels",
+        "yticks",
+        "yticklabels",
+        "sort",
+        "title_fontsize"
       ],
       "defaults": {
         "mode": "q"
@@ -1645,7 +1675,7 @@
         "pinpoint"
       ],
       "defaults": {
-        "vcfs":[],
+        "vcfs": [],
         "mode": "r",
         "mqqratio": 3,
         "region_chromatin_height": 0.1,
@@ -1663,6 +1693,138 @@
         "anno_set": [],
         "pinpoint": []
       },
+      "banned_keys_inherit": "plot_mqq:mqq",
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": []
+      }
+    },
+    "plot_stacked_mqq:r": {
+      "allowed_inherit": "plot_region:r",
+      "defaults_inherit": "plot_region:r",
+      "allowed": [
+        "objects",
+        "vcfs",
+        "mode",
+        "mqqratio",
+        "region",
+        "region_chromatin_height",
+        "region_chromatin_files",
+        "region_chromatin_labels",
+        "titles",
+        "title_pos",
+        "title_kwargs",
+        "gtf",
+        "mqq_height",
+        "cs_height",
+        "gene_track_height",
+        "fig_kwargs",
+        "region_hspace",
+        "subplot_height",
+        "region_lead_grids",
+        "region_lead_grid_line",
+        "region_ld_legends",
+        "fontsize",
+        "font_family",
+        "common_ylabel",
+        "build",
+        "save",
+        "save_kwargs",
+        "verbose",
+        "pm",
+        "log",
+        "highlight",
+        "anno_set",
+        "pinpoint"
+      ],
+      "banned_keys_inherit": "plot_region:r",
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": []
+      }
+    },
+    "plot_stacked_mqq:m": {
+      "allowed_inherit": "plot_mqq:m",
+      "defaults_inherit": "plot_mqq:m",
+      "allowed": [
+        "objects",
+        "vcfs",
+        "mode",
+        "mqqratio",
+        "region",
+        "region_chromatin_height",
+        "region_chromatin_files",
+        "region_chromatin_labels",
+        "titles",
+        "title_pos",
+        "title_kwargs",
+        "gtf",
+        "mqq_height",
+        "cs_height",
+        "gene_track_height",
+        "fig_kwargs",
+        "region_hspace",
+        "subplot_height",
+        "region_lead_grids",
+        "region_lead_grid_line",
+        "region_ld_legends",
+        "fontsize",
+        "font_family",
+        "common_ylabel",
+        "build",
+        "save",
+        "save_kwargs",
+        "verbose",
+        "pm",
+        "log",
+        "highlight",
+        "anno_set",
+        "pinpoint"
+      ],
+      "banned_keys_inherit": "plot_mqq:m",
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": []
+      }
+    },
+    "plot_stacked_mqq:mqq": {
+      "allowed_inherit": "plot_mqq:mqq",
+      "defaults_inherit": "plot_mqq:mqq",
+      "allowed": [
+        "objects",
+        "vcfs",
+        "mode",
+        "mqqratio",
+        "region",
+        "region_chromatin_height",
+        "region_chromatin_files",
+        "region_chromatin_labels",
+        "titles",
+        "title_pos",
+        "title_kwargs",
+        "gtf",
+        "mqq_height",
+        "cs_height",
+        "gene_track_height",
+        "fig_kwargs",
+        "region_hspace",
+        "subplot_height",
+        "region_lead_grids",
+        "region_lead_grid_line",
+        "region_ld_legends",
+        "fontsize",
+        "font_family",
+        "common_ylabel",
+        "build",
+        "save",
+        "save_kwargs",
+        "verbose",
+        "pm",
+        "log",
+        "highlight",
+        "anno_set",
+        "pinpoint"
+      ],
       "banned_keys_inherit": "plot_mqq:mqq",
       "banned_keys": {
         "fig_kwargs": [],
@@ -1787,15 +1949,15 @@
         "anno_style",
         "repel_force",
         "anno_max_iter",
-        "ancestry_col",
-        "subtype_col",
-        "ancestry_colors",
-        "subtype_shapes",
         "save",
         "save_kwargs",
         "fig_kwargs",
         "verbose",
-        "log"
+        "log",
+        "anno_wrap",
+        "anno_wrap_width_pt",
+        "anno_wrap_chars_per_line",
+        "anno_max_len"
       ],
       "defaults": {
         "snpid": "SNPID",
@@ -1852,6 +2014,401 @@
         "fig_kwargs": [],
         "save_kwargs": [],
         "anno_kwargs": []
+      }
+    },
+    "plot_trumpet": {
+      "allowed_inherit": "plot_trumpet:q",
+      "allowed": [
+        "prevalence",
+        "ncase",
+        "ncontrol",
+        "or_to_rr"
+      ],
+      "defaults_inherit": "plot_trumpet:q",
+      "banned_keys_inherit": "plot_trumpet:q"
+    },
+    "plot_track": {
+      "allowed": [
+        "region",
+        "ax",
+        "fig",
+        "track_start_i",
+        "region_flank_factor",
+        "file_format",
+        "chr_dict",
+        "name_column",
+        "feature_type",
+        "color",
+        "highlight_positions",
+        "highlight_color",
+        "track_font_family",
+        "taf",
+        "min_track_height",
+        "figsize",
+        "region_step",
+        "fig_kwargs",
+        "verbose",
+        "log"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_arc": {
+      "allowed": [
+        "region",
+        "ax",
+        "fig",
+        "track_start_i",
+        "region_flank_factor",
+        "chr_dict",
+        "color",
+        "alpha",
+        "linewidth",
+        "arc_height",
+        "max_arcs",
+        "score_col",
+        "score_threshold",
+        "color_by_score",
+        "cmap",
+        "figsize",
+        "region_step",
+        "track_font_family",
+        "fig_kwargs",
+        "verbose",
+        "log"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_chromatin": {
+      "allowed": [
+        "region",
+        "region_chromatin_labels",
+        "fig",
+        "ax",
+        "xlim_i",
+        "fontsize",
+        "font_family",
+        "fig_kwargs",
+        "save",
+        "save_kwargs",
+        "log",
+        "verbose"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_ag_tracks": {
+      "allowed": [
+        "region",
+        "filled",
+        "color",
+        "ylabel_template",
+        "linewidth",
+        "verbose",
+        "log"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_ag_overlay": {
+      "allowed": [
+        "region",
+        "colors",
+        "alpha",
+        "ylabel_template",
+        "linewidth",
+        "verbose",
+        "log"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_ag_contact": {
+      "allowed": [
+        "region",
+        "track_start_i",
+        "cmap",
+        "vmin",
+        "vmax",
+        "ylabel_template",
+        "verbose",
+        "log"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_ag_sashimi": {
+      "allowed": [
+        "region",
+        "color",
+        "filter_threshold",
+        "ylabel_template",
+        "verbose",
+        "log"
+      ],
+      "defaults": {},
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_panels": {
+      "allowed": [
+        "region",
+        "height_ratios",
+        "hspace",
+        "subplot_height",
+        "titles",
+        "title_pos",
+        "title_kwargs",
+        "fig_kwargs",
+        "save",
+        "save_kwargs",
+        "fontsize",
+        "font_family",
+        "align_xaxis",
+        "region_step",
+        "track_start_i",
+        "variant_positions",
+        "variant_line_kwargs",
+        "verbose",
+        "log"
+      ],
+      "defaults": {
+        "hspace": 0.07,
+        "subplot_height": 1.0,
+        "align_xaxis": true,
+        "region_step": 21,
+        "track_start_i": 0.0,
+        "fontsize": 9,
+        "font_family": "Arial"
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_power": {
+      "allowed_inherit": "plot_power:q",
+      "allowed": [
+        "ncases",
+        "ncontrols",
+        "prevalences",
+        "or_to_rr"
+      ],
+      "defaults_inherit": "plot_power:q",
+      "banned_keys_inherit": "plot_power:q"
+    },
+    "plot_power_x": {
+      "allowed": [
+        "ts",
+        "mode",
+        "ns",
+        "mafs",
+        "betas",
+        "prevalences",
+        "or_to_rr",
+        "ncases",
+        "ncontrols",
+        "sig_levels",
+        "maf_range",
+        "beta_range",
+        "n_range",
+        "prevalence_range",
+        "n_matrix",
+        "xscale",
+        "yscale_factor",
+        "cmap",
+        "ylim",
+        "fontsize",
+        "font_family",
+        "save",
+        "save_kwargs",
+        "ylabel",
+        "xlabel",
+        "xticks",
+        "xticklabels",
+        "yticks",
+        "yticklabels",
+        "verbose",
+        "log"
+      ],
+      "defaults": {
+        "mode": "q"
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_power:q": {
+      "allowed": [
+        "ns",
+        "mode",
+        "ts",
+        "sig_levels",
+        "maf_range",
+        "beta_range",
+        "n_matrix",
+        "xscale",
+        "yscale_factor",
+        "cmap",
+        "ylim",
+        "fontsize",
+        "font_family",
+        "sizes",
+        "save",
+        "save_kwargs",
+        "ylabel",
+        "xlabel",
+        "xticks",
+        "xticklabels",
+        "yticks",
+        "yticklabels",
+        "verbose",
+        "log"
+      ],
+      "defaults": {
+        "mode": "q"
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
+      }
+    },
+    "plot_power:b": {
+      "allowed": [
+        "ns",
+        "mode",
+        "ts",
+        "prevalences",
+        "or_to_rr",
+        "ncases",
+        "ncontrols",
+        "sig_levels",
+        "maf_range",
+        "beta_range",
+        "n_matrix",
+        "xscale",
+        "yscale_factor",
+        "cmap",
+        "ylim",
+        "fontsize",
+        "font_family",
+        "sizes",
+        "save",
+        "save_kwargs",
+        "ylabel",
+        "xlabel",
+        "xticks",
+        "xticklabels",
+        "yticks",
+        "yticklabels",
+        "verbose",
+        "log"
+      ],
+      "defaults": {
+        "mode": "b"
+      },
+      "banned_keys": {
+        "fig_kwargs": [],
+        "save_kwargs": [],
+        "scatter_kwargs": [],
+        "qq_scatter_kwargs": [],
+        "panno_kwargs": [],
+        "rganno_kwargs": [],
+        "colorbar_kwargs": [],
+        "xticklabel_kwargs": [],
+        "yticklabel_kwargs": []
       }
     }
   }

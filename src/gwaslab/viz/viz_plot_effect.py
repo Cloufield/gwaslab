@@ -44,112 +44,15 @@ def _plot_effect(insumstats,
                  style_col=None,
                  sort_kwargs=None,
                  **args):
-    """Plot effect sizes with optional panels for EAF and SNPR2.
+    """Plot effect sizes with optional EAF and SNPR2 side panels.
 
-    Parameters
-    ----------
-    to_plot : pandas.DataFrame
-        DataFrame containing the data to plot.
-    y : list of str, optional
-        Columns to use for y-axis labeling. Default is None.
-    y_sort : list of str, optional
-        Columns to sort by for y-axis order. Default is None.
-    group : list of str, optional
-        Columns to group by. Default is None.
-    x : str, default="BETA"
-        Column name for x-axis (effect size).
-    se : str, default="SE"
-        Column name for standard error.
-    eaf : str, default="EAF"
-        Column name for effect allele frequency.
-    snpr2 : str, default="SNPR2"
-        Column name for SNP R-squared.
-    ylabel : str, default="Variant"
-        Label for y-axis.
-    eaf_panel : bool, default=True
-        Whether to include EAF panel.
-    snpvar_panel : bool, default=True
-        Whether to include SNP variance panel.
-    rename_dic : dict, optional
-        Dictionary for renaming labels. Default is None.
-    err_kwargs : dict, optional
-        Arguments for error bars. Default is None.
-    font_kwargs : dict, optional
-        Font-related arguments. Default is None.
-    save : str, optional
-        File path to save the figure. Default is None.
-    title : str, optional
-        Title of the plot. Default is None.
-    save_kwargs : dict, optional
-        Additional arguments for saving. Default is None.
-    eaf_kwargs : dict, optional
-        Arguments for EAF panel. Default is None.
-    snpr2_kwargs : dict, optional
-        Arguments for SNPR2 panel. Default is None.
-    fig_kwargs : dict, optional
-        Figure size and DPI settings. Default is None.
-    scatter_kwargs : dict, optional
-        Scatter plot arguments. Default is None.
-    effect_label : str, optional
-        Custom label for effect size axis. Default is None.
-    eaf_label : str, optional
-        Custom label for EAF axis. Default is None.
-    snpr2_label : str, optional
-        Custom label for SNPR2 axis. Default is None.
-    xlim_eaf : tuple, optional
-        X-axis limits for EAF panel. Default is None.
-    xlim_snpr2 : tuple, optional
-        X-axis limits for SNPR2 panel. Default is None.
-    log : gwaslab.g_Log.Log, default=Log()
-        Logging object.
-    verbose : bool, default=True
-        Whether to print progress messages.
-    legend_mode : int, default=1
-        Legend positioning mode.
-    ncol : int, default=2
-        Number of legend columns.
-    gap : int, default=1
-        Gap between groups.
-    fontsize : int, default=12
-        Font size for labels.
-    font_family : str, default="Arial"
-        Font family for text.
-    size : str, optional
-        Column name for marker size. Default is None.
-    hue : str, optional
-        Column name for color encoding. Default is None.
-    style_col : str, optional
-        Column name for marker style. Default is None.
-    sort_kwargs : dict, optional
-        Additional sorting arguments. Default is None.
-    **args : dict
-        Additional arguments passed to scatterplot.
+    Registry-aligned parameters are on ``Sumstats.plot_effect()``.
 
-    Returns
-    -------
-    matplotlib.figure.Figure
-        The generated figure object.
-
-    Logic overview: prepare data and style (1–3), build y-axis label column and
-    enforce row limit (4), sort and group (5), assign y positions per group (6),
-    create 1–3 panels (7), draw effect panel (8), optional EAF/SNPR2 panels (9),
-    legend (10), axis labels and save (11).
-
-    How the plot is created
-    -----------------------
-    The figure is a horizontal forest-style layout:
-    - Y-axis: one row per variant (or per study/variant combo). Rows are sorted
-      by `group` and `y_sort`; within each group, a contiguous block of y-positions
-      is assigned, with `gap` between groups. Tick labels come from the `y` column(s).
-    - X-axis: effect size (e.g. BETA). The main panel is a scatter of point
-      estimates with horizontal error bars (xerr=SE) and a vertical zero line.
-    - Optional side panels (left to right): (1) main effect panel; (2) EAF as
-      horizontal bars, if `eaf_panel` and column `eaf` exist; (3) SNPR2 as
-      horizontal bars, if `snpvar_panel` and column `snpr2` exist. All panels
-      share the same y-axis (same row order). Style (fig_kwargs, scatter_kwargs,
-      err_kwargs, etc.) is resolved via set_plot_style and _extract_kwargs before
-      drawing.
-    """
+Returns
+-------
+matplotlib.figure.Figure
+    The generated figure object.
+"""
     # --- 1. Resolve input to a DataFrame and take a working copy ---
     if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
         insumstats = insumstats.data
@@ -206,7 +109,8 @@ def _plot_effect(insumstats,
     font_kwargs =      _extract_kwargs("font", font_kwargs, locals())
     
     def concat_cols(cols):
-        """Join multiple column values into one label string (e.g. 'A-B-C')."""
+        """Join multiple column values into one label string (e.g. 'A-B-C').
+"""
         return "-".join(map(str, cols))
 
     # --- 4. Cap row count and build one “label per row” for the y-axis ---

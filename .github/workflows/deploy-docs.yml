@@ -1,13 +1,17 @@
 name: Documentation
 
+# Auto-deploy disabled temporarily. Restore the push block below to re-enable.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+#  push:
+#    branches:
+#      - main
+#    paths:
+#      - 'docs/**'
+#      - 'mkdocs.yml'
+#      - 'src/gwaslab/**'
+#      - 'pyproject.toml'
+#      - '.github/workflows/deploy-docs.yml'
 
 permissions:
   contents: read
@@ -26,6 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+      - run: pip install ".[docs]"
       - run: pip install zensical
       - run: zensical build --clean
       - uses: actions/upload-pages-artifact@v4

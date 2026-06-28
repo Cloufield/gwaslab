@@ -1,8 +1,6 @@
-'''
-(c) 2015 Brendan Bulik-Sullivan and Hilary Finucane
+'''(c) 2015 Brendan Bulik-Sullivan and Hilary Finucane
 
 Iterativey re-weighted least squares.
-
 '''
 from __future__ import division
 import numpy as np
@@ -13,27 +11,25 @@ def xrange(*args):
 
 class IRWLS(object):
 
-    '''
-    Iteratively re-weighted least squares (FLWS).
+    '''Iteratively re-weighted least squares (FLWS).
 
-    Parameters
-    ----------
-    x : np.matrix with shape (n, p)
-        Independent variable.
-    y : np.matrix with shape (n, 1)
-        Dependent variable.
-    update_func : function
-        Transforms output of np.linalg.lstsq to new weights.
-    n_blocks : int
-        Number of jackknife blocks (for estimating SE via block jackknife).
-    w : np.matrix with shape (n, 1)
-        Initial regression weights (default is the identity matrix). These should be on the
-        inverse CVF scale.
-    slow : bool
-        Use slow block jackknife? (Mostly for testing)
-
-    Attributes
-    ----------
+Parameters
+----------
+x : np.matrix with shape (n, p)
+    Independent variable.
+y : np.matrix with shape (n, 1)
+    Dependent variable.
+update_func : function
+    Transforms output of np.linalg.lstsq to new weights.
+n_blocks : int
+    Number of jackknife blocks (for estimating SE via block jackknife).
+w : np.matrix with shape (n, 1)
+    Initial regression weights (default is the identity matrix). These should be on the
+    inverse CVF scale.
+slow : bool
+    Use slow block jackknife? (Mostly for testing)
+Attributes
+----------
     est : np.matrix with shape (1, p)
         IRWLS estimate.
     jknife_est : np.matrix with shape (1, p)
@@ -53,8 +49,7 @@ class IRWLS(object):
         Weighted Least Squares.
     _weight(x, w) :
         Weight x by w.
-
-    '''
+'''
 
     def __init__(self, x, y, update_func, n_blocks, w=None, slow=False, separators=None):
         n, p = jk._check_shape(x, y)
@@ -76,32 +71,29 @@ class IRWLS(object):
 
     @classmethod
     def irwls(cls, x, y, update_func, n_blocks, w, slow=False, separators=None):
-        '''
-        Iteratively re-weighted least squares (IRWLS).
+        '''Iteratively re-weighted least squares (IRWLS).
 
-        Parameters
-        ----------
-        x : np.matrix with shape (n, p)
-            Independent variable.
-        y : np.matrix with shape (n, 1)
-            Dependent variable.
-        update_func: function
-            Transforms output of np.linalg.lstsq to new weights.
-        n_blocks : int
-            Number of jackknife blocks (for estimating SE via block jackknife).
-        w : np.matrix with shape (n, 1)
-            Initial regression weights.
-        slow : bool
-            Use slow block jackknife? (Mostly for testing)
-        separators : list or None
-            Block jackknife block boundaries (optional).
-
-        Returns
-        -------
+Parameters
+----------
+x : np.matrix with shape (n, p)
+    Independent variable.
+y : np.matrix with shape (n, 1)
+    Dependent variable.
+update_func : function
+    Transforms output of np.linalg.lstsq to new weights.
+n_blocks : int
+    Number of jackknife blocks (for estimating SE via block jackknife).
+w : np.matrix with shape (n, 1)
+    Initial regression weights.
+slow : bool
+    Use slow block jackknife? (Mostly for testing)
+separators : list or None
+    Block jackknife block boundaries (optional).
+Returns
+-------
         jknife : jk.LstsqJackknifeFast
             Block jackknife regression with the final IRWLS weights.
-
-        '''
+'''
         (n, p) = x.shape
         if y.shape != (n, 1):
             raise ValueError(
@@ -132,24 +124,21 @@ class IRWLS(object):
 
     @classmethod
     def wls(cls, x, y, w):
-        '''
-        Weighted least squares.
+        '''Weighted least squares.
 
-        Parameters
-        ----------
-        x : np.matrix with shape (n, p)
-            Independent variable.
-        y : np.matrix with shape (n, 1)
-            Dependent variable.
-        w : np.matrix with shape (n, 1)
-            Regression weights (1/CVF scale).
-
-        Returns
-        -------
+Parameters
+----------
+x : np.matrix with shape (n, p)
+    Independent variable.
+y : np.matrix with shape (n, 1)
+    Dependent variable.
+w : np.matrix with shape (n, 1)
+    Regression weights (1/CVF scale).
+Returns
+-------
         coef : list with four elements (coefficients, residuals, rank, singular values)
             Output of np.linalg.lstsq
-
-        '''
+'''
         (n, p) = x.shape
         if y.shape != (n, 1):
             raise ValueError(
@@ -165,27 +154,24 @@ class IRWLS(object):
 
     @classmethod
     def _weight(cls, x, w):
-        '''
-        Weight x by w.
+        '''Weight x by w.
 
-        Parameters
-        ----------
-        x : np.matrix with shape (n, p)
-            Rows are observations.
-        w : np.matrix with shape (n, 1)
-            Regression weights (1 / sqrt(CVF) scale).
-
-        Returns
-        -------
+Parameters
+----------
+x : np.matrix with shape (n, p)
+    Rows are observations.
+w : np.matrix with shape (n, 1)
+    Regression weights (1 / sqrt(CVF) scale).
+Returns
+-------
         x_new : np.matrix with shape (n, p)
             x_new[i,j] = x[i,j] * w'[i], where w' is w normalized to have sum 1.
 
-        Raises
-        ------
+Raises
+------
         ValueError :
             If any element of w is <= 0 (negative weights are not meaningful in WLS).
-
-        '''
+'''
         if np.any(w <= 0):
             raise ValueError('Weights must be > 0')
         (n, p) = x.shape

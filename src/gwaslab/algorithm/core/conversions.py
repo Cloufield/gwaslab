@@ -1,4 +1,5 @@
-"""GWAS summary-statistic conversions (BETA, SE, Z, P, OR, MAF)."""
+"""GWAS summary-statistic conversions (BETA, SE, Z, P, OR, MAF).
+"""
 
 from __future__ import annotations
 
@@ -11,7 +12,19 @@ Z_CRITICAL_95 = float(norm.ppf(0.975))
 
 
 def betase_to_z(beta: np.ndarray, se: np.ndarray) -> np.ndarray:
-    """Convert BETA and SE to two-sided Z-scores."""
+    """Convert BETA and SE to two-sided Z-scores.
+
+Parameters
+----------
+beta : numpy.ndarray
+    Effect size estimates.
+se : numpy.ndarray
+    Standard errors.
+Returns
+-------
+numpy.ndarray
+    Two-sided Z-scores.
+"""
     beta = np.asarray(beta, dtype=np.float64)
     se = np.asarray(se, dtype=np.float64)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -19,81 +32,231 @@ def betase_to_z(beta: np.ndarray, se: np.ndarray) -> np.ndarray:
 
 
 def betase_to_p(beta: np.ndarray, se: np.ndarray) -> np.ndarray:
-    """Convert BETA and SE to two-sided P-values."""
+    """Convert BETA and SE to two-sided P-values.
+
+Parameters
+----------
+beta : numpy.ndarray
+    Effect size estimates.
+se : numpy.ndarray
+    Standard errors.
+Returns
+-------
+numpy.ndarray
+    Two-sided P-values.
+"""
     z = betase_to_z(beta, se)
     return 2.0 * norm.sf(np.abs(z))
 
 
 def z_to_p(z: np.ndarray) -> np.ndarray:
-    """Convert Z-scores to two-sided P-values."""
+    """Convert Z-scores to two-sided P-values.
+
+Parameters
+----------
+z : numpy.ndarray
+    Z-scores.
+Returns
+-------
+numpy.ndarray
+    Two-sided P-values.
+"""
     z = np.asarray(z, dtype=np.float64)
     return 2.0 * norm.sf(np.abs(z))
 
 
 def z_to_mlog10p(z: np.ndarray) -> np.ndarray:
-    """Convert Z-scores to -log10(P)."""
+    """Convert Z-scores to -log10(P).
+
+Parameters
+----------
+z : numpy.ndarray
+    Z-scores.
+Returns
+-------
+numpy.ndarray
+    Minus log10 two-sided P-values.
+"""
     z = np.asarray(z, dtype=np.float64)
     log_pvalue = np.log(2.0) + norm.logsf(np.abs(z))
     return -log_pvalue / np.log(10.0)
 
 
 def betase_to_mlog10p(beta: np.ndarray, se: np.ndarray) -> np.ndarray:
-    """Convert BETA and SE to -log10(P)."""
+    """Convert BETA and SE to -log10(P).
+
+Parameters
+----------
+beta : numpy.ndarray
+    Effect size estimates.
+se : numpy.ndarray
+    Standard errors.
+Returns
+-------
+numpy.ndarray
+    Minus log10 two-sided P-values.
+"""
     return z_to_mlog10p(betase_to_z(beta, se))
 
 
 def p_to_chisq(p: np.ndarray) -> np.ndarray:
-    """Convert P-values to chi-squared statistics (df=1)."""
+    """Convert P-values to chi-squared statistics (df=1).
+
+Parameters
+----------
+p : numpy.ndarray
+    Two-sided P-values.
+Returns
+-------
+numpy.ndarray
+    Chi-squared statistics with one degree of freedom.
+"""
     return stats.chi2.isf(np.asarray(p, dtype=np.float64), 1)
 
 
 def z_to_chisq(z: np.ndarray) -> np.ndarray:
-    """Convert Z-scores to chi-squared statistics (df=1)."""
+    """Convert Z-scores to chi-squared statistics (df=1).
+
+Parameters
+----------
+z : numpy.ndarray
+    Z-scores.
+Returns
+-------
+numpy.ndarray
+    Chi-squared statistics with one degree of freedom.
+"""
     z = np.asarray(z, dtype=np.float64)
     return z ** 2
 
 
 def chisq_to_p(chisq: np.ndarray) -> np.ndarray:
-    """Convert chi-squared statistics to P-values (df=1)."""
+    """Convert chi-squared statistics to P-values (df=1).
+
+Parameters
+----------
+chisq : numpy.ndarray
+    Chi-squared statistics.
+Returns
+-------
+numpy.ndarray
+    Two-sided P-values.
+"""
     return stats.chi2.sf(np.asarray(chisq, dtype=np.float64), 1)
 
 
 def mlog10p_to_p(mlog10p: np.ndarray) -> np.ndarray:
-    """Convert -log10(P) to P-values."""
+    """Convert -log10(P) to P-values.
+
+Parameters
+----------
+mlog10p : numpy.ndarray
+    Minus log10 P-values.
+Returns
+-------
+numpy.ndarray
+    P-values.
+"""
     return np.power(10.0, -np.asarray(mlog10p, dtype=np.float64))
 
 
 def p_to_mlog10p(p: np.ndarray) -> np.ndarray:
-    """Convert P-values to -log10(P)."""
+    """Convert P-values to -log10(P).
+
+Parameters
+----------
+p : numpy.ndarray
+    P-values.
+Returns
+-------
+numpy.ndarray
+    Minus log10 P-values.
+"""
     return -np.log10(np.asarray(p, dtype=np.float64))
 
 
 def or_to_beta(odds_ratio: np.ndarray) -> np.ndarray:
-    """Convert odds ratios to log-odds (BETA)."""
+    """Convert odds ratios to log-odds (BETA).
+
+Parameters
+----------
+odds_ratio : numpy.ndarray
+    Odds ratios.
+Returns
+-------
+numpy.ndarray
+    Log-odds effect sizes.
+"""
     return np.log(np.asarray(odds_ratio, dtype=np.float64))
 
 
 def beta_to_or(beta: np.ndarray) -> np.ndarray:
-    """Convert log-odds (BETA) to odds ratios."""
+    """Convert log-odds (BETA) to odds ratios.
+
+Parameters
+----------
+beta : numpy.ndarray
+    Log-odds effect sizes.
+Returns
+-------
+numpy.ndarray
+    Odds ratios.
+"""
     return np.exp(np.asarray(beta, dtype=np.float64))
 
 
 def betase_to_or_95l(beta: np.ndarray, se: np.ndarray) -> np.ndarray:
-    """Convert BETA and SE to lower bound of 95% OR CI."""
+    """Convert BETA and SE to lower bound of 95% OR CI.
+
+Parameters
+----------
+beta : numpy.ndarray
+    Log-odds effect sizes.
+se : numpy.ndarray
+    Standard errors.
+Returns
+-------
+numpy.ndarray
+    Lower bounds of 95% odds-ratio confidence intervals.
+"""
     beta = np.asarray(beta, dtype=np.float64)
     se = np.asarray(se, dtype=np.float64)
     return np.exp(beta - Z_CRITICAL_95 * se)
 
 
 def betase_to_or_95u(beta: np.ndarray, se: np.ndarray) -> np.ndarray:
-    """Convert BETA and SE to upper bound of 95% OR CI."""
+    """Convert BETA and SE to upper bound of 95% OR CI.
+
+Parameters
+----------
+beta : numpy.ndarray
+    Log-odds effect sizes.
+se : numpy.ndarray
+    Standard errors.
+Returns
+-------
+numpy.ndarray
+    Upper bounds of 95% odds-ratio confidence intervals.
+"""
     beta = np.asarray(beta, dtype=np.float64)
     se = np.asarray(se, dtype=np.float64)
     return np.exp(beta + Z_CRITICAL_95 * se)
 
 
 def betap_to_se(beta: np.ndarray, p: np.ndarray) -> np.ndarray:
-    """Convert BETA and P to SE."""
+    """Convert BETA and P to SE.
+
+Parameters
+----------
+beta : numpy.ndarray
+    Effect size estimates.
+p : numpy.ndarray
+    Two-sided P-values.
+Returns
+-------
+numpy.ndarray
+    Standard errors.
+"""
     beta = np.asarray(beta, dtype=np.float64)
     p = np.asarray(p, dtype=np.float64)
     abs_z = np.sqrt(2.0) * erfcinv(p)
@@ -102,20 +265,54 @@ def betap_to_se(beta: np.ndarray, p: np.ndarray) -> np.ndarray:
 
 
 def or_or95u_to_se(odds_ratio: np.ndarray, or_95u: np.ndarray) -> np.ndarray:
-    """Convert OR and OR upper CI bound to SE."""
+    """Convert OR and OR upper CI bound to SE.
+
+Parameters
+----------
+odds_ratio : numpy.ndarray
+    Odds ratios.
+or_95u : numpy.ndarray
+    Upper bounds of 95% odds-ratio confidence intervals.
+Returns
+-------
+numpy.ndarray
+    Standard errors on the log-odds scale.
+"""
     odds_ratio = np.asarray(odds_ratio, dtype=np.float64)
     or_95u = np.asarray(or_95u, dtype=np.float64)
     return (np.log(or_95u) - np.log(odds_ratio)) / Z_CRITICAL_95
 
 
 def or_or95l_to_se(odds_ratio: np.ndarray, or_95l: np.ndarray) -> np.ndarray:
-    """Convert OR and OR lower CI bound to SE."""
+    """Convert OR and OR lower CI bound to SE.
+
+Parameters
+----------
+odds_ratio : numpy.ndarray
+    Odds ratios.
+or_95l : numpy.ndarray
+    Lower bounds of 95% odds-ratio confidence intervals.
+Returns
+-------
+numpy.ndarray
+    Standard errors on the log-odds scale.
+"""
     odds_ratio = np.asarray(odds_ratio, dtype=np.float64)
     or_95l = np.asarray(or_95l, dtype=np.float64)
     return (np.log(odds_ratio) - np.log(or_95l)) / Z_CRITICAL_95
 
 
 def eaf_to_maf(eaf: np.ndarray) -> np.ndarray:
-    """Convert effect allele frequency to minor allele frequency."""
+    """Convert effect allele frequency to minor allele frequency.
+
+Parameters
+----------
+eaf : numpy.ndarray
+    Effect allele frequencies.
+Returns
+-------
+numpy.ndarray
+    Minor allele frequencies.
+"""
     eaf = np.asarray(eaf, dtype=np.float64)
     return np.minimum(eaf, 1.0 - eaf)

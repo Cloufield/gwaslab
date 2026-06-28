@@ -1,5 +1,4 @@
-"""
-Format detection module for GWAS summary statistics files.
+"""Format detection module for GWAS summary statistics files.
 
 This module provides functionality to automatically detect the format of sumstats files
 by comparing their headers against a formatbook of known formats. The detection algorithm
@@ -29,21 +28,19 @@ from gwaslab.bd.bd_download import update_formatbook
 
 
 def _open_text_maybe_gz(file_path: Union[str, Path], encoding: str = "utf-8") -> io.TextIOWrapper:
-    """
-    Open a text file, handling gzip compression if the path ends with .gz.
+    """Open a text file, handling gzip compression if the path ends with .gz.
     
-    Parameters:
-    -----------
-    file_path : str or Path
-        Path to the file to open
-    encoding : str, default "utf-8"
-        Text encoding to use
-        
-    Returns:
-    --------
-    io.TextIOWrapper
-        Text file object
-    """
+Parameters
+----------
+file_path : str or Path
+    Path to the file to open
+encoding : str, default "utf-8"
+    Text encoding to use
+Returns
+-------
+io.TextIOWrapper
+    Text file object
+"""
     file_path = str(file_path)
     if file_path.endswith(".gz"):
         return io.TextIOWrapper(gzip.open(file_path, "rb"), encoding=encoding, newline="")
@@ -54,39 +51,35 @@ _norm_re = re.compile(r"[^a-z0-9#]+")
 
 
 def norm_header(s: str) -> str:
-    """
-    Normalize header string: keep # (for VCF/#CHROM), remove punctuation/underscores/spaces, lowercase.
+    """Normalize header string: keep # (for VCF/#CHROM), remove punctuation/underscores/spaces, lowercase.
     
-    Parameters:
-    -----------
-    s : str
-        Header string to normalize
-        
-    Returns:
-    --------
-    str
-        Normalized header string
-    """
+Parameters
+----------
+s : str
+    Header string to normalize
+Returns
+-------
+str
+    Normalized header string
+"""
     return _norm_re.sub("", s.strip().lower())
 
 
 def sniff_delimiter(sample: str) -> str:
-    """
-    Detect the delimiter used in a text sample.
+    """Detect the delimiter used in a text sample.
     
     Tries csv.Sniffer first, then falls back to a heuristic that picks the delimiter
     which yields the most columns in the first non-empty line.
     
-    Parameters:
-    -----------
-    sample : str
-        Sample text to analyze
-        
-    Returns:
-    --------
-    str
-        Detected delimiter character
-    """
+Parameters
+----------
+sample : str
+    Sample text to analyze
+Returns
+-------
+str
+    Detected delimiter character
+"""
     # try csv.Sniffer first; fallback to common delimiters
     try:
         dialect = csv.Sniffer().sniff(sample, delimiters=[",", "\t", " "])
@@ -116,9 +109,8 @@ _VCF_HEADER_MARKERS = frozenset({
 
 
 def _looks_like_vcf_header(header_cols: List[str], is_vcf_meta: bool = False) -> bool:
-    """
-    True when a ``#CHROM`` header row looks like VCF, not PLINK2 GLM / similar tabular output.
-    """
+    """True when a ``#CHROM`` header row looks like VCF, not PLINK2 GLM / similar tabular output.
+"""
     if not header_cols:
         return bool(is_vcf_meta)
     norms = {norm_header(c) for c in header_cols}
@@ -132,23 +124,21 @@ def _looks_like_vcf_header(header_cols: List[str], is_vcf_meta: bool = False) ->
 
 
 def read_header_and_rows(file_path: Union[str, Path], max_lines: int = 2000) -> Tuple[Optional[List[str]], List[List[str]], Dict]:
-    """
-    Read header and sample rows from a sumstats file.
+    """Read header and sample rows from a sumstats file.
     
-    Parameters:
-    -----------
-    file_path : str or Path
-        Path to the sumstats file
-    max_lines : int, default 2000
-        Maximum number of data rows to read
-        
-    Returns:
-    --------
-    tuple:
-        - header: list[str] or None - Column headers if found
-        - rows: list[list[str]] - Sample data rows
-        - meta: dict - Metadata about the file (delimiter, is_vcf, etc.)
-    """
+Parameters
+----------
+file_path : str or Path
+    Path to the sumstats file
+max_lines : int, default 2000
+    Maximum number of data rows to read
+Returns
+-------
+tuple:
+    - header: list[str] or None - Column headers if found
+    - rows: list[list[str]] - Sample data rows
+    - meta: dict - Metadata about the file (delimiter, is_vcf, etc.)
+"""
     with _open_text_maybe_gz(file_path) as f:
         buf = []
         for _ in range(200):  # enough for sniffer
@@ -214,24 +204,22 @@ def read_header_and_rows(file_path: Union[str, Path], max_lines: int = 2000) -> 
 
 
 def build_idf_weights(formatbook: Dict, candidate_formats: List[str]) -> Tuple[Dict[str, float], Dict[str, set]]:
-    """
-    Compute IDF (Inverse Document Frequency) weights for format keys.
+    """Compute IDF (Inverse Document Frequency) weights for format keys.
     
     Headers that appear in fewer formats are more discriminative and get higher weights.
     
-    Parameters:
-    -----------
-    formatbook : dict
-        Format book dictionary loaded from JSON
-    candidate_formats : list[str]
-        List of format names to consider
-        
-    Returns:
-    --------
-    tuple:
-        - idf: dict mapping normalized keys to IDF weights
-        - fmt_keys: dict mapping format names to sets of normalized keys
-    """
+Parameters
+----------
+formatbook : dict
+    Format book dictionary loaded from JSON
+candidate_formats : list[str]
+    List of format names to consider
+Returns
+-------
+tuple:
+    - idf: dict mapping normalized keys to IDF weights
+    - fmt_keys: dict mapping format names to sets of normalized keys
+"""
     # compute df for each normalized original header key across formats
     df = Counter()
     fmt_keys = {}
@@ -255,8 +243,7 @@ def detect_sumstats_format(
     formatbook_path: Optional[Union[str, Path]] = None,
     topk: int = 5
 ) -> Dict:
-    """
-    Detect the format of a sumstats file by comparing its headers against formatbook definitions.
+    """Detect the format of a sumstats file by comparing its headers against formatbook definitions.
     
     Algorithm Overview
     -----------------
@@ -329,27 +316,26 @@ def detect_sumstats_format(
        - Removes any "auto*" formats from results (safety check)
        - Returns top-k formats sorted by score
     
-    Parameters:
-    -----------
-    sumstats_path : str or Path
-        Path to the sumstats file to analyze
-    formatbook_path : str or Path, optional
-        Path to formatbook.json. If None, uses options.paths["formatbook"]
-    topk : int, default 5
-        Number of top candidate formats to return
-        
-    Returns:
-    --------
-    dict:
-        - best_format: str - Detected format name, or "unknown" if confidence is low
-        - confidence: float - Confidence score (0-1)
-        - top: list[tuple[str, float]] - Top-k formats with scores
-        - best_detail: dict - Detailed information about the best match
-        - meta: dict - File metadata (delimiter, is_vcf, etc.)
-        - notes: list[str] - Notes about the detection
+Parameters
+----------
+sumstats_path : str or Path
+    Path to the sumstats file to analyze
+formatbook_path : str or Path, optional
+    Path to formatbook.json. If None, uses options.paths["formatbook"]
+topk : int, default 5
+    Number of top candidate formats to return
+Returns
+-------
+dict:
+    - best_format: str - Detected format name, or "unknown" if confidence is low
+    - confidence: float - Confidence score (0-1)
+    - top: list[tuple[str, float]] - Top-k formats with scores
+    - best_detail: dict - Detailed information about the best match
+    - meta: dict - File metadata (delimiter, is_vcf, etc.)
+    - notes: list[str] - Notes about the detection
     
-    Examples:
-    --------
+Examples
+--------
     >>> result = detect_sumstats_format("sumstats.txt")
     >>> print(result["best_format"])
     'plink2'
@@ -357,7 +343,7 @@ def detect_sumstats_format(
     0.85
     >>> print(result["top"])
     [('plink2', 12.345), ('bolt_lmm', 8.234), ('saige', 6.123)]
-    """
+"""
     # Load formatbook
     if formatbook_path is None:
         formatbook_path = options.paths["formatbook"]

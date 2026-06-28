@@ -1,5 +1,4 @@
-"""
-Genome build mappings and display names for different species.
+"""Genome build mappings and display names for different species.
 
 This module provides species-specific genome build mappings that normalize
 various build identifier formats to standardized two-digit numeric codes.

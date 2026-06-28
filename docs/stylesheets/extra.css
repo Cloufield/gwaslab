@@ -70,19 +70,23 @@ height: auto;
     font-weight: bold;
 }
 
-.md-typeset h2 > code {
+.md-typeset h2 > code:not(.doc-symbol) {
     color: #333;
     font-weight: bold;
 }
 
-.md-typeset h3 > code {
+.md-typeset h3 > code:not(.doc-symbol) {
     color: #333;
     font-weight: bold;
 }
 
-.md-typeset h4 > code {
+.md-typeset h4 > code:not(.doc-symbol) {
     color: #333;
     font-weight: bold;
+}
+
+.doc-symbol-heading:empty {
+    display: none;
 }
 
 .md-typeset table:not([class]) {

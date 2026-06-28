@@ -1,4 +1,5 @@
-"""Winner's curse bias correction."""
+"""Winner's curse bias correction.
+"""
 
 from __future__ import annotations
 
@@ -27,36 +28,34 @@ def winners_curse_correct(
     se: Union[float, np.ndarray],
     sig_level: float = DEFAULT_SIG_LEVEL,
 ) -> Union[float, np.ndarray]:
-    """
-    Apply winner's curse bias correction to observed effect sizes.
+    """Apply winner's curse bias correction to observed effect sizes.
 
     Solves the Zhong-Prentice bias equation using Brent's method on each
     variant.
 
-    Parameters
-    ----------
-    beta : float or numpy.ndarray
-        Observed effect estimates.
-    se : float or numpy.ndarray
-        Standard errors of ``beta``.
-    sig_level : float, optional
-        GWAS significance threshold. Default is 5e-8.
+Parameters
+----------
+beta : float or numpy.ndarray
+    Observed effect estimates.
+se : float or numpy.ndarray
+    Standard errors of ``beta``.
+sig_level : float, default 5e-8
+    GWAS significance threshold.
+Returns
+-------
+float or numpy.ndarray
+    Bias-corrected effect estimates.
 
-    Returns
-    -------
-    float or numpy.ndarray
-        Bias-corrected effect estimates.
-
-    Notes
-    -----
+Notes
+-----
     Orchestration and logging live in ``util.util_in_correct_winnerscurse``.
 
-    References
-    ----------
+References
+----------
     Zhong, H., & Prentice, R. L. (2008). Bias-reduced estimators and
     confidence intervals for odds ratios in genome-wide association studies.
     Biostatistics, 9(4), 621-634.
-    """
+"""
     c = _selection_threshold(sig_level)
 
     def _solve_scalar(b_obs: float, s: float) -> float:

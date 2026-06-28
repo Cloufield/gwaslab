@@ -80,9 +80,20 @@ gwaslab config
 gwaslab config show config
 gwaslab config show reference
 
+# Persist a path override (written to ~/.gwaslab/settings.json)
+gwaslab config set data_directory /data/refs
+gwaslab config set config /data/refs/config.json
+
 # JSON output (easy to parse)
 gwaslab config --json
 ```
+
+**Environment variables** (override defaults without editing settings):
+
+| Variable | Purpose |
+|----------|---------|
+| `GWASLAB_DATA_DIR` | Default download / data root |
+| `GWASLAB_CONFIG` | Path to local registry `config.json` |
 
 **Options:**
 
@@ -90,6 +101,7 @@ gwaslab config --json
 |--------|-------------|
 | `--json` | Print as JSON |
 | `show <keyword>` | Show JSON content for `config`/`reference`/`formatbook`; otherwise print resolved path |
+| `set <key> <path>` | Persist `data_directory` or `config` (`key` must be one of those two) |
 
 ### path
 
@@ -172,6 +184,9 @@ List **available** reference keywords (from the bundled/updated reference catalo
 gwaslab list ref
 gwaslab list ref --available
 gwaslab list ref --downloaded
+gwaslab list ref --downloaded --source catalog
+gwaslab list ref --downloaded --kind ref
+gwaslab list ref --downloaded --kind sumstats
 gwaslab list ref --available --downloaded --json
 ```
 
@@ -179,10 +194,43 @@ gwaslab list ref --available --downloaded --json
 |--------|-------------|
 | `--available` | Only keywords you can install with `gwaslab download ref …` |
 | `--downloaded` | Only keywords already recorded under `downloaded` in config |
+| `--source` | Filter `--downloaded` by registry `source` (`catalog`, `gwas_catalog`, or `local`) |
+| `--kind` | Filter `--downloaded` by registry `kind` (`ref` or `sumstats`) |
 | `--json` | Machine-readable output |
 | `-q` / `--quiet` | Less library logging |
 
 GWAS Catalog sumstats do not have a browseable `list` command in the CLI (you supply a `GCST…` ID).
+
+### ref
+
+Manage local registry entries without downloading from the catalog.
+
+```bash
+gwaslab ref add 1kg_eas_hg19 /data/refs/EAS.vcf.gz --tbi /data/refs/EAS.vcf.gz.tbi
+gwaslab ref remove 1kg_eas_hg19
+gwaslab ref remove 1kg_eas_hg19 --delete-file
+```
+
+| Subcommand | Description |
+|------------|-------------|
+| `add KEYWORD PATH` | Register a local file (`gl.add_local_data`) |
+| `remove KEYWORD` | Drop registry entry; add `--delete-file` to remove blobs |
+
+### init
+
+Prepare the local reference registry: create `~/.gwaslab/`, migrate legacy package-local `config.json` if needed, optionally set `data_directory`, then scan for files to register.
+
+```bash
+gwaslab init
+gwaslab init --directory /data/refs
+gwaslab init -d /data/refs --recursive --quiet
+```
+
+| Option | Description |
+|--------|-------------|
+| `-d` / `--directory` | Set and persist `data_directory`, then scan this folder |
+| `-r` / `--recursive` | Scan subdirectories when matching files to catalog keywords |
+| `-q` / `--quiet` | Less library logging |
 
 ## Command Structure
 

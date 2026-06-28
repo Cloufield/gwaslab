@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-06-27_local_assign_rsid_tabix",
+  "timestamp": "2026-06-26T15:32:29Z",
+  "gwaslab_version": "v4.2.0",
+  "operation": "assign_rsid_tabix",
+  "success": true,
+  "machine": {
+    "hostname": "",
+    "cpu_model": "AMD Ryzen 5 3600X 6-Core Processor",
+    "logical_cores": 12,
+    "physical_cores": 6,
+    "threads_per_core": 2,
+    "cpu_mhz_current": 3800.055,
+    "cpu_tier_detected": "baseline",
+    "cpu_tier_override": null,
+    "ram_total_gb": 41.14369583129883,
+    "ram_available_gb_at_start": 32.81733322143555
+  },
+  "timing": {
+    "wall_seconds": 0.2821938991546631,
+    "steps": []
+  },
+  "memory": {
+    "peak_rss_mb": 452.25,
+    "delta_rss_mb": 0.44921875
+  },
+  "notes": "assign_rsid_tabix",
+  "storage": {
+    "ref_path": "/home/yunye/work/gwaslab/test/ref/b157_2564.vcf.gz",
+    "ref_size_bytes": 304656,
+    "ref_kind": "vcf",
+    "indexed": true,
+    "record_count": 4176,
+    "workspace_device": "/dev/sdc",
+    "rotational": 1,
+    "storage_profile_detected": "hdd",
+    "storage_profile_override": null,
+    "mount_fstype": "ext4"
+  },
+  "workload": {
+    "sumstats_path": "/home/yunye/work/gwaslab/test/raw/realistic_sumstats.tsv",
+    "sumstats_rows": 12,
+    "threads_requested": 2,
+    "threads_effective": 2,
+    "sweep_mode": false
+  }
+}

@@ -1,4 +1,5 @@
-"""Phenogram plot helpers (ideogram, layout, labels, markers, drawing)."""
+"""Phenogram plot helpers (ideogram, layout, labels, markers, drawing).
+"""
 
 import math
 import textwrap
@@ -44,6 +45,7 @@ _TELOMERE_LENGTH = 0.02
 _CHR_OUTLINE_COLOR = "grey"
 _CHR_OUTLINE_ARC_STEPS = 48
 _DEFAULT_ANNO_WRAP_CHARS_PER_LINE = 9
+_DEFAULT_ANNO_FONTSIZE = 11
 _DEFAULT_MARKER_MAX_PER_ROW = 4
 _LEGEND_MARKER_SIZE = 11.0
 _LEGEND_FONTSIZE = 12.0
@@ -72,7 +74,8 @@ def _resolve_phenogram_cytoband_path(
     log: Log = Log(),
     verbose: bool = True,
 ) -> Path:
-    """Resolve user/default cytoband path for phenogram plotting."""
+    """Resolve user/default cytoband path for phenogram plotting.
+"""
     if cytoband_path is not None:
         return Path(cytoband_path)
 
@@ -86,7 +89,8 @@ def _resolve_phenogram_cytoband_path(
 
 @lru_cache(maxsize=8)
 def _load_phenogram_cytobands(cytoband_path: str) -> pd.DataFrame:
-    """Load and color-map cytobands; cached because packaged files are static."""
+    """Load and color-map cytobands; cached because packaged files are static.
+"""
     cytobands = pd.read_csv(cytoband_path, sep=r"\s+", header=None, compression="infer")
     cytobands.columns = ["CHR", "START", "END", "ARM", "STAIN"]
     cytobands["COLOR"] = cytobands["STAIN"].map(_CYTOBAND_COLORS)
@@ -112,7 +116,8 @@ def _summarize_phenogram_cytobands(
     cytobands: pd.DataFrame,
     include_sex_chr: bool = False,
 ) -> Tuple[List[str], Dict[str, int], Dict[str, Tuple[float, float]], Dict[str, pd.DataFrame]]:
-    """Precompute chromosome order, sizes, centromeres, and per-chromosome bands."""
+    """Precompute chromosome order, sizes, centromeres, and per-chromosome bands.
+"""
     chr_sizes = cytobands.groupby("CHR", sort=False)["END"].max().to_dict()
     chr_list = [
         chr_name
@@ -148,7 +153,8 @@ def _summarize_phenogram_cytobands(
 
 @dataclass(frozen=True)
 class _ChrIdeogramGeometry:
-    """Single source of truth for chromosome ideogram layout (data coordinates)."""
+    """Single source of truth for chromosome ideogram layout (data coordinates).
+"""
 
     left_x: float
     right_x: float
@@ -194,7 +200,8 @@ def _compute_chr_ideogram_geometry(
     telomere_h: float = _TELOMERE_LENGTH,
     centromere_marker_h: Optional[float] = None,
 ) -> _ChrIdeogramGeometry:
-    """Derive all ideogram bounds from one geometry definition (y increases upward)."""
+    """Derive all ideogram bounds from one geometry definition (y increases upward).
+"""
     chr_extent = chr_size / max_chr_size
     y_arm2_bottom = offset + telomere_h / 2.0
     y_arm1_top = offset + chr_extent + telomere_h / 2.0
@@ -226,7 +233,8 @@ def _semicircle_arc(
     upper: bool,
     n_steps: int = _CHR_OUTLINE_ARC_STEPS,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Sample a semicircular arc with flat edge at ``base_y`` (y increases upward)."""
+    """Sample a semicircular arc with flat edge at ``base_y`` (y increases upward).
+"""
     if upper:
         theta = np.linspace(0.0, np.pi, n_steps)
         ys = base_y + half_height * np.sin(theta)
@@ -238,7 +246,8 @@ def _semicircle_arc(
 
 
 def _chr_ideogram_body_clip_path(geom: _ChrIdeogramGeometry) -> MplPath:
-    """Closed outer boundary used for clipping chromosome fills."""
+    """Closed outer boundary used for clipping chromosome fills.
+"""
     hw = geom.width / 2.0
     hh = geom.telomere_h / 2.0
 
@@ -281,7 +290,8 @@ def _chr_ideogram_body_clip_path(geom: _ChrIdeogramGeometry) -> MplPath:
 
 
 def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
-    """Visible ideogram outline with side gaps at the centromere marker."""
+    """Visible ideogram outline with side gaps at the centromere marker.
+"""
     hw = geom.width / 2.0
     hh = geom.telomere_h / 2.0
 
@@ -324,7 +334,8 @@ def _chr_ideogram_outline_path(geom: _ChrIdeogramGeometry) -> MplPath:
 def _chr_ideogram_fill_patches(
     geom: _ChrIdeogramGeometry,
 ) -> Tuple[List[Any], List[Any], List[Any]]:
-    """Return arm, centromere, and telomere fill patches (no stroke)."""
+    """Return arm, centromere, and telomere fill patches (no stroke).
+"""
     arms = [
         Rectangle(
             (geom.left_x, geom.y_arm2_bottom),
@@ -342,7 +353,8 @@ def _add_chr_fill_collection(
     facecolor: Any,
     zorder: int,
 ) -> PatchCollection:
-    """Add ideogram fill patches with no edge stroke."""
+    """Add ideogram fill patches with no edge stroke.
+"""
     pc = PatchCollection(
         patches,
         facecolor=facecolor,
@@ -363,7 +375,8 @@ def _plot_chr_ideogram_outline(
     linewidth: float = _CHR_OUTLINE_LW,
     zorder: int = 104,
 ) -> PathPatch:
-    """Draw one unified outer stroke from the shared geometry path."""
+    """Draw one unified outer stroke from the shared geometry path.
+"""
     outline = PathPatch(
         _chr_ideogram_outline_path(geom),
         facecolor="none",
@@ -383,7 +396,8 @@ def _telomere_cap_path(
     geom: _ChrIdeogramGeometry,
     upper: bool,
 ) -> MplPath:
-    """Filled semicircle cap with flat edge on the arm base."""
+    """Filled semicircle cap with flat edge on the arm base.
+"""
     hw = geom.width / 2.0
     hh = geom.telomere_h / 2.0
     base_y = geom.y_arm1_top if upper else geom.y_arm2_bottom
@@ -416,12 +430,11 @@ def _add_telomere_cap(
 
 
 def _centromere_hourglass_path(geom: _ChrIdeogramGeometry) -> MplPath:
-    """
-    Fixed-size hourglass centromere decoration.
+    """Fixed-size hourglass centromere decoration.
 
     The underlying chromosome body remains continuous and position-bearing; this
     path only marks the centromere location visually.
-    """
+"""
     mid_y = geom.y_cent_mid
     verts = [
         (geom.left_x, geom.y_cent_top),
@@ -447,7 +460,8 @@ def _centromere_hourglass_path(geom: _ChrIdeogramGeometry) -> MplPath:
 
 
 def _centromere_fill_patches(geom: _ChrIdeogramGeometry) -> List[Rectangle]:
-    """Centromere is rendered by fixed triangles, not a proportional band."""
+    """Centromere is rendered by fixed triangles, not a proportional band.
+"""
     del geom
     return []
 
@@ -479,7 +493,8 @@ def _add_centromere_decoration(
     facecolor: str = "grey",
     zorder: int = 103,
 ) -> PathPatch:
-    """Draw one hourglass centromere decoration patch."""
+    """Draw one hourglass centromere decoration patch.
+"""
     return _add_centromere_hourglass(
         ax, geom, facecolor=facecolor, zorder=zorder
     )
@@ -494,7 +509,8 @@ def _cytoband_y_range(
     max_chr_size: float,
     offset: float,
 ) -> Optional[Tuple[float, float]]:
-    """Map a cytoband row to data-y start/end; acen is shown by fixed triangles."""
+    """Map a cytoband row to data-y start/end; acen is shown by fixed triangles.
+"""
     del offset, chr_centromere_u, chr_centromere_l
     if row["STAIN"] == "acen":
         return None
@@ -506,7 +522,8 @@ def _cytoband_y_range(
 
 
 def _points_to_data_delta(ax, x, y, dx_points=0.0, dy_points=0.0):
-    """Convert a display offset in matplotlib points to a data-coordinate delta at (x, y)."""
+    """Convert a display offset in matplotlib points to a data-coordinate delta at (x, y).
+"""
     scale = ax.figure.dpi / 72.0
     x_disp, y_disp = ax.transData.transform((x, y))
     x_data, y_data = ax.transData.inverted().transform(
@@ -523,7 +540,8 @@ def _resolve_anno_arrow_pt(
     anno_kwargs: Dict[str, Any],
     default: float,
 ) -> float:
-    """Resolve arrow spacing in points from ``anno_kwargs`` or default."""
+    """Resolve arrow spacing in points from ``anno_kwargs`` or default.
+"""
     if kwargs_key in anno_kwargs:
         return float(anno_kwargs[kwargs_key])
     return float(default)
@@ -534,7 +552,8 @@ def _merge_lead_anno_kwargs(
     anno_kwargs_single: Optional[Dict[str, Any]],
     snpid: Optional[str],
 ) -> Dict[str, Any]:
-    """Merge global and per-SNP annotation kwargs (MQQ-compatible)."""
+    """Merge global and per-SNP annotation kwargs (MQQ-compatible).
+"""
     merged = dict(anno_kwargs)
     if anno_kwargs_single and snpid is not None and snpid in anno_kwargs_single:
         merged.update(anno_kwargs_single[snpid])
@@ -549,7 +568,8 @@ def _build_lead_text_kwargs(
     force_ha: Optional[str] = "left",
     force_va: Optional[str] = "center",
 ) -> Dict[str, Any]:
-    """Apply ``anno_kwargs_single`` overrides for one lead."""
+    """Apply ``anno_kwargs_single`` overrides for one lead.
+"""
     kwargs = dict(base_kwargs)
     snpid = lead.get(snpid_key)
     if anno_kwargs_single and snpid is not None and snpid in anno_kwargs_single:
@@ -572,7 +592,8 @@ def _resolve_lead_connector_style(
     anno_kwargs_single: Optional[Dict[str, Any]],
     snpid: Optional[str],
 ) -> Tuple[float, float, float, Dict[str, Any], Dict[str, Any]]:
-    """Resolve connector point lengths and matplotlib arrow/line styling."""
+    """Resolve connector point lengths and matplotlib arrow/line styling.
+"""
     merged = _merge_lead_anno_kwargs(anno_kwargs, anno_kwargs_single, snpid)
     arrow_pad_pt = _resolve_anno_arrow_pt("arrow_pad", merged, 10.0)
     arrow_shaft_pt = _resolve_anno_arrow_pt("arrow_shaft", merged, 18.0)
@@ -605,7 +626,8 @@ def _significance_sort_key(
     p: str,
     mlog10p: str,
 ) -> Tuple[Optional[str], bool]:
-    """Return (sort_column, ascending) for ranking variants by significance."""
+    """Return (sort_column, ascending) for ranking variants by significance.
+"""
     if mlog10p in data.columns:
         return mlog10p, False
     if p in data.columns:
@@ -623,7 +645,8 @@ def _label_eligible_mask(
     log: Log = Log(),
     verbose: bool = True,
 ) -> pd.Series:
-    """Boolean mask of lead rows that may receive text labels."""
+    """Boolean mask of lead rows that may receive text labels.
+"""
     if len(leads) == 0:
         return pd.Series(dtype=bool)
 
@@ -686,7 +709,8 @@ def _prepare_phenogram_annotation_column(
     log: Log = Log(),
     verbose: bool = True,
 ) -> pd.DataFrame:
-    """Add an ``Annotation`` column for column-based or GENENAME labels."""
+    """Add an ``Annotation`` column for column-based or GENENAME labels.
+"""
     if len(leads) == 0 or anno is None or anno is True:
         return leads
 
@@ -725,7 +749,8 @@ def _resolve_phenogram_label(
     anno: Optional[Union[bool, str]],
     anno_alias: Optional[Dict[str, str]] = None,
 ) -> Optional[str]:
-    """Resolve display label for a phenogram lead (MQQ-compatible ``anno`` rules)."""
+    """Resolve display label for a phenogram lead (MQQ-compatible ``anno`` rules).
+"""
     if anno is None:
         return None
 
@@ -803,7 +828,8 @@ def _prepare_phenogram_leads_dict(
     anno_shape: Optional[str],
     anno_color: Optional[str],
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """Normalize lead rows into per-chromosome dictionaries used by plot layout."""
+    """Normalize lead rows into per-chromosome dictionaries used by plot layout.
+"""
     if len(leads) == 0 or chrom not in leads.columns or pos not in leads.columns:
         return {}
 
@@ -881,7 +907,8 @@ def _resolve_marker_group_label(
     anno: Optional[Union[bool, str]] = None,
     anno_alias: Optional[Dict[str, str]] = None,
 ) -> str:
-    """Resolve marker-mode group label text, honoring ``anno`` when set."""
+    """Resolve marker-mode group label text, honoring ``anno`` when set.
+"""
     if anno is not None:
         main_lead = group_items[0]["lead"]
         resolved = _resolve_phenogram_label(main_lead, anno, anno_alias)
@@ -903,7 +930,8 @@ def _prepare_marker_group_display_label(
     fontproperties: Optional[FontProperties] = None,
     renderer=None,
 ) -> Tuple[str, int]:
-    """Wrap or truncate a marker-group label; return display text and line count."""
+    """Wrap or truncate a marker-group label; return display text and line count.
+"""
     raw = _resolve_marker_group_label(
         group_key, group_items, anno=anno, anno_alias=anno_alias
     )
@@ -944,7 +972,8 @@ def _resolve_marker_maps(
     log: Log = Log(),
     verbose: bool = True,
 ) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """Build value -> marker shape/color maps from data unique values or user overrides."""
+    """Build value -> marker shape/color maps from data unique values or user overrides.
+"""
     shapes = list(marker_shapes) if marker_shapes is not None else list(DEFAULT_MARKER_SHAPES)
     colors = list(marker_colors) if marker_colors is not None else list(DEFAULT_MARKER_COLORS)
 
@@ -997,7 +1026,7 @@ def _get_marker_style(
 
 def _build_text_mode_kwargs(anno_kwargs: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     text_kwargs = {
-        "fontsize": 9,
+        "fontsize": _DEFAULT_ANNO_FONTSIZE,
         "ha": "left",
         "va": "center",
         "fontweight": "normal",
@@ -1015,7 +1044,8 @@ def _text_label_block_extents_pt(
     group_label_box_pad_pt: float,
     n_lines: int = 1,
 ) -> Tuple[float, float]:
-    """Vertical half-extents of a text label block (``va='center'``) in points."""
+    """Vertical half-extents of a text label block (``va='center'``) in points.
+"""
     half_text_pt = (
         _phenogram_line_height_pt(anno_fontsize) * max(1, int(n_lines)) / 2.0
         + group_label_box_pad_pt
@@ -1028,7 +1058,8 @@ def _text_label_block_extents_pt(
 
 
 class _AnnotationLayoutBlock:
-    """One rigid annotation unit for bounded 1D vertical layout (data coordinates)."""
+    """One rigid annotation unit for bounded 1D vertical layout (data coordinates).
+"""
 
     block_id: int
     target_y: float
@@ -1050,7 +1081,8 @@ class _AnnotationLayoutBlock:
 
 
 def _pt_to_data_height(ax, ref_x: float, ref_y: float, pt: float) -> float:
-    """Convert a vertical extent in points to data-y delta at ``(ref_x, ref_y)``."""
+    """Convert a vertical extent in points to data-y delta at ``(ref_x, ref_y)``.
+"""
     _, dy = _points_to_data_delta(ax, ref_x, ref_y, dy_points=float(pt))
     return abs(float(dy))
 
@@ -1062,9 +1094,8 @@ def _marker_block_center_from_anchor(
     above_pt: float,
     below_pt: float,
 ) -> Tuple[float, float]:
-    """
-    Return (block_center_y, block_height_data) for a marker unit anchored at the top marker row.
-    """
+    """Return (block_center_y, block_height_data) for a marker unit anchored at the top marker row.
+"""
     bias_pt = (float(below_pt) - float(above_pt)) / 2.0
     _, bias_dy = _points_to_data_delta(ax, ref_x, anchor_y, dy_points=-bias_pt)
     height = _pt_to_data_height(ax, ref_x, anchor_y, above_pt + below_pt)
@@ -1078,7 +1109,8 @@ def _marker_anchor_from_block_center(
     above_pt: float,
     below_pt: float,
 ) -> float:
-    """Top marker-row y from a solved block center."""
+    """Top marker-row y from a solved block center.
+"""
     bias_pt = (float(below_pt) - float(above_pt)) / 2.0
     _, bias_dy = _points_to_data_delta(ax, ref_x, center_y, dy_points=-bias_pt)
     return float(center_y) - float(bias_dy)
@@ -1088,7 +1120,8 @@ def _annotation_panel_limits(
     spec: Dict[str, Any],
     ideogram_geom: Optional[_ChrIdeogramGeometry] = None,
 ) -> Tuple[float, float]:
-    """Return (panel_min, panel_max) data-y bounds for annotation blocks on one chromosome."""
+    """Return (panel_min, panel_max) data-y bounds for annotation blocks on one chromosome.
+"""
     floor_y = spec.get("panel_floor_y")
     ceiling_y = spec.get("panel_ceiling_y")
     if ideogram_geom is not None:
@@ -1125,7 +1158,8 @@ def _block_bottom_from_center(
     above_pt: float,
     below_pt: float,
 ) -> float:
-    """Data-y of the bottom edge for a symmetric block centered at ``center_y``."""
+    """Data-y of the bottom edge for a symmetric block centered at ``center_y``.
+"""
     half_h = _pt_to_data_height(
         ax, ref_x, center_y, (float(above_pt) + float(below_pt)) / 2.0
     )
@@ -1139,7 +1173,8 @@ def _block_top_from_center(
     above_pt: float,
     below_pt: float,
 ) -> float:
-    """Data-y of the top edge for a symmetric block centered at ``center_y``."""
+    """Data-y of the top edge for a symmetric block centered at ``center_y``.
+"""
     half_h = _pt_to_data_height(
         ax, ref_x, center_y, (float(above_pt) + float(below_pt)) / 2.0
     )
@@ -1177,11 +1212,10 @@ def _solve_bounded_stack_layout(
     max_iterations: int = 300,
     min_gap_floor: float = 0.0,
 ) -> Tuple[List[_AnnotationLayoutBlock], bool]:
-    """
-    Lay out rigid annotation blocks on a vertical axis without overlap.
+    """Lay out rigid annotation blocks on a vertical axis without overlap.
 
     Returns solved blocks and whether layout fits inside panel bounds without overlap.
-    """
+"""
     if not blocks:
         return blocks, True
 
@@ -1297,7 +1331,8 @@ def _place_marker_unit_at_center(
     group_label_box_pad_pt: float,
     marker_label_align: str,
 ) -> Dict[str, Any]:
-    """Place marker cluster + label as one rigid unit from solved block center."""
+    """Place marker cluster + label as one rigid unit from solved block center.
+"""
     n_rows = math.ceil(len(group_items) / max(1, marker_max_per_row))
     above_pt, below_pt = _marker_group_block_extents_pt(
         marker_size,
@@ -1367,7 +1402,8 @@ def _layout_blocks_from_extents(
     max_iter: int,
     min_gap_floor: float = 0.0,
 ) -> np.ndarray:
-    """Build symmetric blocks from pt extents and run the bounded 1D stack solver."""
+    """Build symmetric blocks from pt extents and run the bounded 1D stack solver.
+"""
     if not target_ys:
         return np.array([], dtype=float)
     gap_data = _gap_pt_to_data(ax, ref_x, float(np.mean(target_ys)), gap_pt)
@@ -1416,7 +1452,8 @@ def _spread_phenogram_text_labels(
     prefer_down: bool = True,
     min_gap_floor: float = 0.0,
 ) -> np.ndarray:
-    """Lay out text-label units with the bounded 1D stack solver (data coordinates)."""
+    """Lay out text-label units with the bounded 1D stack solver (data coordinates).
+"""
     del prefer_down
     if n_lines_list is None:
         n_lines_list = [n_lines] * len(y_data_list)
@@ -1452,12 +1489,11 @@ def _phenogram_inter_unit_gap_pt(
     group_marker_to_marker_gap_pt: float,
     repel_force: float = 0.5,
 ) -> float:
-    """
-    Vertical gap between adjacent annotation units (marker cluster + label, or text).
+    """Vertical gap between adjacent annotation units (marker cluster + label, or text).
 
     Defaults to ``marker_label_gap_pt`` so inter-unit spacing matches marker-to-label
     spacing; explicit group gap kwargs remain as optional floors.
-    """
+"""
     if marker_mode:
         base_gap = float(marker_label_gap_pt)
     else:
@@ -1479,12 +1515,11 @@ def _phenogram_panel_ceiling_y(
     has_chr_above: bool,
     inter_row_gap: float = _PHENOGRAM_INTER_ROW_GAP,
 ) -> Optional[float]:
-    """
-    Upper data-y bound for annotation anchors (larger y = visual top).
+    """Upper data-y bound for annotation anchors (larger y = visual top).
 
     Prevents labels from entering the stacked chromosome panel above in the same column.
     ``visual_row`` 0 is the top row (chr1–chr11 with default ordering).
-    """
+"""
     if not has_chr_above:
         return None
     above_row = int(visual_row) - 1
@@ -1500,12 +1535,11 @@ def _phenogram_panel_floor_y(
     has_chr_below: bool,
     inter_row_gap: float = _PHENOGRAM_INTER_ROW_GAP,
 ) -> Optional[float]:
-    """
-    Lower data-y bound for annotation anchors (smaller y = visual bottom).
+    """Lower data-y bound for annotation anchors (smaller y = visual bottom).
 
     Prevents labels from entering the stacked chromosome panel below in the same
     column (larger ``visual_row`` index = lower on the figure).
-    """
+"""
     if not has_chr_below:
         return None
     return (
@@ -1522,11 +1556,10 @@ def _bump_phenogram_ylim_from_artists(
     global_ymin: float,
     zorders: Tuple[int, ...] = (230,),
 ) -> Tuple[float, float]:
-    """
-    Expand ymax/ymin if rendered annotation text extends outside the current ylim.
+    """Expand ymax/ymin if rendered annotation text extends outside the current ylim.
 
     Catches estimate vs render mismatch (path effects, wrapping, tight_layout).
-    """
+"""
     renderer = fig.canvas.get_renderer()
     max_data_y = float(global_ymax)
     min_data_y = float(global_ymin)
@@ -1554,7 +1587,8 @@ def _bump_phenogram_ylim_from_artists(
 
 
 def _unit_bottom_data_y(ax, x: float, anchor_y: float, below_pt: float) -> float:
-    """Return data-y of the visual bottom edge of a spread annotation unit."""
+    """Return data-y of the visual bottom edge of a spread annotation unit.
+"""
     _, dy = _points_to_data_delta(ax, x, anchor_y, dy_points=-float(below_pt))
     return float(anchor_y) + dy
 
@@ -1562,7 +1596,8 @@ def _unit_bottom_data_y(ax, x: float, anchor_y: float, below_pt: float) -> float
 
 
 def _anno_column_x(chr_right_x: float, anno_x_pad: float) -> float:
-    """Fixed left edge of the annotation column to the right of the chromosome."""
+    """Fixed left edge of the annotation column to the right of the chromosome.
+"""
     return chr_right_x + anno_x_pad
 
 
@@ -1570,7 +1605,8 @@ def _format_phenogram_label(
     label_text: Any,
     max_len: Optional[int] = 20,
 ) -> str:
-    """Truncate long labels when ``max_len`` is set."""
+    """Truncate long labels when ``max_len`` is set.
+"""
     text = str(label_text)
     if max_len is not None and len(text) > max_len:
         return text[: max_len - 3] + "..."
@@ -1578,7 +1614,8 @@ def _format_phenogram_label(
 
 
 def _phenogram_text_fontproperties(text_kwargs: Dict[str, Any]) -> FontProperties:
-    """Build font properties from matplotlib text kwargs."""
+    """Build font properties from matplotlib text kwargs.
+"""
     fp = FontProperties()
     if "fontsize" in text_kwargs:
         fp.set_size(text_kwargs["fontsize"])
@@ -1613,7 +1650,8 @@ def _measure_text_line_width_pt(
 
 
 def _wrap_phenogram_label_chars(text: str, max_chars: int) -> str:
-    """Wrap label text to at most ``max_chars`` characters per line."""
+    """Wrap label text to at most ``max_chars`` characters per line.
+"""
     if max_chars < 1 or not text:
         return text
     return textwrap.fill(
@@ -1630,7 +1668,8 @@ def _wrap_phenogram_label(
     fontproperties: FontProperties,
     renderer,
 ) -> str:
-    """Word-wrap label text to fit ``max_width_pt`` using renderer metrics."""
+    """Word-wrap label text to fit ``max_width_pt`` using renderer metrics.
+"""
     if max_width_pt <= 0 or not text:
         return text
     words = text.split()
@@ -1673,7 +1712,8 @@ def _measure_phenogram_label(
     fontproperties: FontProperties,
     renderer,
 ) -> Tuple[float, float, int]:
-    """Return (max_line_width_pt, block_height_pt, n_lines) for wrapped text."""
+    """Return (max_line_width_pt, block_height_pt, n_lines) for wrapped text.
+"""
     lines = str(text).split("\n") if text else [""]
     n_lines = max(1, len(lines))
     fontsize = fontproperties.get_size_in_points()
@@ -1692,7 +1732,8 @@ def _default_anno_wrap_width_pt(
     global_xmax: float,
     margin_pt: float = 8.0,
 ) -> float:
-    """Available annotation column width in points."""
+    """Available annotation column width in points.
+"""
     right_disp = ax.transData.transform((global_xmax, anno_col_x))[0]
     left_disp = ax.transData.transform((anno_col_x, anno_col_x))[0]
     width_px = max(0.0, right_disp - left_disp)
@@ -1709,7 +1750,8 @@ def _prepare_phenogram_display_label(
     fontproperties: FontProperties,
     renderer,
 ) -> Tuple[str, int, float]:
-    """Return wrapped/truncated display string, line count, and max line width (pt)."""
+    """Return wrapped/truncated display string, line count, and max line width (pt).
+"""
     text = str(label_text)
     if anno_wrap:
         if anno_wrap_chars_per_line is not None and anno_wrap_chars_per_line > 0:
@@ -1750,7 +1792,8 @@ def _label_width_data_dx(
     width_pt: float,
     ha: str = "left",
 ) -> Tuple[float, float]:
-    """Return (left_x, right_x) in data coords for a label of ``width_pt``."""
+    """Return (left_x, right_x) in data coords for a label of ``width_pt``.
+"""
     dx, _ = _points_to_data_delta(ax, x, y, dx_points=width_pt)
     if ha == "center":
         return x - dx / 2.0, x + dx / 2.0
@@ -1760,7 +1803,8 @@ def _label_width_data_dx(
 
 
 def _resolve_phenogram_chr_width(chr_width: float, ncols: int) -> float:
-    """Widen default ideogram when fewer columns leave more horizontal space."""
+    """Widen default ideogram when fewer columns leave more horizontal space.
+"""
     if chr_width != _DEFAULT_CHR_WIDTH:
         return chr_width
     return max(_DEFAULT_CHR_WIDTH, _DEFAULT_CHR_WIDTH + (11 - ncols) * 0.02)
@@ -1787,7 +1831,8 @@ def _compute_phenogram_xlim(
     anno_x_pad: float = 0.18,
     min_chr_fraction: float = _MIN_CHR_X_FRACTION,
 ) -> float:
-    """Ensure the ideogram keeps a minimum share of the horizontal axis."""
+    """Ensure the ideogram keeps a minimum share of the horizontal axis.
+"""
     global_xmax = max(
         estimated_label_xmax,
         _phenogram_provisional_xmax(chr_x, chr_width, anno_x_pad),
@@ -1807,7 +1852,8 @@ def _text_bbox_attach_point(
     renderer,
     side: str = "left",
 ) -> Tuple[float, float]:
-    """Return data coords of the text bbox attach point (left-center by default)."""
+    """Return data coords of the text bbox attach point (left-center by default).
+"""
     bbox = text_artist.get_window_extent(renderer=renderer)
     if side == "left":
         x_disp = bbox.x0
@@ -1827,7 +1873,8 @@ def _marker_row_x_bounds(
     marker_size: float,
     marker_linewidth: float,
 ) -> Tuple[float, float, float]:
-    """Return (row_left, row_center, row_right) in data coordinates."""
+    """Return (row_left, row_center, row_right) in data coordinates.
+"""
     if not marker_positions:
         return 0.0, 0.0, 0.0
     radius_pt = _effective_marker_radius_pt(marker_size, marker_linewidth)
@@ -1849,7 +1896,8 @@ def _plot_locus_bar(
     linewidth: float = 2.0,
     zorder: int = 200,
 ) -> None:
-    """Draw a flat locus indicator on the chromosome body (no round line caps)."""
+    """Draw a flat locus indicator on the chromosome body (no round line caps).
+"""
     ax.plot(
         [left_x, right_x],
         [y, y],
@@ -1869,13 +1917,12 @@ def _marker_label_x_and_ha(
     marker_label_align: str,
     anno_col_x: Optional[float] = None,
 ) -> Tuple[float, str]:
-    """
-    Group label anchor: fixed left column at ``anno_col_x`` when provided.
+    """Group label anchor: fixed left column at ``anno_col_x`` when provided.
 
     Marker-mode labels sit below the marker row, left-aligned at a fixed
     horizontal offset from the chromosome (``anno_col_x``), not centered on
     the marker row.
-    """
+"""
     if anno_col_x is not None:
         return float(anno_col_x), "left"
     align = (marker_label_align or "center").lower()
@@ -1894,7 +1941,8 @@ def _cap_phenogram_arrow_shaft_pt(
     arrow_shaft_pt: float,
     min_slant_gap_pt: float = 6.0,
 ) -> float:
-    """Keep the fixed horizontal arm shorter than the chr-edge to text gap."""
+    """Keep the fixed horizontal arm shorter than the chr-edge to text gap.
+"""
     if text_x <= chr_right_x:
         return 0.0
     chr_disp = ax.transData.transform((chr_right_x, locus_y))
@@ -1919,14 +1967,13 @@ def _plot_phenogram_text_connector(
     text_artist=None,
     renderer=None,
 ) -> None:
-    """
-    Phenogram text annotation connector (vertical MQQ analogue).
+    """Phenogram text annotation connector (vertical MQQ analogue).
 
     1. A fixed-length horizontal arm at ``locus_y`` from the elbow (right) toward
        the chromosome edge (left), with an arrowhead pointing into the body.
     2. A slanted segment from the elbow to the label left-middle anchor
        (``ha='left'``, ``va='center'`` → ``(text_x, text_y)``).
-    """
+"""
     del shrink_b_pt  # anchor point is the label left-middle; no shrink offset
     shaft_pt = _cap_phenogram_arrow_shaft_pt(
         ax, chr_right_x, locus_y, text_x, arrow_shaft_pt
@@ -2003,7 +2050,8 @@ def _prepare_lead_display_label_simple(
     fontproperties: FontProperties,
     renderer=None,
 ) -> Tuple[str, int]:
-    """Return display string and line count (renderer path or char-wrap fallback)."""
+    """Return display string and line count (renderer path or char-wrap fallback).
+"""
     if renderer is not None:
         display, n_lines, _ = _prepare_phenogram_display_label(
             label_text,
@@ -2040,7 +2088,8 @@ def _measure_label_right_x(
     ha: str = "left",
     fallback_fontsize: Optional[float] = None,
 ) -> float:
-    """Return right x data coordinate for a label."""
+    """Return right x data coordinate for a label.
+"""
     if renderer is not None:
         _, _, width_pt = _prepare_phenogram_display_label(
             label_text,
@@ -2074,7 +2123,8 @@ def _draw_pending_connectors(
     pending_items: List[Dict[str, Any]],
     max_xlim: float,
 ) -> float:
-    """Flush text artists and draw connectors; return updated max_xlim."""
+    """Flush text artists and draw connectors; return updated max_xlim.
+"""
     if not pending_items:
         return max_xlim
     ax.figure.canvas.draw()
@@ -2103,7 +2153,8 @@ def _draw_pending_connectors(
 
 
 def _marker_radius_pt(marker_size: float) -> float:
-    """Matplotlib scatter ``s`` is area in points²; return marker radius in points."""
+    """Matplotlib scatter ``s`` is area in points²; return marker radius in points.
+"""
     return np.sqrt(max(marker_size, 1.0) / np.pi)
 
 
@@ -2111,7 +2162,8 @@ def _effective_marker_radius_pt(
     marker_size: float,
     marker_linewidth: float = 0.0,
 ) -> float:
-    """Scatter radius including edge linewidth for layout spacing."""
+    """Scatter radius including edge linewidth for layout spacing.
+"""
     return _marker_radius_pt(marker_size) + float(marker_linewidth) / 2.0
 
 
@@ -2125,7 +2177,8 @@ def _marker_group_block_extents_pt(
     marker_linewidth: float = 0.6,
     n_text_lines: int = 1,
 ) -> Tuple[float, float]:
-    """Vertical half-extents of a marker group block including wrapped marker rows."""
+    """Vertical half-extents of a marker group block including wrapped marker rows.
+"""
     marker_radius_pt = _effective_marker_radius_pt(marker_size, marker_linewidth)
     text_height_pt = (
         _phenogram_line_height_pt(marker_fontsize) * max(1, int(n_text_lines))
@@ -2155,7 +2208,8 @@ def _marker_block_extents_pt(
     group_label_box_pad_pt: float,
     bbox_pad: float = 0.15,
 ) -> Tuple[float, float]:
-    """Return (above_pt, below_pt) for a single-row marker group (legacy helper)."""
+    """Return (above_pt, below_pt) for a single-row marker group (legacy helper).
+"""
     return _marker_group_block_extents_pt(
         marker_size,
         marker_label_gap_pt,
@@ -2170,7 +2224,8 @@ def _marker_center_step_pt(
     marker_gap_pt: float,
     marker_linewidth: float = 0.6,
 ) -> float:
-    """Fixed center-to-center spacing between markers in display points."""
+    """Fixed center-to-center spacing between markers in display points.
+"""
     return (
         2.0 * _effective_marker_radius_pt(marker_size, marker_linewidth)
         + float(marker_gap_pt)
@@ -2188,11 +2243,10 @@ def _compute_group_marker_positions(
     marker_row_gap_pt: float,
     marker_linewidth: float = 0.6,
 ) -> Tuple[List[Tuple[float, float, Dict[str, Any]]], float]:
-    """
-    Lay out group markers on a fixed grid: ``marker_max_per_row`` per row, then wrap.
+    """Lay out group markers on a fixed grid: ``marker_max_per_row`` per row, then wrap.
 
     Returns list of (x, y, item) and the y coordinate of the bottom marker row.
-    """
+"""
     if marker_max_per_row < 1:
         marker_max_per_row = 1
 
@@ -2230,13 +2284,12 @@ def _marker_label_position(
     marker_fontsize: float = 11.0,
     group_label_box_pad_pt: float = 1.5,
 ) -> Tuple[float, float]:
-    """
-    Return (label_x, label_y) for ``va='bottom'`` with glyphs fully below ``marker_y``.
+    """Return (label_x, label_y) for ``va='bottom'`` with glyphs fully below ``marker_y``.
 
     ``marker_y`` is the bottom marker-row center. Offset matches
     ``_marker_group_block_extents_pt`` below the bottom row (radius, gap, text,
     label box pad).
-    """
+"""
     marker_radius_pt = _effective_marker_radius_pt(marker_size, marker_linewidth)
     text_height_pt = (
         _phenogram_line_height_pt(marker_fontsize) * max(1, int(n_text_lines))
@@ -2272,11 +2325,10 @@ def _spread_group_blocks_display(
     panel_ceiling_y: Optional[float] = None,
     prefer_down: bool = True,
 ) -> np.ndarray:
-    """
-    Lay out rigid annotation-unit centers via the bounded 1D stack solver.
+    """Lay out rigid annotation-unit centers via the bounded 1D stack solver.
 
     ``above_pt`` / ``below_pt`` are half-extents in points; block height is their sum.
-    """
+"""
     del prefer_down
     n = len(y_data_list)
     if n == 0:
@@ -2331,7 +2383,8 @@ def _build_marker_text_kwargs(
 
 
 def _make_legend_prefix_handle(text: str) -> Line2D:
-    """Invisible legend entry used as an inline row label (e.g. ``Shape``)."""
+    """Invisible legend entry used as an inline row label (e.g. ``Shape``).
+"""
     return Line2D(
         [],
         [],
@@ -2346,7 +2399,8 @@ def _marker_legend_row_handles(
     prefix: str,
     item_handles: List[Line2D],
 ) -> List[Line2D]:
-    """Return ``[prefix, ...items]`` for a single horizontal legend row."""
+    """Return ``[prefix, ...items]`` for a single horizontal legend row.
+"""
     if not item_handles:
         return []
     return [_make_legend_prefix_handle(prefix)] + item_handles
@@ -2356,7 +2410,8 @@ def _make_marker_shape_legend_handles(
     marker_shape_map: Dict[str, str],
     markersize: float = _LEGEND_MARKER_SIZE,
 ) -> List[Line2D]:
-    """Legend handles for ``anno_shape`` categories."""
+    """Legend handles for ``anno_shape`` categories.
+"""
     handles: List[Line2D] = []
     for label, marker in marker_shape_map.items():
         handles.append(
@@ -2378,7 +2433,8 @@ def _make_marker_color_legend_handles(
     marker_color_map: Dict[str, str],
     markersize: float = _LEGEND_MARKER_SIZE,
 ) -> List[Line2D]:
-    """Legend handles for ``anno_color`` categories."""
+    """Legend handles for ``anno_color`` categories.
+"""
     handles: List[Line2D] = []
     for label, color in marker_color_map.items():
         handles.append(
@@ -2401,7 +2457,8 @@ def _make_marker_combined_legend_handles(
     marker_color_map: Dict[str, str],
     markersize: float = _LEGEND_MARKER_SIZE,
 ) -> List[Line2D]:
-    """Legend handles showing both shape and fill color per category."""
+    """Legend handles showing both shape and fill color per category.
+"""
     labels = sorted(
         set(marker_shape_map) | set(marker_color_map),
         key=str,
@@ -2444,7 +2501,7 @@ def _plot_phenogram_marker_legends(
     When ``anno_shape`` and ``anno_color`` refer to the same column, draw one
     combined row (``Marker …``). Otherwise draw separate ``Shape …`` and/or
     ``Color …`` rows.
-    """
+"""
     del legend_ncol  # each row is one line: prefix + all entries
     extra = dict(legend_kwargs) if legend_kwargs else {}
     legend_fontsize = float(extra.pop("fontsize", legend_fontsize))
@@ -2542,7 +2599,8 @@ def _build_leads_with_y(
     y_arm1_top: float,
     y_cent_bottom: float,
 ) -> List[Dict[str, Any]]:
-    """Map lead genomic positions to y coordinates on the chromosome drawing."""
+    """Map lead genomic positions to y coordinates on the chromosome drawing.
+"""
     del chr_centromere_u, chr_centromere_l, y_cent_bottom
     leads_sorted = sorted(
         [l for l in leads if l.get("pos") is not None and pd.notna(l["pos"])],
@@ -2583,7 +2641,8 @@ def _estimate_global_annotation_xmax(
     anno_wrap_chars_per_line: Optional[int] = _DEFAULT_ANNO_WRAP_CHARS_PER_LINE,
     anno_max_len: Optional[int] = None,
 ) -> float:
-    """Estimate right xlim from marker/text width using frozen axis transforms."""
+    """Estimate right xlim from marker/text width using frozen axis transforms.
+"""
     global_xmax = provisional_xmax
     text_kwargs = (
         _build_marker_text_kwargs(
@@ -2595,7 +2654,10 @@ def _estimate_global_annotation_xmax(
         else _build_text_mode_kwargs(anno_kwargs)
     )
     anno_fontsize = float(
-        text_kwargs.get("fontsize", marker_fontsize if marker_mode else 9)
+        text_kwargs.get(
+            "fontsize",
+            marker_fontsize if marker_mode else _DEFAULT_ANNO_FONTSIZE,
+        )
     )
 
     for spec in chr_specs:
@@ -2731,11 +2793,10 @@ def _prepare_text_label_layout(
     anno_wrap_chars_per_line: Optional[int] = _DEFAULT_ANNO_WRAP_CHARS_PER_LINE,
     anno_max_len: Optional[int] = None,
 ) -> float:
-    """
-    Compute spread text_y positions and bottom extent without drawing annotations.
+    """Compute spread text_y positions and bottom extent without drawing annotations.
 
     Returns the maximum data-y needed below the ideogram for label overflow.
-    """
+"""
     if anno_kwargs is None:
         anno_kwargs = {}
 
@@ -2746,7 +2807,7 @@ def _prepare_text_label_layout(
         return float(getattr(ax, "_phenogram_ymax", 0) or 0)
 
     text_kwargs = _build_text_mode_kwargs(anno_kwargs)
-    anno_fontsize = float(text_kwargs.get("fontsize", 9))
+    anno_fontsize = float(text_kwargs.get("fontsize", _DEFAULT_ANNO_FONTSIZE))
     fontproperties = _phenogram_text_fontproperties(text_kwargs)
     wrap_width_pt = anno_wrap_width_pt
     if (
@@ -2869,7 +2930,8 @@ def _compute_marker_group_layout(
     ideogram_geom: Optional[_ChrIdeogramGeometry] = None,
     spec: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
-    """Lay out marker groups as rigid units; return representatives with ``block_y``."""
+    """Lay out marker groups as rigid units; return representatives with ``block_y``.
+"""
     ref_x = float(anno_col_x if anno_col_x is not None else chr_right_x)
     grouped: Dict[str, List[Dict[str, Any]]] = {}
     for item in leads_with_y:
@@ -2994,11 +3056,10 @@ def _prepare_marker_label_layout(
     anno_max_len: Optional[int] = None,
     renderer=None,
 ) -> float:
-    """
-    Compute spread marker-group rows and bottom extent without drawing annotations.
+    """Compute spread marker-group rows and bottom extent without drawing annotations.
 
     Returns the maximum data-y needed below the ideogram for marker blocks.
-    """
+"""
     ax = spec["ax"]
     chr_right_x = spec["chr_right_x"]
     leads_with_y = spec.get("leads_with_y") or []
@@ -3086,7 +3147,8 @@ def _chr_ideogram_top_y(
     telemere_full_length: float = _TELOMERE_LENGTH,
     chr_extent: float = 0.0,
 ) -> float:
-    """Data y of the top edge of the chromosome (including upper telomere cap)."""
+    """Data y of the top edge of the chromosome (including upper telomere cap).
+"""
     return panel_bottom + chr_extent + telemere_full_length
 
 
@@ -3095,7 +3157,8 @@ def _chr_panel_bottom_from_row_top(
     chr_extent: float,
     telemere_full_length: float = _TELOMERE_LENGTH,
 ) -> float:
-    """Panel bottom for a top-aligned chromosome in a row band."""
+    """Panel bottom for a top-aligned chromosome in a row band.
+"""
     return float(row_ideogram_top) - float(chr_extent) - float(telemere_full_length)
 
 
@@ -3106,11 +3169,10 @@ def _display_y_offset_data(
     pt_offset: float,
     direction: str = "above",
 ) -> float:
-    """
-    Convert a display-point vertical offset at ``(x, y)`` to a data y coordinate.
+    """Convert a display-point vertical offset at ``(x, y)`` to a data y coordinate.
 
     ``direction='above'`` moves toward the visual top of the axes.
-    """
+"""
     scale = ax.figure.dpi / 72.0
     x_disp, y_disp = ax.transData.transform((x, y))
     sign = 1.0 if direction == "above" else -1.0
@@ -3127,7 +3189,8 @@ def _chr_number_label_above_data(
     fontsize: float = 10.0,
     pad_pt: float = 4.0,
 ) -> float:
-    """Return data-space height reserved above the ideogram top for its number."""
+    """Return data-space height reserved above the ideogram top for its number.
+"""
     text_pt = fontsize * 1.25
     total_pt = text_pt + pad_pt
     label_top_y = _display_y_offset_data(ax, ref_x, body_top_y, total_pt, direction="above")
@@ -3141,12 +3204,11 @@ def _chr_number_label_position(
     fontsize: float = 10.0,
     pad_pt: float = 4.0,
 ) -> Tuple[float, str]:
-    """
-    Return (y, va) with the label entirely above the ideogram top edge.
+    """Return (y, va) with the label entirely above the ideogram top edge.
 
     Uses ``va='bottom'`` so ``y`` is the text baseline side closest to the body;
     only ``pad_pt`` of clear gap sits between the ideogram cap and the glyphs.
-    """
+"""
     label_y = _display_y_offset_data(ax, ref_x, body_top_y, pad_pt, direction="above")
     return label_y, "bottom"
 
@@ -3163,13 +3225,12 @@ def _compute_phenogram_row_bands(
     inter_row_gap: float = _PHENOGRAM_INTER_ROW_GAP,
     bottom_margin: float = 0.03,
 ) -> Tuple[int, List[float], List[float], float, float, float, float]:
-    """
-    Compute top-down row bands for stacked chromosomes on each column axis.
+    """Compute top-down row bands for stacked chromosomes on each column axis.
 
     ``visual_row`` 0 is the top figure row (chr1–chr11 with default ``ncols``).
     Ideogram tops within a row share ``row_ideogram_top[vr]``; shorter chromosomes
     hang downward from that line.
-    """
+"""
     n_chr = len(chr_list)
     n_grid_rows = max(1, (n_chr + ncols - 1) // ncols)
     telemere_full_length = _TELOMERE_LENGTH
@@ -3240,7 +3301,8 @@ def _plot_chr_body(
     log: Log = Log(),
     verbose: bool = True,
 ) -> Dict[str, Any]:
-    """Pass 1: draw chromosome geometry from a unified layout model."""
+    """Pass 1: draw chromosome geometry from a unified layout model.
+"""
     del log, verbose
     geom = _compute_chr_ideogram_geometry(
         chr_x,
@@ -3364,7 +3426,8 @@ def _plot_chr_annotations(
     anno_max_len: Optional[int] = None,
     global_xmax: Optional[float] = None,
 ) -> None:
-    """Pass 2: layout and draw annotations after axis limits are frozen."""
+    """Pass 2: layout and draw annotations after axis limits are frozen.
+"""
     if anno_kwargs is None:
         anno_kwargs = {}
     if anno_kwargs_single is None:
@@ -3529,7 +3592,7 @@ def _plot_chr_annotations(
         )
     else:
         text_kwargs = _build_text_mode_kwargs(anno_kwargs)
-        anno_fontsize = float(text_kwargs.get("fontsize", 9))
+        anno_fontsize = float(text_kwargs.get("fontsize", _DEFAULT_ANNO_FONTSIZE))
         fontproperties = _phenogram_text_fontproperties(text_kwargs)
         wrap_width_pt = anno_wrap_width_pt
         if (

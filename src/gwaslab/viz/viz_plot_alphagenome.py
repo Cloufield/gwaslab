@@ -1,5 +1,4 @@
-"""
-Plot GWASLab track bundles (from AlphaGenome or other sources) on matplotlib axes.
+"""Plot GWASLab track bundles (from AlphaGenome or other sources) on matplotlib axes.
 """
 
 from __future__ import annotations
@@ -45,7 +44,8 @@ def _clean_label_part(val) -> Optional[str]:
 
 
 def _modality_from_row(row: dict) -> Optional[str]:
-    """Assay/modality label without redundant ontology or biosample tokens."""
+    """Assay/modality label without redundant ontology or biosample tokens.
+"""
     for key in ("Assay title", "assay"):
         part = _clean_label_part(row.get(key))
         if part:
@@ -81,7 +81,8 @@ def _modality_from_row(row: dict) -> Optional[str]:
 
 
 def _default_ag_ylabel(row: dict, modality_suffix: str = "") -> str:
-    """Three-line y-label: ontology (biosample), code (CURIE), modality (assay)."""
+    """Three-line y-label: ontology (biosample), code (CURIE), modality (assay).
+"""
     lines: List[str] = []
     for key in ("biosample_name", "ontology_curie"):
         part = _clean_label_part(row.get(key))
@@ -122,7 +123,8 @@ def _set_ag_ylabel(ax: plt.Axes, ylab: str, fontsize: float) -> None:
 
 
 def _style_ag_panel_spines(ax: plt.Axes) -> None:
-    """Match regional panel spines (full box on all sides)."""
+    """Match regional panel spines (full box on all sides).
+"""
     ax.spines["top"].set_visible(True)
     ax.spines["top"].set_zorder(1)
     ax.spines["right"].set_visible(True)
@@ -131,7 +133,8 @@ def _style_ag_panel_spines(ax: plt.Axes) -> None:
 
 
 def finalize_ag_panel_spines(ag_axes: Sequence[plt.Axes]) -> None:
-    """Re-apply regional-style spines after stacked layout adjustments."""
+    """Re-apply regional-style spines after stacked layout adjustments.
+"""
     for ax in ag_axes:
         _style_ag_panel_spines(ax)
 
@@ -235,7 +238,8 @@ def plot_ag_overlay(
     log: Log = Log(),
     **kwargs: Any,
 ) -> List[plt.Axes]:
-    """Plot REF/ALT as interleaved axes per modality (half height each)."""
+    """Plot REF/ALT as interleaved axes per modality (half height each).
+"""
     if colors is None:
         colors = _OVERLAY_COLORS.copy()
     n_tracks = bundle.num_axes
@@ -291,7 +295,8 @@ def _slice_contact_data(
     region: Optional[Tuple[int, int, int]],
     track_start_i: float = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Return bin edges and values for pcolormesh aligned to genomic coordinates."""
+    """Return bin edges and values for pcolormesh aligned to genomic coordinates.
+"""
     start = bundle.region[1]
     res = bundle.resolution
     n_bins = bundle.values.shape[0]
@@ -316,7 +321,8 @@ def _sync_ag_contact_axis_limits(
     region: Optional[Tuple[int, int, int]],
     track_start_i: float = 0.0,
 ) -> None:
-    """Match contact-map x/y limits to stacked-panel genomic coordinates."""
+    """Match contact-map x/y limits to stacked-panel genomic coordinates.
+"""
     if region is None:
         return
     lo = track_start_i + region[1]
@@ -331,7 +337,8 @@ def finalize_ag_contact_axes(
     region: Optional[Tuple[int, int, int]],
     track_start_i: float = 0.0,
 ) -> None:
-    """Re-apply contact limits after stacked x-axis alignment."""
+    """Re-apply contact limits after stacked x-axis alignment.
+"""
     for ax in contact_axes:
         _sync_ag_contact_axis_limits(ax, region, track_start_i)
 
@@ -386,7 +393,8 @@ def plot_ag_sashimi(
     log: Log = Log(),
     **kwargs: Any,
 ) -> List[plt.Axes]:
-    """Arc-style splice junction plot (simplified sashimi)."""
+    """Arc-style splice junction plot (simplified sashimi).
+"""
     if len(axes) < bundle.num_axes:
         raise ValueError(
             f"plot_ag_sashimi needs {bundle.num_axes} axes, got {len(axes)}"

@@ -40,46 +40,56 @@ def with_logging(start_to_msg: str,
                  check_dtype: bool = False,
                  fix: bool = True,
                  required_species: Optional[Union[str, List[str]]] = None,
-                 check_tools: Optional[List[str]] = None
+                 check_tools: Optional[List[str]] = None,
+                 meta_step: Optional[str] = None,
+                 meta_section: str = "qc",
+                 on_missing_cols: str = "raise",
+                 record_params: Optional[List[str]] = None,
                  ) -> Callable:
-    """
-    Decorator to add standardized logging, argument checks, and optional dtype
+    """Decorator to add standardized logging, argument checks, and optional dtype
     verification to QC/processing functions.
 
-    Parameters
-    ----------
-    start_to_msg : str
-        Message describing the operation start.
-    finished_msg : str
-        Message describing the operation completion.
-    start_function : str or None, default None
-        Function label used in logs when reporting missing columns or args.
-    start_cols : list or None, default None
-        Required columns to check in the input DataFrame prior to execution.
-    must_kwargs : list or None, default None
-        Argument names that must be provided (non-None) for the wrapped func.
-    show_shape : bool, default True
-        Log DataFrame shape before and after the function call when available.
-    check_dtype : bool, default False
-        If True, verify dtypes for `start_cols` using `check_datatype_for_cols`.
-    fix : bool, default True
-        If True and `check_dtype` is enabled, attempt dtype fixes where possible.
-    required_species : str or list or None, default None
-        Required species name(s) for the operation. If provided, checks species compatibility
-        before executing the function. Can be a single string (e.g., "homo sapiens") or a list
-        of strings for multiple allowed species.
-    check_tools : list or None, default None
-        List of tools to check for availability and version. Supported: "python", "r", "plink", "plink2",
-        "tabix", "bcftools", "scdrs", or any other command-line tool name. 
-        - For "r": checks the "r" argument from function call, or searches for "R"/"Rscript" in PATH
-        - For R packages: use format "r:PackageName" (e.g., "r:TwoSampleMR", "r:susieR") to check if 
-          the R package is installed and get its version
-        - For "python": checks the "python" argument, or uses sys.executable, or searches for "python3"/"python" in PATH
-        - For "plink"/"plink2": checks the "plink"/"plink2" argument, or searches PATH
-        - For "tabix", "bcftools", "scdrs": checks the corresponding argument, or searches PATH
-        - Other tools: searches PATH and checks version with --version flag
-        All tools are checked for both availability and version information.
-
+Parameters
+----------
+start_to_msg : str
+    Message describing the operation start.
+finished_msg : str
+    Message describing the operation completion.
+start_function : str or None, default None
+    Function label used in logs when reporting missing columns or args.
+start_cols : list or None, default None
+    Required columns to check in the input DataFrame prior to execution.
+must_kwargs : list or None, default None
+    Argument names that must be provided (non-None) for the wrapped func.
+show_shape : bool, default True
+    Log DataFrame shape before and after the function call when available.
+check_dtype : bool, default False
+    If True, verify dtypes for `start_cols` using `check_datatype_for_cols`.
+fix : bool, default True
+    If True and `check_dtype` is enabled, attempt dtype fixes where possible.
+required_species : str or list or None, default None
+    Required species name(s) for the operation. If provided, checks species compatibility
+    before executing the function. Can be a single string (e.g., "homo sapiens") or a list
+    of strings for multiple allowed species.
+check_tools : list or None, default None
+    List of tools to check for availability and version. Supported: "python", "r", "plink", "plink2",
+    "tabix", "bcftools", "scdrs", or any other command-line tool name.
+    - For "r": checks the "r" argument from function call, or searches for "R"/"Rscript" in PATH
+    - For R packages: use format "r:PackageName" (e.g., "r:TwoSampleMR", "r:susieR") to check if
+    the R package is installed and get its version
+    - For "python": checks the "python" argument, or uses sys.executable, or searches for "python3"/"python" in PATH
+    - For "plink"/"plink2": checks the "plink"/"plink2" argument, or searches PATH
+    - For "tabix", "bcftools", "scdrs": checks the corresponding argument, or searches PATH
+    - Other tools: searches PATH and checks version with --version flag
+    All tools are checked for both availability and version information.
+meta_step : str or None, default None
+    If set, record this QC/harmonize sub-step in object metadata after successful execution.
+meta_section : str, default "qc"
+    Metadata section for ``meta_step``: "qc" or "harmonize".
+on_missing_cols : str, default "raise"
+    "raise" to raise ValueError when required columns are missing; "skip" to return unchanged data with a warning.
+record_params : list or None
+    Bound argument names to store in step parameters_used metadata.
     Behavior
     --------
     - Logs references (threads, VCF/FASTA/TSV) and start/end messages.
@@ -88,7 +98,7 @@ def with_logging(start_to_msg: str,
     - Optionally checks species compatibility if `required_species` is provided.
     - Optionally checks tool availability (Python, R, and other tools) before execution.
     - Preserves original function metadata via `functools.wraps`.
-    """
+"""
     if fix ==True:
         check_dtype=True
     if start_cols is None:
@@ -97,8 +107,36 @@ def with_logging(start_to_msg: str,
         must_kwargs = []
     if check_tools is None:
         check_tools = []
+    if check_tools is None:
+        check_tools = []
+    if record_params is None:
+        record_params = []
     if start_function is None:
         start_function = "this step"
+
+    def _record_meta_step(sumstats_obj: Any, bound_kwargs: inspect.BoundArguments) -> None:
+        if meta_step is None or sumstats_obj is None:
+            return
+        params = {}
+        for key in record_params:
+            if key in bound_kwargs.arguments:
+                val = bound_kwargs.arguments[key]
+                if isinstance(val, (str, int, float, bool)) or val is None:
+                    params[key] = val
+        try:
+            if meta_section == "harmonize":
+                from gwaslab.info.g_meta import _update_harmonize_step
+                _update_harmonize_step(sumstats_obj, meta_step, params, True)
+            else:
+                from gwaslab.info.g_meta import _update_qc_step
+                _update_qc_step(sumstats_obj, meta_step, params, True)
+        except Exception as exc:
+            log_ref = bound_kwargs.arguments.get("log", Log())
+            verbose_ref = bound_kwargs.arguments.get("verbose", True)
+            log_ref.warning(
+                f"Failed to update metadata for step '{meta_step}': {exc}",
+                verbose=verbose_ref,
+            )
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)  # This preserves the original function's metadata including __doc__
@@ -239,12 +277,25 @@ def with_logging(start_to_msg: str,
                 if is_enough_col==True:
                     # Execute the original function
                     result = func(*args, **kwargs)
+                    _record_meta_step(sumstats_obj, bound_kwargs)
                 else:
-                    # not enough cols, return sumstats
+                    if on_missing_cols == "raise":
+                        function_label = start_function or func.__name__
+                        missing_msg = (
+                            f"Necessary columns for {function_label} were not detected; "
+                            f"required: {start_cols}"
+                        )
+                        log.error(missing_msg, verbose=verbose)
+                        raise ValueError(missing_msg)
+                    log.warning(
+                        f"Skipping {start_function or func.__name__}: missing required columns",
+                        verbose=verbose,
+                    )
                     return sumstats
             else:
                 # Execute the original function
                 result = func(*args, **kwargs)
+                _record_meta_step(sumstats_obj, bound_kwargs)
 
             if sumstats is not None and show_shape:
                 final_shape = (len(sumstats), len(sumstats.columns))
@@ -272,27 +323,25 @@ def check_col(
     cols: Optional[List[Union[str, Tuple[str, ...], List[str]]]] = None,
     function: Optional[str] = None
 ) -> bool:
-    """
-    Verify presence of required columns prior to executing a processing step.
+    """Verify presence of required columns prior to executing a processing step.
 
-    Parameters
-    ----------
-    df_col_names : Iterable[str]
-        Column names of the input DataFrame.
-    verbose : bool, default True
-        Whether to print log messages to stdout.
-    log : gwaslab.g_Log.Log
-        Logger used for messages and warnings.
-    cols : list
-        Required columns (strings) or tuples/lists to check as pairs/groups.
-    function : str or None
-        Function label used for contextual logging.
-
-    Returns
-    -------
-    bool
-        True when all required columns are present, False otherwise.
-    """
+Parameters
+----------
+df_col_names : Iterable[str]
+    Column names of the input DataFrame.
+verbose : bool, default True
+    Whether to print log messages to stdout.
+log : gwaslab.g_Log.Log
+    Logger used for messages and warnings.
+cols : list
+    Required columns (strings) or tuples/lists to check as pairs/groups.
+function : str or None
+    Function label used for contextual logging.
+Returns
+-------
+bool
+    True when all required columns are present, False otherwise.
+"""
     if not cols:
         return True
     
@@ -339,27 +388,25 @@ def check_arg(
 ###############################################################################################################
 
 def check_tools_availability(check_tools: List[str], bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Dict[str, Optional[str]]]:
-    """
-    Check availability and version of required tools for downstream analysis.
+    """Check availability and version of required tools for downstream analysis.
     
-    Parameters
-    ----------
-    check_tools : list
-        List of tool names to check (e.g., ["python", "r", "plink", "tabix", "scdrs", "r:TwoSampleMR"]).
-        Tool names can match parameter names (e.g., "r", "python", "plink", "plink2", "tabix", "scdrs").
-        For R packages, use format "r:PackageName" (e.g., "r:TwoSampleMR", "r:susieR").
-    bound_kwargs : BoundArguments
-        Bound arguments from function signature inspection.
-    log : Log
-        Logger instance.
-    verbose : bool
-        Whether to print log messages.
-    
-    Returns
-    -------
-    dict
-        Dictionary with tool names as keys and dicts with "available", "path", and "version" as values.
-    """
+Parameters
+----------
+check_tools : list
+    List of tool names to check (e.g., ["python", "r", "plink", "tabix", "scdrs", "r:TwoSampleMR"]).
+    Tool names can match parameter names (e.g., "r", "python", "plink", "plink2", "tabix", "scdrs").
+    For R packages, use format "r:PackageName" (e.g., "r:TwoSampleMR", "r:susieR").
+bound_kwargs : BoundArguments
+    Bound arguments from function signature inspection.
+log : Log
+    Logger instance.
+verbose : bool
+    Whether to print log messages.
+Returns
+-------
+dict
+    Dictionary with tool names as keys and dicts with "available", "path", and "version" as values.
+"""
     results = {}
     generic_tools = []
     
@@ -389,7 +436,8 @@ def check_tools_availability(check_tools: List[str], bound_kwargs: inspect.Bound
 
 
 def _check_special_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
-    """Check a special tool (python, r, plink, etc.) with custom logic."""
+    """Check a special tool (python, r, plink, etc.) with custom logic.
+"""
     tool_checkers = {
         "python": _check_python_tool,
         "r": _check_r_tool,
@@ -409,7 +457,8 @@ def _check_special_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, lo
 
 
 def _check_python_tool(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
-    """Check Python availability and version."""
+    """Check Python availability and version.
+"""
     result = {"available": False, "path": None, "version": None}
     
     # Try to get Python path from arguments, sys.executable, or PATH
@@ -434,7 +483,8 @@ def _check_python_tool(bound_kwargs: inspect.BoundArguments, log: Log, verbose: 
 
 
 def _check_r_tool(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
-    """Check R availability and version."""
+    """Check R availability and version.
+"""
     result = {"available": False, "path": None, "version": None}
     
     # Try to get R path from arguments or PATH
@@ -462,25 +512,23 @@ def _check_r_tool(bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool)
 
 
 def _check_r_package(package_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
-    """
-    Check if an R package is installed and get its version.
+    """Check if an R package is installed and get its version.
     
-    Parameters
-    ----------
-    package_name : str
-        Name of the R package to check (e.g., "TwoSampleMR", "susieR").
-    bound_kwargs : BoundArguments
-        Bound arguments from function signature inspection.
-    log : Log
-        Logger instance.
-    verbose : bool
-        Whether to print log messages.
-    
-    Returns
-    -------
-    dict
-        Dictionary with "available", "path" (R path), and "version" keys.
-    """
+Parameters
+----------
+package_name : str
+    Name of the R package to check (e.g., "TwoSampleMR", "susieR").
+bound_kwargs : BoundArguments
+    Bound arguments from function signature inspection.
+log : Log
+    Logger instance.
+verbose : bool
+    Whether to print log messages.
+Returns
+-------
+dict
+    Dictionary with "available", "path" (R path), and "version" keys.
+"""
     result = {"available": False, "path": None, "version": None}
     
     # First, get R path (required for checking packages)
@@ -550,7 +598,8 @@ def _check_r_package(package_name: str, bound_kwargs: inspect.BoundArguments, lo
 
 
 def _check_plink_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
-    """Check PLINK or PLINK2 availability and version."""
+    """Check PLINK or PLINK2 availability and version.
+"""
     result = {"available": False, "path": None, "version": None}
     
     # Get PLINK path from arguments or PATH
@@ -587,7 +636,8 @@ def _check_plink_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log:
 
 
 def _check_generic_path_tool(tool_name: str, bound_kwargs: inspect.BoundArguments, log: Log, verbose: bool) -> Dict[str, Optional[str]]:
-    """Check a generic tool that may have a parameter or fall back to PATH."""
+    """Check a generic tool that may have a parameter or fall back to PATH.
+"""
     result = {"available": False, "path": None, "version": None}
     
     # Try to get tool path from arguments or PATH
@@ -613,7 +663,8 @@ def _check_generic_path_tool(tool_name: str, bound_kwargs: inspect.BoundArgument
 
 
 def _check_generic_tools(tool_names: List[str], log: Log, verbose: bool) -> Dict[str, Dict[str, Optional[str]]]:
-    """Check generic tools using the existing batch checking function."""
+    """Check generic tools using the existing batch checking function.
+"""
     try:
         return _check_tool_availability(tools=tuple(tool_names), log=log, verbose=verbose)
     except Exception as e:
@@ -626,27 +677,25 @@ def _check_generic_tools(tool_names: List[str], log: Log, verbose: bool) -> Dict
 
 
 def _get_tool_version(tool_path: str, log: Log, verbose: bool, tool_display_name: str, silent: bool = False) -> Optional[str]:
-    """
-    Get version information for a tool by running --version command.
+    """Get version information for a tool by running --version command.
     
-    Parameters
-    ----------
-    tool_path : str
-        Path to the tool executable.
-    log : Log
-        Logger instance.
-    verbose : bool
-        Whether to print log messages.
-    tool_display_name : str
-        Display name for the tool in log messages.
-    silent : bool, default False
-        If True, don't log messages (useful when another function already logged).
-    
-    Returns
-    -------
-    str or None
-        Version string or None if version check failed.
-    """
+Parameters
+----------
+tool_path : str
+    Path to the tool executable.
+log : Log
+    Logger instance.
+verbose : bool
+    Whether to print log messages.
+tool_display_name : str
+    Display name for the tool in log messages.
+silent : bool, default False
+    If True, don't log messages (useful when another function already logged).
+Returns
+-------
+str or None
+    Version string or None if version check failed.
+"""
     try:
         output = subprocess.check_output(
             f"{tool_path} --version",

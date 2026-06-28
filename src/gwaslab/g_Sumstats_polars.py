@@ -250,68 +250,64 @@ class Sumstatsp():
         gc.collect()
     
     def fix_chr(self, **kwargs: Any) -> 'Sumstatsp':
-        """
-        Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
+        """Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
         
         This method normalizes chromosome labels to a consistent format, extracts chromosome
         numbers from various formats (e.g., "chr1", "1", "chrX"), maps special chromosomes
         (X, Y, mitochondrial) to standardized numeric identifiers, and optionally removes
         invalid chromosome values.
         
-        Parameters
-        ----------
-        chrom : str, default "CHR"
-            Column name for chromosome.
-        status : str, default "STATUS"
-            Column name for status.
-        add_prefix : str, optional, default=""
-            Prefix to prepend to chromosome labels (e.g., "chr").
-        remove : bool, default False
-            If True, remove records with invalid or unrecognized chromosome labels.
-        verbose : bool, default True
-            If True, print progress or diagnostic messages.
-        
-        Returns
-        -------
+Parameters
+----------
+chrom : str, default "CHR"
+    Column name for chromosome.
+status : str, default "STATUS"
+    Column name for status.
+add_prefix : str, optional, default ""
+    Prefix to prepend to chromosome labels (e.g., "chr").
+remove : bool, default False
+    If True, remove records with invalid or unrecognized chromosome labels.
+verbose : bool, default True
+    If True, print progress or diagnostic messages.
+Returns
+-------
         Sumstatsp
             Returns self for method chaining.
-        """
+"""
         from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
         kwargs = remove_overlapping_kwargs(kwargs, {"log"})
         self.data = _fix_chrp(self, log=self.log, **kwargs)
         return self
     
     def fix_pos(self, **kwargs: Any) -> 'Sumstatsp':
-        """
-        Standardize and validate genomic base-pair positions.
+        """Standardize and validate genomic base-pair positions.
         
         This method checks that reported genomic positions fall within valid chromosomal bounds
         and optionally removes invalid entries. It handles string-formatted positions with
         thousands separators, converts positions to Int64 type, and filters out positions
         outside the specified range.
         
-        Parameters
-        ----------
-        pos : str, default "POS"
-            Column name for position.
-        status : str, default "STATUS"
-            Column name for status.
-        remove : bool, default False
-            If True, remove records with invalid or out-of-range positions.
-        verbose : bool, default True
-            If True, print progress or diagnostic messages.
-        lower_limit : int, optional
-            Minimum acceptable genomic position. Default is 0.
-        upper_limit : int, optional
-            Maximum acceptable genomic position.
-        limit : int, default 250000000
-            Default upper limit applied when `upper_limit` is not provided.
-        
-        Returns
-        -------
+Parameters
+----------
+pos : str, default "POS"
+    Column name for position.
+status : str, default "STATUS"
+    Column name for status.
+remove : bool, default False
+    If True, remove records with invalid or out-of-range positions.
+verbose : bool, default True
+    If True, print progress or diagnostic messages.
+lower_limit : int, optional
+    Minimum acceptable genomic position. Default is 0.
+upper_limit : int, optional
+    Maximum acceptable genomic position.
+limit : int, default 250000000
+    Default upper limit applied when `upper_limit` is not provided.
+Returns
+-------
         Sumstatsp
             Returns self for method chaining.
-        """
+"""
         from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
         kwargs = remove_overlapping_kwargs(kwargs, {"log"})
         self.data = _fix_posp(self, log=self.log, **kwargs)

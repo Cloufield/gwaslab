@@ -1,5 +1,4 @@
-"""
-Reference-run planning: storage/CPU profiles, time estimates, progress tracking.
+"""Reference-run planning: storage/CPU profiles, time estimates, progress tracking.
 
 Baseline heuristics assume local SSD + baseline-tier 8-core desktop.
 Calibration JSON under ~/.gwaslab/calibration/runs/, repo benchmarks/, or bundled
@@ -274,7 +273,8 @@ def detect_compute_profile(cpu_tier: Optional[str] = None) -> ComputeProfile:
 
 
 def _mount_info_for_path(path: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    """Return (device, fstype, mount_point) for path."""
+    """Return (device, fstype, mount_point) for path.
+"""
     path = os.path.abspath(path)
     best_mp = ""
     best_dev = None
@@ -459,7 +459,8 @@ def _calibration_roots() -> List[Path]:
 
 
 def _calibration_root() -> Path:
-    """Default runs directory for writes (benchmark harness); may not exist yet."""
+    """Default runs directory for writes (benchmark harness); may not exist yet.
+"""
     env = os.environ.get("GWASLAB_CALIBRATION_ROOT")
     if env:
         return Path(env)
@@ -495,7 +496,8 @@ def load_calibration_runs(force: bool = False) -> List[dict]:
 
 
 def _parse_duration_token(token: str) -> Optional[float]:
-    """Parse '9m 16s', '572.192s', or '45s' into seconds."""
+    """Parse '9m 16s', '572.192s', or '45s' into seconds.
+"""
     token = token.strip()
     if not token:
         return None
@@ -614,7 +616,8 @@ def _calibrated_estimate(
 
 
 def parse_harmonize_log_steps(log_text: str) -> List[dict]:
-    """Extract per-step wall times from a harmonize verbose log."""
+    """Extract per-step wall times from a harmonize verbose log.
+"""
     steps: List[dict] = []
 
     m_check = re.search(
@@ -940,7 +943,8 @@ class RunProgressTracker:
 
 
 class MemoryTracker:
-    """Track peak RSS during a block."""
+    """Track peak RSS during a block.
+"""
 
     def __init__(self) -> None:
         self._start_rss = self._rss_mb()

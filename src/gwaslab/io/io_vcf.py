@@ -28,35 +28,33 @@ def auto_check_vcf_chr_dict(
     verbose: bool, 
     log: "Log"
 ) -> dict:
-    """
-    Automatically determine chromosome naming convention used in VCF/BCF files.
+    """Automatically determine chromosome naming convention used in VCF/BCF files.
 
     This function checks the chromosome naming convention used in VCF/BCF files and
     returns an appropriate chromosome dictionary mapping. It first checks if the
     chromosome IDs match RefSeq IDs (for hg19 or hg38 builds), then checks for
     common prefixes like "chr", and finally defaults to standard numeric chromosomes.
 
-    Parameters
-    ----------
-    vcf_path : str or None
-        Path to the VCF/BCF file to check. If None, the function returns vcf_chr_dict.
-    vcf_chr_dict : dict or None
-        Optional pre-defined chromosome dictionary. If None, the function will
-        attempt to determine the appropriate dictionary.
-    verbose : bool
-        If True, print detailed progress messages.
-    log : gwaslab.g_Log.Log
-        Logging object for recording process information.
+Parameters
+----------
+vcf_path : str or None
+    Path to the VCF/BCF file to check. If None, the function returns vcf_chr_dict.
+vcf_chr_dict : dict or None
+    Optional pre-defined chromosome dictionary. If None, the function will
+    attempt to determine the appropriate dictionary.
+verbose : bool
+    If True, print detailed progress messages.
+log : gwaslab.g_Log.Log
+    Logging object for recording process information.
+Returns
+-------
+dict
+    A chromosome dictionary mapping that matches the chromosome naming
+    convention used in the VCF/BCF file. This dictionary maps standard
+    chromosome numbers to the format used in the VCF/BCF file.
 
-    Returns
-    -------
-    dict
-        A chromosome dictionary mapping that matches the chromosome naming
-        convention used in the VCF/BCF file. This dictionary maps standard
-        chromosome numbers to the format used in the VCF/BCF file.
-
-    Notes
-    -----
+Notes
+-----
     The function checks for chromosome naming conventions in the following order:
     1. RefSeq IDs (for hg19 or hg38 builds)
     2. Chromosome prefixes (e.g., "chr1", "Chr1", "CHR1")
@@ -64,7 +62,7 @@ def auto_check_vcf_chr_dict(
 
     If no specific convention is detected, it defaults to standard numeric
     chromosomes without any prefix.
-    """
+"""
     if vcf_path is not None and vcf_chr_dict is None:
         log.write(" -Checking chromosome notations in VCF/BCF files...", verbose=verbose)
         vcf_chr_dict = check_vcf_chr_NC(vcf_path, log, verbose)
@@ -95,23 +93,21 @@ def check_vcf_chr_prefix(
     log: "Log", 
     verbose: bool
 ) -> str | None:
-    """
-    Check for chromosome prefix in VCF/BCF file headers.
+    """Check for chromosome prefix in VCF/BCF file headers.
 
-    Parameters
-    ----------
-    vcf_bcf_path : str
-        Path to VCF/BCF file.
-    log : gwaslab.g_Log.Log
-        Logging object.
-    verbose : bool
-        Whether to log detailed messages.
-
-    Returns
-    -------
-    str or None
-        Detected chromosome prefix (e.g., "chr", "Chr", "CHR") if found, otherwise None.
-    """
+Parameters
+----------
+vcf_bcf_path : str
+    Path to VCF/BCF file.
+log : gwaslab.g_Log.Log
+    Logging object.
+verbose : bool
+    Whether to log detailed messages.
+Returns
+-------
+str or None
+    Detected chromosome prefix (e.g., "chr", "Chr", "CHR") if found, otherwise None.
+"""
     vcf_bcf = VariantFile(vcf_bcf_path)
     contigs_list = list(vcf_bcf.header.contigs)
     
@@ -130,7 +126,8 @@ def check_vcf_chr_prefix(
     return None
 
 def is_vcf_file(path: str) -> bool:
-    """Check if the given path is a VCF or BCF file by examining headers."""
+    """Check if the given path is a VCF or BCF file by examining headers.
+"""
     try:
         with VariantFile(path) as f:
             return True
@@ -142,23 +139,21 @@ def check_vcf_chr_NC(
     log: "Log", 
     verbose: bool
 ) -> dict | None:
-    """
-    Check for RefSeq chromosome IDs in VCF/BCF file headers.
+    """Check for RefSeq chromosome IDs in VCF/BCF file headers.
 
-    Parameters
-    ----------
-    vcf_bcf_path : str
-        Path to VCF/BCF file.
-    log : gwaslab.g_Log.Log
-        Logging object.
-    verbose : bool
-        Whether to log detailed messages.
-
-    Returns
-    -------
-    dict or None
-        Chromosome mapping dictionary for detected build (hg19/hg38) if found, otherwise None.
-    """
+Parameters
+----------
+vcf_bcf_path : str
+    Path to VCF/BCF file.
+log : gwaslab.g_Log.Log
+    Logging object.
+verbose : bool
+    Whether to log detailed messages.
+Returns
+-------
+dict or None
+    Chromosome mapping dictionary for detected build (hg19/hg38) if found, otherwise None.
+"""
     vcf_bcf = VariantFile(vcf_bcf_path)
     contigs_list = list(vcf_bcf.header.contigs)
     
@@ -192,44 +187,42 @@ def _get_ld_matrix_from_vcf(sumstats_or_dataframe: Union['Sumstats', pd.DataFram
                 mapper: Optional[ChromosomeMapper] = None,
                 tabix: Optional[bool] = None,
                 export_path: Optional[str] = None) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray]:
-    """
-    Calculate full LD matrix from VCF file and return both the LD matrix and corresponding sumstats.
+    """Calculate full LD matrix from VCF file and return both the LD matrix and corresponding sumstats.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    vcf_path : str
-        Path to the VCF file
-    region : tuple
-        Region specification (chromosome, start, end)
-    log : Log
-        Logging object
-    verbose : bool
-        Verbose flag
-    pos : str
-        Position column name
-    nea : str
-        Non-effect allele column name
-    ea : str
-        Effect allele column name
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided, creates a default mapper with automatic format detection.
-    tabix : bool
-        Whether to use tabix indexing
-    export_path : str, optional
-        Path to export the results. If provided, sumstats and LD matrix will be saved.
-        Files will be named based on the region (e.g., chr1_1000_2000_sumstats.tsv.gz).
-    
-    Returns
-    -------
-    tuple
-        (matched_sumstats, ld_matrix, valid_indices) where:
-        - matched_sumstats: Subset of sumstats with valid variants, ordered to match ld_matrix
-        - ld_matrix: Full LD matrix as numpy array (r^2 values)
-        - valid_indices: Indices of variants used in LD calculation
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+vcf_path : str
+    Path to the VCF file
+region : tuple
+    Region specification (chromosome, start, end)
+log : Log
+    Logging object
+verbose : bool
+    Verbose flag
+pos : str
+    Position column name
+nea : str
+    Non-effect allele column name
+ea : str
+    Effect allele column name
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided, creates a default mapper with automatic format detection.
+tabix : bool
+    Whether to use tabix indexing
+export_path : str, optional
+    Path to export the results. If provided, sumstats and LD matrix will be saved.
+    Files will be named based on the region (e.g., chr1_1000_2000_sumstats.tsv.gz).
+Returns
+-------
+tuple
+    (matched_sumstats, ld_matrix, valid_indices) where:
+    - matched_sumstats: Subset of sumstats with valid variants, ordered to match ld_matrix
+    - ld_matrix: Full LD matrix as numpy array (r^2 values)
+    - valid_indices: Indices of variants used in LD calculation
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):

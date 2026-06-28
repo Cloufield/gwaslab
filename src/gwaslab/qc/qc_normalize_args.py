@@ -9,20 +9,18 @@ if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
 def _parse_flanking(flanking_str: str) -> int:
-    '''
-    Parse flanking value, supporting both base pairs and kilobases.
+    '''Parse flanking value, supporting both base pairs and kilobases.
     If 'kb' suffix is present (case-insensitive), converts to base pairs.
     
-    Parameters:
-    -----------
-    flanking_str : str
-        Flanking value, e.g., '500', '500kb', '500KB', or '500 kb'
-    
-    Returns:
-    --------
-    int
-        Flanking size in base pairs
-    '''
+Parameters
+----------
+flanking_str : str
+    Flanking value, e.g., '500', '500kb', '500KB', or '500 kb'
+Returns
+-------
+int
+    Flanking size in base pairs
+'''
     flanking_str = flanking_str.strip()
     # Check for kb suffix (case-insensitive, with optional space)
     kb_match = re.match(r'^(.+?)\s*kb\s*$', flanking_str, re.IGNORECASE)
@@ -47,14 +45,13 @@ def _normalize_region(
     log: Log = Log(),
     verbose: bool = True
 ) -> Optional[Tuple[int, int, int]]:
-    '''
-    Normalize a region input to a tuple (chr, start, end) with integer
+    '''Normalize a region input to a tuple (chr, start, end) with integer
     positions and standardized chromosome notation.
     Accepts tuples/lists or strings in multiple formats:
     - 'chr:start-end' (e.g., 'chr1:12345-67890')
     - 'chr:pos:flanking' (e.g., 'chr1:1500:500' or 'chr1:1500:500kb' -> chr1:1000-2000)
     - 'snpid:flanking' (e.g., 'rs123:500' or 'rs123:500kb' or '1:12345:A:T:500kb' -> requires sumstats parameter)
-    '''
+'''
     if region is None:
         return None
     if chr_dict is None:
@@ -188,9 +185,8 @@ def _normalize_group(
     verbose: bool,
     is_chrpos_mode: bool = False
 ) -> Tuple[List[Union[str, List[str]]], Union[str, List[str]]]:
-    """
-    Helper to normalize and log highlight/pinpoint groups.
-    """
+    """Helper to normalize and log highlight/pinpoint groups.
+"""
     # 1. Single string -> list
     if isinstance(items, str):
         items = [items]

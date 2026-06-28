@@ -1,5 +1,4 @@
-"""
-Sankey / alluvial plot for categorical sumstats columns.
+"""Sankey / alluvial plot for categorical sumstats columns.
 """
 
 from __future__ import annotations
@@ -34,7 +33,8 @@ def _ribbon_bezier_path(
     node_width: float,
     curvature: float,
 ) -> Path:
-    """Build a smooth Sankey ribbon with cubic Bezier top/bottom edges."""
+    """Build a smooth Sankey ribbon with cubic Bezier top/bottom edges.
+"""
     left = x0 + node_width / 2.0
     right = x1 - node_width / 2.0
     if right <= left:
@@ -150,52 +150,62 @@ def plot_sankey(
     verbose: bool = True,
     log: Log = Log(),
 ) -> Tuple[Optional[plt.Figure], Optional[plt.Axes], Dict[str, Any]]:
-    """
-    Draw a Sankey / alluvial diagram across ordered categorical stages.
+    """Draw a Sankey / alluvial diagram across ordered categorical stages.
 
     Parameters
     ----------
-    data : pandas.DataFrame or Sumstats
+    data : DataFrame or Sumstats
         Input table. Sumstats objects use ``.data``.
     columns : sequence of str
-        Ordered stage names. Each name may be an existing column or a preset
-        (``MAF``, ``P``, ``BETA``, ``STATUS``).
+        Ordered stage names. Use presets ``MAF``, ``P``, ``BETA``, ``STATUS`` or
+        existing categorical column names.
     column_map : dict, optional
-        Map preset names to source columns, e.g. ``{"MAF": "EAF"}``.
-    weight : str, default ``"count"``
-        ``"count"`` to count rows, or a numeric column name to sum.
-    dropna : bool, default True
-        Drop rows missing any stage category.
+        Map preset stage name to source column (e.g. ``{"MAF": "EAF"}``).
+    weight : str or float
+        Column for flow weight, or ``"count"`` for row counts.
+    dropna : bool
+        Drop rows with missing stage values.
     stage_labels : sequence of str, optional
-        Labels shown under each stage column.
+        Axis labels for each stage (same length as ``columns``).
     colors : dict, optional
-        Override colors keyed by first-stage category or full ``node_id``.
-    color_by : str, default ``"first"``
-        Ribbon coloring: ``"first"`` (track stage-0 category), ``"source"``,
-        or ``"target"``.
-    palette : str, default ``"auto"``
-        ``"auto"`` uses semantic palettes for MAF/P/BETA presets on stage 0.
-    node_color_mode : str, default ``"stacked"``
-        ``"stacked"`` colored bands inside nodes, or ``"neutral"`` gray nodes.
-    beta_bins : sequence of float, optional
-        |BETA| thresholds for the BETA preset.
-    link_alpha : float, default 0.55
+        Category label to color overrides.
+    color_by : str
+        Ribbon coloring: ``"first"``, ``"source"``, or ``"target"``.
+    palette : str
+        Palette mode (``"auto"`` uses GWASLab presets for MAF/P/BETA).
+    node_color_mode : str
+        ``"stacked"`` (colored node bands) or ``"neutral"`` (gray nodes).
+    beta_bins : sequence of float
+        |BETA| thresholds for the ``BETA`` preset.
+    link_alpha : float
         Ribbon transparency.
-    node_width : float, default 0.025
-        Node bar width in x-axis data units.
-    ribbon_curvature : float, default 0.5
-        Horizontal position of Bezier control points as a fraction of link
-        span (0.5 = classic symmetric Sankey curves).
-    gap_frac : float, default 0.02
-        Vertical gap between nodes within a stage.
-    fig_kwargs, save, save_kwargs, fontsize, font_family, title, verbose, log
-        Standard GWASLab plotting options.
+    node_width : float
+        Node bar width in axes coordinates.
+    ribbon_curvature : float
+        Bezier curvature for ribbons (0–1).
+    gap_frac : float
+        Vertical gap fraction between node segments.
+    fig_kwargs, save_kwargs : dict, optional
+        Figure creation and save options.
+    save : bool or str, optional
+        Save figure to default or custom path.
+    fontsize : int
+        Label font size.
+    font_family : str
+        Label font family.
+    title : str, optional
+        Figure title.
+    verbose : bool
+        Print progress messages.
+    log : Log
+        GWASLab log object.
 
     Returns
     -------
     tuple
         ``(fig, ax, tables)`` where ``tables`` contains ``nodes``, ``links``,
-        ``node_bands``, ``flow_colors``, and ``stages``.
+        ``node_bands``, ``flow_colors``, ``stages``, and ``work``. Returns
+        ``(None, None, tables)`` when no rows remain after filtering.
     """
     log.write("Start to create Sankey plot...", verbose=verbose)
     log.write(f" -Stages: {list(columns)}", verbose=verbose)

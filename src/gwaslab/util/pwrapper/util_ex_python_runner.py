@@ -1,5 +1,4 @@
-"""
-Python Script Execution Framework
+"""Python Script Execution Framework
 
 Provides a centralized, robust framework for executing Python scripts with:
 - Timeout support
@@ -23,7 +22,8 @@ from gwaslab.info.g_Log import Log
 
 @dataclass
 class PythonExecutionResult:
-    """Standardized result structure for Python script execution."""
+    """Standardized result structure for Python script execution.
+"""
     success: bool
     output: str  # stdout/stderr combined
     exit_code: int
@@ -35,10 +35,9 @@ class PythonExecutionResult:
 
 
 class PythonScriptRunner:
-    """
-    Centralized Python script execution with timeout, proper temp file management,
+    """Centralized Python script execution with timeout, proper temp file management,
     and structured error handling.
-    """
+"""
     
     def __init__(
         self,
@@ -49,17 +48,16 @@ class PythonScriptRunner:
         cleanup: bool = True,
         conda_env: Optional[str] = None
     ):
-        """
-        Initialize Python script runner.
+        """Initialize Python script runner.
         
-        Args:
+Parameters
             python: Path to Python executable (default: "python")
             log: Log instance for logging (default: None, creates new Log)
             timeout: Default timeout in seconds (default: None, no timeout)
             temp_dir: Directory for temporary files (default: None, uses system temp)
             cleanup: Whether to clean up temp files after execution (default: True)
             conda_env: Optional conda environment name to activate before execution
-        """
+"""
         self.python = python
         self.log = log if log is not None else Log()
         self.timeout = timeout
@@ -78,10 +76,9 @@ class PythonScriptRunner:
         working_dir: Optional[str] = None,
         python_args: Optional[List[str]] = None
     ) -> PythonExecutionResult:
-        """
-        Execute a Python script with proper error handling and validation.
+        """Execute a Python script with proper error handling and validation.
         
-        Args:
+Parameters
             script_content: The Python script content as a string
             expected_outputs: List of expected output file names (relative paths)
             temp_prefix: Prefix for temporary script file
@@ -91,9 +88,9 @@ class PythonScriptRunner:
             working_dir: Working directory for script execution (default: temp_dir or current dir)
             python_args: Additional arguments to pass to Python (e.g., ["-u"] for unbuffered)
         
-        Returns:
+Returns
             PythonExecutionResult with execution details
-        """
+"""
         if expected_outputs is None:
             expected_outputs = []
         
@@ -219,7 +216,8 @@ class PythonScriptRunner:
         prefix: str,
         suffix: str
     ) -> str:
-        """Create a temporary Python script file."""
+        """Create a temporary Python script file.
+"""
         # Create unique filename with process ID and timestamp
         pid = os.getpid()
         timestamp = int(time.time() * 1000) % 1000000
@@ -242,10 +240,9 @@ class PythonScriptRunner:
         script_content: str,
         required_files: List[str]
     ) -> List[str]:
-        """
-        Validate that Python script references expected files.
+        """Validate that Python script references expected files.
         Returns list of validation error messages (empty if valid).
-        """
+"""
         errors = []
         
         # Basic validation: check if script content is not empty
@@ -267,10 +264,9 @@ class PythonScriptRunner:
         python_args: Optional[List[str]] = None,
         verbose: bool = True
     ) -> Tuple[str, int]:
-        """
-        Execute Python script using subprocess.
+        """Execute Python script using subprocess.
         Returns (output, exit_code).
-        """
+"""
         if python_args is None:
             python_args = []
         
@@ -312,10 +308,9 @@ class PythonScriptRunner:
         working_dir: str,
         verbose: bool = True
     ) -> Dict[str, str]:
-        """
-        Collect and validate output files.
+        """Collect and validate output files.
         Returns dict mapping expected_file -> actual_path.
-        """
+"""
         output_files = {}
         
         for expected_file in expected_outputs:
@@ -348,7 +343,8 @@ class PythonScriptRunner:
         temp_dir_created: bool,
         verbose: bool = True
     ) -> None:
-        """Clean up temporary files and directories."""
+        """Clean up temporary files and directories.
+"""
         try:
             if temp_script_path and os.path.exists(temp_script_path):
                 os.remove(temp_script_path)
@@ -372,18 +368,17 @@ def create_temp_python_script(
     suffix: str = ".py",
     temp_dir: Optional[str] = None
 ) -> str:
-    """
-    Create a temporary Python script file.
+    """Create a temporary Python script file.
     
-    Args:
+Parameters
         script_content: The Python script content
         prefix: Prefix for the temporary file
         suffix: Suffix for the temporary file (default: ".py")
         temp_dir: Directory for temp file (default: system temp)
     
-    Returns:
+Returns
         Path to the created temporary script file
-    """
+"""
     if temp_dir is None:
         temp_dir = tempfile.gettempdir()
     
@@ -408,16 +403,15 @@ def validate_python_script(
     script_content: str,
     required_files: List[str]
 ) -> List[str]:
-    """
-    Validate that Python script references expected files.
+    """Validate that Python script references expected files.
     
-    Args:
+Parameters
         script_content: The Python script content
         required_files: List of required file paths
     
-    Returns:
+Returns
         List of validation error messages (empty if valid)
-    """
+"""
     errors = []
     
     if not script_content or not script_content.strip():
@@ -434,16 +428,15 @@ def read_python_output_files(
     result: PythonExecutionResult,
     expected_files: List[str]
 ) -> Dict[str, Any]:
-    """
-    Read and return output files from Python execution result.
+    """Read and return output files from Python execution result.
     
-    Args:
+Parameters
         result: PythonExecutionResult from script execution
         expected_files: List of expected file names
     
-    Returns:
+Returns
         Dict mapping file names to their contents (as DataFrames for CSV, strings for text)
-    """
+"""
     import pandas as pd
     
     outputs = {}

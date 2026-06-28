@@ -4,27 +4,17 @@ from gwaslab.info.g_Log import Log
 
 
 def _get_text_rotated_height(text, renderer, fig=None):
-    """
-    Calculate the maximum y-coordinate of a text object accounting for rotation.
+    """Calculate the maximum y-coordinate of a text object accounting for rotation.
     
     For rotated text (especially 90 degrees), the standard get_window_extent()
     may not always report accurate bounds. This function explicitly calculates
     the vertical extent based on the text's position, actual text length, and rotation.
-    
-    Parameters
-    ----------
-    text : matplotlib.text.Text
-        The text object to measure.
-    renderer : matplotlib.backend_bases.RendererBase
-        The renderer used to calculate text extents.
-    fig : matplotlib.figure.Figure, optional
-        The figure object, used for DPI calculation.
-    
-    Returns
-    -------
-    float
-        The highest y-coordinate in pixels that the text reaches.
-    """
+
+Returns
+-------
+float
+    The highest y-coordinate in pixels that the text reaches.
+"""
     try:
         # Get the text string
         text_string = text.get_text()
@@ -142,28 +132,17 @@ def _get_text_rotated_height(text, renderer, fig=None):
 
 
 def _get_highest_y_pixels(target_ax, renderer, fig=None):
-    """
-    Get the highest y pixel of all content including rotated text.
+    """Get the highest y pixel of all content including rotated text.
     
     This function finds the maximum y-coordinate (in pixels) of all visible
     content in the given axes, including rotated text annotations which may
     extend beyond the axes tight bounding box.
-    
-    Parameters
-    ----------
-    target_ax : matplotlib.axes.Axes
-        The axes to check for content bounds.
-    renderer : matplotlib.backend_bases.RendererBase
-        The renderer used to calculate text extents.
-    fig : matplotlib.figure.Figure, optional
-        The figure object, used for DPI calculation. If not provided,
-        will attempt to get from target_ax.
-    
-    Returns
-    -------
-    float
-        The highest y-coordinate in pixels of any content in the axes.
-    """
+
+Returns
+-------
+float
+    The highest y-coordinate in pixels of any content in the axes.
+"""
     highest_y = 0
     
     # Get figure from axes if not provided

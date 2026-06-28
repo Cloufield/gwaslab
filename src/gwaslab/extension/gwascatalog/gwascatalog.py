@@ -1,5 +1,4 @@
-"""
-GWAS Catalog REST API v2 Client
+"""GWAS Catalog REST API v2 Client
 
 This module provides a comprehensive interface to interact with the GWAS Catalog REST API v2.
 It supports querying studies, associations, variants, traits, genes, and other entities.
@@ -20,7 +19,8 @@ from gwaslab.info.g_Log import Log
 
 
 def _v2_cache_path(cache_dir: str, efo: str, sig_level: float, show_child_traits: bool) -> str:
-    """Path for API v2 known-variants cache file, consistent with legacy JSON naming."""
+    """Path for API v2 known-variants cache file, consistent with legacy JSON naming.
+"""
     datestring = datetime.now().strftime("%Y%m%d")
     suffix = hashlib.md5("{}_{}".format(sig_level, show_child_traits).encode("utf-8")).hexdigest()[:8]
     name = "GWASCatalog_v2_{}_associationsByTraitSummary_text_{}_{}.json".format(efo, datestring, suffix)
@@ -28,14 +28,13 @@ def _v2_cache_path(cache_dir: str, efo: str, sig_level: float, show_child_traits
 
 
 class GWASCatalogClient:
-    """
-    Client for interacting with the GWAS Catalog REST API v2.
+    """Client for interacting with the GWAS Catalog REST API v2.
     
     This class provides methods to query various GWAS Catalog endpoints including
     studies, associations, variants, traits, genes, and more.
     
-    Attributes
-    ----------
+Attributes
+----------
     base_url : str
         Base URL for the GWAS Catalog API
     session : requests.Session
@@ -45,32 +44,31 @@ class GWASCatalogClient:
     log : Log
         Logging object for tracking operations
         
-    Examples
-    --------
+Examples
+--------
     >>> client = GWASCatalogClient()
     >>> studies = client.get_studies(efo_trait="type 2 diabetes mellitus")
     >>> associations = client.get_associations(efo_trait="type 2 diabetes mellitus")
-    """
+"""
     
     BASE_URL = "https://www.ebi.ac.uk/gwas/rest/api"
     MAX_REQUESTS_PER_SECOND = 15  # API rate limit
     
     def __init__(self, timeout: int = 30, log: Optional[Log] = None, verbose: bool = True, 
                  rate_limit_delay: float = 0.067):
-        """
-        Initialize the GWAS Catalog API client.
+        """Initialize the GWAS Catalog API client.
         
-        Parameters
-        ----------
-        timeout : int, optional
-            Request timeout in seconds (default: 30)
-        log : Log, optional
-            Logging object for tracking operations (default: creates new Log)
-        verbose : bool, optional
-            Whether to print log messages (default: True)
-        rate_limit_delay : float, optional
-            Minimum delay between requests in seconds to respect rate limit (default: 0.067, ~15 req/s)
-        """
+Parameters
+----------
+timeout : int, optional
+    Request timeout in seconds (default: 30)
+log : Log, optional
+    Logging object for tracking operations (default: creates new Log)
+verbose : bool, optional
+    Whether to print log messages (default: True)
+rate_limit_delay : float, optional
+    Minimum delay between requests in seconds to respect rate limit (default: 0.067, ~15 req/s)
+"""
         self.base_url = self.BASE_URL
         self.session = requests.Session()
         self.timeout = timeout
@@ -85,23 +83,21 @@ class GWASCatalogClient:
         params: Optional[Dict[str, Any]] = None,
         suppress_request_logging: bool = False
     ) -> Optional[Dict[str, Any]]:
-        """
-        Make a GET request to the API endpoint with rate limiting.
+        """Make a GET request to the API endpoint with rate limiting.
         
-        Parameters
-        ----------
-        endpoint : str
-            API endpoint path (e.g., "/v2/studies", "/v2/associations")
-        params : dict, optional
-            Query parameters
-        suppress_request_logging : bool, optional
-            If True, suppress detailed request/response logging (default: False)
-            
-        Returns
-        -------
+Parameters
+----------
+endpoint : str
+    API endpoint path (e.g., "/v2/studies", "/v2/associations")
+params : dict, optional
+    Query parameters
+suppress_request_logging : bool, optional
+    If True, suppress detailed request/response logging (default: False)
+Returns
+-------
         dict or None
             JSON response as a dictionary, or None if the request fails
-        """
+"""
         # Rate limiting: ensure minimum delay between requests
         current_time = time.time()
         time_since_last = current_time - self._last_request_time
@@ -143,25 +139,23 @@ class GWASCatalogClient:
         page_size: int = 200,
         delay: float = 0.1
     ) -> List[Dict[str, Any]]:
-        """
-        Retrieve all pages of results from a paginated endpoint.
+        """Retrieve all pages of results from a paginated endpoint.
         
-        Parameters
-        ----------
-        endpoint : str
-            API endpoint path
-        params : dict, optional
-            Query parameters
-        page_size : int, optional
-            Number of items per page (default: 200)
-        delay : float, optional
-            Delay between requests in seconds (default: 0.1)
-            
-        Returns
-        -------
+Parameters
+----------
+endpoint : str
+    API endpoint path
+params : dict, optional
+    Query parameters
+page_size : int, optional
+    Number of items per page (default: 200)
+delay : float, optional
+    Delay between requests in seconds (default: 0.1)
+Returns
+-------
         list
             List of all items from all pages
-        """
+"""
         all_items = []
         current_page = 0
         total_pages = 1  # Initialize to 1 to start the loop
@@ -227,38 +221,36 @@ class GWASCatalogClient:
         size: Optional[int] = None,
         get_all: bool = False
     ) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-        """
-        Retrieve GWAS studies from the catalog.
+        """Retrieve GWAS studies from the catalog.
         
-        Parameters
-        ----------
-        accession_id : str, optional
-            Specific study accession ID (e.g., "GCST000001")
-        efo_trait : str, optional
-            EFO trait name to filter studies
-        disease_trait : str, optional
-            Disease trait name to filter studies
-        cohort : str, optional
-            Cohort name to filter studies (e.g., "UKB")
-        full_pvalue_set : bool, optional
-            Filter for studies with full summary statistics
-        gxe : bool, optional
-            Filter for Gene-by-Environment (GxE) studies
-        show_child_traits : bool, optional
-            If True, include child traits in results (default: True per API).
-            If False, only return data annotated directly with the query term.
-        page : int, optional
-            Page number (for pagination)
-        size : int, optional
-            Page size (for pagination)
-        get_all : bool, optional
-            If True, retrieve all pages (default: False)
-            
-        Returns
-        -------
+Parameters
+----------
+accession_id : str, optional
+    Specific study accession ID (e.g., "GCST000001")
+efo_trait : str, optional
+    EFO trait name to filter studies
+disease_trait : str, optional
+    Disease trait name to filter studies
+cohort : str, optional
+    Cohort name to filter studies (e.g., "UKB")
+full_pvalue_set : bool, optional
+    Filter for studies with full summary statistics
+gxe : bool, optional
+    Filter for Gene-by-Environment (GxE) studies
+show_child_traits : bool, optional
+    If True, include child traits in results (default: True per API).
+    If False, only return data annotated directly with the query term.
+page : int, optional
+    Page number (for pagination)
+size : int, optional
+    Page size (for pagination)
+get_all : bool, optional
+    If True, retrieve all pages (default: False)
+Returns
+-------
         pandas.DataFrame, dict, or list
             Study data as DataFrame (if multiple) or dict/list (if single)
-        """
+"""
         if accession_id:
             endpoint = f"/v2/studies/{accession_id}"
             response = self._make_request(endpoint)
@@ -312,41 +304,39 @@ class GWASCatalogClient:
         size: Optional[int] = None,
         get_all: bool = False
     ) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-        """
-        Retrieve GWAS associations from the catalog.
+        """Retrieve GWAS associations from the catalog.
         
-        Parameters
-        ----------
-        efo_trait : str, optional
-            EFO trait name/description to filter associations (free text)
-        efo_id : str, optional
-            EFO trait identifier to filter associations (e.g. "EFO_0001360")
-        rs_id : str, optional
-            Variant rsID to filter associations (e.g., "rs1050316")
-        accession_id : str, optional
-            Study accession ID to filter associations
-        sort : str, optional
-            Field to sort by (e.g., "p_value", "or_value")
-        direction : str, optional
-            Sort direction: "asc" or "desc"
-        show_child_traits : bool, optional
-            If True, include child traits in results (default: True per API).
-            If False, only return data annotated directly with the query term.
-        extended_geneset : bool, optional
-            If True, use extended gene set (all Ensembl/RefSeq genes within 50kb).
-            If False, use standard gene set (default: False).
-        page : int, optional
-            Page number (for pagination)
-        size : int, optional
-            Page size (for pagination)
-        get_all : bool, optional
-            If True, retrieve all pages (default: False)
-            
-        Returns
-        -------
+Parameters
+----------
+efo_trait : str, optional
+    EFO trait name/description to filter associations (free text)
+efo_id : str, optional
+    EFO trait identifier to filter associations (e.g. "EFO_0001360")
+rs_id : str, optional
+    Variant rsID to filter associations (e.g., "rs1050316")
+accession_id : str, optional
+    Study accession ID to filter associations
+sort : str, optional
+    Field to sort by (e.g., "p_value", "or_value")
+direction : str, optional
+    Sort direction: "asc" or "desc"
+show_child_traits : bool, optional
+    If True, include child traits in results (default: True per API).
+    If False, only return data annotated directly with the query term.
+extended_geneset : bool, optional
+    If True, use extended gene set (all Ensembl/RefSeq genes within 50kb).
+    If False, use standard gene set (default: False).
+page : int, optional
+    Page number (for pagination)
+size : int, optional
+    Page size (for pagination)
+get_all : bool, optional
+    If True, retrieve all pages (default: False)
+Returns
+-------
         pandas.DataFrame, dict, or list
             Association data as DataFrame (if multiple) or dict/list (if single)
-        """
+"""
         endpoint = "/v2/associations"
         params = {}
         
@@ -395,30 +385,28 @@ class GWASCatalogClient:
         size: Optional[int] = None,
         get_all: bool = False
     ) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-        """
-        Retrieve genetic variants (SNPs) from the catalog.
+        """Retrieve genetic variants (SNPs) from the catalog.
         
-        Parameters
-        ----------
-        rs_id : str, optional
-            Specific variant rsID (e.g., "rs1050316")
-        mapped_gene : str, optional
-            Gene name to filter variants
-        extended_geneset : bool, optional
-            If True, use extended gene set (all Ensembl/RefSeq genes within 50kb).
-            If False, use standard gene set (default: False).
-        page : int, optional
-            Page number (for pagination)
-        size : int, optional
-            Page size (for pagination)
-        get_all : bool, optional
-            If True, retrieve all pages (default: False)
-            
-        Returns
-        -------
+Parameters
+----------
+rs_id : str, optional
+    Specific variant rsID (e.g., "rs1050316")
+mapped_gene : str, optional
+    Gene name to filter variants
+extended_geneset : bool, optional
+    If True, use extended gene set (all Ensembl/RefSeq genes within 50kb).
+    If False, use standard gene set (default: False).
+page : int, optional
+    Page number (for pagination)
+size : int, optional
+    Page size (for pagination)
+get_all : bool, optional
+    If True, retrieve all pages (default: False)
+Returns
+-------
         pandas.DataFrame, dict, or list
             Variant data as DataFrame (if multiple) or dict/list (if single)
-        """
+"""
         if rs_id:
             endpoint = f"/v2/single-nucleotide-polymorphisms/{rs_id}"
             response = self._make_request(endpoint)
@@ -457,35 +445,33 @@ class GWASCatalogClient:
         size: Optional[int] = None,
         get_all: bool = False
     ) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-        """
-        Search for EFO traits by free text query.
+        """Search for EFO traits by free text query.
         
         This endpoint allows you to search for traits by name. For example, searching
         for "COVID-19" could return "COVID-19", "COVID-19 symptoms measurement",
         "long COVID-19", etc.
         
-        Parameters
-        ----------
-        query : str
-            Free text search term for trait name
-        page : int, optional
-            Page number (for pagination)
-        size : int, optional
-            Page size (for pagination)
-        get_all : bool, optional
-            If True, retrieve all pages (default: False)
-            
-        Returns
-        -------
+Parameters
+----------
+query : str
+    Free text search term for trait name
+page : int, optional
+    Page number (for pagination)
+size : int, optional
+    Page size (for pagination)
+get_all : bool, optional
+    If True, retrieve all pages (default: False)
+Returns
+-------
         pandas.DataFrame, dict, or list
             Trait data as DataFrame (if multiple) or dict/list (if single)
             
-        Examples
-        --------
+Examples
+--------
         >>> client = GWASCatalogClient()
         >>> traits = client.search_traits("COVID-19")
         >>> traits = client.search_traits("diabetes", get_all=True)
-        """
+"""
         endpoint = "/v2/efoTraits"
         params = {"query": query}
         
@@ -505,19 +491,17 @@ class GWASCatalogClient:
             return response if response else {}
     
     def get_trait(self, efo_id: str) -> Dict[str, Any]:
-        """
-        Get a specific EFO trait by its ID.
+        """Get a specific EFO trait by its ID.
         
-        Parameters
-        ----------
-        efo_id : str
-            EFO trait ID (e.g., "MONDO_0004979", "EFO_0001360")
-            
-        Returns
-        -------
+Parameters
+----------
+efo_id : str
+    EFO trait ID (e.g., "MONDO_0004979", "EFO_0001360")
+Returns
+-------
         dict
             Trait information dictionary
-        """
+"""
         endpoint = f"/v2/efoTraits/{efo_id}"
         response = self._make_request(endpoint)
         return response if response else {}
@@ -527,19 +511,17 @@ class GWASCatalogClient:
     # ============================================================================
     
     def get_all_variants_for_trait(self, trait_name: str) -> set:
-        """
-        Fetches all unique variant rsIDs for a given trait by handling API pagination.
+        """Fetches all unique variant rsIDs for a given trait by handling API pagination.
         
-        Parameters
-        ----------
-        trait_name : str
-            The name of the trait to query
-            
-        Returns
-        -------
+Parameters
+----------
+trait_name : str
+    The name of the trait to query
+Returns
+-------
         set
             A set of unique rsID strings associated with the trait
-        """
+"""
         variants = set()
         self.log.write(f"--- Starting search for '{trait_name}' ---", verbose=self.verbose)
         
@@ -565,21 +547,19 @@ class GWASCatalogClient:
         return variants
     
     def get_all_associations_for_trait(self, trait_name: str, sort_by_pvalue: bool = True) -> List[Dict[str, Any]]:
-        """
-        Fetches all association objects for a given trait by handling API pagination.
+        """Fetches all association objects for a given trait by handling API pagination.
         
-        Parameters
-        ----------
-        trait_name : str
-            The name of the trait to query
-        sort_by_pvalue : bool, optional
-            If True, sort by p-value (default: True)
-            
-        Returns
-        -------
+Parameters
+----------
+trait_name : str
+    The name of the trait to query
+sort_by_pvalue : bool, optional
+    If True, sort by p-value (default: True)
+Returns
+-------
         list
             A list of all association dictionaries for the trait
-        """
+"""
         self.log.write(f"--- Starting search for all associations related to '{trait_name}' ---", verbose=self.verbose)
         
         params = {}
@@ -593,19 +573,17 @@ class GWASCatalogClient:
         return items
     
     def get_all_genes_for_trait(self, trait_name: str) -> set:
-        """
-        Fetches all unique gene names for a given trait.
+        """Fetches all unique gene names for a given trait.
         
-        Parameters
-        ----------
-        trait_name : str
-            The name of the trait to query
-            
-        Returns
-        -------
+Parameters
+----------
+trait_name : str
+    The name of the trait to query
+Returns
+-------
         set
             A set of unique gene names associated with the trait
-        """
+"""
         all_genes = set()
         associations = self.get_associations(efo_trait=trait_name, get_all=True)
         
@@ -630,7 +608,8 @@ class GWASCatalogClient:
     # ============================================================================
     
     def _studies_to_dataframe(self, studies: List[Dict[str, Any]]) -> pd.DataFrame:
-        """Convert studies list to pandas DataFrame."""
+        """Convert studies list to pandas DataFrame.
+"""
         if not studies:
             return pd.DataFrame()
         
@@ -639,7 +618,8 @@ class GWASCatalogClient:
         return df
     
     def _associations_to_dataframe(self, associations: List[Dict[str, Any]]) -> pd.DataFrame:
-        """Convert associations list to pandas DataFrame."""
+        """Convert associations list to pandas DataFrame.
+"""
         if not associations:
             return pd.DataFrame()
         
@@ -657,7 +637,8 @@ class GWASCatalogClient:
         return df
     
     def _variants_to_dataframe(self, variants: List[Dict[str, Any]]) -> pd.DataFrame:
-        """Convert variants list to pandas DataFrame."""
+        """Convert variants list to pandas DataFrame.
+"""
         if not variants:
             return pd.DataFrame()
         
@@ -666,7 +647,8 @@ class GWASCatalogClient:
         return df
     
     def _traits_to_dataframe(self, traits: List[Dict[str, Any]]) -> pd.DataFrame:
-        """Convert traits list to pandas DataFrame."""
+        """Convert traits list to pandas DataFrame.
+"""
         if not traits:
             return pd.DataFrame()
         
@@ -675,19 +657,17 @@ class GWASCatalogClient:
         return df
     
     def _extract_chr_pos_from_locations(self, locations: Any) -> tuple:
-        """
-        Extract chromosome and position from locations field.
+        """Extract chromosome and position from locations field.
         
-        Parameters
-        ----------
-        locations : Any
-            Locations value (usually a list like ['12:111803962'] or a string like "12:111803962")
-            
-        Returns
-        -------
+Parameters
+----------
+locations : Any
+    Locations value (usually a list like ['12:111803962'] or a string like "12:111803962")
+Returns
+-------
         tuple
             (chromosome, position) or (None, None) if extraction fails
-        """
+"""
         if locations is None:
             return None, None
         
@@ -752,36 +732,34 @@ class GWASCatalogClient:
         cache_dir: str = "./",
         verbose: bool = True
     ) -> pd.DataFrame:
-        """
-        Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
+        """Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
         
         Retrieves associations and returns them in the format expected by _get_novel.
         EFO and MONDO identifiers are sent via the API's efo_id parameter; trait
         names use efo_trait.
         
-        Parameters
-        ----------
-        efo : str
-            EFO ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"), or
-            trait name (e.g., "type 2 diabetes mellitus"). EFO and MONDO use
-            efo_id; names use efo_trait.
-        sig_level : float
-            P-value threshold for filtering associations (default: 5e-8)
-        show_child_traits : bool
-            If True, include child traits in results (default: True)
-        use_cache : bool
-            If True, use cache for API v2 results and when falling back to legacy API (default: True)
-        cache_dir : str
-            Directory for cache files; v2 cache uses ``GWASCatalog_v2_{efo}_associationsByTraitSummary_text_{date}_{suffix}.json`` (default: "./")
-        verbose : bool
-            Whether to print log messages (default: True)
-            
-        Returns
-        -------
+Parameters
+----------
+efo : str
+    EFO ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"), or
+    trait name (e.g., "type 2 diabetes mellitus"). EFO and MONDO use
+    efo_id; names use efo_trait.
+sig_level : float
+    P-value threshold for filtering associations (default: 5e-8)
+show_child_traits : bool
+    If True, include child traits in results (default: True)
+use_cache : bool
+    If True, use cache for API v2 results and when falling back to legacy API (default: True)
+cache_dir : str
+    Directory for cache files; v2 cache uses ``GWASCatalog_v2_{efo}_associationsByTraitSummary_text_{date}_{suffix}.json`` (default: "./")
+verbose : bool
+    Whether to print log messages (default: True)
+Returns
+-------
         pd.DataFrame
             DataFrame with columns: SNPID, CHR, POS, P, BETA, SE, OR, TRAIT,
             REPORT_GENENAME, PUBMEDID, AUTHOR, STUDY
-        """
+"""
         self.log.write(" -Querying GWAS Catalog API v2 for trait: {}...".format(efo), verbose=verbose)
         
         if use_cache:
@@ -1113,49 +1091,56 @@ class GWASCatalogClient:
 # ============================================================================
 
 def get_studies(**kwargs) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-    """Convenience function to get studies."""
+    """Convenience function to get studies.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.get_studies(**kwargs)
 
 
 def get_associations(**kwargs) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-    """Convenience function to get associations."""
+    """Convenience function to get associations.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.get_associations(**kwargs)
 
 
 def get_variants(**kwargs) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
-    """Convenience function to get variants."""
+    """Convenience function to get variants.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.get_variants(**kwargs)
 
 
 def search_studies(query: str, **kwargs) -> pd.DataFrame:
-    """Convenience function to search studies by trait."""
+    """Convenience function to search studies by trait.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.get_studies(efo_trait=query, **kwargs)
 
 
 def search_associations(query: str, **kwargs) -> pd.DataFrame:
-    """Convenience function to search associations by trait."""
+    """Convenience function to search associations by trait.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.get_associations(efo_trait=query, **kwargs)
 
 
 def search_variants(query: str, **kwargs) -> pd.DataFrame:
-    """Convenience function to search variants by rsID."""
+    """Convenience function to search variants by rsID.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.get_variants(rs_id=query, **kwargs)
 
 
 def search_traits(query: str, **kwargs) -> pd.DataFrame:
-    """Convenience function to search traits by free text."""
+    """Convenience function to search traits by free text.
+"""
     verbose = kwargs.pop("verbose", True)
     client = GWASCatalogClient(verbose=verbose)
     return client.search_traits(query, **kwargs)

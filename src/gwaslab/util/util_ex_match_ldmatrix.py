@@ -39,15 +39,14 @@ def _normalize_parameters_to_lists(
     ld_map_dics: Optional[List[Dict[str, str]]],
     tabix: Optional[Union[bool, str, List[Union[bool, str]]]]
 ) -> Tuple[List[Optional[str]], List[Optional[str]], List[Optional[str]], List[Optional[str]], List[Optional[str]], List[str], List[Optional[Dict[str, str]]], List[Optional[Union[bool, str]]]]:
-    """
-    Normalize LD source parameters to lists (one per study).
+    """Normalize LD source parameters to lists (one per study).
     
     Converts single values to lists, or keeps lists as-is.
     Ensures all parameters have the same length as n_studies.
     
-    Returns:
+Returns
         Tuple of normalized parameter lists
-    """
+"""
     def _normalize_to_list(value, n_studies, default=None):
         if value is None:
             return [default] * n_studies
@@ -81,14 +80,13 @@ def _detect_ld_source_types(
     log: Log,
     verbose: bool
 ) -> List[str]:
-    """
-    Detect LD source type for each study.
+    """Detect LD source type for each study.
     
     Priority: ld_paths+ld_maps > bfile > pfile > vcf
     
-    Returns:
+Returns
         List of source types, one per study
-    """
+"""
     ld_source_types = []
     for i in range(n_studies):
         source_type = _detect_ld_source_type(
@@ -108,12 +106,11 @@ def _filter_and_prepare_sumstats(
     log: Log,
     verbose: bool
 ) -> pd.DataFrame:
-    """
-    Filter NA values and remove duplicates from sumstats.
+    """Filter NA values and remove duplicates from sumstats.
     
-    Returns:
+Returns
         Cleaned sumstats DataFrame
-    """
+"""
     log.write(" -Filtering NA values from sumstats...", verbose=verbose)
     missing_cols = [col for col in required_cols if col not in sumstats.columns]
     if missing_cols:
@@ -147,12 +144,11 @@ def _extract_lead_variants(
     log: Log,
     verbose: bool
 ) -> pd.DataFrame:
-    """
-    Extract lead variants (significant loci) from sumstats.
+    """Extract lead variants (significant loci) from sumstats.
     
-    Returns:
+Returns
         DataFrame with lead variants
-    """
+"""
     if loci is None and loci_chrpos is None and locus is None:
         log.write(" -Loci were not provided. All significant loci will be automatically extracted...", verbose=verbose)
         sig_df = _get_sig(sumstats, variant_id="SNPID", chrom="CHR", pos="POS", p="P"+suffixes[0], **getlead_kwargs)
@@ -197,15 +193,14 @@ def _get_all_ld_maps(
     verbose: bool,
     **kwargs: Any
 ) -> List[pd.DataFrame]:
-    """
-    Get LD maps (variant information) for all studies.
+    """Get LD maps (variant information) for all studies.
     
     This is STEP 2: Extract variant information from each LD source
     without calculating LD matrices yet.
     
-    Returns:
+Returns
         List of LD maps, one per study
-    """
+"""
     all_ld_maps = []
     log.write(" -Getting LD maps for all studies to determine common SNPs...", verbose=verbose)
     
@@ -253,16 +248,15 @@ def _find_common_variants_across_studies(
     log: Log,
     verbose: bool
 ) -> pd.DataFrame:
-    """
-    Find common variants across all studies and sumstats.
+    """Find common variants across all studies and sumstats.
     
     This is STEP 3: Determine intersection of variants based on:
     - CHR and POS match
     - EA-NEA match (perfect) OR EA-NEA flipped
     
-    Returns:
+Returns
         DataFrame with common variants, including _INDEX_BIM_{i} and _FLIPPED_{i} columns
-    """
+"""
     log.write(" -Determining common SNPs across all studies and sumstats...", verbose=verbose)
     
     # Start with sumstats variants in locus
@@ -380,15 +374,14 @@ def _process_ld_matrices_for_all_studies(
     verbose: bool,
     **kwargs: Any
 ) -> Tuple[List[np.ndarray], str, pd.DataFrame]:
-    """
-    Process LD matrices for all studies.
+    """Process LD matrices for all studies.
     
     This is STEP 4: For each study, get LD matrix for common variants,
     extract sub-matrix, apply allele flip corrections, and export.
     
-    Returns:
+Returns
         Tuple of (list of LD matrices, plink_log, output_file_list)
-    """
+"""
     all_ld_matrices = []
     plink_log = ""
     output_file_list = pd.DataFrame(columns=["SNPID","SNPID_LIST","LD_R_MATRIX","LOCUS_SUMSTATS"])
@@ -496,27 +489,25 @@ def _detect_ld_source_type(
     pfile: Optional[str] = None,
     vcf: Optional[str] = None
 ) -> str:
-    """
-    Detect the type of LD source based on provided parameters.
+    """Detect the type of LD source based on provided parameters.
     
-    Parameters
-    ----------
-    ld_path : Optional[str]
-        Path to pre-computed LD matrix file
-    ld_map_path : Optional[str]
-        Path to LD map file (variant annotation file)
-    bfile : Optional[str]
-        Path to PLINK bfile prefix
-    pfile : Optional[str]
-        Path to PLINK pfile prefix
-    vcf : Optional[str]
-        Path to VCF file
-    
-    Returns
-    -------
-    str
-        LD source type: "precomputed", "bfile", "pfile", or "vcf"
-    """
+Parameters
+----------
+ld_path : Optional[str]
+    Path to pre-computed LD matrix file
+ld_map_path : Optional[str]
+    Path to LD map file (variant annotation file)
+bfile : Optional[str]
+    Path to PLINK bfile prefix
+pfile : Optional[str]
+    Path to PLINK pfile prefix
+vcf : Optional[str]
+    Path to VCF file
+Returns
+-------
+str
+    LD source type: "precomputed", "bfile", "pfile", or "vcf"
+"""
     if ld_path is not None and ld_map_path is not None:
         return "precomputed"
     elif bfile is not None:
@@ -550,61 +541,59 @@ def _get_ld_map_from_source(
     verbose: bool = True,
     **kwargs: Any
 ) -> pd.DataFrame:
-    """
-    Get LD map (variant information) from any source type without calculating LD matrix.
+    """Get LD map (variant information) from any source type without calculating LD matrix.
     
     This is used in the first pass to determine common variants across all studies.
     Only variant information (CHR, POS, EA, NEA) is extracted, not LD values.
     
-    Parameters
-    ----------
-    source_type : str
-        Type of LD source: "precomputed", "bfile", "pfile", or "vcf"
-    study_index : int
-        Index of the study (0-based)
-    row : pd.Series
-        Lead variant information (CHR, POS, SNPID)
-    locus_sumstats : pd.DataFrame
-        Summary statistics for the locus
-    ld_map_path : Optional[str]
-        Path to LD map file (for precomputed source)
-    ld_map_rename_dic : Optional[Union[Dict[str, str], List[str]]]
-        Dictionary mapping column names in LD map files
-    ld_map_kwargs : Optional[Dict[str, Any]]
-        Additional keyword arguments for loading LD map files
-    bfile : Optional[str]
-        Path to PLINK bfile prefix (for bfile source)
-    pfile : Optional[str]
-        Path to PLINK pfile prefix (for pfile source)
-    vcf : Optional[str]
-        Path to VCF file (for vcf source)
-    windowsizekb : int
-        Window size in kilobases
-    plink : str
-        Path to plink executable
-    plink2 : str
-        Path to plink2 executable
-    threads : int
-        Number of threads
-    memory : Optional[int]
-        Memory limit in MB
-    overwrite : bool
-        Whether to overwrite existing files
-    tabix : Optional[Union[bool, str]]
-        Tabix executable path or True to auto-detect. If None, auto-detects.
-        Used for efficient VCF region queries when reading VCF files.
-    log : Log
-        Log object
-    verbose : bool
-        Verbose output
+Parameters
+----------
+source_type : str
+    Type of LD source: "precomputed", "bfile", "pfile", or "vcf"
+study_index : int
+    Index of the study (0-based)
+row : pd.Series
+    Lead variant information (CHR, POS, SNPID)
+locus_sumstats : pd.DataFrame
+    Summary statistics for the locus
+ld_map_path : Optional[str]
+    Path to LD map file (for precomputed source)
+ld_map_rename_dic : Optional[Union[Dict[str, str], List[str]]]
+    Dictionary mapping column names in LD map files
+ld_map_kwargs : Optional[Dict[str, Any]]
+    Additional keyword arguments for loading LD map files
+bfile : Optional[str]
+    Path to PLINK bfile prefix (for bfile source)
+pfile : Optional[str]
+    Path to PLINK pfile prefix (for pfile source)
+vcf : Optional[str]
+    Path to VCF file (for vcf source)
+windowsizekb : int
+    Window size in kilobases
+plink : str
+    Path to plink executable
+plink2 : str
+    Path to plink2 executable
+threads : int
+    Number of threads
+memory : Optional[int]
+    Memory limit in MB
+overwrite : bool
+    Whether to overwrite existing files
+tabix : Optional[Union[bool, str]]
+    Tabix executable path or True to auto-detect. If None, auto-detects.
+    Used for efficient VCF region queries when reading VCF files.
+log : Log
+    Log object
+verbose : bool
+    Verbose output
     **kwargs : Any
-        Additional keyword arguments
-    
-    Returns
-    -------
-    pd.DataFrame
-        LD map with columns: SNPID_bim, CHR, POS, EA_bim, NEA_bim, _INDEX_BIM
-    """
+    Additional keyword arguments
+Returns
+-------
+pd.DataFrame
+    LD map with columns: SNPID_bim, CHR, POS, EA_bim, NEA_bim, _INDEX_BIM
+"""
     if source_type == "precomputed":
         if ld_map_path is None:
             raise ValueError("ld_map_path is required for precomputed LD source")
@@ -736,76 +725,74 @@ def _get_ld_matrix_and_map_from_source(
     verbose: bool = True,
     **kwargs: Any
 ) -> Tuple[np.ndarray, pd.DataFrame, str]:
-    """
-    Get LD matrix and map from any source type (pre-computed, bfile, pfile, or vcf).
+    """Get LD matrix and map from any source type (pre-computed, bfile, pfile, or vcf).
     
     This is a unified interface that handles different LD sources by:
     - Loading pre-computed LD matrices and maps
     - Calculating LD from bfile/pfile using PLINK
     - Calculating LD from VCF using allel
     
-    Parameters
-    ----------
-    source_type : str
-        Type of LD source: "precomputed", "bfile", "pfile", or "vcf"
-    study_index : int
-        Index of the study (0-based)
-    row : pd.Series
-        Lead variant information (CHR, POS, SNPID)
-    locus_sumstats : pd.DataFrame
-        Summary statistics for the locus
-    ld_path : Optional[str]
-        Path to pre-computed LD matrix (for precomputed source)
-    ld_map_path : Optional[str]
-        Path to LD map file (for precomputed source)
-    ld_fmt : str
-        Format of pre-computed LD matrix: "npz" or "txt"
-    bfile : Optional[str]
-        Path to PLINK bfile prefix (for bfile source)
-    pfile : Optional[str]
-        Path to PLINK pfile prefix (for pfile source)
-    vcf : Optional[str]
-        Path to VCF file (for vcf source)
-    windowsizekb : int
-        Window size in kilobases
-    out : str
-        Output directory
-    group : Optional[str]
-        Group identifier for output naming
-    study : Optional[str]
-        Study name for output naming
-    plink : str
-        Path to plink executable
-    plink2 : str
-        Path to plink2 executable
-    threads : int
-        Number of threads
-    mode : str
-        PLINK mode for LD calculation
-    memory : Optional[int]
-        Memory limit in MB
-    overwrite : bool
-        Whether to overwrite existing files
-    extra_plink_option : str
-        Additional PLINK options
-    tabix : Optional[Union[bool, str]]
-        Tabix executable path or True to auto-detect. If None, auto-detects.
-        Used for efficient VCF region queries when reading VCF files.
-    log : Log
-        Log object
-    verbose : bool
-        Verbose output
+Parameters
+----------
+source_type : str
+    Type of LD source: "precomputed", "bfile", "pfile", or "vcf"
+study_index : int
+    Index of the study (0-based)
+row : pd.Series
+    Lead variant information (CHR, POS, SNPID)
+locus_sumstats : pd.DataFrame
+    Summary statistics for the locus
+ld_path : Optional[str]
+    Path to pre-computed LD matrix (for precomputed source)
+ld_map_path : Optional[str]
+    Path to LD map file (for precomputed source)
+ld_fmt : str
+    Format of pre-computed LD matrix: "npz" or "txt"
+bfile : Optional[str]
+    Path to PLINK bfile prefix (for bfile source)
+pfile : Optional[str]
+    Path to PLINK pfile prefix (for pfile source)
+vcf : Optional[str]
+    Path to VCF file (for vcf source)
+windowsizekb : int
+    Window size in kilobases
+out : str
+    Output directory
+group : Optional[str]
+    Group identifier for output naming
+study : Optional[str]
+    Study name for output naming
+plink : str
+    Path to plink executable
+plink2 : str
+    Path to plink2 executable
+threads : int
+    Number of threads
+mode : str
+    PLINK mode for LD calculation
+memory : Optional[int]
+    Memory limit in MB
+overwrite : bool
+    Whether to overwrite existing files
+extra_plink_option : str
+    Additional PLINK options
+tabix : Optional[Union[bool, str]]
+    Tabix executable path or True to auto-detect. If None, auto-detects.
+    Used for efficient VCF region queries when reading VCF files.
+log : Log
+    Log object
+verbose : bool
+    Verbose output
     **kwargs : Any
-        Additional keyword arguments
-    
-    Returns
-    -------
-    Tuple[np.ndarray, pd.DataFrame, str]
-        (ld_matrix, ld_map, plink_log) where:
-        - ld_matrix: LD correlation matrix as numpy array
-        - ld_map: DataFrame with variant information matching the LD matrix
-        - plink_log: PLINK log output (empty string if PLINK not used)
-    """
+    Additional keyword arguments
+Returns
+-------
+Tuple[np.ndarray, pd.DataFrame, str]
+    (ld_matrix, ld_map, plink_log) where:
+    - ld_matrix: LD correlation matrix as numpy array
+    - ld_map: DataFrame with variant information matching the LD matrix
+    - plink_log: PLINK log output (empty string if PLINK not used)
+"""
     plink_log = ""
     
     if source_type == "precomputed":
@@ -997,15 +984,14 @@ def _get_ld_matrix_for_common_variants(
     verbose: bool = True,
     **kwargs: Any
 ) -> Tuple[np.ndarray, str]:
-    """
-    Get LD matrix for common variants only.
+    """Get LD matrix for common variants only.
     
     For precomputed: Load full matrix and extract sub-matrix for common variants.
     For bfile/pfile/vcf: Calculate LD matrix using only common variants.
     
-    Returns:
+Returns
         (ld_matrix, plink_log) where ld_matrix has shape (len(common_variants), len(common_variants))
-    """
+"""
     plink_log = ""
     index_suffix = "_{}".format(study_index + 1)
     index_col = "_INDEX_BIM" + index_suffix
@@ -1147,12 +1133,11 @@ def _export_locus_sumstats_for_study(
     suffixes: List[str],
     log: Log
 ) -> str:
-    """
-    Export locus sumstats for a single study.
+    """Export locus sumstats for a single study.
     
-    Returns:
+Returns
         Path to exported sumstats file
-    """
+"""
     study_suffix = suffixes[study_index] if study_index < len(suffixes) else "_{}".format(study_index + 1)
     matched_sumstats_path = "{}/{}_{}_{}_{}.sumstats".format(out.rstrip("/"), group, row["SNPID"], windowsizekb, study_index + 1)
     
@@ -1221,8 +1206,7 @@ def tofinemapping_m(
     verbose: bool = True,
     **kwargs: Any
 ) -> Tuple[Optional[str], pd.DataFrame, str]:
-    """
-    Prepare data for multi-study fine-mapping by matching sumstats with LD reference files
+    """Prepare data for multi-study fine-mapping by matching sumstats with LD reference files
     and extracting LD matrices for specified loci.
     
     This function is designed for fine-mapping analyses involving multiple studies (typically two).
@@ -1246,101 +1230,100 @@ def tofinemapping_m(
     - Extracting/calculating LD matrices from various sources for each study
     - Exporting SNP lists, LD matrices, and locus-specific sumstats files
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame
-        Summary statistics dataframe with columns: SNPID, CHR, POS, EA, NEA, and study-specific
-        columns (e.g., BETA_1, SE_1, Z_1, BETA_2, SE_2, Z_2).
-    studies : Optional[List[str]], optional
-        List of study names (typically 2 studies). Defaults to None.
-    group : Optional[str], optional
-        Group identifier for output file naming. Defaults to None.
-    ld_paths : Optional[List[str]], optional
-        List of paths to pre-computed LD matrix files (one per study). 
-        Required if using pre-computed LD matrices. Defaults to None.
-    ld_types : Optional[List[str]], optional
-        List of LD matrix file types ("npz" or "txt", one per study). 
-        Defaults to None (assumes "npz").
-    ld_maps : Optional[List[str]], optional
-        List of paths to LD map files (variant annotation files matching LD matrices,
-        one per study). Required if using pre-computed LD matrices. Defaults to None.
-    ld_map_dics : Optional[List[Dict[str, str]]], optional
-        List of dictionaries mapping column names in LD map files to standard names.
-        Defaults to None.
-    bfile : Optional[Union[str, List[str]]], optional
-        Path(s) to PLINK binary files (bfile prefix). Can be a single string (applied to all studies)
-        or a list (one per study). Defaults to None.
-    pfile : Optional[Union[str, List[str]]], optional
-        Path(s) to PLINK pfile format (pgen/pvar/psam). Can be a single string (applied to all studies)
-        or a list (one per study). Defaults to None.
-    vcf : Optional[Union[str, List[str]]], optional
-        Path(s) to VCF file(s). Can be a single string (applied to all studies)
-        or a list (one per study). For best performance, VCF files should be 
-        tabix-indexed (use `tabix -p vcf file.vcf.gz`). Defaults to None.
-    locus : Optional[Tuple[int, int]], optional
-        Single locus as (CHR, POS) tuple. Defaults to None.
-    loci : Optional[List[str]], optional
-        List of lead variant SNPIDs to process. If None, significant loci are auto-extracted.
-        Defaults to None.
-    loci_chrpos : Optional[List[Tuple[int, int]]], optional
-        List of loci as (CHR, POS) tuples. Defaults to None.
-    out : str, optional
-        Output directory path. Defaults to "./".
-    plink : str, optional
-        Path to plink executable. Defaults to "plink".
-    plink2 : str, optional
-        Path to plink2 executable. Defaults to "plink2".
-    windowsizekb : int, optional
-        Window size in kilobases around each lead variant for extracting variants.
-        Defaults to 1000.
-    threads : int, optional
-        Number of threads for parallel processing. Defaults to 1.
-    mode : str, optional
-        Processing mode. Defaults to "r".
-    exclude_hla : bool, optional
-        Whether to exclude HLA region variants. Defaults to False.
-    getlead_kwargs : Optional[Dict[str, Any]], optional
-        Additional keyword arguments for lead variant extraction. Defaults to None.
-    memory : Optional[int], optional
-        Memory limit in MB. Defaults to None.
-    overwrite : bool, optional
-        Whether to overwrite existing output files. Defaults to False.
-    log : Log, optional
-        Log object for recording progress. Defaults to Log().
-    suffixes : Optional[List[str]], optional
-        List of suffixes for study-specific columns (e.g., ["_1", "_2"]).
-        If None, defaults to [""]. Defaults to None.
-    ld_map_kwargs : Optional[Dict[str, Any]], optional
-        Additional keyword arguments for loading LD map files. Defaults to None.
-    ld_if_square : bool, optional
-        Whether to square the LD matrix elements (for pre-computed matrices). Defaults to False.
-    ld_if_add_T : bool, optional
-        Whether to add transpose to LD matrix (for pre-computed matrices). Defaults to False.
-    extra_plink_option : str, optional
-        Additional options to pass to PLINK commands. Defaults to "".
-    tabix : Optional[Union[bool, str, List[Union[bool, str]]]], optional
-        Tabix executable path(s) or True to auto-detect. Can be a single value (applied to all studies)
-        or a list (one per study). If None, auto-detects for each VCF file.
-        Used for efficient VCF region queries when reading VCF files.
-        Defaults to None.
-    verbose : bool, optional
-        Whether to print verbose output. Defaults to True.
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics dataframe with columns: SNPID, CHR, POS, EA, NEA, and study-specific
+    columns (e.g., BETA_1, SE_1, Z_1, BETA_2, SE_2, Z_2).
+studies : Optional[List[str]], optional
+    List of study names (typically 2 studies). Defaults to None.
+group : Optional[str], optional
+    Group identifier for output file naming. Defaults to None.
+ld_paths : Optional[List[str]], optional
+    List of paths to pre-computed LD matrix files (one per study).
+    Required if using pre-computed LD matrices. Defaults to None.
+ld_types : Optional[List[str]], optional
+    List of LD matrix file types ("npz" or "txt", one per study).
+    Defaults to None (assumes "npz").
+ld_maps : Optional[List[str]], optional
+    List of paths to LD map files (variant annotation files matching LD matrices,
+    one per study). Required if using pre-computed LD matrices. Defaults to None.
+ld_map_dics : Optional[List[Dict[str, str]]], optional
+    List of dictionaries mapping column names in LD map files to standard names.
+    Defaults to None.
+bfile : Optional[Union[str, List[str]]], optional
+    Path(s) to PLINK binary files (bfile prefix). Can be a single string (applied to all studies)
+    or a list (one per study). Defaults to None.
+pfile : Optional[Union[str, List[str]]], optional
+    Path(s) to PLINK pfile format (pgen/pvar/psam). Can be a single string (applied to all studies)
+    or a list (one per study). Defaults to None.
+vcf : Optional[Union[str, List[str]]], optional
+    Path(s) to VCF file(s). Can be a single string (applied to all studies)
+    or a list (one per study). For best performance, VCF files should be
+    tabix-indexed (use `tabix -p vcf file.vcf.gz`). Defaults to None.
+locus : Optional[Tuple[int, int]], optional
+    Single locus as (CHR, POS) tuple. Defaults to None.
+loci : Optional[List[str]], optional
+    List of lead variant SNPIDs to process. If None, significant loci are auto-extracted.
+    Defaults to None.
+loci_chrpos : Optional[List[Tuple[int, int]]], optional
+    List of loci as (CHR, POS) tuples. Defaults to None.
+out : str, optional
+    Output directory path. Defaults to "./".
+plink : str, optional
+    Path to plink executable. Defaults to "plink".
+plink2 : str, optional
+    Path to plink2 executable. Defaults to "plink2".
+windowsizekb : int, optional
+    Window size in kilobases around each lead variant for extracting variants.
+    Defaults to 1000.
+threads : int, optional
+    Number of threads for parallel processing. Defaults to 1.
+mode : str, optional
+    Processing mode. Defaults to "r".
+exclude_hla : bool, optional
+    Whether to exclude HLA region variants. Defaults to False.
+getlead_kwargs : Optional[Dict[str, Any]], optional
+    Additional keyword arguments for lead variant extraction. Defaults to None.
+memory : Optional[int], optional
+    Memory limit in MB. Defaults to None.
+overwrite : bool, optional
+    Whether to overwrite existing output files. Defaults to False.
+log : Log, optional
+    Log object for recording progress. Defaults to Log().
+suffixes : Optional[List[str]], optional
+    List of suffixes for study-specific columns (e.g., ["_1", "_2"]).
+    If None, defaults to [""]. Defaults to None.
+ld_map_kwargs : Optional[Dict[str, Any]], optional
+    Additional keyword arguments for loading LD map files. Defaults to None.
+ld_if_square : bool, optional
+    Whether to square the LD matrix elements (for pre-computed matrices). Defaults to False.
+ld_if_add_T : bool, optional
+    Whether to add transpose to LD matrix (for pre-computed matrices). Defaults to False.
+extra_plink_option : str, optional
+    Additional options to pass to PLINK commands. Defaults to "".
+tabix : Optional[Union[bool, str, List[Union[bool, str]]]], optional
+    Tabix executable path(s) or True to auto-detect. Can be a single value (applied to all studies)
+    or a list (one per study). If None, auto-detects for each VCF file.
+    Used for efficient VCF region queries when reading VCF files.
+    Defaults to None.
+verbose : bool, optional
+    Whether to print verbose output. Defaults to True.
     **kwargs : Any
-        Additional keyword arguments passed to PLINK processing functions.
+    Additional keyword arguments passed to PLINK processing functions.
+Returns
+-------
+Tuple[Optional[str], pd.DataFrame, str]
+    A tuple containing:
+    - output_file_list_path (Optional[str]): Path to the file list CSV, or None if no
+      loci were processed successfully.
+    - output_file_list (pd.DataFrame): DataFrame with columns: SNPID, SNPID_LIST,
+      LD_R_MATRIX, LOCUS_SUMSTATS, LOCUS, SUBSTUDY, STUDY, GROUP. Each row represents
+      one study-locus combination.
+    - plink_log (str): PLINK log output (empty string if PLINK was not used).
     
-    Returns
-    -------
-    Tuple[Optional[str], pd.DataFrame, str]
-        A tuple containing:
-        - output_file_list_path (Optional[str]): Path to the file list CSV, or None if no
-          loci were processed successfully.
-        - output_file_list (pd.DataFrame): DataFrame with columns: SNPID, SNPID_LIST,
-          LD_R_MATRIX, LOCUS_SUMSTATS, LOCUS, SUBSTUDY, STUDY, GROUP. Each row represents
-          one study-locus combination.
-        - plink_log (str): PLINK log output (empty string if PLINK was not used).
-    
-    Notes
-    -----
+Notes
+-----
     - This function supports multiple studies (typically 2, but can handle any number).
     - LD source type is automatically detected for each study based on provided parameters.
     - Priority: ld_paths+ld_maps > bfile > pfile > vcf
@@ -1348,8 +1331,8 @@ def tofinemapping_m(
       and handled by negating the corresponding LD matrix entries.
     - Output files are named with pattern: {group}_{nstudy}_{lead_snpid}_{windowsizekb}kb.*
     
-    Examples
-    --------
+Examples
+--------
     # Using pre-computed LD matrices
     >>> filelist_path, filelist_df, plink_log = tofinemapping_m(
     ...     sumstats=sumstats_df,
@@ -1382,7 +1365,7 @@ def tofinemapping_m(
     ...     windowsizekb=500,
     ...     out="./finemapping_output"
     ... )
-    """
+"""
     
     ############################################################################################
     # STEP 0: Initialize and validate parameters
@@ -1621,8 +1604,7 @@ def _extract_variants_from_ld_matrix_m(
     verbose: bool, 
     index: int
 ) -> str:
-    """
-    Extract sub-matrix from full LD matrix for matched variants.
+    """Extract sub-matrix from full LD matrix for matched variants.
     
     This function ensures the extracted LD matrix:
     1. Contains only variants in merged_sumstats (using _INDEX_BIM_{index+1})
@@ -1631,7 +1613,7 @@ def _extract_variants_from_ld_matrix_m(
     
     The extracted matrix will have shape (len(merged_sumstats), len(merged_sumstats))
     and matches the variant order in merged_sumstats exactly.
-    """
+"""
     # study suffixes starting from 1
     index_bim_header = "_INDEX_BIM_{}".format(index + 1) 
     flipped_header = "_FLIPPED_{}".format(index + 1) 

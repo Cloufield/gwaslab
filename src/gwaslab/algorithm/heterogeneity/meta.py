@@ -1,4 +1,5 @@
-"""Fixed-effects meta-analysis helpers."""
+"""Fixed-effects meta-analysis helpers.
+"""
 
 from __future__ import annotations
 
@@ -12,27 +13,30 @@ def fixed_effect_meta(
     beta: np.ndarray,
     se: np.ndarray,
 ) -> Tuple[float, float, float, float]:
-    """
-    Inverse-variance fixed-effects meta-analysis for one variant.
+    """Inverse-variance fixed-effects meta-analysis for one variant.
 
-    Parameters
-    ----------
-    beta : numpy.ndarray
-        Study-specific effect estimates.
-    se : numpy.ndarray
-        Study-specific standard errors (must be positive).
+Parameters
+----------
+beta : numpy.ndarray
+    Study-specific effect estimates.
+se : numpy.ndarray
+    Study-specific standard errors (must be positive).
+Returns
+-------
+beta_fe : float
+    Combined effect estimate.
+se_fe : float
+    Standard error of the combined estimate.
+z_fe : float
+    Z-score of the combined estimate.
+p_fe : float
+    Two-sided P-value.
 
-    Returns
-    -------
-    beta_fe : float
-        Combined effect estimate.
-    se_fe : float
-        Standard error of the combined estimate.
-    z_fe : float
-        Z-score of the combined estimate.
-    p_fe : float
-        Two-sided P-value.
-    """
+References
+----------
+    Cochran, W. G. (1954). The combination of estimates from different
+    experiments. Biometrics, 10(1), 101-129.
+"""
     beta = np.asarray(beta, dtype=float)
     se = np.asarray(se, dtype=float)
     weights = 1.0 / (se ** 2)
@@ -50,34 +54,36 @@ def cochran_q_from_studies(
     beta2: np.ndarray,
     se2: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Compute Cochran Q, heterogeneity P, and I-squared for two-study comparisons.
+    """Compute Cochran Q, heterogeneity P, and I-squared for two-study comparisons.
 
-    Parameters
-    ----------
-    beta1, se1 : numpy.ndarray
-        Effect and SE for study 1.
-    beta2, se2 : numpy.ndarray
-        Effect and SE for study 2.
+Parameters
+----------
+beta1 : numpy.ndarray
+    Effect estimates for study 1.
+se1 : numpy.ndarray
+    Standard errors for study 1.
+beta2 : numpy.ndarray
+    Effect estimates for study 2.
+se2 : numpy.ndarray
+    Standard errors for study 2.
+Returns
+-------
+q : numpy.ndarray
+    Cochran Q statistic (df=1 per row).
+het_p : numpy.ndarray
+    Heterogeneity P-values.
+i2 : numpy.ndarray
+    I-squared statistics in [0, 1].
 
-    Returns
-    -------
-    q : numpy.ndarray
-        Cochran Q statistic (df=1 per row).
-    het_p : numpy.ndarray
-        Heterogeneity P-values.
-    i2 : numpy.ndarray
-        I-squared statistics in [0, 1].
-
-    References
-    ----------
+References
+----------
     Cochran, W. G. (1954). The combination of estimates from different
     experiments. Biometrics, 10(1), 101-129.
 
     Huedo-Medina, T. B., Sánchez-Meca, J., Marín-Martínez, F., & Botella, J.
     (2006). Assessing heterogeneity in meta-analysis: Q statistic or I² index?
     Psychological Methods, 11(2), 193-206.
-    """
+"""
     beta1 = np.asarray(beta1, dtype=float)
     se1 = np.asarray(se1, dtype=float)
     beta2 = np.asarray(beta2, dtype=float)

@@ -1,4 +1,177 @@
 {
+  "param_groups": {
+    "highlight": [
+      "highlight",
+      "highlight_chrpos",
+      "highlight_color",
+      "highlight_anno_kwargs",
+      "highlight_anno_args",
+      "highlight_lim",
+      "highlight_lim_mode",
+      "highlight_windowkb"
+    ],
+    "ld": [
+      "anno_cell",
+      "anno_cell_fmt",
+      "anno_cell_kwargs",
+      "cbar_bbox_to_anchor",
+      "cbar_borderpad",
+      "cbar_downward_offset",
+      "cbar_equal_aspect",
+      "cbar_font_family",
+      "cbar_fontsize",
+      "cbar_h_scale",
+      "cbar_scale",
+      "cbar_title",
+      "cbar_w_scale",
+      "ld_block",
+      "ld_block_anno",
+      "ld_block_anno_kwargs",
+      "ld_block_anno_max_rows",
+      "ld_block_anno_set",
+      "ld_block_grid",
+      "ld_block_grid_kwargs",
+      "ld_fmt",
+      "ld_if_add_T",
+      "ld_if_square",
+      "ld_link",
+      "ld_link_alpha_scale",
+      "ld_link_color",
+      "ld_link_linewidth",
+      "ld_link_sig_level",
+      "ld_link_thr",
+      "ld_map_kwargs",
+      "ld_map_path",
+      "ld_map_rename_dic",
+      "ld_path",
+      "show_ld_score",
+      "tabix",
+      "taf",
+      "vcf_chr_dict",
+      "vcf_path"
+    ],
+    "rr": [
+      "region_recombination",
+      "rr_chr_dict",
+      "rr_header_dict",
+      "rr_lim",
+      "rr_path",
+      "rr_ylabel"
+    ],
+    "region_panel": [
+      "gtf_chr_dict",
+      "gtf_gene_name",
+      "gtf_path",
+      "region",
+      "region_anno_bbox_args",
+      "region_anno_bbox_kwargs",
+      "region_flank_factor",
+      "region_grid",
+      "region_grid_line",
+      "region_hspace",
+      "region_ld_colors",
+      "region_ld_colors_m",
+      "region_ld_legend",
+      "region_ld_threshold",
+      "region_lead_grid",
+      "region_lead_grid_line",
+      "region_legend_marker",
+      "region_marker_shapes",
+      "region_protein_coding",
+      "region_ref",
+      "region_ref_alias",
+      "region_ref_second",
+      "region_step",
+      "region_title",
+      "region_title_args",
+      "region_title_kwargs",
+      "track_exon_ratio",
+      "track_font_family",
+      "track_fontsize_ratio",
+      "track_n",
+      "track_n_offset",
+      "track_text_offset"
+    ],
+    "qq_panel": [
+      "gc",
+      "qq_line_color",
+      "qq_scatter_args",
+      "qq_scatter_kwargs",
+      "qq_xlabels",
+      "qq_xlim",
+      "qtitle",
+      "qtitle_pad",
+      "stratified"
+    ],
+    "mqq_layout": [
+      "mqqratio",
+      "mtitle",
+      "mtitle_pad"
+    ],
+    "brisbane": [
+      "bwindowsizekb",
+      "density_color",
+      "density_palette",
+      "density_range",
+      "density_threshold",
+      "density_tpalette",
+      "density_trange"
+    ],
+    "qq_misc": [
+      "include_chrXYMT",
+      "expected_min_mlog10p"
+    ],
+    "pinpoint": [
+      "pinpoint",
+      "pinpoint_color"
+    ],
+    "jagged_axis": [
+      "jagged",
+      "jagged_len",
+      "jagged_wid"
+    ],
+    "maf_stratify": [
+      "maf_bins",
+      "maf_bin_colors"
+    ],
+    "panel_layout": [
+      "height_ratios",
+      "hspace",
+      "subplot_height",
+      "titles",
+      "title_pos",
+      "align_xaxis",
+      "variant_positions",
+      "variant_line_kwargs"
+    ],
+    "track_panel": [
+      "file_format",
+      "chr_dict",
+      "name_column",
+      "feature_type",
+      "min_track_height",
+      "figsize"
+    ],
+    "arc_panel": [
+      "arc_height",
+      "max_arcs",
+      "score_col",
+      "score_threshold",
+      "color_by_score"
+    ],
+    "ag_panel": [
+      "filled",
+      "ylabel_template",
+      "cmap",
+      "vmin",
+      "vmax",
+      "filter_threshold"
+    ],
+    "chromatin_panel": [
+      "region_chromatin_labels",
+      "xlim_i"
+    ]
+  },
   "args": {
     "_chrom_df_for_i": {
       "plots": [
@@ -9,7 +182,7 @@
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Internal MQQ helper; not for user calls.",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -23,7 +196,7 @@
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Internal regional helper; not for user calls.",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -37,7 +210,7 @@
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Internal QC flag; not for user calls.",
       "default": true,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -51,7 +224,7 @@
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Internal axis helper; not for user calls.",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -65,7 +238,7 @@
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Internal position dict; not for user calls.",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -147,12 +320,14 @@
     },
     "alpha": {
       "plots": [
+        "plot_arc",
         "plot_gwheatmap"
       ],
       "desc": "Alpha for markers",
       "default": 0.5,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "arc_panel"
     },
     "anno": {
       "plots": [
@@ -885,10 +1060,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Colorbar title",
+      "desc": "Title text for the LD r\u00b2 colorbar inset.",
       "default": "LD $\\mathregular{r^2}$ with variant",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Shown when region_ld_legend=True; LaTeX r\u00b2 supported in default."
+      }
     },
     "cbar_w_scale": {
       "plots": [
@@ -929,12 +1107,14 @@
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
-        "plot_mqq:r"
+        "plot_mqq:r",
+        "plot_track"
       ],
       "desc": "Chromosome number/name mapping",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "track_panel"
     },
     "chrom": {
       "plots": [
@@ -993,13 +1173,20 @@
       "plots": [
         "plot_gwheatmap"
       ],
-      "desc": "",
+      "desc": "Window size (kb) for cis-regulatory heatmap rows.",
       "default": 100,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_gwheatmap": "Cis-window half-width (kb) for rows in the GWAS heatmap."
+      }
     },
     "cmap": {
       "plots": [
+        "plot_ag_contact",
+        "plot_ag_overlay",
+        "plot_ag_sashimi",
+        "plot_ag_tracks",
         "plot_associations",
         "plot_rg",
         "plot_trumpet:b",
@@ -1008,7 +1195,8 @@
       "desc": "Colormap selection",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "ag_panel"
     },
     "cmap_rg": {
       "plots": [],
@@ -1048,7 +1236,8 @@
         "#74BAD3"
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "ag_panel"
     },
     "corrections": {
       "plots": [
@@ -1067,16 +1256,19 @@
       "plots": [
         "plot_pipcs"
       ],
-      "desc": "",
+      "desc": "Column name for credible-set index.",
       "default": "CREDIBLE_SET_INDEX",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_pipcs": "Credible-set index column."
+      }
     },
     "cs_category": {
       "plots": [
         "plot_pipcs"
       ],
-      "desc": "",
+      "desc": "Column name for credible-set category label.",
       "default": "CS_CATEGORY",
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -1092,7 +1284,7 @@
         "plot_mqq:r",
         "plot_qq:qq"
       ],
-      "desc": "Shrink variants above threshold",
+      "desc": "Cap variant -log10(P) display above this value (squashes extreme peaks for layout).",
       "default": 0,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -1148,10 +1340,13 @@
       "plots": [
         "plot_daf"
       ],
-      "desc": "",
+      "desc": "Column name for discovery allele frequency.",
       "default": "DAF",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_daf": "Discovery allele frequency column."
+      }
     },
     "density_color": {
       "plots": [
@@ -1168,7 +1363,13 @@
       "ctx_defaults": {
         "plot_snp_density:b": false
       },
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
+      ],
+      "no_plots_group": "brisbane"
     },
     "density_palette": {
       "plots": [
@@ -1331,7 +1532,10 @@
       "desc": "Effect allele frequency column",
       "default": "EAF",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_daf": "Effect allele frequency column for DAF comparison plot."
+      }
     },
     "eaf_kwargs": {
       "plots": [
@@ -1361,9 +1565,7 @@
       "add_to_docstring": false
     },
     "edgecolor": {
-      "plots": [
-        "plot_pipcs"
-      ],
+      "plots": [],
       "desc": "Marker edge color",
       "default": null,
       "ctx_defaults": {},
@@ -1608,7 +1810,9 @@
         "plot_effect"
       ],
       "desc": "Font configuration kwargs",
-      "default": {"fontsize":9},
+      "default": {
+        "fontsize": 9
+      },
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -1650,8 +1854,8 @@
       "desc": "Font size for ticks, labels, etc.",
       "default": 12,
       "ctx_defaults": {
-        "plot_mqq:mqq":10,
-        "plot_mqq:qqm":10
+        "plot_mqq:mqq": 10,
+        "plot_mqq:qqm": 10
       },
       "add_to_docstring": false
     },
@@ -1725,7 +1929,9 @@
       ],
       "desc": "Grouping column for axes",
       "default": "CIS/TRANS",
-      "ctx_defaults": {"plot_effect":null},
+      "ctx_defaults": {
+        "plot_effect": null
+      },
       "add_to_docstring": false
     },
     "gtf_chr_dict": {
@@ -1768,24 +1974,65 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "GTF gene annotation path or 'default' for built-in resource",
+      "desc": "Gene annotation GTF for the track below the locus.",
       "default": "default",
       "ctx_defaults": {
         "plot_region:r": "default"
       },
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "'default' uses built-in annotation for build. Filter protein-coding with region_protein_coding."
+      }
     },
     "height_ratios": {
       "plots": [
-        "plot_gwheatmap"
+        "plot_gwheatmap",
+        "plot_panels"
       ],
       "desc": "Panel height ratios",
-      "default": [
-        1,
-        2
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
+      "default": null,
+      "ctx_defaults": {
+        "plot_gwheatmap": [
+          1,
+          2
+        ]
+      },
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout",
+      "no_plots": [
+        "compare_effect",
+        "plot_associations",
+        "plot_daf",
+        "plot_effect",
+        "plot_forest",
+        "plot_gwheatmap",
+        "plot_ld_block",
+        "plot_lead_overlap",
+        "plot_manhattan",
+        "plot_miami2",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:r",
+        "plot_phenogram",
+        "plot_pipcs",
+        "plot_power",
+        "plot_power:b",
+        "plot_power:q",
+        "plot_power_x",
+        "plot_qq:qq",
+        "plot_region",
+        "plot_region:r",
+        "plot_rg",
+        "plot_sankey",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_stacked_mqq",
+        "plot_trumpet",
+        "plot_trumpet:b",
+        "plot_trumpet:q"
+      ]
     },
     "helper_line_kwargs": {
       "plots": [
@@ -1824,6 +2071,7 @@
         "plot_region:r",
         "plot_mqq:r"
       ],
+      "no_plots_group": "highlight",
       "desc": "List of focal variants to highlight",
       "default": [],
       "ctx_defaults": {},
@@ -1868,13 +2116,15 @@
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
+        "plot_track",
         "plot_trumpet:b",
         "plot_trumpet:q"
       ],
       "desc": "Highlight color",
       "default": "#CB132D",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "track_panel"
     },
     "highlight_lim": {
       "plots": [
@@ -1940,12 +2190,14 @@
     },
     "hspace": {
       "plots": [
-        "plot_gwheatmap"
+        "plot_gwheatmap",
+        "plot_panels"
       ],
       "desc": "Vertical space between panels",
       "default": 0.1,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
     },
     "hue": {
       "plots": [
@@ -2006,7 +2258,13 @@
       "desc": "Include sex/MT chromosomes in QQ",
       "default": true,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
+      ],
+      "no_plots_group": "qq_misc"
     },
     "insumstats": {
       "plots": [
@@ -2017,7 +2275,7 @@
         "plot_mqq:qqm",
         "plot_mqq:r"
       ],
-      "desc": "",
+      "desc": "Internal Sumstats reference; hidden from user docs.",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -2082,7 +2340,13 @@
       "desc": "Enable jagged axis break markers",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
+      ],
+      "no_plots_group": "jagged_axis"
     },
     "jagged_len": {
       "plots": [
@@ -2223,10 +2487,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Path to LD matrix resource",
+      "desc": "Precomputed LD matrix path (alternative to vcf_path).",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "When set with ld_fmt, skips VCF LD calculation."
+      }
     },
     "anno_cell": {
       "plots": [
@@ -2234,10 +2501,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Whether to annotate LD block cells with r² values.",
+      "desc": "Annotate LD block matrix cells with r\u00b2 values.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Used with ld_block=True; format via anno_cell_fmt."
+      }
     },
     "anno_cell_fmt": {
       "plots": [
@@ -2267,10 +2537,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Whether to draw grid lines on the LD block plot.",
+      "desc": "Draw grid lines on the LD matrix triangle panel.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Style via ld_block_grid_kwargs; panel requires ld_block=True."
+      }
     },
     "ld_block_grid_kwargs": {
       "plots": [
@@ -2292,7 +2565,10 @@
       "desc": "Whether to add annotations on the left side of the LD block triangle. If True, uses 'chr:pos' format. If a string (e.g., 'SNPID', 'rsID'), uses that column for annotation text. Annotations are styled like axis ticks and labels, with right-aligned text.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Left-side variant labels on the LD triangle; True uses chr:pos, or pass a column name (SNPID, rsID)."
+      }
     },
     "ld_block_anno_kwargs": {
       "plots": [
@@ -2333,10 +2609,30 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Enable LD block plot (45° rotated inverted triangle) in regional plots",
+      "desc": "Add rotated LD matrix (lower triangle) panel below the locus.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_manhattan",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:b",
+        "plot_mqq:qq",
+        "plot_qq",
+        "plot_qq:qq",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_trumpet:b",
+        "plot_trumpet:q",
+        "plot_miami2"
+      ],
+      "no_plots_group": "ld",
+      "ctx_desc": {
+        "plot_region:r": "Requires vcf_path (or ld_path) and region. Controlled with ld_block_grid/anno_* options."
+      }
     },
     "ld_link": {
       "plots": [
@@ -2344,10 +2640,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Enable LD link plot in regional plots. Draws straight lines connecting SNPs with LD r² above threshold.",
+      "desc": "Draw straight lines between variant pairs with LD r\u00b2 \u2265 region_ld_threshold[0].",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Draws pairs with r\u00b2 \u2265 region_ld_threshold[0]. Line color follows region_ld_colors bins (same as markers); alpha scales by r\u00b2 \u00d7 ld_link_alpha_scale. Filter pairs with ld_link_sig_level."
+      }
     },
     "ld_link_thr": {
       "plots": [
@@ -2355,10 +2654,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "LD r² threshold for drawing lines. Only pairs with LD >= thr will be connected.",
+      "desc": "API placeholder; minimum ld_link pair r\u00b2 is region_ld_threshold[0], not this value.",
       "default": 0.8,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Currently not read by the implementation\u2014minimum link r\u00b2 is region_ld_threshold[0]; set bins via region_ld_threshold instead."
+      }
     },
     "ld_link_color": {
       "plots": [
@@ -2366,10 +2668,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Color for the LD lines.",
+      "desc": "API placeholder; ld_link colors follow region_ld_colors, not this parameter.",
       "default": "blue",
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Currently unused\u2014line colors match region_ld_threshold/region_ld_colors bins."
+      }
     },
     "ld_link_alpha_scale": {
       "plots": [
@@ -2377,10 +2682,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Scaling factor for line transparency based on LD value. Alpha = ld * link_alpha_scale.",
+      "desc": "Scale line alpha as min(r\u00b2 \u00d7 scale, 1.0) for ld_link segments.",
       "default": 0.2,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Higher values make high-LD links more opaque."
+      }
     },
     "ld_link_linewidth": {
       "plots": [
@@ -2388,10 +2696,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Line width for LD lines.",
+      "desc": "Line width for all ld_link segments.",
       "default": 1.0,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Fixed width; color/alpha still reflect LD bin and r\u00b2."
+      }
     },
     "ld_link_sig_level": {
       "plots": [
@@ -2399,10 +2710,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "P-value significance threshold for LD lines. Only lines connecting pairs where at least one variant meets this threshold will be drawn. If None, uses sig_level. If sig_level is also None, all lines above ld_link_thr are drawn.",
+      "desc": "P-value cutoff for ld_link pairs; at least one variant in the pair must pass.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "Defaults to sig_level when None. Independent from anno_sig_level."
+      }
     },
     "show_legend": {
       "plots": [
@@ -2419,10 +2733,13 @@
         "plot_region",
         "plot_region:r"
       ],
-      "desc": "Enable LD score annotation and links in regional plots. When True, calculates LD scores for ref variants (sum of r² values with all other variants in the region) and annotates ref variants with these scores. Also draws links from each variant to ref variants, colored based on LD categories with transparency scaled by LD value. LD score is defined as l_j = Σ(r²_{j,k}) for all k ≠ j. Requires vcf_path or ld_path to be specified.",
+      "desc": "Annotate reference variants with LD score and draw LD-scored links.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": true
+      "add_to_docstring": true,
+      "ctx_desc": {
+        "plot_region:r": "LD score = sum of r\u00b2 to other variants; requires vcf_path or ld_path."
+      }
     },
     "legend1": {
       "plots": [
@@ -2466,7 +2783,7 @@
         "compare_effect",
         "plot_effect"
       ],
-      "desc": "Legend layout mode",
+      "desc": "Legend layout: int code (plot_effect) or string mode (compare_effect).",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -2595,7 +2912,13 @@
         ]
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
+      ],
+      "no_plots_group": "maf_stratify"
     },
     "maf_level": {
       "plots": [
@@ -2629,11 +2952,14 @@
         "plot_qq:qq",
         "plot_region:r",
         "plot_snp_density:b",
-        "plot_trumpet:b",
-        "plot_trumpet:q",
         "plot_phenogram"
       ],
-      "desc": "Marker size or size range",
+      "desc": "Scatter marker size. Use an int for fixed size, or a (small, large) tuple for variants below/above sig_level.",
+      "ctx_desc": {
+        "plot_mqq:r": "Regional plot sizes for non-lead and lead variants.",
+        "plot_region:r": "Tuple (small, large) for non-lead vs lead/significant tiers on the locus scatter; reference overlay uses ~1.5\u00d7 max.",
+        "plot_mqq:mqq": "Manhattan marker sizes for non-significant and significant variants."
+      },
       "default": null,
       "ctx_defaults": {
         "plot_phenogram": 81,
@@ -2813,11 +3139,20 @@
         "plot_mqq:r",
         "plot_trumpet:b",
         "plot_trumpet:q",
-        "plot_stacked_mqq"
+        "plot_stacked_mqq",
+        "plot_power",
+        "plot_power:q",
+        "plot_power:b",
+        "plot_power_x"
       ],
-      "desc": "Plotting mode",
+      "desc": "Plot layout mode. Values depend on the plot function; see ctx_desc.",
       "ctx_desc": {
-        "plot_mqq:mqq": "Manhattan plot and QQ plot",
+        "plot_mqq:mqq": "Combined Manhattan (left) and QQ (right); default for plot_mqq().",
+        "plot_mqq:m": "Manhattan plot only.",
+        "plot_mqq:qq": "QQ plot only.",
+        "plot_mqq:r": "Regional locus plot; requires region=(chr, start, end). Prefer plot_region().",
+        "plot_mqq:b": "Brisbane SNP-density layout (legacy; prefer plot_snp_density()).",
+        "plot_snp_density:b": "Brisbane SNP-density layout (mode is forced to b).",
         "plot_trumpet:q": "Quantitative trait mode; power lines computed for continuous effect sizes",
         "plot_trumpet:b": "Binary trait mode; power lines computed under case-control assumptions"
       },
@@ -2825,7 +3160,7 @@
       "ctx_defaults": {
         "plot_trumpet:q": "q",
         "plot_trumpet:b": "b",
-        "plot_stacked_mqq":"r"
+        "plot_stacked_mqq": "r"
       },
       "add_to_docstring": false
     },
@@ -2841,7 +3176,13 @@
       "desc": "Layout ratio for combined Manhattan-QQ plot",
       "default": 3,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
+      ],
+      "no_plots_group": "mqq_layout"
     },
     "mtitle": {
       "plots": [
@@ -2962,10 +3303,13 @@
       "plots": [
         "plot_pipcs"
       ],
-      "desc": "",
+      "desc": "Plot only variants assigned to a credible set.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_pipcs": "When True, plot only CS-assigned variants."
+      }
     },
     "or_to_rr": {
       "plots": [
@@ -2993,7 +3337,9 @@
       ],
       "desc": "P-value column",
       "default": "P",
-      "ctx_defaults": {"plot_rg":"p"},
+      "ctx_defaults": {
+        "plot_rg": "p"
+      },
       "add_to_docstring": false
     },
     "p1": {
@@ -3025,9 +3371,7 @@
       "add_to_docstring": false
     },
     "palette": {
-      "plots": [
-        "plot_pipcs"
-      ],
+      "plots": [],
       "desc": "Color palette name or list",
       "default": null,
       "ctx_defaults": {},
@@ -3083,7 +3427,13 @@
       "desc": "Variants to pinpoint",
       "default": [],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
+      ],
+      "no_plots_group": "pinpoint"
     },
     "pinpoint_color": {
       "plots": [
@@ -3106,10 +3456,13 @@
       "plots": [
         "plot_pipcs"
       ],
-      "desc": "",
+      "desc": "Column name for posterior inclusion probability.",
       "default": "PIP",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_pipcs": "PIP column in finemapping results."
+      }
     },
     "pipcs_raw": {
       "plots": [],
@@ -3250,7 +3603,15 @@
       "desc": "Manhattan/QQ combined title",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_mqq:r",
+        "plot_region",
+        "plot_region:r",
+        "plot_snp_density",
+        "plot_snp_density:b"
+      ],
+      "no_plots_group": "qq_panel"
     },
     "qtitle_pad": {
       "plots": [
@@ -3310,10 +3671,13 @@
       "plots": [
         "plot_daf"
       ],
-      "desc": "",
+      "desc": "Column name for reference allele frequency.",
       "default": "RAF",
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_daf": "Reference allele frequency column."
+      }
     },
     "ref_chrom": {
       "plots": [
@@ -3375,10 +3739,31 @@
         "plot_pipcs",
         "plot_region:r"
       ],
-      "desc": "Region triple (chr, start, end) in base pairs",
+      "desc": "Genomic locus as (chr, start, end) in base pairs.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_manhattan",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:b",
+        "plot_mqq:qq",
+        "plot_qq",
+        "plot_qq:qq",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_trumpet:b",
+        "plot_trumpet:q",
+        "plot_miami2"
+      ],
+      "no_plots_group": "region_panel",
+      "ctx_desc": {
+        "plot_region:r": "Required locus for plot_region(). Example: (7, 156538803, 157538803). Use get_region_start_and_end() to derive windows.",
+        "plot_mqq:r": "Same as plot_region(); required when mode='r'."
+      }
     },
     "region_anno_bbox_kwargs": {
       "plots": [
@@ -3392,9 +3777,9 @@
       ],
       "desc": "Annotation bbox kwargs for region",
       "default": {
-          "ec": "None",
-          "fc": "None"
-        },
+        "ec": "None",
+        "fc": "None"
+      },
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -3408,10 +3793,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Flank proportion for region padding",
+      "desc": "Fraction of locus width added as padding on each side.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Expands (start, end) symmetrically before plotting."
+      }
     },
     "region_grid": {
       "plots": [
@@ -3423,10 +3811,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Show grid lines in regional plot",
+      "desc": "Vertical grid lines at genomic tick positions on the locus scatter panel.",
       "default": false,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Styled with region_grid_line."
+      }
     },
     "region_grid_line": {
       "plots": [
@@ -3463,10 +3854,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Vertical spacing between region panels",
+      "desc": "Vertical gap between scatter, recombination, and gene tracks.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Matplotlib hspace between ax1/ax3/ax4 panels."
+      }
     },
     "region_ld_colors": {
       "plots": [
@@ -3479,7 +3873,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "LD colors (list or palette) aligned with thresholds",
+      "desc": "Colors for LD r\u00b2 bins (single-reference); paired with region_ld_threshold.",
       "default": [
         "#E4E4E4",
         "#020080",
@@ -3490,7 +3884,10 @@
         "#FF0000"
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "List length = len(region_ld_threshold)+3. Index 0: no/missing LD; indices 1\u2026N: LD intervals between thresholds; last index: reference/lead variant. Default 7 colors for 4 thresholds. ld_link reuses these colors."
+      }
     },
     "region_ld_colors_m": {
       "plots": [
@@ -3503,7 +3900,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "LD colors for multi-lead mode",
+      "desc": "Base colors for multi-reference LD coloring (one entry per region_ref).",
       "default": [
         "#E51819",
         "#367EB7",
@@ -3514,7 +3911,10 @@
         "purple"
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "When len(region_ref)>1, each color builds a white\u2192color gradient across the same bins as region_ld_threshold. Variant shape comes from region_marker_shapes[1+] per reference, not from LD tier."
+      }
     },
     "region_ld_legend": {
       "plots": [
@@ -3526,13 +3926,18 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "no_plots":["plot_stacked_mqq"],
-      "desc": "Whether to show LD legend/colorbar",
+      "no_plots": [
+        "plot_stacked_mqq"
+      ],
+      "desc": "Show LD r\u00b2 colorbar inset beside the locus panel.",
       "default": true,
       "ctx_defaults": {
         "plot_region:r": true
       },
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "True when vcf_path or ld_path supplies LD; uses region_ld_threshold/colors legend."
+      }
     },
     "region_ld_threshold": {
       "plots": [
@@ -3545,7 +3950,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "LD r^2 thresholds list for color stratification",
+      "desc": "LD r\u00b2 cutoffs (single-reference) that define color bins for scatter markers and ld_link lines.",
       "default": [
         0.2,
         0.4,
@@ -3553,7 +3958,10 @@
         0.8
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Ascending r\u00b2 boundaries, e.g. [0.2, 0.4, 0.6, 0.8]. Bins: missing/0, (0\u2192t0], (t0\u2192t1], \u2026, (t_last\u21921], plus reference/lead. Pair with region_ld_colors (len = len(thresholds)+3). ld_link draws pairs with r\u00b2 \u2265 thresholds[0]."
+      }
     },
     "region_lead_grid": {
       "plots": [
@@ -3565,11 +3973,16 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "no_plots":["plot_stacked_mqq"],
-      "desc": "Show lead grid lines",
+      "no_plots": [
+        "plot_stacked_mqq"
+      ],
+      "desc": "Highlight line at the reference/lead variant genomic position.",
       "default": true,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Styled with region_lead_grid_line (default red dashed)."
+      }
     },
     "region_lead_grid_line": {
       "plots": [
@@ -3582,7 +3995,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Lead grid line style",
+      "desc": "Matplotlib kwargs for the reference/lead vertical guide line.",
       "default": {
         "alpha": 0.5,
         "linewidth": 2,
@@ -3597,7 +4010,10 @@
           "color": "#FF0000"
         }
       },
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Default: red dashed, alpha 0.5, linewidth 2. Used when region_lead_grid=True."
+      }
     },
     "region_legend_marker": {
       "plots": [
@@ -3610,10 +4026,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Show legend markers",
+      "desc": "Draw the reference-variant marker symbol in the LD colorbar inset.",
       "default": true,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Uses region_marker_shapes[2] (single-ref) inside the colorbar when True."
+      }
     },
     "region_marker_shapes": {
       "plots": [
@@ -3626,7 +4045,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Marker shapes for regional plots. Index 0: variants with missing LD, index 1: variants with LD, index 2+: reference variants",
+      "desc": "Matplotlib marker shapes by role; LD r\u00b2 sets color only (region_ld_threshold/colors), not shape.",
       "default": [
         "X",
         "o",
@@ -3639,7 +4058,10 @@
         "8"
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Shape by index; LD r\u00b2 controls color via region_ld_threshold/region_ld_colors, not shape. Index 0: missing LD (default 'X'). Index 1: variants with LD data. Index 2+: reference variant(s)\u2014single-ref uses index 2; multi-ref uses 2, 3, \u2026 Do not set scatter_kwargs['marker']."
+      }
     },
     "region_protein_coding": {
       "plots": [
@@ -3652,10 +4074,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Restrict to protein coding genes",
+      "desc": "Show only protein-coding genes on the GTF annotation track.",
       "default": true,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Applies when gtf_path is set (or 'default')."
+      }
     },
     "region_recombination": {
       "plots": [
@@ -3668,10 +4093,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Plot recombination rate",
+      "desc": "Plot recombination-rate track under the locus (requires rr_path).",
       "default": true,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Uses rr_path, rr_lim, rr_ylabel; disable to hide the RR panel."
+      }
     },
     "region_ref": {
       "plots": [
@@ -3684,10 +4112,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Reference variant(s) for LD coloring",
+      "desc": "Reference variant ID(s) for LD coloring relative to vcf_path/ld_path.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "SNPID or rsID list, e.g. ['rs123']. None or [None] auto-picks the lead variant. Up to 7 refs; multi-ref switches to region_ld_colors_m."
+      }
     },
     "region_ref_alias": {
       "plots": [
@@ -3700,10 +4131,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Alias for reference variants",
+      "desc": "Map reference variant IDs to display labels in legend/colorbar.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Dict {variant_id: label} for colorbar/legend text."
+      }
     },
     "region_ref_second": {
       "plots": [
@@ -3716,26 +4150,34 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Second reference variant",
+      "desc": "Legacy second reference ID; prefer multiple entries in region_ref.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Deprecated pattern\u2014include all references in region_ref instead."
+      }
     },
     "region_step": {
       "plots": [
-        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_panels",
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
-      "desc": "Y step for region layout",
+      "desc": "Number of major tick intervals on the locus x-axis.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Default 21 tick steps across the plotted window."
+      },
+      "no_plots_group": "panel_layout"
     },
     "region_title": {
       "plots": [
@@ -3748,10 +4190,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Title text for regional plot",
+      "desc": "Custom title above the locus scatter panel.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "None auto-builds from region and lead variant; pass through region_title_args/kwargs."
+      }
     },
     "region_title_kwargs": {
       "plots": [
@@ -3869,13 +4314,16 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Recombination rate limits",
+      "desc": "Y-axis limits (cM/Mb) for the recombination track.",
       "default": [
         0,
         100
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Tuple (min, max); default (0, 100)."
+      }
     },
     "rr_path": {
       "plots": [
@@ -3887,12 +4335,32 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Recombination rate data path or 'default' for built-in resource",
+      "desc": "Recombination-rate resource path or 'default'.",
       "default": "default",
       "ctx_defaults": {
         "plot_region:r": "default"
       },
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots": [
+        "plot_manhattan",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:b",
+        "plot_mqq:qq",
+        "plot_qq",
+        "plot_qq:qq",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_trumpet:b",
+        "plot_trumpet:q",
+        "plot_miami2"
+      ],
+      "no_plots_group": "rr",
+      "ctx_desc": {
+        "plot_region:r": "Used when region_recombination=True; y-axis limits from rr_lim."
+      }
     },
     "rr_ylabel": {
       "plots": [
@@ -3904,10 +4372,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Show recombination rate y-label",
+      "desc": "Whether to show the recombination-rate y-axis label.",
       "default": true,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Applies to the RR panel when region_recombination=True."
+      }
     },
     "same_ylim": {
       "plots": [
@@ -4014,7 +4485,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Boolean indicating `mlog10p` is already precomputed",
+      "desc": "Auto-detected when scaled effect columns exist; not a direct plot kwarg.",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4024,7 +4495,7 @@
         "compare_effect",
         "plot_miami2"
       ],
-      "desc": "Series 1 pre-scaled -log10(P)",
+      "desc": "Study-1 scaling flag (legacy registry entry; detected from columns).",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4034,7 +4505,7 @@
         "compare_effect",
         "plot_miami2"
       ],
-      "desc": "Series 2 pre-scaled -log10(P)",
+      "desc": "Study-2 scaling flag (legacy registry entry; detected from columns).",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4055,7 +4526,13 @@
         "plot_trumpet:b",
         "plot_trumpet:q"
       ],
-      "desc": "Scatter kwargs for GW heatmap",
+      "desc": "Extra kwargs passed to the main scatter layer (matplotlib Axes.scatter). Use marker_size for point sizes, not s/size.",
+      "ctx_desc": {
+        "plot_mqq:mqq": "Manhattan/QQ scatter styling.",
+        "plot_mqq:r": "Regional scatter styling; marker_size sets point sizes.",
+        "plot_gwheatmap": "Scatter kwargs for GWAS heatmap points.",
+        "plot_region:r": "Extra kwargs for locus scatter points. Do not set 's' (use marker_size) or 'marker' (use region_marker_shapes)."
+      },
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4131,13 +4608,22 @@
     },
     "sig_levels": {
       "plots": [
-        "plot_rg"
+        "plot_rg",
+        "plot_power",
+        "plot_power:q",
+        "plot_power:b",
+        "plot_power_x"
       ],
       "desc": "Significance levels",
       "default": [
         0.05
       ],
-      "ctx_defaults": {},
+      "ctx_defaults": {
+        "plot_power": 5e-08,
+        "plot_power:q": 5e-08,
+        "plot_power:b": 5e-08,
+        "plot_power_x": 5e-08
+      },
       "add_to_docstring": false
     },
     "sig_line": {
@@ -4216,7 +4702,7 @@
         "plot_mqq:r",
         "plot_qq:qq"
       ],
-      "desc": "Minimum -log10(P) to plot",
+      "desc": "Minimum -log10(P) for variants shown on the plot (variants below this are omitted).",
       "default": 0,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4334,11 +4820,8 @@
       "add_to_docstring": false
     },
     "style": {
-      "plots": [
-        "plot_trumpet:b",
-        "plot_trumpet:q"
-      ],
-      "desc": "Style mapping",
+      "plots": [],
+      "desc": "Deprecated; not used by plot_trumpet implementation.",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4393,8 +4876,10 @@
       "add_to_docstring": false
     },
     "sumstats": {
-      "plots": [],
-      "desc": "",
+      "plots": [
+        "plot_ld_block"
+      ],
+      "desc": "Sumstats or DataFrame for LD block when using vcf_path+region.",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -4420,7 +4905,8 @@
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
-        "plot_mqq:r"
+        "plot_mqq:r",
+        "plot_track"
       ],
       "desc": "Track arrangement factors",
       "default": [
@@ -4431,7 +4917,8 @@
         1
       ],
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "track_panel"
     },
     "threshold": {
       "plots": [
@@ -4493,7 +4980,9 @@
       "add_to_docstring": false
     },
     "title_kwargs": {
-      "plots": [],
+      "plots": [
+        "plot_panels"
+      ],
       "desc": "Title styling kwargs (e.g., family, fontsize, weight)",
       "default": null,
       "ctx_defaults": {
@@ -4510,7 +4999,8 @@
           "family": "Arial"
         }
       },
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
     },
     "title_pad": {
       "plots": [
@@ -4529,23 +5019,32 @@
       "add_to_docstring": false
     },
     "title_pos": {
-      "plots": [],
-      "desc": "Title position in axes coordinates (x, y)",
-      "default": [
-        0.01,
-        0.97
+      "plots": [
+        "plot_panels",
+        "plot_stacked_mqq"
       ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
+      "desc": "Title position in axes coordinates (x, y)",
+      "default": null,
+      "ctx_defaults": {
+        "plot_panels": "left",
+        "plot_stacked_mqq": [
+          0.01,
+          0.97
+        ]
+      },
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
     },
     "titles": {
       "plots": [
-        "plot_miami2"
+        "plot_miami2",
+        "plot_panels"
       ],
       "desc": "Pair plot titles",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
     },
     "titles_pad": {
       "plots": [
@@ -4618,10 +5117,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Number of annotation tracks",
+      "desc": "Maximum gene annotation rows (tracks) in the GTF panel.",
       "default": 4,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Genes beyond this limit are omitted; adjust track_n_offset for spacing."
+      }
     },
     "track_n_offset": {
       "plots": [
@@ -4715,10 +5217,13 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
-      "desc": "Reference VCF path for LD computation/loading",
+      "desc": "Reference-panel VCF for LD r\u00b2 computation.",
       "default": null,
       "ctx_defaults": {},
-      "add_to_docstring": false
+      "add_to_docstring": false,
+      "ctx_desc": {
+        "plot_region:r": "Required for LD-colored scatter, ld_block, and ld_link unless ld_path is provided. Biallelic unphased VCF is supported."
+      }
     },
     "verbose": {
       "plots": [
@@ -5147,7 +5652,7 @@
       "plots": [
         "plot_gwheatmap"
       ],
-      "desc": "",
+      "desc": "Map chromosome numbers to y-axis tick labels on GW heatmap.",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -5163,7 +5668,7 @@
       "plots": [
         "plot_rg"
       ],
-      "desc": "Y ticklabel kwargs",
+      "desc": "Matplotlib kwargs for LDSC rg heatmap y-axis tick labels (rotation, fontsize, \u2026).",
       "default": {
         "fontsize": 10,
         "fontfamily": "Arial"
@@ -5184,6 +5689,366 @@
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
+    },
+    "beta_col": {
+      "plots": [],
+      "desc": "Column name for effect size in forest plot.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "se_col": {
+      "plots": [],
+      "desc": "Column name for standard error in forest plot.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_wrap": {
+      "plots": [],
+      "desc": "Enable text wrapping for phenogram annotations.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_wrap_width_pt": {
+      "plots": [],
+      "desc": "Max annotation line width in points (phenogram).",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_wrap_chars_per_line": {
+      "plots": [],
+      "desc": "Character wrap width for phenogram annotations.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_max_len": {
+      "plots": [],
+      "desc": "Truncate phenogram annotation labels to this length.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ns": {
+      "plots": [
+        "plot_power",
+        "plot_power:q",
+        "plot_power:b",
+        "plot_power_x"
+      ],
+      "desc": "Sample size(s) for theoretical power curves.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "prevalences": {
+      "plots": [
+        "plot_power:b",
+        "plot_power_x"
+      ],
+      "desc": "Prevalence value(s) for binary power curves.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ncases": {
+      "plots": [
+        "plot_power:b",
+        "plot_power_x"
+      ],
+      "desc": "Case count(s) for binary power curves.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ncontrols": {
+      "plots": [
+        "plot_power:b",
+        "plot_power_x"
+      ],
+      "desc": "Control count(s) for binary power curves.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "mafs": {
+      "plots": [
+        "plot_power",
+        "plot_power:q",
+        "plot_power:b",
+        "plot_power_x"
+      ],
+      "desc": "MAF grid for plot_power_x.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "betas": {
+      "plots": [
+        "plot_power",
+        "plot_power:q",
+        "plot_power:b",
+        "plot_power_x"
+      ],
+      "desc": "Effect-size grid for plot_power_x.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "align_xaxis": {
+      "plots": [
+        "plot_panels"
+      ],
+      "desc": "Share genomic x-axis limits across stacked panels.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
+    },
+    "variant_positions": {
+      "plots": [
+        "plot_panels"
+      ],
+      "desc": "Genomic positions for vertical guide lines in plot_panels.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
+    },
+    "variant_line_kwargs": {
+      "plots": [
+        "plot_panels"
+      ],
+      "desc": "Style kwargs for variant guide lines.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "panel_layout"
+    },
+    "region_chromatin_labels": {
+      "plots": [
+        "plot_chromatin"
+      ],
+      "desc": "Labels for each chromatin state track row.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "chromatin_panel",
+      "no_plots": [
+        "compare_effect",
+        "plot_associations",
+        "plot_daf",
+        "plot_effect",
+        "plot_forest",
+        "plot_gwheatmap",
+        "plot_ld_block",
+        "plot_lead_overlap",
+        "plot_manhattan",
+        "plot_miami2",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:r",
+        "plot_phenogram",
+        "plot_pipcs",
+        "plot_power",
+        "plot_power:b",
+        "plot_power:q",
+        "plot_power_x",
+        "plot_qq:qq",
+        "plot_region",
+        "plot_region:r",
+        "plot_rg",
+        "plot_sankey",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_stacked_mqq",
+        "plot_trumpet",
+        "plot_trumpet:b",
+        "plot_trumpet:q"
+      ]
+    },
+    "xlim_i": {
+      "plots": [
+        "plot_chromatin"
+      ],
+      "desc": "X-axis offset for chromatin track alignment.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "chromatin_panel"
+    },
+    "file_format": {
+      "plots": [
+        "plot_track"
+      ],
+      "desc": "Track file format override (gtf, bed, bigwig, bigbed).",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "track_panel",
+      "no_plots": [
+        "compare_effect",
+        "plot_associations",
+        "plot_daf",
+        "plot_effect",
+        "plot_forest",
+        "plot_gwheatmap",
+        "plot_ld_block",
+        "plot_lead_overlap",
+        "plot_manhattan",
+        "plot_miami2",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:r",
+        "plot_phenogram",
+        "plot_pipcs",
+        "plot_power",
+        "plot_power:b",
+        "plot_power:q",
+        "plot_power_x",
+        "plot_qq:qq",
+        "plot_region",
+        "plot_region:r",
+        "plot_rg",
+        "plot_sankey",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_stacked_mqq",
+        "plot_trumpet",
+        "plot_trumpet:b",
+        "plot_trumpet:q"
+      ]
+    },
+    "arc_height": {
+      "plots": [
+        "plot_arc"
+      ],
+      "desc": "Relative height of contact arcs above the baseline.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "arc_panel",
+      "no_plots": [
+        "compare_effect",
+        "plot_associations",
+        "plot_daf",
+        "plot_effect",
+        "plot_forest",
+        "plot_gwheatmap",
+        "plot_ld_block",
+        "plot_lead_overlap",
+        "plot_manhattan",
+        "plot_miami2",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:r",
+        "plot_phenogram",
+        "plot_pipcs",
+        "plot_power",
+        "plot_power:b",
+        "plot_power:q",
+        "plot_power_x",
+        "plot_qq:qq",
+        "plot_region",
+        "plot_region:r",
+        "plot_rg",
+        "plot_sankey",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_stacked_mqq",
+        "plot_trumpet",
+        "plot_trumpet:b",
+        "plot_trumpet:q"
+      ]
+    },
+    "max_arcs": {
+      "plots": [
+        "plot_arc"
+      ],
+      "desc": "Maximum number of arcs to draw.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "arc_panel"
+    },
+    "score_col": {
+      "plots": [
+        "plot_arc"
+      ],
+      "desc": "BEDPE column used to filter or color arcs by score.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "arc_panel"
+    },
+    "ylabel_template": {
+      "plots": [
+        "plot_ag_contact",
+        "plot_ag_overlay",
+        "plot_ag_sashimi",
+        "plot_ag_tracks"
+      ],
+      "desc": "Format string for AlphaGenome track y-axis labels.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "ag_panel",
+      "no_plots": [
+        "compare_effect",
+        "plot_associations",
+        "plot_daf",
+        "plot_effect",
+        "plot_forest",
+        "plot_gwheatmap",
+        "plot_ld_block",
+        "plot_lead_overlap",
+        "plot_manhattan",
+        "plot_miami2",
+        "plot_mqq",
+        "plot_mqq:m",
+        "plot_mqq:mqq",
+        "plot_mqq:qqm",
+        "plot_mqq:r",
+        "plot_phenogram",
+        "plot_pipcs",
+        "plot_power",
+        "plot_power:b",
+        "plot_power:q",
+        "plot_power_x",
+        "plot_qq:qq",
+        "plot_region",
+        "plot_region:r",
+        "plot_rg",
+        "plot_sankey",
+        "plot_snp_density",
+        "plot_snp_density:b",
+        "plot_stacked_mqq",
+        "plot_trumpet",
+        "plot_trumpet:b",
+        "plot_trumpet:q"
+      ]
+    },
+    "filter_threshold": {
+      "plots": [
+        "plot_ag_contact",
+        "plot_ag_overlay",
+        "plot_ag_sashimi",
+        "plot_ag_tracks"
+      ],
+      "desc": "Minimum value for AlphaGenome sashimi junction display.",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false,
+      "no_plots_group": "ag_panel"
     }
   },
   "registry": {}

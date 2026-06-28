@@ -45,6 +45,7 @@ from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload
 from gwaslab.io.io_to_pickle import dump_pickle_pair
 from gwaslab.io.io_read_pipcs import _read_pipcs
+from gwaslab.info.g_object_helper import add_pair_doc, add_viz_doc, suppress_display
 
 class SumstatsPair( ):
     def __init__(
@@ -56,6 +57,26 @@ class SumstatsPair( ):
         keep_all_variants: bool = True,
         verbose: bool = True
     ) -> None:
+        """Merge and harmonize two Sumstats objects for pairwise analysis.
+
+        Parameters
+        ----------
+        sumstatsObject1, sumstatsObject2 : Sumstats
+            Input studies to merge by CHR/POS with allele alignment.
+        study : str, optional
+            Unused legacy parameter kept for API compatibility.
+        suffixes : tuple of str, default ("_1", "_2")
+            Suffixes appended to per-study statistic columns.
+        keep_all_variants : bool, default True
+            If True, retain variants present in only one study (outer merge).
+        verbose : bool, default True
+            Print progress messages.
+
+        Returns
+        -------
+        None
+            Initializes ``self.data`` and metadata on the pair object.
+        """
         
         if not isinstance(sumstatsObject1, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #1.")
@@ -249,12 +270,27 @@ class SumstatsPair( ):
         return molded_sumstats, sumstats1, sumstats2
 
 
+    @add_pair_doc(_clump)
     def clump(self, **kwargs: Any) -> None:
         self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.meta["gwaslab"]["group_name"], **kwargs)
 
     def to_coloc(self, **kwargs: Any) -> None:
+        """Prepare coloc input files from the merged pair.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :func:`~gwaslab.util.util_ex_calculate_ldmatrix._to_finemapping`
+            (reference panel paths, loci, PLINK options, etc.).
+
+        Returns
+        -------
+        None
+            Stores paths and file lists in ``self.coloc``.
+        """
         self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = _to_finemapping(self,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
 
+    @add_pair_doc(tofinemapping_m)
     def to_mesusie(self, **kwargs: Any) -> None:
         self.mesusie["path"],self.mesusie["file"],self.mesusie["plink_log"] = tofinemapping_m(self.data,
                                                                                               studies = self.study_names,
@@ -264,6 +300,21 @@ class SumstatsPair( ):
                                                                                               **kwargs)
         
     def run_mesusie(self, **kwargs: Any) -> None:
+        """Run cross-ancestry fine-mapping with MESuSiE (R).
+
+        Requires a file list from :meth:`to_mesusie`.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :func:`~gwaslab.util.rwrapper.util_ex_run_mesusie2._run_mesusie`
+            (``r``, ``L``, ``timeout``, ``mesusie_kwargs``, etc.).
+
+        Returns
+        -------
+        None
+            Stores results in ``self.mesusie_res``.
+        """
         # Run MESuSiE using new framework (returns DataFrame directly, processing done internally)
         self.mesusie_res = _run_mesusie(
             self.mesusie["path"],
@@ -275,6 +326,7 @@ class SumstatsPair( ):
             **kwargs
         )
     
+    @add_pair_doc(_run_multisusie_rss)
     def run_multisusie_rss(self, **kwargs: Any) -> None:
         if "path" not in self.mesusie or self.mesusie["path"] is None:
             self.log.warning(" -MESuSiE filelist not found. Please run to_mesusie() first.", 
@@ -294,7 +346,20 @@ class SumstatsPair( ):
         )
     
     def run_ccgwas(self, **kwargs: Any) -> None:
-         _run_ccgwas(self.data, 
+        """Run CC-GWAS for cross-trait case-control analysis (R).
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :func:`~gwaslab.util.rwrapper.util_ex_run_ccgwas._run_ccgwas`
+            (heritability, prevalence, sample-size, and CC-GWAS options).
+
+        Returns
+        -------
+        None
+            CC-GWAS output is written by the R runner.
+        """
+        _run_ccgwas(self.data,
                       meta = self.meta,
                       ldsc = self.ldsc,
                       ldsc_rg = self.ldsc_rg,
@@ -304,6 +369,20 @@ class SumstatsPair( ):
                       **kwargs)
 
     def read_pipcs(self, prefix: str, **kwargs: Any) -> None:
+        """Load PIP and credible-set results from fine-mapping output files.
+
+        Parameters
+        ----------
+        prefix : str
+            Output path prefix; ``@`` in the path loads all matching locus files.
+        **kwargs
+            Extra arguments passed to ``pandas.read_csv``.
+
+        Returns
+        -------
+        None
+            Updates ``self.mesusie_res`` with merged PIP columns.
+        """
         self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
                                    prefix, 
                                    group=self.meta["gwaslab"]["group_name"], 
@@ -311,19 +390,64 @@ class SumstatsPair( ):
                                    **kwargs)
          
     def run_coloc_susie(self, **kwargs: Any) -> None:
+        """Run coloc + SuSiE colocalization for two studies (R).
+
+        Requires coloc inputs from :meth:`to_coloc`.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :func:`~gwaslab.util.rwrapper.util_ex_run_coloc._run_coloc_susie`.
+
+        Returns
+        -------
+        None
+            Stores results in ``self.coloc_susie_res``.
+        """
         self.coloc_susie_res = _run_coloc_susie(self, self.coloc["path"],log=self.log,ncols=self.ns,**kwargs)
 
     def run_two_sample_mr(self, clump: bool = False, **kwargs: Any) -> None:
+        """Run two-sample Mendelian randomization via TwoSampleMR (R).
+
+        Parameters
+        ----------
+        clump : bool, default False
+            If True, use clumped instruments from :meth:`clump`.
+        **kwargs
+            Forwarded to :func:`~gwaslab.util.rwrapper.util_ex_run_2samplemr._run_two_sample_mr`
+            (``r``, ``methods``, ``f_check``, phenotype options, etc.).
+
+        Returns
+        -------
+        None
+            Stores MR output in ``self.mr``.
+        """
         exposure1 = self.study_names[0]
         outcome2 = self.study_names[1]
         _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**kwargs)
 
     def run_meta_analysis(self, **kwargs: Any) -> Any:
+        """Meta-analyze the two merged studies (fixed or random effects).
+
+        Parameters
+        ----------
+        random_effects : bool, default False
+            Use random-effects inverse-variance weighting when True.
+        match_allele : bool, default True
+            Require matching alleles across studies.
+
+        Returns
+        -------
+        Sumstats
+            Meta-analyzed summary statistics as a new Sumstats object.
+        """
         return meta_analyze_multi(self.data, nstudy=2, log=self.log, **kwargs)
 
+    @add_pair_doc(_extract_with_ld_proxy)
     def extract_with_ld_proxy(self, **arg: Any) -> pd.DataFrame:
         return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)
 
+    @add_pair_doc(_filter_values)
     def filter_value(self, expr: str, inplace: bool = False, **kwargs: Any) -> Optional['SumstatsPair']:
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -335,9 +459,20 @@ class SumstatsPair( ):
         return None
 
     def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
-        params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
-        return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
+        plot_key = key or func.__name__
+        user_keys = set(kwargs.keys()) | set(self.viz_params.get(plot_key, mode).keys())
+        params = self.viz_params.merge(plot_key, kwargs, mode=mode)
+        return self.viz_params.filter(
+            func,
+            params,
+            key=plot_key,
+            mode=mode,
+            log=self.log,
+            verbose=kwargs.get("verbose", True),
+            user_keys=user_keys,
+        )
 
+    @add_viz_doc(plot_stacked_mqq, "plot_stacked_mqq", None)
     def stacked_mqq(self, **kwargs: Any) -> None:
         df1 = self.data[["SNPID","CHR","POS","EA","NEA","P_1"]].rename(columns={"P_1":"P"})
         df2 = self.data[["SNPID","CHR","POS","EA","NEA","P_2"]].rename(columns={"P_2":"P"})
@@ -362,6 +497,7 @@ class SumstatsPair( ):
         plot_stacked_mqq(objects=objects, **params)
 
     ## Visualization #############################################################################################################################################
+    @add_viz_doc(plot_miami2, "plot_miami2", None)
     def plot_miami(self, **kwargs: Any) -> None:
         params = self._apply_viz_params(plot_miami2, kwargs, key="plot_miami2")
         plot_miami2(merged_sumstats=self.data, 
@@ -370,6 +506,8 @@ class SumstatsPair( ):
                     cols2=["CHR","POS","P_2"],
                     **params)
     
+    @add_viz_doc(plotdaf, "plot_daf", None)
+    @suppress_display
     def compare_af(self, **kwargs: Any) -> Any:
         params = self._apply_viz_params(plotdaf, kwargs, key="plot_compare_af")
         return plotdaf( self.data,
@@ -380,9 +518,29 @@ class SumstatsPair( ):
                      **params)
 
     def to_pickle(self, path: str = "~/mysumpair.pickle", overwrite: bool = False) -> None:
+        """Serialize the SumstatsPair object to a pickle file.
+
+        Parameters
+        ----------
+        path : str, default "~/mysumpair.pickle"
+            Output pickle path (``~`` expands to the home directory).
+        overwrite : bool, default False
+            Replace an existing file when True.
+
+        Returns
+        -------
+        None
+        """
         dump_pickle_pair(self, path=path, overwrite=overwrite)
 
     def offload(self) -> None:
+        """Offload merged data to temporary parquet files to free memory.
+
+        Returns
+        -------
+        None
+            Deletes ``self.data`` after writing to ``self.tmp_path``.
+        """
         # Only offload if data exists (skip if already offloaded)
         if hasattr(self, 'data') and self.data is not None:
             _offload(self.data, self.tmp_path, self.log)
@@ -390,4 +548,16 @@ class SumstatsPair( ):
             gc.collect()
 
     def reload(self, delete_files: Optional[List[str]] = None) -> None:
+        """Reload merged data previously offloaded with :meth:`offload`.
+
+        Parameters
+        ----------
+        delete_files : list of str, optional
+            Temporary files to remove after reload.
+
+        Returns
+        -------
+        None
+            Restores ``self.data`` from ``self.tmp_path``.
+        """
         self.data = _reload(self.tmp_path, self.log, delete_files=delete_files)

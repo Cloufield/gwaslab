@@ -23,44 +23,38 @@ if TYPE_CHECKING:
         required_species="homo sapiens"
 )
 def _get_hapmap3(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], rsid: str = "rsID", chrom: str = "CHR", pos: str = "POS", ea: str = "EA", nea: str = "NEA", build: str = "19", verbose: bool = True, match_allele: bool = True, how: str = "inner", log: Log = Log()) -> pd.DataFrame:
-    """
-    Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
+    """Extract HapMap3 SNPs from summary statistics.
 
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    verbose : bool, optional
-        Print progress messages. Default is True.
-    match_allele : bool, optional
-        Check allele matching. Default is True.
-    how : str, optional
-        Type of merge to perform. Default is "inner".
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pandas.DataFrame
+    Input summary statistics.
+rsid : str, default "rsID"
+    rsID column name.
+chrom : str, default "CHR"
+    Chromosome column name.
+pos : str, default "POS"
+    Base-pair position column name.
+ea : str, default "EA"
+    Effect allele column name.
+nea : str, default "NEA"
+    Non-effect allele column name.
+build : str, default "19"
+    Genome build (``"19"`` or ``"38"``).
+verbose : bool, default True
+    Print progress messages.
+match_allele : bool, default True
+    Require allele agreement with the HapMap3 reference.
+how : str, default "inner"
+    pandas merge type (``inner``, ``left``, etc.).
+log : gwaslab.Log, default Log()
+    Logging object.
 
-
-    Returns
-    -------
-    pd.DataFrame
-        Filtered summary statistics with HapMap3 SNPs.
-
-    Less used parameters
-    --------
-
-    build : str, optional
-        Genome build version ("19" or "38"). Default is "19".
-    rsid : str, optional
-        Column name for rsID. Default is "rsID".
-    chrom : str, optional
-        Column name for chromosome. Default is "CHR".
-    pos : str, optional
-        Column name for position. Default is "POS".
-    ea : str, optional
-        Column name for effect allele. Default is "EA".
-    nea : str, optional
-        Column name for non-effect allele. Default is "NEA".
-    log : Log, optional
-        Logging object. Default is Log().
-    """
+Returns
+-------
+pandas.DataFrame
+    Rows matching HapMap3 variants.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -75,7 +69,8 @@ def _get_hapmap3(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], rsid: s
     
     # Helper function for allele matching
     def _match_alleles(output_df, ea_col, nea_col, how_join):
-        """Check if alleles match between sumstats and hapmap3."""
+        """Check if alleles match between sumstats and hapmap3.
+"""
         ea_str = output_df[ea_col].astype("string")
         nea_str = output_df[nea_col].astype("string")
         a1_str = output_df["A1"].astype("string")
@@ -88,7 +83,8 @@ def _get_hapmap3(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], rsid: s
     
     # Helper function to drop temporary columns
     def _drop_temp_columns(output_df, cols_to_drop):
-        """Drop temporary columns if they exist."""
+        """Drop temporary columns if they exist.
+"""
         cols_to_remove = [col for col in cols_to_drop if col in output_df.columns]
         if cols_to_remove:
             output_df = output_df.drop(columns=cols_to_remove, errors="ignore")

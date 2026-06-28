@@ -27,39 +27,37 @@ def _get_signal_density2(
     log: Optional[Log] = None,
     verbose: bool = True
     ) -> pd.DataFrame:
-    """
-    Calculate signal density in genomic data using a sliding window approach.
+    """Calculate signal density in genomic data using a sliding window approach.
 
     This function computes signal density by analyzing the distribution of variants
     across the genome within specified window sizes. It provides statistical summaries
     of density values including mean, median, standard deviation, and maximum values.
 
-    Parameters
-    ----------
-    insumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame containing variants.
-    snpid : str, optional
-        Column name containing variant identifiers. Default is "SNPID".
-    chrom : str, optional
-        Column name containing chromosome numbers. Default is "CHR".
-    pos : str, optional
-        Column name containing genomic positions. Default is "POS".
-    bwindowsizekb : int, optional
-        Window size in kilobases for density calculation. Default is 100.
-    sig_sumstats : pandas.DataFrame, optional
-        Summary statistics DataFrame containing significant variants. If provided,
-        density is calculated based on significant variants (conditional analysis).
-        If None, density is calculated based on all variants. Default is None.
-    log : Log, optional
-        Log object for writing messages. Default is None.
-    verbose : bool, optional
-        Whether to display progress messages. Default is True.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame with added "DENSITY" column containing calculated density values.
-    """
+Parameters
+----------
+insumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame containing variants.
+snpid : str, optional
+    Column name containing variant identifiers. Default is "SNPID".
+chrom : str, optional
+    Column name containing chromosome numbers. Default is "CHR".
+pos : str, optional
+    Column name containing genomic positions. Default is "POS".
+bwindowsizekb : int, optional
+    Window size in kilobases for density calculation. Default is 100.
+sig_sumstats : pandas.DataFrame, optional
+    Summary statistics DataFrame containing significant variants. If provided,
+    density is calculated based on significant variants (conditional analysis).
+    If None, density is calculated based on all variants. Default is None.
+log : Log, optional
+    Log object for writing messages. Default is None.
+verbose : bool, optional
+    Whether to display progress messages. Default is True.
+Returns
+-------
+pandas.DataFrame
+    DataFrame with added "DENSITY" column containing calculated density values.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):

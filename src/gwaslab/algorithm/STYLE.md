@@ -12,6 +12,8 @@ Apply to every function under `gwaslab/algorithm/`.
 
 ## Docstrings (NumPy format)
 
+Follow the project-wide template in [`docs/rules.md`](../../../docs/rules.md) (section **Docstrings**). In brief:
+
 1. One-line summary (imperative)
 2. Extended summary (optional)
 3. Parameters
@@ -19,7 +21,7 @@ Apply to every function under `gwaslab/algorithm/`.
 5. Notes (orchestration pointers, GWASLab-only heuristics)
 6. References (required for published methods)
 
-Example: see `core/genomic_control.py`.
+Example: see `core/genomic_control.py` (`lambda_gc_from_p`).
 
 ## Citations
 

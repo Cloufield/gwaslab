@@ -13,7 +13,8 @@ from gwaslab.algorithm.core.h2 import (
 
 
 def h2_obs_to_liab(h2_obs: float, P: float, K: float, se_obs: Optional[float] = None) -> Union[float, Tuple[float, float]]:
-    """Convert observed-scale h2 to liability scale (delegates to ``gwaslab.algorithm``)."""
+    """Convert observed-scale h2 to liability scale (delegates to ``gwaslab.algorithm``).
+"""
     return _h2_obs_to_liab(h2_obs, p_sample=P, k_pop=K, se_obs=se_obs)
 
 from typing import TYPE_CHECKING
@@ -40,46 +41,44 @@ def _get_per_snp_r2(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
            log: Log = Log(),
            adjuested: bool = False,
            verbose: bool = True) -> pd.DataFrame:
-    """
-    Calculate per-SNP heritability (R²) and optionally F-statistics.
+    """Calculate per-SNP heritability (R²) and optionally F-statistics.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    beta : str, optional
-        Column name for effect size (beta coefficient). Default is "BETA".
-    af : str, optional
-        Column name for effect allele frequency. Default is "EAF".
-    n : str, optional
-        Column name for sample size. Default is "N".
-    mode : str, optional
-        Trait type: "q" for quantitative, "b" for binary. Default is "q".
-    se : str, optional
-        Column name for standard error (used when vary="se"). Default is "SE".
-    vary : float or str, optional
-        Variance of the phenotype Y. If "se", Var(Y) is estimated from SE, N, and MAF. Default is 1.
-    ncase : int, optional
-        Number of cases for binary traits. Default is None.
-    ncontrol : int, optional
-        Number of controls for binary traits. Default is None.
-    prevalence : float, optional
-        Disease prevalence for binary traits. Default is None.
-    k : int or str, optional
-        Number of parameters for F-statistic calculation. Use "all" to set k = number of SNPs. Default is 1.
-    adjuested : bool, optional
-        If True, calculate adjusted R². Default is False.
-    verbose : bool, optional
-        If True, write progress messages. Default is True.
-    
-    Returns
-    -------
-    pandas.DataFrame
-        Modified sumstats DataFrame with added columns:
-        - SNPR2: Per-SNP R² (proportion of variance explained)
-        - ADJUESTED_SNPR2: Adjusted R² (if adjuested=True)
-        - F: F-statistic for instrument strength (if N column exists)
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+beta : str, optional
+    Column name for effect size (beta coefficient). Default is "BETA".
+af : str, optional
+    Column name for effect allele frequency. Default is "EAF".
+n : str, optional
+    Column name for sample size. Default is "N".
+mode : str, optional
+    Trait type: "q" for quantitative, "b" for binary. Default is "q".
+se : str, optional
+    Column name for standard error (used when vary="se"). Default is "SE".
+vary : float or str, optional
+    Variance of the phenotype Y. If "se", Var(Y) is estimated from SE, N, and MAF. Default is 1.
+ncase : int, optional
+    Number of cases for binary traits. Default is None.
+ncontrol : int, optional
+    Number of controls for binary traits. Default is None.
+prevalence : float, optional
+    Disease prevalence for binary traits. Default is None.
+k : int or str, optional
+    Number of parameters for F-statistic calculation. Use "all" to set k = number of SNPs. Default is 1.
+adjuested : bool, optional
+    If True, calculate adjusted R². Default is False.
+verbose : bool, optional
+    If True, write progress messages. Default is True.
+Returns
+-------
+pandas.DataFrame
+    Modified sumstats DataFrame with added columns:
+    - SNPR2: Per-SNP R² (proportion of variance explained)
+    - ADJUESTED_SNPR2: Adjusted R² (if adjuested=True)
+    - F: F-statistic for instrument strength (if N column exists)
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe

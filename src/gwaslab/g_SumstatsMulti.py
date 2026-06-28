@@ -286,8 +286,18 @@ class SumstatsMulti( ):
         return molded_sumstats
     
     def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
-        params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
-        return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
+        plot_key = key or func.__name__
+        user_keys = set(kwargs.keys()) | set(self.viz_params.get(plot_key, mode).keys())
+        params = self.viz_params.merge(plot_key, kwargs, mode=mode)
+        return self.viz_params.filter(
+            func,
+            params,
+            key=plot_key,
+            mode=mode,
+            log=self.log,
+            verbose=kwargs.get("verbose", True),
+            user_keys=user_keys,
+        )
 
     def update_meta(self, **kwargs: Any) -> None:
         self.meta = _update_meta(self.meta, self.data, log = self.log, **kwargs)
@@ -324,33 +334,31 @@ class SumstatsMulti( ):
         verbose: bool = True,
         **kwargs: Any
     ) -> Sumstats:
-        """
-        Perform meta-regression on GWAS summary statistics.
+        """Perform meta-regression on GWAS summary statistics.
         
         This method fits a meta-regression model where effect sizes vary as a
         function of a study-level covariate. The model uses weighted least squares
         with inverse-variance weights.
         
-        Parameters
-        ----------
-        covariate : list, array, or dict
-            Study-level covariate values. Can be:
-            - List/array of length K (number of studies): [x_1, x_2, ..., x_K]
-            - Dict mapping study index (1-based) to covariate: {1: x_1, 2: x_2, ...}
-        covariate_name : str, default "covariate"
-            Name of the covariate for output columns (e.g., "age", "year").
-        center_covariate : bool, default True
-            If True, center the covariate by subtracting its mean.
-            This makes the intercept interpretable as the effect at the mean covariate value.
-        min_studies : int, default 3
-            Minimum number of studies required per variant to perform meta-regression.
-        verbose : bool, default True
-            Whether to print progress messages.
-        **kwargs : Any
-            Additional keyword arguments passed to meta_regress.
-        
-        Returns
-        -------
+Parameters
+----------
+covariate : list, array, or dict
+    Study-level covariate values. Can be:
+    - List/array of length K (number of studies): [x_1, x_2, ..., x_K]
+    - Dict mapping study index (1-based) to covariate: {1: x_1, 2: x_2, ...}
+covariate_name : str, default "covariate"
+    Name of the covariate for output columns (e.g., "age", "year").
+center_covariate : bool, default True
+    If True, center the covariate by subtracting its mean.
+    This makes the intercept interpretable as the effect at the mean covariate value.
+min_studies : int, default 3
+    Minimum number of studies required per variant to perform meta-regression.
+verbose : bool, default True
+    Whether to print progress messages.
+    **kwargs : Any
+    Additional keyword arguments passed to meta_regress.
+Returns
+-------
         Sumstats
             Sumstats object containing meta-regression results with columns:
             - All original SNP information (SNPID, CHR, POS, EA, NEA)
@@ -367,8 +375,8 @@ class SumstatsMulti( ):
             - P_HET: P-value for heterogeneity test
             - I2: I-squared statistic for heterogeneity
         
-        Examples
-        --------
+Examples
+--------
         >>> import gwaslab as gl
         >>> # Load multiple sumstats
         >>> sumstats_list = [
@@ -380,7 +388,7 @@ class SumstatsMulti( ):
         >>> # Mean ages for each study
         >>> ages = [45.2, 52.1, 48.7]
         >>> result = multi.run_meta_regression(covariate=ages, covariate_name="age")
-        """
+"""
         # Note: Covariate-based meta-regression has been removed.
         # MR-MEGA extension now only contains the MDS-based MR-MEGA algorithm.
         # For covariate-based meta-regression, use a different method or implement separately.
@@ -391,25 +399,23 @@ class SumstatsMulti( ):
         )
 
     def run_multisusie_rss(self, R_list: List[np.ndarray], **kwargs: Any) -> pd.DataFrame:
-        """
-        Run finemapping using MultiSuSiE RSS (summary statistics version).
+        """Run finemapping using MultiSuSiE RSS (summary statistics version).
         
         This method runs MultiSuSiE on multiple populations/studies using summary statistics.
         It extracts BETA, SE, and N from the SumstatsMulti object for each study and runs
         MultiSuSiE finemapping.
         
-        Parameters
-        ----------
-        R_list : List[np.ndarray]
-            List of LD correlation matrices, one for each population/study.
-            Each matrix should be PxP where P is the number of variants.
-            Variants should be in the same order across all matrices.
-        **kwargs : Any
-            Additional keyword arguments passed to _run_multisusie_rss.
-            See _run_multisusie_rss documentation for full list of parameters.
-        
-        Returns
-        -------
+Parameters
+----------
+R_list : List[np.ndarray]
+    List of LD correlation matrices, one for each population/study.
+    Each matrix should be PxP where P is the number of variants.
+    Variants should be in the same order across all matrices.
+    **kwargs : Any
+    Additional keyword arguments passed to _run_multisusie_rss.
+    See _run_multisusie_rss documentation for full list of parameters.
+Returns
+-------
         pd.DataFrame
             DataFrame containing finemapping results with columns:
             - SNPID: Variant identifier
@@ -420,15 +426,15 @@ class SumstatsMulti( ):
             - CS_CATEGORY: Credible set category (if available)
             - Additional columns from MultiSuSiE results
         
-        Examples
-        --------
+Examples
+--------
         >>> # Assuming you have a SumstatsMulti object and LD matrices
         >>> results = sumstats_multi.run_multisusie_rss(
         ...     R_list=[ld_matrix_1, ld_matrix_2],
         ...     L=10,
         ...     max_iter=100
         ... )
-        """
+"""
         kwargs = {k: v for k, v in kwargs.items() if k != "log"}
         verbose = kwargs.pop("verbose", True)
         return _run_multisusie_rss(
@@ -470,23 +476,21 @@ class SumstatsMulti( ):
         return output
     
     def to_pickle(self, path: str = "~/mysummulti.pickle", overwrite: bool = False) -> None:
-        """
-        Save SumstatsMulti object to a pickle file.
+        """Save SumstatsMulti object to a pickle file.
         
-        Parameters
-        ----------
-        path : str, optional
-            File path for the pickle file. Supports `~` for home directory expansion.
-            Defaults to "~/mysummulti.pickle"
-        overwrite : bool, optional
-            If True, overwrite the file if it already exists. If False, skip saving if file exists.
-            Defaults to False
-        
-        Returns
-        -------
+Parameters
+----------
+path : str, optional
+    File path for the pickle file. Supports `~` for home directory expansion.
+    Defaults to "~/mysummulti.pickle"
+overwrite : bool, optional
+    If True, overwrite the file if it already exists. If False, skip saving if file exists.
+    Defaults to False
+Returns
+-------
         None
             Saves the object to disk
-        """
+"""
         dump_pickle_multi(self, path=path, overwrite=overwrite)
 
     def offload(self) -> None:
@@ -495,12 +499,11 @@ class SumstatsMulti( ):
         gc.collect()
 
     def reload(self, delete_files: Optional[List[str]] = None) -> None:
-        """
-        Reload data from temporary pickle file.
+        """Reload data from temporary pickle file.
         
-        Parameters
-        ----------
-        delete_files : list of str, optional
-            Additional files to delete after successful reload
-        """
+Parameters
+----------
+delete_files : list of str, optional
+    Additional files to delete after successful reload
+"""
         self.data = _reload(self.tmp_path, self.log, delete_files=delete_files)

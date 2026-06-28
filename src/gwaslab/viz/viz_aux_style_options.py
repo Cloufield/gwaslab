@@ -65,8 +65,7 @@ def set_plot_style(
     log=Log(),
     **kwargs,
 ):
-    """
-    Configure and return a consolidated plotting style dictionary for gwaslab visualizations.
+    """Configure and return a consolidated plotting style dictionary for gwaslab visualizations.
 
     preset common args for all plots.
 
@@ -76,66 +75,17 @@ def set_plot_style(
     plotting functions (e.g., `fig_kwargs` to `plt.subplots`, `save_kwargs` to `savefig`,
     `scatter_kwargs` to scatter/Seaborn calls, and annotation/line options to helpers).
 
-    Parameters
-    ----------
-    plot : str, default "plot_mqq"
-        Plot identifier (e.g., "plot_mqq", "plot_region", "plot_qq").
-    mode : str or None, optional
-        Sub-mode when a plot has variants (e.g., "r" for regional, "qq" for QQ).
-    pm : VizParamsManager or None, optional
-        Parameter manager. If None, a manager is created and populated from
-        `viz_aux_params.txt`.
-    fig_kwargs, save_kwargs, scatter_kwargs, legend_kwargs : dict or None
-        Style dictionaries for figure creation, saving, scatter rendering, and legend.
-    anno_kwargs, highlight_anno_kwargs, anno_kwargs_single : dict or None
-        Annotation styling for all, highlighted, and per-SNP overrides.
-    anno_style : str or None
-        Annotation style (e.g., "right", "tight", "expand").
-    anno_fontsize : int or None
-        Font size for annotations.
-    arrow_kwargs : dict or None
-        Arrow style kwargs for annotation arms.
-    arm_scale, anno_height : float or None
-        Scaling factors for annotation arm length and vertical text placement.
-    anno_xshift, anno_fixed_arm_length : float or None
-        Horizontal shift applied to annotations, and a fixed arm length, respectively.
-    repel_force : float or None
-        Repulsion strength used in text adjustment routines.
-    line_kwargs : dict or None
-        Line styling dict (e.g., for reference lines).
-    sig_line_color, suggestive_sig_line_color : str or None
-        Colors for significance and suggestive reference lines.
-    sc_linewidth : int or None
-        Line width for reference lines.
-    qq_line_color : str or None
-        Reference line color for QQ plots.
-    markeredgecolor, markeredgewidth, markerfacecolor, marker : various or None
-        Marker-level styling injected into `scatter_kwargs`.
-    font, fontsize, fontfamily, font_family : various
-        Font configuration; `fontfamily` overrides `font_family`. `font` dict may
-        contain `family` and `size`.
-    colors : list or None
-        Color palette for categorical hues.
-    marker_size : int or None
-        Default point size; mapped to `scatter_kwargs['s']` if not provided.
-    dpi : int or None
-        Resolution to apply to both `fig_kwargs['dpi']` and `save_kwargs['dpi']`.
-    verbose : bool, default True
-        Toggle for progress logging.
-    log : gwaslab.g_Log.Log
-        Logger instance.
-
-    Returns
-    -------
-    dict
-        Consolidated style configuration containing:
-        - `plot`, `mode`
-        - `fig_kwargs`, `save_kwargs`, `scatter_kwargs`, `legend_kwargs`
-        - `anno_kwargs`, `highlight_anno_kwargs`, `anno_kwargs_single`, `anno_style`, `anno_fontsize`
-        - `arrow_kwargs`, `arm_scale`, `anno_height`, `anno_xshift`, `anno_fixed_arm_length`, `repel_force`,
-        - `line_kwargs`, `sig_line_color`, `suggestive_sig_line_color`, `sc_linewidth`, `qq_line_color`
-        - `font_family`, `fontsize`, `colors`, `marker_size`, `dpi`, `verbose`
-    """
+Returns
+-------
+dict
+    Consolidated style configuration containing:
+    - `plot`, `mode`
+    - `fig_kwargs`, `save_kwargs`, `scatter_kwargs`, `legend_kwargs`
+    - `anno_kwargs`, `highlight_anno_kwargs`, `anno_kwargs_single`, `anno_style`, `anno_fontsize`
+    - `arrow_kwargs`, `arm_scale`, `anno_height`, `anno_xshift`, `anno_fixed_arm_length`, `repel_force`,
+    - `line_kwargs`, `sig_line_color`, `suggestive_sig_line_color`, `sc_linewidth`, `qq_line_color`
+    - `font_family`, `fontsize`, `colors`, `marker_size`, `dpi`, `verbose`
+"""
 
     if pm is None:
         pm = VizParamsManager()

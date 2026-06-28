@@ -22,22 +22,20 @@ except ImportError:
 
 
 def _normalize_chrom_name_vectorized(chrom_series: pd.Series, mapper: Optional[ChromosomeMapper] = None) -> pd.Series:
-    """
-    Vectorized version of _normalize_chrom_name for processing pandas Series.
+    """Vectorized version of _normalize_chrom_name for processing pandas Series.
     Uses ChromosomeMapper for normalization.
     
-    Parameters
-    ----------
-    chrom_series : pd.Series
-        Series of chromosome names (can be strings, ints, or mixed)
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use. If None, creates a new one.
-    
-    Returns
-    -------
-    pd.Series
-        Series of normalized chromosome names (string format for X/Y/MT, numeric for autosomes)
-    """
+Parameters
+----------
+chrom_series : pd.Series
+    Series of chromosome names (can be strings, ints, or mixed)
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use. If None, creates a new one.
+Returns
+-------
+pd.Series
+    Series of normalized chromosome names (string format for X/Y/MT, numeric for autosomes)
+"""
     # Use provided mapper or create a new one
     if mapper is None:
         mapper = ChromosomeMapper()
@@ -59,7 +57,8 @@ def _normalize_chrom_name_vectorized(chrom_series: pd.Series, mapper: Optional[C
 # ----------------------------
 
 def _df_split(dataframe: pd.DataFrame, n: int) -> List[pd.DataFrame]:
-    """Split a DataFrame into n approximately equal parts for parallel processing."""
+    """Split a DataFrame into n approximately equal parts for parallel processing.
+"""
     k, m = divmod(len(dataframe), n)
     return [dataframe.iloc[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]
 
@@ -73,7 +72,8 @@ def _df_split(dataframe: pd.DataFrame, n: int) -> List[pd.DataFrame]:
         start_to_msg= "perform liftover",
         finished_msg= "liftover",
         start_function= ".liftover()",
-        start_cols=["CHR","POS","STATUS"]
+        start_cols=["CHR","POS","STATUS"],
+        on_missing_cols="skip",
 )
 def _liftover_variant(sumstats_obj,
                       chain_path: str = None,
@@ -91,8 +91,7 @@ def _liftover_variant(sumstats_obj,
                       filter_by_status: bool = True,
                       verbose: bool = True,
                       log: Log = Log()) -> pd.DataFrame:
-    """
-    Perform liftover of variants to a new genome build.
+    """Perform liftover of variants to a new genome build.
     
     Can be called with either:
     - from_build and to_build (chain file will be automatically found)
@@ -107,36 +106,35 @@ def _liftover_variant(sumstats_obj,
     or downloaded from UCSC if not available. Built-in chain files are preferred
     for better performance and reliability.
     
-    Parameters
-    ----------
-    chain_path : str, optional
-        Path to UCSC chain file. If provided, from_build and to_build are optional.
-    from_build : str, optional
-        Source genome build (e.g., "19"). If None, uses sumstats_obj.build if available.
-    to_build : str, optional
-        Target genome build (e.g., "38"). Required if chain_path is not provided.
-    remove : bool, default=True
-        Whether to remove unmapped variants
-    verbose : bool, default=True
-        Whether to print progress messages
+Parameters
+----------
+chain_path : str, optional
+    Path to UCSC chain file. If provided, from_build and to_build are optional.
+from_build : str, optional
+    Source genome build (e.g., "19"). If None, uses sumstats_obj.build if available.
+to_build : str, optional
+    Target genome build (e.g., "38"). Required if chain_path is not provided.
+remove : bool, default True
+    Whether to remove unmapped variants
+verbose : bool, default True
+    Whether to print progress messages
+Returns
+-------
+pd.DataFrame
+    DataFrame with lifted coordinates (or updated sumstats_obj.data if Sumstats object).
+    The returned DataFrame contains:
+    - Updated CHR and POS columns with lifted coordinates (from the target build)
+    - Updated STATUS column with new status codes reflecting the liftover results
+    - Unmapped variants are either removed (if remove=True) or kept with NA values
+      for CHR and POS (if remove=False)
+    When called via :meth:`Sumstats.liftover()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with lifted coordinates (or updated sumstats_obj.data if Sumstats object).
-        The returned DataFrame contains:
-        - Updated CHR and POS columns with lifted coordinates (from the target build)
-        - Updated STATUS column with new status codes reflecting the liftover results
-        - Unmapped variants are either removed (if remove=True) or kept with NA values
-          for CHR and POS (if remove=False)
-        When called via :meth:`Sumstats.liftover()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    
-    Notes
-    -----
+Notes
+-----
     If called with a Sumstats object, the function will update the object's data
     and metadata in place. If called with a DataFrame, it returns a new DataFrame.
-    """
+"""
     import pandas as pd
     from pathlib import Path
     

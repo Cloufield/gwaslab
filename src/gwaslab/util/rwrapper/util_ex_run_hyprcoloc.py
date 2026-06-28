@@ -28,10 +28,9 @@ def _run_hyprcoloc(
     timeout: Optional[float] = 1800,  # 30 minutes default timeout
     stop_on_error: bool = False
 ) -> pd.DataFrame:
-    """
-    Run hyprcoloc analysis using the new R script execution framework.
+    """Run hyprcoloc analysis using the new R script execution framework.
     
-    Args:
+Parameters
         sumstats_multi: SumstatsMulti object
         r: Path to Rscript executable
         study: Study name/identifier
@@ -46,9 +45,9 @@ def _run_hyprcoloc(
         timeout: Timeout for R script execution in seconds (default: 1800)
         stop_on_error: Whether to stop on first error (default: False)
     
-    Returns:
+Returns
         Combined DataFrame with hyprcoloc results
-    """
+"""
     log.write(" Start to run hyprcoloc from command line:", verbose=verbose)
     
     # Check R version

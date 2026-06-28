@@ -161,16 +161,15 @@ description_dic = {k: v.get("Description", "").strip() for k, v in _reserved_hea
 dtype_dict = {k: v.get("ValidDtypes", []) for k, v in _reserved_headers_dict.items() if v.get("ValidDtypes")}
 
 def get_default_sanity_ranges() -> Dict[str, Optional[Tuple[float, float]]]:
-    """
-    Get default sanity check ranges from JSON file.
+    """Get default sanity check ranges from JSON file.
     
-    Returns
-    -------
-    dict
-        Dictionary mapping header names to (min, max) tuples for range validation.
-        Values are converted from JSON format (where "Inf" is a string) to Python format
-        (where float("Inf") is used). Returns None for headers without range checking.
-    """
+Returns
+-------
+dict
+    Dictionary mapping header names to (min, max) tuples for range validation.
+    Values are converted from JSON format (where "Inf" is a string) to Python format
+    (where float("Inf") is used). Returns None for headers without range checking.
+"""
     ranges = {}
     for header, info in _reserved_headers_dict.items():
         valid_range = info.get("ValidRange")
@@ -185,15 +184,14 @@ def get_default_sanity_ranges() -> Dict[str, Optional[Tuple[float, float]]]:
 
 # Generate dtype_dict_polars from researved_header_json (single source of truth)
 def get_dtype_dict_polars() -> Dict[str, List[Any]]:
-    """
-    Generate Polars dtype dictionary from JSON file.
+    """Generate Polars dtype dictionary from JSON file.
     Converts string identifiers from ValidDtypesPolars to actual Polars type objects.
     
-    Returns
-    -------
-    dict
-        Dictionary mapping header names to lists of Polars type objects.
-    """
+Returns
+-------
+dict
+    Dictionary mapping header names to lists of Polars type objects.
+"""
     import polars as pl
     type_mapping = {
         "String": pl.String(),

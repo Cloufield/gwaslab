@@ -65,84 +65,82 @@ def _to_format(sumstats_or_dataframe,
               gwas_ssf_path=None,
               log=Log(),
               verbose=True):
-    """
-    Output the sumstats. Convert summary statistics to specified output format with various processing options. VCF, VEP, BED, tsv-like formats.
-    
-    Parameters
-    ----------
-    path : str, optional
-        Output file path prefix. Default is "./sumstats"
-    fmt : str, optional, default="gwaslab"
-        Output format. Supported formats include 'gwaslab', 'vcf', 'bed', 'annovar', etc.  The list of available formats can be checked using `get_formats_list()`.  
-        Default is 'gwaslab'.
-    tab_fmt : str, optional
-        Tabular output format type used when `fmt` is not one of 'vcf', 'bed', or 'annovar'.  
-        Supported options are 'tsv', 'csv', and 'parquet'.  
-        Default is 'tsv'.
-    extract : list or str, optional
-        SNPs to extract. Default is None
-    exclude : list or str, optional
-        SNPs to exclude. Default is None
-    cols : list, optional
-        Additional columns to include in output. Default is empty list
-    hapmap3 : bool, optional
-        Whether to extract Hapmap3 SNPs. Default is False
-    exclude_hla : bool, optional
-        Whether to exclude HLA region. Default is False
-    hla_range : tuple, optional
-        HLA exclusion range in Mbp. Default is (25,34)
-    build : str, optional
-        Genome build version. Default is None
-    n : float, optional
-        Sample size to add as 'N' column. Default is None
-    no_status : bool, optional
-        Whether to exclude 'STATUS' column. Default is False
-    output_log : bool, optional
-        Whether to save a log file. Default is True
-    float_formats : dict, optional
-        Dictionary of float formatting strings. Default is None
-    xymt_number : bool, optional
-        Whether to use numeric codes for X/Y/MT chromosomes. Default is False
-    xymt : list, optional
-        Chromosome names for X, Y, MT. Default is ["X","Y","MT"]
-    chr_prefix : str, optional
-        Prefix for chromosome numbers. Default is empty string
-    ssfmeta : bool, optional
-        Whether to create SSF-style metadata. Default is False
-    md5sum : bool, optional
-        Whether to generate MD5 checksum. Default is False
-    gzip : bool, optional
-        Whether to gzip compress output. Default is True
-    bgzip : bool, optional
-        Whether to bgzip compress output. Default is False
-    tabix : bool, optional
-        Whether to create Tabix index. Default is False
-    tabix_indexargs : dict, optional
-        Dictionary of Tabix indexing arguments. Default is empty dict
-    to_csvargs : dict, optional
-        Dictionary of CSV writing arguments. Default is None
-    to_tabular_kwargs : dict, optional
-        Dictionary of tabular format arguments. Default is None
-    verbose : bool, optional
-        Whether to print progress messages. Default is True
-    validate : bool, optional
-         If True, validate SSF output: try gwas-ssf CLI first; on failure, non-zero exit, or Traceback
-         in stderr, fall back to the built-in pandas-based validator. Default is False
-    gwas_ssf_path : str, optional
-         Path to gwas-ssf CLI executable. If None, will try default paths. Default is None
+    """Convert summary statistics to a tool-specific output format.
 
-    Returns
-    -------
-    None
-        Output is written to file(s) specified by path parameter
+    Supports VCF, VEP, BED, tabular (TSV/CSV/Parquet), and other presets
+    registered in the formatbook.
 
-    Less used parameters
-    ---------------------------------------------------------------
-    log : gwaslab.Log, optional
-        Log object for tracking progress. Default is new Log instance
-    meta : dict, optional
-        Metadata dictionary. Default is None
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pandas.DataFrame
+    Input summary statistics.
+path : str, default "./sumstats"
+    Output file path prefix.
+fmt : str, default "gwaslab"
+    Output format preset. See ``get_formats_list()`` for available names.
+tab_fmt : str, default "tsv"
+    Tabular format when ``fmt`` is not ``vcf``, ``bed``, or ``annovar``
+    (``tsv``, ``csv``, or ``parquet``).
+extract, exclude : list or str, optional
+    Variants to keep or drop (rsID list or file path).
+cols : list, optional
+    Extra columns to include in tabular output.
+id_use : str, default "rsID"
+    Variant identifier column for extraction filters.
+hapmap3 : bool, default False
+    Restrict output to HapMap3 SNPs.
+exclude_hla : bool, default False
+    Drop variants in the HLA region.
+hla_range : tuple, default (25, 34)
+    HLA exclusion window in Mb on chromosome 6.
+build : str, optional
+    Genome build label written to metadata.
+n : float, optional
+    Sample size value added as **N** when missing.
+no_status : bool, default False
+    Omit the **STATUS** column from output.
+output_log : bool, default True
+    Write a companion ``.log`` file.
+float_formats : dict, optional
+    Per-column float format strings for tabular export.
+xymt_number : bool, default False
+    Encode sex chromosomes and MT as numeric codes.
+xymt : list, default ["X", "Y", "MT"]
+    Sex/MT chromosome labels when ``xymt_number`` is False.
+chr_prefix : str, default ""
+    Prefix prepended to chromosome names.
+meta : dict, optional
+    Metadata merged into SSF-style sidecar files.
+ssfmeta : bool, default False
+    Emit GWAS-SSF metadata JSON alongside the sumstats file.
+md5sum : bool, default False
+    Write an MD5 checksum file.
+gzip : bool, default True
+    Gzip-compress tabular output.
+bgzip : bool, default False
+    BGzip-compress output (requires ``tabix`` indexing).
+tabix : bool, default False
+    Build a Tabix index for compressed output.
+tabix_indexargs : dict, default {}
+    Extra arguments passed to the Tabix indexer.
+to_csvargs : dict, optional
+    Extra ``DataFrame.to_csv`` keyword arguments.
+to_tabular_kwargs : dict, optional
+    Extra tabular writer keyword arguments.
+validate : bool, default False
+    Validate SSF output via ``gwas-ssf`` CLI with pandas fallback.
+gwas_ssf_path : str, optional
+    Path to the ``gwas-ssf`` executable.
+verbose : bool, default True
+    Print progress messages.
+log : gwaslab.Log, default Log()
+    Logging object.
+
+Returns
+-------
+None
+    Output is written to disk at ``path``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -668,10 +666,9 @@ def fast_to_vcf(dataframe, path, vcf_header, output_format, meta_data, meta):
         f.write(out_string)
 
 def _apply_inverse_coalesce_for_export(sumstats, coalesce_groups):
-    """
-    Merge GWASLab canonical columns that share one on-disk header (``format_dict`` +
+    """Merge GWASLab canonical columns that share one on-disk header (``format_dict`` +
     ``format_dict_2``). Uses primary-first ``combine_first``, per formatbook reverse policy.
-    """
+"""
     if not coalesce_groups:
         return sumstats
     for g in coalesce_groups:

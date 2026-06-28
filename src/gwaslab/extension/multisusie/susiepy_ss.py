@@ -79,176 +79,174 @@ def multisusie_rss(
     maf_list = None,
     variant_ids = None
     ):
-    """ Top-level function for running MultiSuSiE with summary statistics
+    """Top-level function for running MultiSuSiE with summary statistics
 
     This function takes takes standard GWAS summary statistics, converts
     them to sufficient statistics, and runs MultiSuSiE on them.
 
-    Parameters
-    ----------
+Parameters
+----------
     multisusie_rss accepts two combinations of input parameters:
     1. b_list, s_list, R_list, varY_list, rho, population_sizes
-        This is the preferred input format and is used in the MultiSuSiE paper.
+    This is the preferred input format and is used in the MultiSuSiE paper.
     2. z_list, R_list, rho, population_sizes
-        Here, we assume that both the genotypes and phenotypes have been 
-        standardized to have variance 1 within each population.  It's extremely 
-        important to censor low MAF variants in the population where they are rare. 
-        This is done by setting values in z_list for these variants to 0, and 
-        columns and rows corresponding to these variants to 0. multisusie_rss
-        will not do this for you (but will with the first input combination) 
-        because it doesn't have access to the information that would allow us to 
-        approximate the minor allele frequency or minor allele count. 
-        It's also kind of weird to standardize the genotypes within each 
-        population beacuse variants that are rare in one population and common 
-        in other other will be assigned huge effect sizes.
-
-    R_list: length K list of PxP numpy arrays representing the LD correlation 
-        matrices for each population. Each array should correspond
-        to the same set of P variants, in the same order. Variants that should
-        not be included in a given population due to low MAF can be assigned a
-        value of np.nan.
-    population_sizes: list of integers representing the number of samples in
-        the GWAS for each population
-    b_list: length K list of length P numpy arrays containing effect sizes,
-        one for each population. Each array should correspond
-        to the same set of P variants, in the same order. Variants that should
-        not be included in a given population due to low MAF can be assigned a
-        value of np.nan. Provide exactly one of (b_list and s_list) and z_list.
-    s_list: length K list of length P numpy arrays containing effect size 
-        standard errors, one for each population. Each array should correspond
-        to the same set of P variants, in the same order. Variants that should
-        not be included in a given population due to low MAF can be assigned a
-        value of np.nan. Provide exactly one of (b_list and s_list) and z_list.
-    z_list: length K list of length P numpy arrays containing Z-scores, one for
-        each population. Each array should correspond to the same set of P
-        variants, in the same order. Variants that should not be included in a
-        given population due to low MAF can be assigned a value of np.nan.
-        Provide exactly one of (b_list and s_list) and z_list.
-    varY_list: length K list representing the sample variance of the outcome
-        in each population
-    rho: PxP numpy array representing the effect size correlation matrix. In 
-        the manuscript, we show that this parameter has little impact on the
-        estimated PIPs in practice.
+    Here, we assume that both the genotypes and phenotypes have been
+    standardized to have variance 1 within each population.  It's extremely
+    important to censor low MAF variants in the population where they are rare.
+    This is done by setting values in z_list for these variants to 0, and
+    columns and rows corresponding to these variants to 0. multisusie_rss
+    will not do this for you (but will with the first input combination)
+    because it doesn't have access to the information that would allow us to
+    approximate the minor allele frequency or minor allele count.
+    It's also kind of weird to standardize the genotypes within each
+    population beacuse variants that are rare in one population and common
+    in other other will be assigned huge effect sizes.
+R_list : length K list of PxP numpy arrays representing the LD correlation
+    matrices for each population. Each array should correspond
+    to the same set of P variants, in the same order. Variants that should
+    not be included in a given population due to low MAF can be assigned a
+    value of np.nan.
+population_sizes : list of integers representing the number of samples in
+    the GWAS for each population
+b_list : length K list of length P numpy arrays containing effect sizes,
+    one for each population. Each array should correspond
+    to the same set of P variants, in the same order. Variants that should
+    not be included in a given population due to low MAF can be assigned a
+    value of np.nan. Provide exactly one of (b_list and s_list) and z_list.
+s_list : length K list of length P numpy arrays containing effect size
+    standard errors, one for each population. Each array should correspond
+    to the same set of P variants, in the same order. Variants that should
+    not be included in a given population due to low MAF can be assigned a
+    value of np.nan. Provide exactly one of (b_list and s_list) and z_list.
+z_list : length K list of length P numpy arrays containing Z-scores, one for
+    each population. Each array should correspond to the same set of P
+    variants, in the same order. Variants that should not be included in a
+    given population due to low MAF can be assigned a value of np.nan.
+    Provide exactly one of (b_list and s_list) and z_list.
+varY_list : length K list representing the sample variance of the outcome
+    in each population
+rho : PxP numpy array representing the effect size correlation matrix. In
+    the manuscript, we show that this parameter has little impact on the
+    estimated PIPs in practice.
+L : integer representing the maximum number of causal variants
+scaled_prior_variance : float representing the effect size prior variance,
+    scaled by the residual variance. It's fine to set this to a number
+    larger than what you expect the squared effect size to be (like the
+    default value of 0.2) as long as estimate_prior_variance is set to True
+    and estimate_prior_method is not set to None.
+prior_weights : numpy P-array of floats representing the prior probability
+    of causality for each variant. Give None to use a uniform prior
+standardize : boolean, whether to adjust summmary statistics to be as if
+    genotypes were standardized to have mean 0 and variance 1
+pop_spec_standardization : boolean, if standardize is True, whether to
+    adjust summary statistics to be as if genotypes were standardized
+    separately for each population, or pooled and then standardized
+estimate_residual_variance : boolean, whether to estimate the residual variance, $\sigma^2_k$ in the manuscript
+estimate_prior_variance : boolean, whether to estimate the prior variance,
+    $A^{(l)}$ in the manuscript
+estimate_prior_method : string, method to estimate the prior variance. Recommended
+    values are 'early_EM' or None
+pop_spec_effect_priors : boolean, whether to estimate separate prior
+    variance parameters for each population
+iter_before_zeroing_effects : integer, number of iterations to run before
+    zeroing out component-population pairs (or components if
+    pop_spec_effect_priors is False) that have a lower likelihood than a
+    null model
+prior_tol : float which places a filter on the minimum prior variance
+    for a component to be included when estimating PIPs
+max_iter : integer, maximum number of iterations to run
+tol : float, after iter_before_zeroing_effects iterations, results
+    are returned if the ELBO increases by less than tol in an ieration
+verbose : boolean which indicates if an progress bar should be displayed
+coverage : float representing the minimum coverage of credible sets
+min_abs_corr : float representing the minimum absolute correlation between
+    any pair of variants in a credible set (purity). For each pair of variants,
+    the max is taken across ancestries. In the case where min_abs_corr = 0,
+    low_memory_mode = True, and recover_R = False, the purity of credible
+    sets will not be calculated.
+float_type : numpy float type used. Set to np.float32 to minimize memory
+    consumption
+low_memory_mode : boolean, if True, the input R_list will be modified in place.
+    Decreases memory consumption by a factor of two. BUT, THE INPUT R_list
+    WILL BE OVERWRITTEN. If you need R_list, set low_memory_mode to False
+recover_R : boolean, if True, the R matrices will be recovered from XTX,
+    BUT variants with MAC/MAF estimate less than mac_filter/maf_filter will
+    be censored.
+single_population_mac_thresh : float, variants with minor allele count less
+    than this value in a single population will be censored in that population.
+    The variant will not be censored in the other populations.
+    If mac_list is not None, mac_list is used for the filtering.
+    If mac_list is None, but maf_list is not, mac is caclulated using
+    maf_list and population_sizes. Otherwise, if mac_list is None,
+    maf_list is None, and b_list and s_list are provided as input, then
+    minor allele counts will be estimated under an assumption of
+    Hardy-Weinberg equilibrium.
+mac_list : length K list of floats representing the minor allele count for
+    each variant in each population.
+multi_population_maf_thresh : float, variants with minor allele frequency
+    less than this value in ALL poopulations will be censored. Note that
+    it's probably faster computationally to do this before calling this
+    function. If maf_list is not None, maf_list is used for the filtering.
+    If maf_list is None, but mac_list is not, maf is caclulated using
+    mac_list and population_sizes. Otherwise, if maf_list is None,
+    mac_list is None, and b_list and s_list are provided as input, then
+    minor allele frequencies will be estimated under an assumption of
+    Hardy-Weinberg equilibrium.
+maf_list : length K list of floats representing the minor allele frequency for
+    each variant in each population.
+variant_ids : length P list of strings representing the variant IDs. If
+    provided, sets will contain a fifth entry, containing the variant ids
+    of the variants contained in each set.
+Returns
+-------
+an object containing results with the following attributes:
+    pip: length-P numpy array of posterior inclusion probabilities
+    coef: K x P numpy array of posterior effect size estimates for 
+        each variant in each population, aggregated across
+        all L single effect regressions. These effects are not 
+        conditional on each variant being a causal variant and thus
+        account for uncertainty in the causal variant assignment.
+    coef_sd: K x P numpy array of posterior effect size standard deviations
+        for each variant in each population, aggregated across
+        all L single effect regressions.
+    sets: a list with four entries. The first contains the indices of the 
+        variants contained in each set. The second contains the purity
+        of each set (see min_abs_corr for calculation details). The 
+        third contains the coverage of each set. The fourth contains
+        whether the set has passed filtering. If variant_ids is 
+        provided, a fifth entry contains the variant ids for the 
+        variants contained in each set. 
+    alpha: L x P numpy array of single-effect regression posterior 
+        inclusion probabilities
+    mu: K x L x P numpy array of single-effect regression effect size
+        posterior means, conditional on each variant being the causal variant
+    mu2: K x K x L x P numpy array of single-effect regression effect size
+        posterior seconds moments, conditional on each variant being the 
+        causal variant
+    sigma2: length-K numpy array of residual variance estimates
+    pi: length-P numpy array of prior inclusion probabilities
+    n: length-K numpy array of sample sizes
     L: integer representing the maximum number of causal variants
-    scaled_prior_variance: float representing the effect size prior variance,
-        scaled by the residual variance. It's fine to set this to a number 
-        larger than what you expect the squared effect size to be (like the 
-        default value of 0.2) as long as estimate_prior_variance is set to True
-        and estimate_prior_method is not set to None.
-    prior_weights: numpy P-array of floats representing the prior probability
-        of causality for each variant. Give None to use a uniform prior
-    standardize: boolean, whether to adjust summmary statistics to be as if 
-        genotypes were standardized to have mean 0 and variance 1
-    pop_spec_standardization: boolean, if standardize is True, whether to 
-        adjust summary statistics to be as if genotypes were standardized
-        separately for each population, or pooled and then standardized
-    estimate_residual_variance: boolean, whether to estimate the residual variance, $\\sigma^2_k$ in the manuscript
-    estimate_prior_variance: boolean, whether to estimate the prior variance,
-        $A^{(l)}$ in the manuscript
-    estimate_prior_method: string, method to estimate the prior variance. Recommended
-        values are 'early_EM' or None
-    pop_spec_effect_priors: boolean, whether to estimate separate prior 
-        variance parameters for each population
-    iter_before_zeroing_effects: integer, number of iterations to run before
-        zeroing out component-population pairs (or components if 
-        pop_spec_effect_priors is False) that have a lower likelihood than a 
-        null model
-    prior_tol: float which places a filter on the minimum prior variance
-        for a component to be included when estimating PIPs
-    max_iter: integer, maximum number of iterations to run
-    tol: float, after iter_before_zeroing_effects iterations, results
-        are returned if the ELBO increases by less than tol in an ieration
-    verbose: boolean which indicates if an progress bar should be displayed
-    coverage: float representing the minimum coverage of credible sets
-    min_abs_corr: float representing the minimum absolute correlation between
-        any pair of variants in a credible set (purity). For each pair of variants,
-        the max is taken across ancestries. In the case where min_abs_corr = 0,
-        low_memory_mode = True, and recover_R = False, the purity of credible
-        sets will not be calculated. 
-    float_type: numpy float type used. Set to np.float32 to minimize memory
-        consumption
-    low_memory_mode: boolean, if True, the input R_list will be modified in place.
-        Decreases memory consumption by a factor of two. BUT, THE INPUT R_list
-        WILL BE OVERWRITTEN. If you need R_list, set low_memory_mode to False
-    recover_R: boolean, if True, the R matrices will be recovered from XTX, 
-        BUT variants with MAC/MAF estimate less than mac_filter/maf_filter will
-        be censored. 
-    single_population_mac_thresh: float, variants with minor allele count less
-        than this value in a single population will be censored in that population.
-        The variant will not be censored in the other populations. 
-        If mac_list is not None, mac_list is used for the filtering.
-        If mac_list is None, but maf_list is not, mac is caclulated using
-        maf_list and population_sizes. Otherwise, if mac_list is None, 
-        maf_list is None, and b_list and s_list are provided as input, then
-        minor allele counts will be estimated under an assumption of
-        Hardy-Weinberg equilibrium. 
-    mac_list: length K list of floats representing the minor allele count for
-        each variant in each population.
-    multi_population_maf_thresh: float, variants with minor allele frequency 
-        less than this value in ALL poopulations will be censored. Note that 
-        it's probably faster computationally to do this before calling this 
-        function. If maf_list is not None, maf_list is used for the filtering.
-        If maf_list is None, but mac_list is not, maf is caclulated using
-        mac_list and population_sizes. Otherwise, if maf_list is None, 
-        mac_list is None, and b_list and s_list are provided as input, then
-        minor allele frequencies will be estimated under an assumption of
-        Hardy-Weinberg equilibrium. 
-    maf_list: length K list of floats representing the minor allele frequency for
-        each variant in each population. 
-    variant_ids: length P list of strings representing the variant IDs. If 
-        provided, sets will contain a fifth entry, containing the variant ids
-        of the variants contained in each set. 
-    
-    Returns
-    -------
-    an object containing results with the following attributes:
-        pip: length-P numpy array of posterior inclusion probabilities
-        coef: K x P numpy array of posterior effect size estimates for 
-            each variant in each population, aggregated across
-            all L single effect regressions. These effects are not 
-            conditional on each variant being a causal variant and thus
-            account for uncertainty in the causal variant assignment.
-        coef_sd: K x P numpy array of posterior effect size standard deviations
-            for each variant in each population, aggregated across
-            all L single effect regressions.
-        sets: a list with four entries. The first contains the indices of the 
-            variants contained in each set. The second contains the purity
-            of each set (see min_abs_corr for calculation details). The 
-            third contains the coverage of each set. The fourth contains
-            whether the set has passed filtering. If variant_ids is 
-            provided, a fifth entry contains the variant ids for the 
-            variants contained in each set. 
-        alpha: L x P numpy array of single-effect regression posterior 
-            inclusion probabilities
-        mu: K x L x P numpy array of single-effect regression effect size
-            posterior means, conditional on each variant being the causal variant
-        mu2: K x K x L x P numpy array of single-effect regression effect size
-            posterior seconds moments, conditional on each variant being the 
-            causal variant
-        sigma2: length-K numpy array of residual variance estimates
-        pi: length-P numpy array of prior inclusion probabilities
-        n: length-K numpy array of sample sizes
-        L: integer representing the maximum number of causal variants
-        V: K x L numpy array of effect size prior variance estimates
-        ER2: length-K numpy array of expected squared residuals
-        KL: L x 1 numpy array of Kullback-Leibler divergences for each single
-            effect regression
-        lbf: L x 1 numpy array of log Bayes factors for each single effect 
-            regression
-        converged: boolean indicating whether the algorithm converged
-        niter: integer representing the number of IBSS iterations required
-            to reach convergence
+    V: K x L numpy array of effect size prior variance estimates
+    ER2: length-K numpy array of expected squared residuals
+    KL: L x 1 numpy array of Kullback-Leibler divergences for each single
+        effect regression
+    lbf: L x 1 numpy array of log Bayes factors for each single effect 
+        regression
+    converged: boolean indicating whether the algorithm converged
+    niter: integer representing the number of IBSS iterations required
+        to reach convergence
 
             
 
-    TODO
-    ----
-        - Add command line interface
-        - Add more tests, probably based on tests used for SuSiER
-        - Make defaults match between sufficient statistic and summary statistic
-          functions
-        - Implement missing functionality for individual-level multisusie
-    """
+TODO
+----
+    - Add command line interface
+    - Add more tests, probably based on tests used for SuSiER
+    - Make defaults match between sufficient statistic and summary statistic
+      functions
+    - Implement missing functionality for individual-level multisusie
+"""
 
     
     # provide exactly one of (b_list and s_list) and z_list
@@ -436,26 +434,25 @@ def multisusie_rss(
 susie_multi_rss = multisusie_rss
 
 def recover_XTX_and_XTY(b, s, R, YTY, n):
-    """ Recover XTX and XTY from GWAS summary statistics. INPUT R IS MUTATED 
+    """Recover XTX and XTY from GWAS summary statistics. INPUT R IS MUTATED 
 
     THIS FUNCTION MUTATES INPUT R to reduce memory consumpation. BE CAREFUL!! 
     see page 4 of the supplement of Zou et al. 2022 PLoS Genetics for a derivation
 
-    Parameters
-    ----------
-    b: length-P numpy array of floats representing effect sizes
-    s: length-P numpy array of floats representing standard errors
-    R: PxP numpy array of floats representing the LD correlation matrix
-    YTY: float representing the sample variance of the outcome,
-    n: integer representing the number of samples in the GWAS
-
-    Returns
-    -------
-    R: PxP numpy array representing the LD correlation matrix, with low MAF/MAC
-        variants censored. Note that this is the same object as the input R
-    XTY: length-P numpy array representing the X^T Y vector
-    n_censored: integer representing the number of variants censored
-    """
+Parameters
+----------
+b : length-P numpy array of floats representing effect sizes
+s : length-P numpy array of floats representing standard errors
+R : PxP numpy array of floats representing the LD correlation matrix
+YTY : float representing the sample variance of the outcome,
+n : integer representing the number of samples in the GWAS
+Returns
+-------
+R: PxP numpy array representing the LD correlation matrix, with low MAF/MAC
+    variants censored. Note that this is the same object as the input R
+XTY: length-P numpy array representing the X^T Y vector
+n_censored: integer representing the number of variants censored
+"""
 
     #  see page 4 of the supplement of Zou et al. 2022 PLoS Genetics for a derivation
     sigma2 = YTY / ((b / s) ** 2 + n - 2)
@@ -468,22 +465,21 @@ def recover_XTX_and_XTY(b, s, R, YTY, n):
     return XTY
 
 def recover_XTX_and_XTY_from_Z(z, R, n, float_type = np.float32):
-    """ Recover XTX and XTY from z scores and LD correlation matrix
+    """Recover XTX and XTY from z scores and LD correlation matrix
 
     THIS FUNCTION MUTATES INPUT R to reduce memory consumpation. BE CAREFUL!! 
     This is equivalent to using standardized genotype and phenotype
 
-    Parameters
-    ----------
-    z: length-P numpy array of floats representing GWAS z scores
-    R: PxP numpy array of floats representing the LD correlation matrix
-    n: integer representing the number of samples in the GWAS
-
-    Returns
-    -------
-    XTX: PxP numpy array representing the X^T X matrix
-    XTY: length-P numpy array representing the X^T Y vector
-    """
+Parameters
+----------
+z : length-P numpy array of floats representing GWAS z scores
+R : PxP numpy array of floats representing the LD correlation matrix
+n : integer representing the number of samples in the GWAS
+Returns
+-------
+XTX: PxP numpy array representing the X^T X matrix
+XTY: length-P numpy array representing the X^T Y vector
+"""
     adj = (n - 1) / (z ** 2 + n - 2)
     z = np.sqrt(adj) * z
     R *= (n - 1)
@@ -519,91 +515,90 @@ def susie_multi_ss(
     recover_R = False,
     variant_ids = None
     ):
-    """ Run MultiSuSiE on sufficient statistics
+    """Run MultiSuSiE on sufficient statistics
 
     This function runs MultiSuSiE on sufficient statistics. It is designed to 
     be run from the top-level function multisusie_rss, but can be run directly.
     It will not censor based on MAF/MAC, unlike multisusie_rss.
 
-    Parameters
-    ----------
-    XTX_list: length K list of PxP numpy arrays representing the X^T X matrices
-    XTY_list: length K list of length P numpy arrays representing the X^T Y vectors
-    YTY_list: length K list of floats representing the sample variance of the outcome
-    rho: PxP numpy array representing the effect size correlation matrix
-    population_sizes: list of integers representing the number of samples in
-        the GWAS for each population
+Parameters
+----------
+XTX_list : length K list of PxP numpy arrays representing the X^T X matrices
+XTY_list : length K list of length P numpy arrays representing the X^T Y vectors
+YTY_list : length K list of floats representing the sample variance of the outcome
+rho : PxP numpy array representing the effect size correlation matrix
+population_sizes : list of integers representing the number of samples in
+    the GWAS for each population
+L : integer representing the maximum number of causal variants
+scaled_prior_variance : float representing the effect size prior variance,
+    scaled by the residual variance. It's fine to set this to a number
+    larger than what you expect the squared effect size to be (like the
+    default value of 0.2) as long as estimate_prior_variance is set to True
+    and estimate_prior_method is not set to None.
+prior_weights : numpy P-array of floats representing the prior probability
+    of causality for each variant. Give None to use a uniform prior
+standardize : boolean, whether to adjust summmary statistics to be as if
+    genotypes were standardized to have mean 0 and variance 1
+pop_spec_standardization : boolean, if standardize is True, whether to
+    adjust summary statistics to be as if genotypes were standardized
+    separately for each population, or pooled and then standardized
+estimate_residual_variance : boolean, whether to estimate the residual variance,
+    $\sigma^2_k$ in the manuscript
+estimate_prior_variance : boolean, whether to estimate the prior variance,
+    $A^{(l)}$ in the manuscript
+estimate_prior_method : string, method to estimate the prior variance. Recommended
+    values are 'early_EM' or None
+pop_spec_effect_priors : boolean, whether to estimate separate prior
+    variance parameters for each population
+iter_before_zeroing_effects : integer, number of iterations to run before
+    zeroing out component-population pairs (or components if
+    pop_spec_effect_priors is False) that have a lower likelihood than a
+    null model
+prior_tol : float which places a filter on the minimum prior variance
+    for a component to be included when estimating PIPs
+max_iter : integer, maximum number of iterations to run
+tol : float, after iter_before_zeroing_effects iterations, results
+    are returned if the ELBO increases by less than tol in an ieration
+verbose : boolean which indicates if an progress bar should be displayed
+R_list : length K list of PxP numpy arrays representing the LD correlation.
+    If set to None, and min_abs_corr > 0, the LD correlation matrices will
+    be recovered from XTX_list.
+coverage : float representing the minimum coverage of credible sets
+min_abs_corr : float representing the minimum absolute correlation between
+    any pair of variants in a credible set. For each pair of variants,
+    the max is taken across ancestries. In the case where min_abs_corr = 0,
+    low_memory_mode = True, and recover_R = False, the purity of credible
+    sets will not be calculated.
+float_type : numpy float type used. Set to np.float32 to minimize memory
+    consumption
+low_memory_mode : boolean, if True, the input R_list will be modified in place.
+    Decreases memory consumption by a factor of two. BUT, THE INPUT R_list
+    WILL BE OVERWRITTEN. If you need R_list, set low_memory_mode to False
+recover_R : boolean, if True, the R matrices will be recovered from XTX,
+    BUT variants with MAC/MAF estimate less than mac_filter/maf_filter will
+    be censored.
+Returns
+-------
+an object containing results with the following attributes:
+    alpha: L x P numpy array of single-effect regression posterior 
+        inclusion probabilities
+    mu: K x L x P numpy array of single-effect regression effect size
+        posterior means, conditional on each variant being the causal variant
+    mu2: K x K x L x P numpy array of single-effect regression effect size
+        posterior seconds moments, conditional on each variant being the 
+        causal variant
+    sigma2: length-K numpy array of residual variance estimates
+    pi: length-P numpy array of prior inclusion probabilities
+    n: length-K numpy array of sample sizes
     L: integer representing the maximum number of causal variants
-    scaled_prior_variance: float representing the effect size prior variance,
-        scaled by the residual variance. It's fine to set this to a number 
-        larger than what you expect the squared effect size to be (like the 
-        default value of 0.2) as long as estimate_prior_variance is set to True
-        and estimate_prior_method is not set to None.
-    prior_weights: numpy P-array of floats representing the prior probability
-        of causality for each variant. Give None to use a uniform prior
-    standardize: boolean, whether to adjust summmary statistics to be as if 
-        genotypes were standardized to have mean 0 and variance 1
-    pop_spec_standardization: boolean, if standardize is True, whether to 
-        adjust summary statistics to be as if genotypes were standardized
-        separately for each population, or pooled and then standardized
-    estimate_residual_variance: boolean, whether to estimate the residual variance,
-        $\\sigma^2_k$ in the manuscript
-    estimate_prior_variance: boolean, whether to estimate the prior variance,
-        $A^{(l)}$ in the manuscript
-    estimate_prior_method: string, method to estimate the prior variance. Recommended
-        values are 'early_EM' or None
-    pop_spec_effect_priors: boolean, whether to estimate separate prior 
-        variance parameters for each population
-    iter_before_zeroing_effects: integer, number of iterations to run before
-        zeroing out component-population pairs (or components if 
-        pop_spec_effect_priors is False) that have a lower likelihood than a 
-        null model
-    prior_tol: float which places a filter on the minimum prior variance
-        for a component to be included when estimating PIPs
-    max_iter: integer, maximum number of iterations to run
-    tol: float, after iter_before_zeroing_effects iterations, results
-        are returned if the ELBO increases by less than tol in an ieration
-    verbose: boolean which indicates if an progress bar should be displayed
-    R_list: length K list of PxP numpy arrays representing the LD correlation.
-        If set to None, and min_abs_corr > 0, the LD correlation matrices will
-        be recovered from XTX_list.
-    coverage: float representing the minimum coverage of credible sets
-    min_abs_corr: float representing the minimum absolute correlation between
-        any pair of variants in a credible set. For each pair of variants,
-        the max is taken across ancestries. In the case where min_abs_corr = 0,
-        low_memory_mode = True, and recover_R = False, the purity of credible
-        sets will not be calculated. 
-    float_type: numpy float type used. Set to np.float32 to minimize memory
-        consumption
-    low_memory_mode: boolean, if True, the input R_list will be modified in place.
-        Decreases memory consumption by a factor of two. BUT, THE INPUT R_list
-        WILL BE OVERWRITTEN. If you need R_list, set low_memory_mode to False
-    recover_R: boolean, if True, the R matrices will be recovered from XTX, 
-        BUT variants with MAC/MAF estimate less than mac_filter/maf_filter will
-        be censored. 
-
-    Returns
-    -------
-    an object containing results with the following attributes:
-        alpha: L x P numpy array of single-effect regression posterior 
-            inclusion probabilities
-        mu: K x L x P numpy array of single-effect regression effect size
-            posterior means, conditional on each variant being the causal variant
-        mu2: K x K x L x P numpy array of single-effect regression effect size
-            posterior seconds moments, conditional on each variant being the 
-            causal variant
-        sigma2: length-K numpy array of residual variance estimates
-        pi: length-P numpy array of prior inclusion probabilities
-        n: length-K numpy array of sample sizes
-        L: integer representing the maximum number of causal variants
-        V: K x L numpy array of effect size prior variance estimates
-        ER2: length-K numpy array of expected squared residuals
-        KL: L x 1 numpy array of Kullback-Leibler divergences for each single
-            effect regression
-        lbf: L x 1 numpy array of log Bayes factors for each single effect 
-            regression
-        converged: boolean indicating whether the algorithm converged
-    """
+    V: K x L numpy array of effect size prior variance estimates
+    ER2: length-K numpy array of expected squared residuals
+    KL: L x 1 numpy array of Kullback-Leibler divergences for each single
+        effect regression
+    lbf: L x 1 numpy array of log Bayes factors for each single effect 
+        regression
+    converged: boolean indicating whether the algorithm converged
+"""
 
     #check input dimensions
     assert len(XTX_list) == len(XTY_list)
@@ -755,32 +750,31 @@ def update_each_effect(
     XTX_list, XTY_list, s, X_l2_arr, w_pop, rho,
     estimate_prior_variance=False, estimate_prior_method='optim',
     check_null_threshold=0.0, pop_spec_effect_priors = True, float_type = np.float32):
-    """ Update each single effect regression
+    """Update each single effect regression
 
     This calculates updated single effect regression parameter estimates
 
-    Parameters:
-    -----------
-    XTX_list: length K list of PxP numpy arrays representing the X^T X matrices
-    XTY_list: length K list of length P numpy arrays representing the X^T Y vectors
-    s: S object representing the model parameter estimates prior to the update
-    X_l2_arr: length K numpy array of floats representing the diagonal of X^T X
-    w_pop: length K numpy array of floats representing the relative size of each population
-    rho: PxP numpy array representing the effect size correlation matrix
-    estimate_prior_variance: boolean, whether to estimate effect size prior variance
-    estimate_prior_method: string, method to estimate the prior variance. Recommended
-        values are 'early_EM' or None
-    check_null_threshold: float representing the difference in loglikelihood that
-        a component with a non-zero effect size prior variance must beat the null
-        model by to be retained.
-    pop_spec_effect_priors: boolean, whether to estimate separate prior effect
-        size variances for each population
-    float_type: numpy float type used. Set to np.float32 to minimize memory
-
-    Returns:
-    -------
-    Nothing. S is modified in place.
-    """
+Parameters
+----------
+XTX_list : length K list of PxP numpy arrays representing the X^T X matrices
+XTY_list : length K list of length P numpy arrays representing the X^T Y vectors
+s : S object representing the model parameter estimates prior to the update
+X_l2_arr : length K numpy array of floats representing the diagonal of X^T X
+w_pop : length K numpy array of floats representing the relative size of each population
+rho : PxP numpy array representing the effect size correlation matrix
+estimate_prior_variance : boolean, whether to estimate effect size prior variance
+estimate_prior_method : string, method to estimate the prior variance. Recommended
+    values are 'early_EM' or None
+check_null_threshold : float representing the difference in loglikelihood that
+    a component with a non-zero effect size prior variance must beat the null
+    model by to be retained.
+pop_spec_effect_priors : boolean, whether to estimate separate prior effect
+    size variances for each population
+float_type : numpy float type used. Set to np.float32 to minimize memory
+Returns
+-------
+Nothing. S is modified in place.
+"""
 
         
     if not estimate_prior_variance:
@@ -824,47 +818,46 @@ def single_effect_regression(
     residual_variance, prior_weights=None, optimize_V=None, 
     check_null_threshold=0,  pop_spec_effect_priors = True,
     alpha = None, mu2 = None, float_type = np.float32):
-    """ Fit a multi-population single effect regression model
+    """Fit a multi-population single effect regression model
 
-    Parameters:
-    -----------
-    XTY_list: length K list of length P numpy arrays representing the X^T Y vectors
-    XTX_list: length K list of PxP numpy arrays representing the X^T X matrices
-    V: length K numpy array of floats representing the effect size prior variance
-    X_l2_arr: length K numpy array of floats representing the diagonal of X^T X
-    w_pop: length K numpy array of floats representing the relative size of each population
-    rho: PxP numpy array representing the effect size correlation matrix
-    residual_variance: length K numpy array of floats representing the residual 
-        variance in each population
-    prior_weights: length P numpy array of floats representing the prior probability
-        of causality for each variant
-    optimize_V: string representing the method to use to optimize the effect size
-    check_null_threshold: float representing the difference in loglikelihood that
-        a component with a non-zero effect size prior variance must beat the null
-        model by to be retained.
-    pop_spec_effect_priors: boolean, whether to estimate separate prior effect
-        size variances for each population
-    alpha: length P numpy array of floats representing the current posterior
-        inclusion probability estimates
-    mu2: K x K x P numpy array of floats representing the current posterior
-        second moment estimates
-    float_type: numpy float type used. Set to np.float32 to minimize memory
-
-    Returns:
-    -------
-    an object containing results with the following attributes:
-        alpha: length P numpy array of single effect regression posterior
-            inclusion probabilities
-        mu: K x P numpy array of single effect regression effect sizes conditional
-            on each variant being the causal variant
-        mu2: K x K x P numpy array of single effect regression effect size second
-            moments conditional on each variant being the causal variant
-        lbf: K x P numpy array representing the log Bayes factor for each 
-            variant being the causal variant
-        lbf_model: float representing the log Bayes factor for the model, 
-            aggregating over variants
-        V: length K numpy array of floats representing the effect size prior
-    """
+Parameters
+----------
+XTY_list : length K list of length P numpy arrays representing the X^T Y vectors
+XTX_list : length K list of PxP numpy arrays representing the X^T X matrices
+V : length K numpy array of floats representing the effect size prior variance
+X_l2_arr : length K numpy array of floats representing the diagonal of X^T X
+w_pop : length K numpy array of floats representing the relative size of each population
+rho : PxP numpy array representing the effect size correlation matrix
+residual_variance : length K numpy array of floats representing the residual
+    variance in each population
+prior_weights : length P numpy array of floats representing the prior probability
+    of causality for each variant
+optimize_V : string representing the method to use to optimize the effect size
+check_null_threshold : float representing the difference in loglikelihood that
+    a component with a non-zero effect size prior variance must beat the null
+    model by to be retained.
+pop_spec_effect_priors : boolean, whether to estimate separate prior effect
+    size variances for each population
+alpha : length P numpy array of floats representing the current posterior
+    inclusion probability estimates
+mu2 : K x K x P numpy array of floats representing the current posterior
+    second moment estimates
+float_type : numpy float type used. Set to np.float32 to minimize memory
+Returns
+-------
+an object containing results with the following attributes:
+    alpha: length P numpy array of single effect regression posterior
+        inclusion probabilities
+    mu: K x P numpy array of single effect regression effect sizes conditional
+        on each variant being the causal variant
+    mu2: K x K x P numpy array of single effect regression effect size second
+        moments conditional on each variant being the causal variant
+    lbf: K x P numpy array representing the log Bayes factor for each 
+        variant being the causal variant
+    lbf_model: float representing the log Bayes factor for the model, 
+        aggregating over variants
+    V: length K numpy array of floats representing the effect size prior
+"""
     
     compute_lbf_params = (XTY_list, XTX_list, X_l2_arr, rho,
         residual_variance, False, float_type)

@@ -25,7 +25,8 @@ from gwaslab.io.io_read_tabular import (
 #### Helper functions for _preformat #######################################################################
 
 def _initialize_preformat_parameters(*, readargs=None, kwreadargs=None, log=None, other=None, exclude=None, include=None):
-    """Initialize and validate parameters for preformatting."""
+    """Initialize and validate parameters for preformatting.
+"""
     if readargs is None:
         readargs = dict()
     if kwreadargs is None:
@@ -46,7 +47,8 @@ def _initialize_preformat_parameters(*, readargs=None, kwreadargs=None, log=None
 
 
 def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbose=False, sumstats_path=None):
-    """Load format configuration from formatbook if format is specified."""
+    """Load format configuration from formatbook if format is specified.
+"""
     meta_data = None
     rename_dictionary = {}
     
@@ -107,33 +109,31 @@ def _load_format_config(*, fmt=None, readargs=None, other=None, log=None, verbos
 
 
 def _build_column_mappings(*, column_params=None, rename_dictionary=None, usecols=None, dtype_dictionary=None, log=None, verbose=False):
-    """
-    Build column mappings from user-specified parameters.
+    """Build column mappings from user-specified parameters.
     
     User-specified mappings override formatbook mappings. If a user mapping targets
     a standard name (e.g., "EA"), any existing mappings to that same target are removed
     to prevent duplicate column names.
     
-    Parameters
-    ----------
-    column_params : dict
-        Dictionary of column parameter names and values (e.g., {'snpid': 'SNP', 'chrom': 'CHR'})
-    rename_dictionary : dict
-        Dictionary to update with column mappings (may contain formatbook mappings)
-    usecols : list
-        List to update with columns to use
-    dtype_dictionary : dict
-        Dictionary to update with dtype specifications
-    log : Log
-        Logging object
-    verbose : bool
-        Verbose flag
-    """
+Parameters
+----------
+column_params : dict
+    Dictionary of column parameter names and values (e.g., {'snpid': 'SNP', 'chrom': 'CHR'})
+rename_dictionary : dict
+    Dictionary to update with column mappings (may contain formatbook mappings)
+usecols : list
+    List to update with columns to use
+dtype_dictionary : dict
+    Dictionary to update with dtype specifications
+log : Log
+    Logging object
+verbose : bool
+    Verbose flag
+"""
     def _remove_conflicting_mappings(target_name, rename_dictionary, usecols):
-        """
-        Remove any existing mappings that target the same standard name.
+        """Remove any existing mappings that target the same standard name.
         This ensures user mappings override formatbook mappings.
-        """
+"""
         # Find all keys that map to the target_name
         conflicting_keys = [k for k, v in rename_dictionary.items() if v == target_name]
         # Remove conflicting mappings
@@ -233,33 +233,31 @@ def _build_column_mappings(*, column_params=None, rename_dictionary=None, usecol
 
 
 def _apply_column_filters(*, include=None, exclude=None, usecols=None, rename_dictionary=None, log=None, verbose=False):
-    """
-    Apply include/exclude filters to column list.
+    """Apply include/exclude filters to column list.
     
     The exclude/include parameters can accept either:
     - Gwaslab standard column names (e.g., "INFO", "BETA", "P")
     - Original column names from the file (e.g., "Rsq", "BETA", "P")
     
-    Parameters
-    ----------
-    include : list, optional
-        Columns to include. Can be standard names or original column names.
-    exclude : list, optional
-        Columns to exclude. Can be standard names or original column names.
-    usecols : list
-        List of original column names currently selected for loading.
-    rename_dictionary : dict
-        Maps original column names to gwaslab standard names (e.g., {"Rsq": "INFO"}).
-    log : Log
-        Logging object.
-    verbose : bool
-        Verbose flag.
-    
-    Returns
-    -------
-    list
-        Filtered list of column names to use.
-    """
+Parameters
+----------
+include : list, optional
+    Columns to include. Can be standard names or original column names.
+exclude : list, optional
+    Columns to exclude. Can be standard names or original column names.
+usecols : list
+    List of original column names currently selected for loading.
+rename_dictionary : dict
+    Maps original column names to gwaslab standard names (e.g., {"Rsq": "INFO"}).
+log : Log
+    Logging object.
+verbose : bool
+    Verbose flag.
+Returns
+-------
+list
+    Filtered list of column names to use.
+"""
     # Build mapping from gwaslab standard name to all possible original column names
     # This handles cases where multiple original columns map to the same standard name
     # (e.g., "Rsq", "R2", "r2" all map to "INFO")
@@ -272,13 +270,12 @@ def _apply_column_filters(*, include=None, exclude=None, usecols=None, rename_di
     usecols_set = set(usecols)
     
     def _find_matching_columns(column_names):
-        """
-        Find all original column names that match the given column names.
+        """Find all original column names that match the given column names.
         
         For each name in column_names:
         1. If it's a standard name, find all original columns that map to it
         2. If it's an original column name, use it directly
-        """
+"""
         matching_cols = []
         for col_name in column_names:
             found_any = False
@@ -318,7 +315,8 @@ def _apply_column_filters(*, include=None, exclude=None, usecols=None, rename_di
 def _load_sumstats_data(*, sumstats=None, inpath=None, inpath_chr_list=None, inpath_chr_num_list=None, 
                         usecols=None, dtype_dictionary=None, readargs=None, rename_dictionary=None,
                         meta_data=None, chrom_pat=None, snpid_pat=None, log=None, verbose=False):
-    """Load sumstats data from file path or DataFrame."""
+    """Load sumstats data from file path or DataFrame.
+"""
     if isinstance(sumstats, str):
         return _load_sumstats_from_path(
             inpath=inpath, inpath_chr_list=inpath_chr_list, inpath_chr_num_list=inpath_chr_num_list,
@@ -335,7 +333,8 @@ def _load_sumstats_data(*, sumstats=None, inpath=None, inpath_chr_list=None, inp
 
 
 def _prepare_path_readargs(readargs, inpath, meta_data):
-    """Merge vcf.gz / format_comment skip rows and strip erroneous comment='#' ."""
+    """Merge vcf.gz / format_comment skip rows and strip erroneous comment='#' .
+"""
     readargs_copy = readargs.copy()
     skip = set()
     vcf_skip = _get_skip_rows(inpath)
@@ -355,7 +354,8 @@ def _prepare_path_readargs(readargs, inpath, meta_data):
 def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_num_list=None,
                              usecols=None, dtype_dictionary=None, readargs=None, rename_dictionary=None,
                              meta_data=None, chrom_pat=None, snpid_pat=None, log=None, verbose=False):
-    """Load sumstats from file path(s)."""
+    """Load sumstats from file path(s).
+"""
     if inpath_chr_list:
         # Load multiple files (glob pattern or @ chromosome pattern)
         add_file_column = "*" in inpath or "?" in inpath  # only for glob, not for @
@@ -398,7 +398,8 @@ def _load_sumstats_from_path(*, inpath=None, inpath_chr_list=None, inpath_chr_nu
 
 
 def _load_sumstats_from_dataframe(*, sumstats=None, dtype_dictionary=None, rename_dictionary=None, log=None, verbose=False):
-    """Load and prepare sumstats from existing DataFrame."""
+    """Load and prepare sumstats from existing DataFrame.
+"""
     log.write("Start to initialize gl.Sumstats from pandas DataFrame ...", verbose=verbose)
     sumstats = sumstats.copy()
     # Cache column set for faster lookups
@@ -417,7 +418,8 @@ def _load_sumstats_from_dataframe(*, sumstats=None, dtype_dictionary=None, renam
 
 def _postprocess_sumstats(*, sumstats=None, fmt=None, format_cols=None, study=None, vcf_usecols=None, usecols=None,
                          rename_dictionary=None, n=None, ncase=None, ncontrol=None, build=None, status=None, neaf=None, log=None, verbose=False):
-    """Apply post-processing steps to loaded sumstats."""
+    """Apply post-processing steps to loaded sumstats.
+"""
     # Handle VCF format
     if fmt == "vcf":
         sumstats = _parse_vcf_study(sumstats, format_cols, study, vcf_usecols, log=log, verbose=verbose)
@@ -467,7 +469,8 @@ def _postprocess_sumstats(*, sumstats=None, fmt=None, format_cols=None, study=No
 
 
 def _ensure_snpid_column(*, sumstats=None, log=None, verbose=False):
-    """Create SNPID column if both rsID and SNPID are absent."""
+    """Create SNPID column if both rsID and SNPID are absent.
+"""
     sumstats_cols = sumstats.columns
     if "rsID" not in sumstats_cols and "SNPID" not in sumstats_cols:
         if "CHR" in sumstats_cols and "POS" in sumstats_cols:
@@ -541,8 +544,7 @@ def _preformat(sumstats,
           log=None,
           readargs=None,
           **kwreadargs):
-    """
-    Load and preformat summary statistics data into standardized GWASLab format.
+    """Load and preformat summary statistics data into standardized GWASLab format.
     
     Workflow and Priority
     ---------------------
@@ -575,124 +577,123 @@ def _preformat(sumstats,
     - Transform after load: All data transformations happen after data is loaded
     - Early validation: Column existence and type validation happens during discovery phase
 
-    Parameters
-    ----------
-    sumstats : str or pandas.DataFrame
-        Input summary statistics, provided either as a file path or a DataFrame.
-        When summary statistics are split by chromosome, a single path pattern
-        may be supplied using the `@` symbol as a placeholder for the chromosome
-        number. For example: "gwas/chr@.sumstats.gz" will load
-        "gwas/chr1.sumstats.gz", "gwas/chr2.sumstats.gz", ... automatically.
-    fmt : str, optional
-        Format name to get predefined mapping if provided. (e.g., 'gwaslab', 'vcf').
-    tab_fmt : str, default: 'tsv'
-        Table format ('tsv', 'parquet').
-    snpid : str, optional
-        Column name for SNP identifiers in the input data. Expected format is CHR:POS:NEA:EA (e.g., 1:123:A:G), although the delimiter may vary depending on the source.
-    rsid : str, optional
-        Column name for rsID in the input data. Values should follow the standard "rs" prefix (e.g., rs12345).
-    chrom : str, optional
-        Column name for chromosome in input data.
-    pos : str, optional
-        Column name for position in input data.
-    ea : str, optional
-        Column name for effect allele in input data. (assuming alternative allele)
-    nea : str, optional
-        Column name for non-effect allele in input data. (assuming reference allele)
-    eaf : str, optional
-        Column name for effect allele frequency in input data.
-    neaf : str, optional
-        Column name for non-effect allele frequency in input data.
-    maf : str, optional
-        Column name for minor allele frequency in input data.
-    n : str or int, optional
-        Column name or constant value for sample size.
-    beta : str, optional
-        Column name for beta in input data.
-    se : str, optional
-        Column name for standard error in input data.
-    chisq : str, optional
-        Column name for chi-square in input data.
-    z : str, optional
-        Column name for z-score in input data.
-    f : str, optional
-        Column name for F-statistic in input data.
-    t : str, optional
-        Column name for T-statistic in input data.
-    p : str, optional
-        Column name for p-value in input data.
-    q : str, optional
-        Column name for Q-statistic in input data.
-    mlog10p : str, optional
-        Column name for -log10(p) in input data.
-    test : str, optional
-        Column name for test type in input data.
-    info : str, optional
-        Column name for imputation info in input data.
-    OR : str, optional
-        Column name for odds ratio in input data.
-    OR_95L : str, optional
-        Column name for lower 95% CI of OR in input data.
-    OR_95U : str, optional
-        Column name for upper 95% CI of OR in input data.
-    beta_95L : str, optional
-        Column name for lower 95% CI of beta in input data.
-    beta_95U : str, optional
-        Column name for upper 95% CI of beta in input data.
-    HR : str, optional
-        Column name for hazard ratio in input data.
-    HR_95L : str, optional
-        Column name for lower 95% CI of HR in input data.
-    HR_95U : str, optional
-        Column name for upper 95% CI of HR in input data.
-    i2 : str, optional
-        Column name for I2 statistic in input data.
-    snpr2 : str, optional
-        Column name for SNP R2 in input data.
-    phet : str, optional
-        Column name for p-heterogeneity in input data.
-    dof : str, optional
-        Column name for degrees of freedom in input data.
-    ncase : str or int, optional
-        Column name or constant value for case count.
-    ncontrol : str or int, optional
-        Column name or constant value for control count.
-    neff : str or int, optional
-        Column name or constant value for effective sample size.
-    direction : str, optional
-        Column name for meta-analysis effect-direction strings, where each character
-        ("+", "-", "0") represents the direction of effect for one cohort (e.g., "++-0+").
-    status : str, optional
-        Column name for status in input data.
-    study : str, optional, default="Study_1"
-        Column name for study ID in input data.
-    trait : str, optional, default="Trait_1"
-        Column name for trait in input data.
-    build : str, optional
-        Genome build version (e.g., '19' and '38').
-    species : str, default="homo sapiens"
-        species
-    other : list, optional
-        Additional columns in the raw file to load.
-    chrom_pat : str, optional
-        Regex pattern to filter chromosomes like'chrX'
-    snpid_pat : str, optional
-        Regex pattern to filter SNPs based on snpid like'chrX:'.
-    verbose : bool, default: False
-        Enable verbose output.
-    readargs : dict, optional
-        Additional arguments for reading files using pd.read_csv() like `nrows`, `comment`. 
-        Example, {"nrows": 1000} means to load first 1000 rows.
+Parameters
+----------
+sumstats : str or pandas.DataFrame
+    Input summary statistics, provided either as a file path or a DataFrame.
+    When summary statistics are split by chromosome, a single path pattern
+    may be supplied using the `@` symbol as a placeholder for the chromosome
+    number. For example: "gwas/chr@.sumstats.gz" will load
+    "gwas/chr1.sumstats.gz", "gwas/chr2.sumstats.gz", ... automatically.
+fmt : str, optional
+    Format name to get predefined mapping if provided. (e.g., 'gwaslab', 'vcf').
+tab_fmt : str, default: 'tsv'
+    Table format ('tsv', 'parquet').
+snpid : str, optional
+    Column name for SNP identifiers in the input data. Expected format is CHR:POS:NEA:EA (e.g., 1:123:A:G), although the delimiter may vary depending on the source.
+rsid : str, optional
+    Column name for rsID in the input data. Values should follow the standard "rs" prefix (e.g., rs12345).
+chrom : str, optional
+    Column name for chromosome in input data.
+pos : str, optional
+    Column name for position in input data.
+ea : str, optional
+    Column name for effect allele in input data. (assuming alternative allele)
+nea : str, optional
+    Column name for non-effect allele in input data. (assuming reference allele)
+eaf : str, optional
+    Column name for effect allele frequency in input data.
+neaf : str, optional
+    Column name for non-effect allele frequency in input data.
+maf : str, optional
+    Column name for minor allele frequency in input data.
+n : str or int, optional
+    Column name or constant value for sample size.
+beta : str, optional
+    Column name for beta in input data.
+se : str, optional
+    Column name for standard error in input data.
+chisq : str, optional
+    Column name for chi-square in input data.
+z : str, optional
+    Column name for z-score in input data.
+f : str, optional
+    Column name for F-statistic in input data.
+t : str, optional
+    Column name for T-statistic in input data.
+p : str, optional
+    Column name for p-value in input data.
+q : str, optional
+    Column name for Q-statistic in input data.
+mlog10p : str, optional
+    Column name for -log10(p) in input data.
+test : str, optional
+    Column name for test type in input data.
+info : str, optional
+    Column name for imputation info in input data.
+OR : str, optional
+    Column name for odds ratio in input data.
+OR_95L : str, optional
+    Column name for lower 95% CI of OR in input data.
+OR_95U : str, optional
+    Column name for upper 95% CI of OR in input data.
+beta_95L : str, optional
+    Column name for lower 95% CI of beta in input data.
+beta_95U : str, optional
+    Column name for upper 95% CI of beta in input data.
+HR : str, optional
+    Column name for hazard ratio in input data.
+HR_95L : str, optional
+    Column name for lower 95% CI of HR in input data.
+HR_95U : str, optional
+    Column name for upper 95% CI of HR in input data.
+i2 : str, optional
+    Column name for I2 statistic in input data.
+snpr2 : str, optional
+    Column name for SNP R2 in input data.
+phet : str, optional
+    Column name for p-heterogeneity in input data.
+dof : str, optional
+    Column name for degrees of freedom in input data.
+ncase : str or int, optional
+    Column name or constant value for case count.
+ncontrol : str or int, optional
+    Column name or constant value for control count.
+neff : str or int, optional
+    Column name or constant value for effective sample size.
+direction : str, optional
+    Column name for meta-analysis effect-direction strings, where each character
+    ("+", "-", "0") represents the direction of effect for one cohort (e.g., "++-0+").
+status : str, optional
+    Column name for status in input data.
+study : str, optional, default "Study_1"
+    Column name for study ID in input data.
+trait : str, optional, default "Trait_1"
+    Column name for trait in input data.
+build : str, optional
+    Genome build version (e.g., '19' and '38').
+species : str, default "homo sapiens"
+    species
+other : list, optional
+    Additional columns in the raw file to load.
+chrom_pat : str, optional
+    Regex pattern to filter chromosomes like'chrX'
+snpid_pat : str, optional
+    Regex pattern to filter SNPs based on snpid like'chrX:'.
+verbose : bool, default: False
+    Enable verbose output.
+readargs : dict, optional
+    Additional arguments for reading files using pd.read_csv() like `nrows`, `comment`.
+    Example, {"nrows": 1000} means to load first 1000 rows.
+Returns
+-------
+pandas.DataFrame
+    Formatted summary statistics with standardized column names.
+dict
+    Updated readargs dictionary.
 
-    Returns
-    -------
-    pandas.DataFrame
-        Formatted summary statistics with standardized column names.
-    dict
-        Updated readargs dictionary.
-
-    Raises
-    ------
+Raises
+------
     ValueError
         If input is not a path or DataFrame, or if columns are missing.
 
@@ -702,7 +703,7 @@ def _preformat(sumstats,
         Columns to exclude explicitly. Columns should be passed as GWASLab built-in HEADER keywords in uppercase like BETA, DIRECTION. Not original headers.
     include : list, optional
         Columns to include explicitly. Columns should be passed as GWASLab built-in HEADER keywords in uppercase like BETA, DIRECTION. Not original headers.
-    """
+"""
     # Step 1: Initialize parameters
     readargs, log, other, exclude, include = _initialize_preformat_parameters(
         readargs=readargs, kwreadargs=kwreadargs, log=log, other=other, exclude=exclude, include=include

@@ -472,6 +472,42 @@ class TestInferBuildAndHapmap3Integration(unittest.TestCase):
             self.assertIsInstance(result, pd.DataFrame)
 
 
+class TestBuildSyncAndMetaValidation(unittest.TestCase):
+    """Tests for _sync_build, validate_meta, and build property behavior."""
+
+    def setUp(self):
+        self.log = Log()
+        self.hg19_df, _ = create_test_sumstats_with_real_hapmap3()
+
+    def test_build_sync_after_set_build(self):
+        gl = Sumstats(sumstats=self.hg19_df.copy() if self.hg19_df is not None else create_test_sumstats_hg19(), verbose=False)
+        gl.set_build("38", verbose=False)
+        self.assertEqual(gl.build, "38")
+        self.assertEqual(gl.meta["gwaslab"]["genome_build"], "38")
+        self.assertEqual(gl.meta["genome_assembly"], "GRCh38/hg38")
+        report = gl.validate_meta()
+        self.assertTrue(report["valid"], msg=report.get("issues"))
+
+    def test_build_property_does_not_auto_infer(self):
+        gl = Sumstats(sumstats=create_test_sumstats_hg19(), build="99", verbose=False)
+        before = gl.build
+        self.assertEqual(before, "99")
+        self.assertEqual(gl.meta["gwaslab"]["genome_build"], "99")
+
+    def test_infer_build_syncs_assembly(self):
+        if self.hg19_df is None:
+            self.skipTest("Hapmap3 reference data not available")
+        gl = Sumstats(sumstats=self.hg19_df.copy(), build="99", verbose=False)
+        gl.fix_chr(verbose=False)
+        gl.fix_pos(verbose=False)
+        gl.infer_build(verbose=False)
+        if gl.build == "19":
+            self.assertEqual(gl.meta["genome_assembly"], "GRCh37/hg19")
+            self.assertIn(gl.meta["gwaslab"]["genome_build_confidence"], ("high", "low"))
+        report = gl.validate_meta()
+        self.assertTrue(report["valid"], msg=report.get("issues"))
+
+
 if __name__ == "__main__":
     unittest.main()
 

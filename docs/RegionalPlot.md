@@ -36,7 +36,10 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 | `region_ld_threshold`     | `list`       | LD r² thresholds defining categories for variant coloring. Creates categories: <threshold[0], threshold[0]-threshold[1], ..., >threshold[-1]. Example: `[0.2,0.4,0.6,0.8]` creates 5 categories. | `[0.2,0.4,0.6,0.8]`                                                       |
 | `region_ld_colors`        | `list`       | Colors for LD categories in single-reference mode. Requires `len(region_ld_threshold) + 3` colors: one for no data, one for each LD interval (0-threshold[0], threshold[0]-threshold[1], ..., threshold[-1]-1.0), and one for the lead variant. | `["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]` |
 | `region_ld_colors_m`      | `list`       | List of colors for multi-reference mode (since v3.4.47). One color per reference variant. Each color is used to create a gradient (from white to that color) for coloring variants based on their LD with the corresponding reference variant. | `["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]`     |
-| `region_marker_shapes`    | `list`       | list of shapes used for multiple reference markers (since v3.4.47)                                                                   | `['o', 's','^','D','*','P','X','h','8']`                                  |
+| `region_marker_shapes`    | `list`       | Marker shapes by role (LD r² affects **color only**, not shape). Index 0: missing LD; index 1: variants with LD; index 2+: reference variant(s) (multi-ref uses indices 1, 2, … per ref). | `['X', 'o', '^', 's', 'D', '*', 'P', 'h', '8']`                           |
+| `marker_size`             | `tuple`      | `(min, max)` point sizes for significance tiers (internal column `s`, values 1–4); use `(n, n)` for fixed size. Reference variant overlay uses `max * 1.5`. | `(40, 65)` in regional mode; `(5, 20)` for genome-wide MQQ |
+| `region_legend_marker`    | `boolean`    | If True, draw the reference variant marker glyph in the LD colorbar inset | `True`                                                                    |
+| `region_ld_legend`        | `boolean`    | If True, show the LD colorbar inset (requires `vcf_path` or `ld_path`) | `True`                                                                    |
 | `region_chromatin_files`  | `list`       | list of paths of Roadmap `15_coreMarks_mnemonics.bed.gz` files                                                                       | []                                                                        |
 | `region_chromatin_labels` | `list`       | list of labels for region_chromatin_files                                                                                            | []                                                                        |
 | `region_hspace`           | `float`      | the space between the scatter plot and the gene track                                                                                | `0.02`                                                                    |
@@ -55,7 +58,14 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
     The calculation is based on [Rogers and Huff r implemented in scikit-alle](https://scikit-allel.readthedocs.io/en/stable/stats/ld.html). Variants in reference vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.
 
 !!! note "LD legend symbol"
-    In regional plots, `x` in the LD legend/markers means no LD data is available for that variant (for example, variant missing in the reference panel, allele mismatch, or LD cannot be computed).
+    Variants with no LD data (missing in the reference panel, allele mismatch, or LD cannot be computed) use marker shape `X` (index 0 in `region_marker_shapes`; default `'X'`). LD r² categories affect **color only**, not shape.
+
+### Marker shape vs LD color
+
+- **Color** (`region_ld_threshold`, `region_ld_colors`, `region_ld_colors_m`): LD r² bin for each variant.
+- **Shape** (`region_marker_shapes`, internal `SHAPE` column): missing LD / has LD / which reference variant.
+- Set shapes via `region_marker_shapes`, not `scatter_kwargs["marker"]`.
+- Do not pass these keys in `scatter_kwargs` for `plot_mqq()`: `s`, `size`, `sizes`, `style`, `hue`, `palette`, `edgecolor` (the plot sets them internally).
 
 !!! note "LD Link Visualization"
     The `ld_link` option draws straight lines connecting variant pairs with high LD (r²). Key features:
@@ -220,7 +230,7 @@ gl.plot_stacked_mqq(
     titles=["Trait 1", "Trait 2", "Trait 3"],
     colors=["#1f77b4", "#ff7f0e", "#2ca02c"],
     sig_line=True,
-    sig_level_plot=5e-8
+    sig_level=5e-8
 )
 ```
 

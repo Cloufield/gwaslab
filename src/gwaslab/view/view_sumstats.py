@@ -5,22 +5,20 @@ if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
 def _view_sumstats(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], expr: Optional[str] = None) -> pd.DataFrame:
-    """
-    View the sumstats dataframe, optionally filtering by an expression.
+    """View the sumstats dataframe, optionally filtering by an expression.
 
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to view.
-    expr : str, optional
-        A query expression string to filter the dataframe (e.g., 'P < 5e-8').
-        If None, returns the original dataframe.
-
-    Returns
-    -------
-    pd.DataFrame
-        The filtered or original dataframe.
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to view.
+expr : str, optional
+    A query expression string to filter the dataframe (e.g., 'P < 5e-8').
+    If None, returns the original dataframe.
+Returns
+-------
+pandas.DataFrame
+    The filtered or original dataframe.
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe

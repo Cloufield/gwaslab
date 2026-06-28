@@ -202,9 +202,8 @@ def _calculate_ld_r(
     extra_plink_option: str = "",
     verbose: bool = True
 ) -> str:
-    '''
-    Calculate LD r matrix by calling PLINK; return file name and log
-    '''
+    '''Calculate LD r matrix by calling PLINK; return file name and log
+'''
     log.write(" -Start to calculate LD r matrix...",verbose=verbose)
     log = _checking_plink_version(plink=plink, log=log)
     if "@" in bfile_prefix:
@@ -270,9 +269,8 @@ def _align_sumstats_with_bim(
     log: Log = Log(),
     suffixes: Optional[List[str]] = None
 ) -> pd.DataFrame:
-    '''
-    align sumstats with bim
-    '''
+    '''align sumstats with bim
+'''
     if suffixes is None:
             suffixes=[""]
     

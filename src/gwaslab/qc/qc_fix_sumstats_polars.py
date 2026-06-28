@@ -198,8 +198,7 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
 ###############################################################################################################
 # 20230128
 def _fix_chrp(sumstats_obj: Union['Sumstatsp', pl.DataFrame], chrom: str = "CHR", status: str = "STATUS", add_prefix: str = "", remove: bool = False, verbose: bool = True, log: Log = Log()) -> pl.DataFrame:
-    """
-    Standardize chromosome notation and handle special chromosome cases (X, Y, MT) using polars.
+    """Standardize chromosome notation and handle special chromosome cases (X, Y, MT) using polars.
     
     All chromosome notations are converted to string type first. After fix, all chromosome
     notations will be int. This function normalizes chromosome labels to a consistent format,
@@ -210,28 +209,27 @@ def _fix_chrp(sumstats_obj: Union['Sumstatsp', pl.DataFrame], chrom: str = "CHR"
     Chromosome mappings (x, y, mt), chrom_list, and minchr are automatically derived from
     the Sumstats object's chromosomes attribute (Chromosomes instance).
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstatsp or pl.DataFrame
-        Sumstats object or polars DataFrame containing the data to fix.
-    chrom : str, default "CHR"
-        Column name for chromosome.
-    status : str, default "STATUS"
-        Column name for status.
-    add_prefix : str, optional, default=""
-        Prefix to prepend to chromosome labels (e.g., "chr").
-    remove : bool, default False
-        If True, remove records with invalid or unrecognized chromosome labels.
-    verbose : bool, default False
-        If True, print progress or diagnostic messages.
-    log : Log, optional
-        Logging object.
-
-    Returns
-    -------
-    pl.DataFrame
-        Polars DataFrame with standardized chromosome identifiers.
-    """
+Parameters
+----------
+sumstats_obj : Sumstatsp or pl.DataFrame
+    Sumstats object or polars DataFrame containing the data to fix.
+chrom : str, default "CHR"
+    Column name for chromosome.
+status : str, default "STATUS"
+    Column name for status.
+add_prefix : str, optional, default ""
+    Prefix to prepend to chromosome labels (e.g., "chr").
+remove : bool, default False
+    If True, remove records with invalid or unrecognized chromosome labels.
+verbose : bool, default False
+    If True, print progress or diagnostic messages.
+log : Log, optional
+    Logging object.
+Returns
+-------
+pl.DataFrame
+    Polars DataFrame with standardized chromosome identifiers.
+"""
     # ============================================================================
     # Step 1: Initialize and get chromosome parameters
     # ============================================================================
@@ -439,40 +437,38 @@ def _fix_chrp(sumstats_obj: Union['Sumstatsp', pl.DataFrame], chrom: str = "CHR"
 ###############################################################################################################    
 # 20230128
 def _fix_posp(sumstats_obj: Union['Sumstatsp', pl.DataFrame], pos: str = "POS", status: str = "STATUS", remove: bool = False, verbose: bool = True, lower_limit: int = 0, upper_limit: Optional[int] = None, limit: int = 250000000, log: Log = Log()) -> pl.DataFrame:
-    '''
-    Standardize and validate genomic base-pair positions using polars.
+    '''Standardize and validate genomic base-pair positions using polars.
     
     This function checks that reported genomic positions fall within valid chromosomal bounds
     and optionally removes invalid entries. It handles string-formatted positions with thousands
     separators, converts positions to Int64 type, and filters out positions outside the specified
     range. If explicit limits are not provided, a default maximum bound is applied.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstatsp or pl.DataFrame
-        Sumstats object or polars DataFrame containing the data to fix.
-    pos : str, default "POS"
-        Column name for position.
-    status : str, default "STATUS"
-        Column name for status.
-    remove : bool, default False
-        If True, remove records with invalid or out-of-range positions.
-    verbose : bool, default False
-        If True, print progress or diagnostic messages.
-    lower_limit : int, optional
-        Minimum acceptable genomic position. Default is 0.
-    upper_limit : int, optional
-        Maximum acceptable genomic position.
-    limit : int, default 250000000
-        Default upper limit applied when `upper_limit` is not provided.
-    log : Log, optional
-        Logging object.
-
-    Returns
-    -------
-    pl.DataFrame
-        Polars DataFrame with standardized and validated base-pair positions.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstatsp or pl.DataFrame
+    Sumstats object or polars DataFrame containing the data to fix.
+pos : str, default "POS"
+    Column name for position.
+status : str, default "STATUS"
+    Column name for status.
+remove : bool, default False
+    If True, remove records with invalid or out-of-range positions.
+verbose : bool, default False
+    If True, print progress or diagnostic messages.
+lower_limit : int, optional
+    Minimum acceptable genomic position. Default is 0.
+upper_limit : int, optional
+    Maximum acceptable genomic position.
+limit : int, default 250000000
+    Default upper limit applied when `upper_limit` is not provided.
+log : Log, optional
+    Logging object.
+Returns
+-------
+pl.DataFrame
+    Polars DataFrame with standardized and validated base-pair positions.
+'''
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pl.DataFrame):
         sumstats = sumstats_obj

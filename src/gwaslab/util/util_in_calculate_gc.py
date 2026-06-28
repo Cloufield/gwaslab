@@ -17,38 +17,36 @@ def _lambda_GC(insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
                 level: float = 0.5,
                 verbose: bool = True,
                 log: Log = Log()) -> float:
-    """
-    Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
+    """Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
     
-    Parameters
-    ----------
-    insumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process. Can be a full DataFrame or a subset with CHR and mode columns.
-    include_chrXYMT : bool, optional
-        If False, exclude sex chromosomes (X, Y) and mitochondrial (MT) from calculation
+Parameters
+----------
+insumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process. Can be a full DataFrame or a subset with CHR and mode columns.
+include_chrXYMT : bool, optional
+    If False, exclude sex chromosomes (X, Y) and mitochondrial (MT) from calculation
     x, y, mt : int or str, optional
-        Identifiers for sex and mitochondrial chromosomes (default: 23, 24, 25)
-    mode : {'P', 'MLOG10P', 'Z', 'CHISQ'} or None, optional
-        Input data type to use for calculation. If None, will auto-detect based on available columns:
-        - 'P': p-values (default if available)
-        - 'MLOG10P': -log10(p-values)
-        - 'Z': Z-scores
-        - 'CHISQ': Chi-squared statistics
-    level : float, optional default=0.5
-        Quantile level for calculation, default value is 0.5 which is median
-    verbose : bool, optional
-        If True, write progress messages to log
+    Identifiers for sex and mitochondrial chromosomes (default: 23, 24, 25)
+mode : {'P', 'MLOG10P', 'Z', 'CHISQ'} or None, optional
+    Input data type to use for calculation. If None, will auto-detect based on available columns:
+    - 'P': p-values (default if available)
+    - 'MLOG10P': -log10(p-values)
+    - 'Z': Z-scores
+    - 'CHISQ': Chi-squared statistics
+level : float, optional default=0.5
+    Quantile level for calculation, default value is 0.5 which is median
+verbose : bool, optional
+    If True, write progress messages to log
+Returns
+-------
+float
+    Genomic inflation factor (LambdaGC), calculated as the ratio of observed to expected median chi-squared statistics
     
-    Returns
-    -------
-    float
-        Genomic inflation factor (LambdaGC), calculated as the ratio of observed to expected median chi-squared statistics
-    
-    References
-    ----------
+References
+----------
     Devlin, B., & Roeder, K. (1999). Genomic control for association studies. 
     Biometrics, 55(4), 964-975.
-    """
+"""
     # Extract DataFrame if Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):
         insumstats = insumstats_or_dataframe

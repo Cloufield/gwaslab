@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 import random
+from unittest.mock import patch
 
 import matplotlib
 matplotlib.use("Agg")
@@ -165,28 +166,80 @@ class TestRelatedPlots(unittest.TestCase):
         self.assertIsNotNone(fig)
 
     def test_plot_stacked_mqq_mode_r_with_region(self):
-        # Test stacked regional plot (mode="r") with region parameter
-        # Note: mode="r" requires VCFs, so we skip this test or use mode="m" instead
-        # For now, we'll test with mode="m" which doesn't require VCFs
         df1 = make_sumstats(n=200)
         df2 = make_sumstats(n=200)
-        # Define a region that likely contains data
         target_chr = df1["CHR"].iloc[0]
         target_pos = df1["POS"].iloc[0]
         region = (target_chr, max(0, target_pos - 100000), target_pos + 100000)
-        
-        # Use mode="m" instead of "r" since "r" requires VCF files
-        fig, log = plot_stacked_mqq(
-            objects=[df1, df2],
-            mode="m",
-            region=region,
-            titles=["Regional Panel 1", "Regional Panel 2"],
-            fig_kwargs={"figsize": (12, 10)},
-            verbose=False,
-        )
+        region_ref = [df1.iloc[0]["SNPID"]]
+        captured_calls = []
+
+        def fake_mqqplot(sumstats, **kwargs):
+            captured_calls.append(dict(kwargs))
+            fig, ax = plt.subplots(figsize=(8, 4))
+            return fig, Log(), [], None
+
+        with patch("gwaslab.viz.viz_plot_stackedregional._mqqplot", side_effect=fake_mqqplot):
+            fig, log = plot_stacked_mqq(
+                objects=[df1, df2],
+                mode="r",
+                region=region,
+                region_ref=region_ref,
+                vcfs=[None, None],
+                titles=["Regional Panel 1", "Regional Panel 2"],
+                fig_kwargs={"figsize": (12, 10)},
+                verbose=False,
+            )
         self.assertIsInstance(log, Log)
         self.assertIsNotNone(fig)
-        self.assertGreaterEqual(len(fig.axes), 2)  # At least 2 panels
+        self.assertEqual(len(captured_calls), 2)
+        for call_kwargs in captured_calls:
+            self.assertEqual(call_kwargs.get("region_ref"), region_ref)
+            self.assertIn("gtf_path", call_kwargs)
+        self.assertEqual(captured_calls[0]["gtf_path"], "default")
+        self.assertIsNone(captured_calls[1]["gtf_path"])
+
+    def test_plot_stacked_mqq_region_ref_passes_filter(self):
+        from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
+
+        pm = VizParamsManager()
+        load_viz_config(pm)
+        allowed = pm.allowed("plot_stacked_mqq", "r")
+        self.assertIn("region_ref", allowed)
+        merged = pm.merge(
+            "plot_stacked_mqq",
+            {"mode": "r", "region_ref": ["rs35560038"], "region": (19, 1, 2)},
+            mode="r",
+        )
+        filtered = pm.filter(
+            plot_stacked_mqq,
+            merged,
+            key="plot_stacked_mqq",
+            mode="r",
+            verbose=False,
+        )
+        self.assertEqual(filtered.get("region_ref"), ["rs35560038"])
+
+    def test_plot_stacked_mqq_no_duplicate_gtf_path(self):
+        df1 = make_sumstats(n=100)
+        df2 = make_sumstats(n=100)
+        target_chr = df1["CHR"].iloc[0]
+        target_pos = df1["POS"].iloc[0]
+        region = (target_chr, max(0, target_pos - 50000), target_pos + 50000)
+
+        def fake_mqqplot(sumstats, **kwargs):
+            fig, ax = plt.subplots(figsize=(6, 3))
+            return fig, Log(), [], None
+
+        with patch("gwaslab.viz.viz_plot_stackedregional._mqqplot", side_effect=fake_mqqplot):
+            fig, log = plot_stacked_mqq(
+                objects=[df1, df2],
+                mode="r",
+                region=region,
+                vcfs=[None, None],
+                verbose=False,
+            )
+        self.assertIsNotNone(fig)
 
     def test_plot_stacked_mqq_with_sumstats_objects(self):
         # Test with Sumstats objects instead of DataFrames

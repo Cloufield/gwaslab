@@ -59,6 +59,28 @@ class Log():
             "type": "warning"
         })
 
+    def error(self, *message: Any, end: str = "\n", show_time: bool = True, verbose: bool = True, tag: Optional[str] = None) -> None:
+        timestamp = time.strftime('%Y/%m/%d %H:%M:%S')
+        message_str = "#ERROR! {}".format(" ".join(map(str, message)))
+
+        if show_time is True:
+            if verbose:
+                print(str(timestamp), message_str, end=end)
+            log_line = str(timestamp) + " " + message_str + end
+            self.log_text = self.log_text + log_line
+        else:
+            if verbose:
+                print(message_str, end=end)
+            log_line = message_str + end
+            self.log_text = self.log_text + log_line
+
+        self.log_entries.append({
+            "timestamp": timestamp if show_time else None,
+            "message": message_str,
+            "tag": tag,
+            "type": "error"
+        })
+
     def show(self) -> None:
         print(self.log_text)
 
@@ -91,24 +113,22 @@ class Log():
             self.log_entries = self.log_entries + log.log_entries
     
     def filter_by_tag(self, tag: str, return_text: bool = True, include: bool = True) -> Any:
-        """
-        Filter log entries by tag in two directions: include or exclude.
+        """Filter log entries by tag in two directions: include or exclude.
         
-        Parameters
-        ----------
-        tag : str
-            Tag to filter by.
-        return_text : bool, default True
-            If True, returns filtered log as a string. If False, returns list of log entry dicts.
-        include : bool, default True
-            If True, returns only entries with the specified tag (include mode).
-            If False, returns only entries without the specified tag (exclude mode).
-        
-        Returns
-        -------
+Parameters
+----------
+tag : str
+    Tag to filter by.
+return_text : bool, default True
+    If True, returns filtered log as a string. If False, returns list of log entry dicts.
+include : bool, default True
+    If True, returns only entries with the specified tag (include mode).
+    If False, returns only entries without the specified tag (exclude mode).
+Returns
+-------
         str or list
             Filtered log text string if return_text=True, otherwise list of log entry dicts
-        """
+"""
         if include:
             filtered_entries = [entry for entry in self.log_entries if entry.get("tag") == tag]
         else:
@@ -126,14 +146,13 @@ class Log():
             return filtered_entries
     
     def get_tags(self) -> List[str]:
-        """
-        Get list of all unique tags used in the log entries.
+        """Get list of all unique tags used in the log entries.
         
-        Returns
-        -------
+Returns
+-------
         list
             List of unique tag strings (excluding None)
-        """
+"""
         tags = set(entry.get("tag") for entry in self.log_entries if entry.get("tag") is not None)
         return sorted(list(tags))
     
@@ -142,40 +161,37 @@ class Log():
     # ============================================================================
     
     def _get_indent(self, indent: int = 0, indent_size: int = 2) -> str:
-        """
-        Generate indentation string.
+        """Generate indentation string.
         
-        Parameters
-        ----------
-        indent : int, default 0
-            Indentation level (0 = no indent, 1 = 2 spaces, 2 = 4 spaces, etc.)
-        indent_size : int, default 2
-            Number of spaces per indent level
-        
-        Returns
-        -------
+Parameters
+----------
+indent : int, default 0
+    Indentation level (0 = no indent, 1 = 2 spaces, 2 = 4 spaces, etc.)
+indent_size : int, default 2
+    Number of spaces per indent level
+Returns
+-------
         str
             Indentation string
-        """
+"""
         return " " * (indent * indent_size)
     
     def log_variants_filtered(self, count: int, reason: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log filtered variants count with optional reason.
+        """Log filtered variants count with optional reason.
         
-        Parameters
-        ----------
-        count : int
-            Number of variants filtered out
-        reason : str, optional
-            Reason for filtering (e.g., "with P > 0.05", "based on threshold")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+count : int
+    Number of variants filtered out
+reason : str, optional
+    Reason for filtering (e.g., "with P > 0.05", "based on threshold")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if reason:
             self.write(f"{indent_str} -Filtered out variants {reason}: {count}", verbose=verbose, tag=tag)
@@ -183,22 +199,21 @@ class Log():
             self.write(f"{indent_str} -Filtered out variants: {count}", verbose=verbose, tag=tag)
     
     def log_variants_removed(self, count: int, reason: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log removed variants count with optional reason.
+        """Log removed variants count with optional reason.
         
-        Parameters
-        ----------
-        count : int
-            Number of variants removed
-        reason : str, optional
-            Reason for removal (e.g., "with nan in CHR column", "duplicate variants")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+count : int
+    Number of variants removed
+reason : str, optional
+    Reason for removal (e.g., "with nan in CHR column", "duplicate variants")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if reason:
             self.write(f"{indent_str} -Removed variants {reason}: {count}", verbose=verbose, tag=tag)
@@ -206,22 +221,21 @@ class Log():
             self.write(f"{indent_str} -Removed variants: {count}", verbose=verbose, tag=tag)
     
     def log_variants_kept(self, count: int, reason: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log kept variants count with optional reason.
+        """Log kept variants count with optional reason.
         
-        Parameters
-        ----------
-        count : int
-            Number of variants kept
-        reason : str, optional
-            Reason/condition for keeping (e.g., "with P < 0.05", "in specified regions")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+count : int
+    Number of variants kept
+reason : str, optional
+    Reason/condition for keeping (e.g., "with P < 0.05", "in specified regions")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if reason:
             self.write(f"{indent_str} -Keeping variants {reason}: {count}", verbose=verbose, tag=tag)
@@ -229,40 +243,38 @@ class Log():
             self.write(f"{indent_str} -Keeping variants: {count}", verbose=verbose, tag=tag)
     
     def log_column_added(self, column_name: str, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log addition of a column.
+        """Log addition of a column.
         
-        Parameters
-        ----------
-        column_name : str
-            Name of the added column
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+column_name : str
+    Name of the added column
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Added column: {column_name}", verbose=verbose, tag=tag)
     
     def log_column_dropped(self, column_name: str, reason: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log removal of a column.
+        """Log removal of a column.
         
-        Parameters
-        ----------
-        column_name : str
-            Name of the dropped column
-        reason : str, optional
-            Reason for dropping (e.g., "all values are invalid", "duplicate")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+column_name : str
+    Name of the dropped column
+reason : str, optional
+    Reason for dropping (e.g., "all values are invalid", "duplicate")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if reason:
             self.write(f"{indent_str} -Dropped column {column_name} ({reason})", verbose=verbose, tag=tag)
@@ -270,22 +282,21 @@ class Log():
             self.write(f"{indent_str} -Dropped column: {column_name}", verbose=verbose, tag=tag)
     
     def log_shape_change(self, before_shape: Tuple[int, int], after_shape: Tuple[int, int], verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log DataFrame shape change.
+        """Log DataFrame shape change.
         
-        Parameters
-        ----------
-        before_shape : tuple
-            Shape before operation (rows, cols)
-        after_shape : tuple
-            Shape after operation (rows, cols)
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+before_shape : tuple
+    Shape before operation (rows, cols)
+after_shape : tuple
+    Shape after operation (rows, cols)
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         rows_before, cols_before = before_shape
         rows_after, cols_after = after_shape
@@ -303,25 +314,24 @@ class Log():
             self.write(f"{indent_str} -Shape changed: {rows_before} x {cols_before} -> {rows_after} x {cols_after} ({change_str})", verbose=verbose, tag=tag)
     
     def log_dataframe_shape(self, sumstats: Any, verbose: bool = True, indent: int = 0, sumstats_obj: Optional['Sumstats'] = None, tag: Optional[str] = None) -> None:
-        """
-        Log current DataFrame shape and memory usage.
+        """Log current DataFrame shape and memory usage.
         Only logs if shape or memory has changed from the last check.
         
-        Parameters
-        ----------
-        sumstats : pandas.DataFrame
-            DataFrame to log shape for
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        sumstats_obj : Sumstats, optional
-            Sumstats object instance. If provided, checks _last_shape and _last_memory
-            attributes to skip logging if both shape and memory are unchanged.
-            If None, will try to get from self._sumstats_obj.
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+sumstats : pandas.DataFrame
+    DataFrame to log shape for
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+sumstats_obj : Sumstats, optional
+    Sumstats object instance. If provided, checks _last_shape and _last_memory
+    attributes to skip logging if both shape and memory are unchanged.
+    If None, will try to get from self._sumstats_obj.
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         try:
             import pandas as pd
@@ -359,22 +369,21 @@ class Log():
             self.warning("Error: cannot get Dataframe shape...", verbose=verbose)
     
     def log_operation_start(self, operation_name: str, version: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log start of an operation with optional version.
+        """Log start of an operation with optional version.
         
-        Parameters
-        ----------
-        operation_name : str
-            Description of the operation (e.g., "filter variants by condition")
-        version : str, optional
-            Version string to append
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+operation_name : str
+    Description of the operation (e.g., "filter variants by condition")
+version : str, optional
+    Version string to append
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if version:
             self.write(f"{indent_str}Start to {operation_name} ...({version})", verbose=verbose, tag=tag)
@@ -382,92 +391,88 @@ class Log():
             self.write(f"{indent_str}Start to {operation_name} ...", verbose=verbose, tag=tag)
     
     def log_operation_finish(self, operation_name: str, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log completion of an operation.
+        """Log completion of an operation.
         
-        Parameters
-        ----------
-        operation_name : str
-            Description of the operation (e.g., "filtering variants")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+operation_name : str
+    Description of the operation (e.g., "filtering variants")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str}Finished {operation_name}.", verbose=verbose, tag=tag)
     
     def log_filtering_condition(self, column: str, operator: str, threshold: Any, count: int, action: str = "Removing", verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log filtering condition with count of affected variants.
+        """Log filtering condition with count of affected variants.
         
-        Parameters
-        ----------
-        column : str
-            Column name being filtered
-        operator : str
-            Comparison operator (">", "<", "=", ">=", "<=")
-        threshold : str or numeric
-            Threshold value
-        count : int
-            Number of variants affected
-        action : str, default "Removing"
-            Action being taken ("Removing", "Keeping", etc.)
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+column : str
+    Column name being filtered
+operator : str
+    Comparison operator (">", "<", "=", ">=", "<=")
+threshold : str or numeric
+    Threshold value
+count : int
+    Number of variants affected
+action : str, default "Removing"
+    Action being taken ("Removing", "Keeping", etc.)
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -{action} variants with {column} {operator} {threshold}: {count}", verbose=verbose, tag=tag)
     
     def log_operation(self, message: str, prefix: str = " -", verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log a general operation message with optional prefix.
+        """Log a general operation message with optional prefix.
         
-        Parameters
-        ----------
-        message : str
-            Operation message to log
-        prefix : str, default " -"
-            Prefix to add before the message
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+message : str
+    Operation message to log
+prefix : str, default " -"
+    Prefix to add before the message
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str}{prefix}{message}", verbose=verbose, tag=tag)
     
     def log_status_change(self, digit: int, before: Any, after: Any, count: Optional[int] = None, reason: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log STATUS column changes (digit position updates).
+        """Log STATUS column changes (digit position updates).
         
-        Parameters
-        ----------
-        digit : int
-            Digit position being changed (1-indexed, 1=leftmost, 7=rightmost)
-        before : str or list
-            Original digit value(s) (e.g., "9" or ["4", "5"])
-        after : str or list
-            New digit value(s) (e.g., "1" or ["1", "2"])
-        count : int, optional
-            Number of variants affected
-        reason : str, optional
-            Reason for the status change (e.g., "genome build update")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+digit : int
+    Digit position being changed (1-indexed, 1=leftmost, 7=rightmost)
+before : str or list
+    Original digit value(s) (e.g., "9" or ["4", "5"])
+after : str or list
+    New digit value(s) (e.g., "1" or ["1", "2"])
+count : int, optional
+    Number of variants affected
+reason : str, optional
+    Reason for the status change (e.g., "genome build update")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if isinstance(before, list):
             before_str = "/".join(str(b) for b in before)
@@ -490,32 +495,31 @@ class Log():
         self.write(" ".join(msg_parts), verbose=verbose, tag=tag)
     
     def log_datatype_change(self, column: str, from_dtype: str, to_dtype: str, success: bool = True, status: Optional[str] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log datatype conversion for a column.
+        """Log datatype conversion for a column.
         
         This function handles both conversion attempts (before conversion) and 
         conversion results (after conversion, with success/failure status).
         
-        Parameters
-        ----------
-        column : str
-            Column name being converted
-        from_dtype : str
-            Original datatype
-        to_dtype : str
-            Target datatype
-        success : bool, default True
-            Whether the conversion was successful (used when status is None)
-        status : str, optional
-            Status of conversion: "attempt" (before conversion), "success" (after successful conversion),
-            or "failed" (after failed conversion). If None, uses success parameter to determine status.
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+column : str
+    Column name being converted
+from_dtype : str
+    Original datatype
+to_dtype : str
+    Target datatype
+success : bool, default True
+    Whether the conversion was successful (used when status is None)
+status : str, optional
+    Status of conversion: "attempt" (before conversion), "success" (after successful conversion),
+    or "failed" (after failed conversion). If None, uses success parameter to determine status.
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         
         # Determine status
@@ -534,24 +538,23 @@ class Log():
             self.write(f"{indent_str} -Datatype conversion for {column}: {from_dtype} -> {to_dtype} ({status})", verbose=verbose, tag=tag)
     
     def log_formula(self, target_column: str, formula: str, source_columns: Optional[list] = None, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log formula/calculation used to fill or compute a column.
+        """Log formula/calculation used to fill or compute a column.
         
-        Parameters
-        ----------
-        target_column : str
-            Column being filled/computed
-        formula : str
-            Formula description (e.g., "from P", "from Z", "from BETA/SE")
-        source_columns : list, optional
-            Source columns used in the calculation
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+target_column : str
+    Column being filled/computed
+formula : str
+    Formula description (e.g., "from P", "from Z", "from BETA/SE")
+source_columns : list, optional
+    Source columns used in the calculation
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         if source_columns:
             sources = ", ".join(source_columns)
@@ -560,80 +563,76 @@ class Log():
             self.write(f"{indent_str}    Filling {target_column} {formula}...", verbose=verbose, tag=tag)
     
     def log_reference_path(self, ref_type: str, path: str, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log reference file path (VCF, FASTA, TSV, etc.).
+        """Log reference file path (VCF, FASTA, TSV, etc.).
         
-        Parameters
-        ----------
-        ref_type : str
-            Type of reference ("VCF", "FASTA", "TSV", "BED", etc.)
-        path : str
-            Path to the reference file
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+ref_type : str
+    Type of reference ("VCF", "FASTA", "TSV", "BED", etc.)
+path : str
+    Path to the reference file
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Reference {ref_type}: {path}", verbose=verbose, tag=tag)
     
     def log_threads(self, threads: int, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log number of threads/cores being used.
+        """Log number of threads/cores being used.
         
-        Parameters
-        ----------
-        threads : int
-            Number of threads/cores
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+threads : int
+    Number of threads/cores
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Number of threads/cores to use: {threads}", verbose=verbose, tag=tag)
     
     def log_variants_with_condition(self, condition: str, count: int, verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log count of variants matching a specific condition.
+        """Log count of variants matching a specific condition.
         
-        Parameters
-        ----------
-        condition : str
-            Condition description (e.g., "standardized chromosome notation", "fixable chromosome notations")
-        count : int
-            Number of variants matching the condition
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+condition : str
+    Condition description (e.g., "standardized chromosome notation", "fixable chromosome notations")
+count : int
+    Number of variants matching the condition
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Variants with {condition}: {count}", verbose=verbose, tag=tag)
     
     def log_variants_count(self, count: int, description: str = "variants", verbose: bool = True, indent: int = 0, tag: Optional[str] = None) -> None:
-        """
-        Log a count of variants with optional description.
+        """Log a count of variants with optional description.
         
-        Parameters
-        ----------
-        count : int
-            Number of variants
-        description : str, default "variants"
-            Description of what is being counted (e.g., "variants could be fixed", "variants to check")
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        tag : str, optional
-            Tag to associate with this log entry for filtering
-        """
+Parameters
+----------
+count : int
+    Number of variants
+description : str, default "variants"
+    Description of what is being counted (e.g., "variants could be fixed", "variants to check")
+verbose : bool, default True
+    Whether to print to stdout
+indent : int, default 0
+    Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+tag : str, optional
+    Tag to associate with this log entry for filtering
+"""
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Number of {description}: {count}", verbose=verbose, tag=tag)
 
@@ -645,7 +644,8 @@ class Log():
         indent: int = 0,
         tag: Optional[str] = None,
     ) -> None:
-        """Log reference path with size, index, storage profile."""
+        """Log reference path with size, index, storage profile.
+"""
         from gwaslab.util.util_in_reference_run import format_bytes
         indent_str = self._get_indent(indent)
         path = getattr(info, "path", str(info))

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union, Optional, Dict, Any, List
+from typing import TYPE_CHECKING, Union, Optional, Dict, Any, List, Tuple
 import re
 import pandas as pd
 import numpy as np
@@ -30,7 +30,8 @@ _HAPMAP_DF_CACHE = {}
 _HAPMAP_FULL_CACHE = {}
 
 def _get_hapmap_df_polars(build: str) -> pl.DataFrame:
-    """Get Hapmap3 coordinates as a Polars DataFrame for fast lookup."""
+    """Get Hapmap3 coordinates as a Polars DataFrame for fast lookup.
+"""
     if build in _HAPMAP_DF_CACHE:
         return _HAPMAP_DF_CACHE[build]
     
@@ -63,18 +64,17 @@ def _get_hapmap_df_polars(build: str) -> pl.DataFrame:
 def _get_hapmap_full_polars(build: str, include_alleles: bool = True) -> pl.DataFrame:
     """Get full Hapmap3 data as a Polars DataFrame with rsid, CHR, POS, and optionally A1, A2.
     
-    Parameters
-    ----------
-    build : str
-        Genome build version ("19" or "38")
-    include_alleles : bool, default=True
-        If True, includes A1 and A2 columns. If False, only includes rsid, CHR, POS.
-    
-    Returns
-    -------
-    pl.DataFrame
-        Polars DataFrame with hapmap3 data
-    """
+Parameters
+----------
+build : str
+    Genome build version ("19" or "38")
+include_alleles : bool, default True
+    If True, includes A1 and A2 columns. If False, only includes rsid, CHR, POS.
+Returns
+-------
+pl.DataFrame
+    Polars DataFrame with hapmap3 data
+"""
     cache_key = f"{build}_{include_alleles}"
     if cache_key in _HAPMAP_FULL_CACHE:
         return _HAPMAP_FULL_CACHE[cache_key]
@@ -242,31 +242,29 @@ value thresholds, genomic regions, and special variant types.
 @with_logging_filter("filter variants by condition...","filtering variants")
 
 def _filter_values(sumstats_obj: Union['Sumstats', pd.DataFrame], expr: str, remove: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Filter variants based on a query expression.
+    """Filter variants based on a query expression.
     
-    Parameters:
-    -----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to filter.
-    expr : str
-        Query expression using pandas.DataFrame.query syntax
-    remove : bool, default=False
-        If True, removes variants meeting the condition
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-    
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table.
-        When called via :meth:`Sumstats.filter_value()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to filter.
+expr : str
+    Query expression using pandas.DataFrame.query syntax
+remove : bool, default False
+    If True, removes variants meeting the condition
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table.
+    When called via :meth:`Sumstats.filter_value()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -384,31 +382,30 @@ def _filter_out(
     verbose: bool = True, 
     log: Log = Log()
 ) -> pd.DataFrame:
-    """
-    Filter out variants based on threshold values.
+    """Filter out variants based on threshold values.
     
-    Parameters:
-    -----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to filter.
-    lt : dict, default={}
-        Dictionary of {column: threshold} for lower bounds (variant values < threshold will be removed)
-    gt : dict, default={}
-        Dictionary of {column: threshold} for upper bounds (variant values > threshold will be removed)
-    eq : dict, default={}
-        Dictionary of {column: value} for equality checks (variant values == value will be removed)
-    remove : bool, default=False
-        If True, removes variants meeting the condition
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table
-    """
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to filter.
+lt : dict, default {}
+    Dictionary of {column: threshold} for lower bounds (variant values < threshold will be removed)
+gt : dict, default {}
+    Dictionary of {column: threshold} for upper bounds (variant values > threshold will be removed)
+eq : dict, default {}
+    Dictionary of {column: value} for equality checks (variant values == value will be removed)
+remove : bool, default False
+    If True, removes variants meeting the condition
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -445,34 +442,33 @@ def _filter_in(
     verbose: bool = True, 
     log: Log = Log()
 ) -> pd.DataFrame:
-    """
-    Filter in variants based on threshold values.
+    """Filter in variants based on threshold values.
     
-    Parameters:
-    -----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to filter.
-    lt : dict, default={}
-        Dictionary of {column: threshold} for lower bounds (variant values < threshold will be kept)
-    gt : dict, default={}
-        Dictionary of {column: threshold} for upper bounds (variant values > threshold will be kept)
-    eq : dict, default={}
-        Dictionary of {column: value} for equality checks (variant values == value will be kept)
-    remove : bool, default=False
-        If True, removes variants meeting the condition
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table.
-        When called via :meth:`Sumstats.filter_in()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to filter.
+lt : dict, default {}
+    Dictionary of {column: threshold} for lower bounds (variant values < threshold will be kept)
+gt : dict, default {}
+    Dictionary of {column: threshold} for upper bounds (variant values > threshold will be kept)
+eq : dict, default {}
+    Dictionary of {column: value} for equality checks (variant values == value will be kept)
+remove : bool, default False
+    If True, removes variants meeting the condition
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table.
+    When called via :meth:`Sumstats.filter_in()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -501,36 +497,34 @@ def _filter_in(
 
 @with_logging_filter("filter in variants if in intervals defined in bed files", "filtering variants")
 def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], path: Optional[str] = None, chrom: str = "CHR", pos: str = "POS", high_ld: bool = False, build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Keep variants located within specified genomic regions from a BED file.
+    """Keep variants located within specified genomic regions from a BED file.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    path : str or None, default=None
-        Path to BED file containing regions of interest
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    high_ld : bool, default=False
-        If True, uses high LD regions from the specified build
-    build : str, default="19"
-        Genome build version (19 or 38) for high LD regions
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : Log, default=Log()
-        Logger instance
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table containing only variants in the specified regions.
-        When called via :meth:`Sumstats.filter_region_in()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+path : str or None, default None
+    Path to BED file containing regions of interest
+chrom : str, default "CHR"
+    Column name for chromosome information
+pos : str, default "POS"
+    Column name for position information
+high_ld : bool, default False
+    If True, uses high LD regions from the specified build
+build : str, default "19"
+    Genome build version (19 or 38) for high LD regions
+verbose : bool, default True
+    If True, writes progress to log
+log : Log, default Log()
+    Logger instance
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table containing only variants in the specified regions.
+    When called via :meth:`Sumstats.filter_region_in()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -558,36 +552,34 @@ def _filter_region_in(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], pa
 
 @with_logging_filter("filter out variants if in intervals defined in bed files", "filtering variants")
 def _filter_region_out(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], path: Optional[str] = None, chrom: str = "CHR", pos: str = "POS", high_ld: bool = False, build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Remove variants located within specified genomic regions from a BED file.
+    """Remove variants located within specified genomic regions from a BED file.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    path : str or None, default=None
-        Path to BED file containing regions to exclude
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    high_ld : bool, default=False
-        If True, excludes variants in high LD regions from the specified build
-    build : str, default="19"
-        Genome build version (19 or 38) for high LD regions
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : Log, default=Log()
-        Logger instance
-        
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table with variants in specified regions removed.
-        When called via :meth:`Sumstats.filter_region_out()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+path : str or None, default None
+    Path to BED file containing regions to exclude
+chrom : str, default "CHR"
+    Column name for chromosome information
+pos : str, default "POS"
+    Column name for position information
+high_ld : bool, default False
+    If True, excludes variants in high LD regions from the specified build
+build : str, default "19"
+    Genome build version (19 or 38) for high LD regions
+verbose : bool, default True
+    If True, writes progress to log
+log : Log, default Log()
+    Logger instance
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table with variants in specified regions removed.
+    When called via :meth:`Sumstats.filter_region_out()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -623,39 +615,37 @@ def _filter_bed(
     verbose: bool = True, 
     log: Log = Log()
 ) -> pd.DataFrame:
-    """
-    Filter variants using a BED file with automatic chromosome format conversion.
+    """Filter variants using a BED file with automatic chromosome format conversion.
     
     This function uses the UCSC BED format specification and ChromosomeMapper to handle
     chromosome notation conversion between the BED file and sumstats, ensuring correct
     matching regardless of format.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process
-    path : str or None, default=None
-        Path to BED file. BED format: chr\tstart\tend (0-based, half-open intervals).
-        Supports uncompressed (.bed) and gzipped (.bed.gz) files.
-    chrom : str, default="CHR"
-        Column name for chromosome in sumstats
-    pos : str, default="POS"
-        Column name for position in sumstats
-    keep : bool, default=True
-        If True, keep variants within BED regions (filter in).
-        If False, remove variants within BED regions (filter out).
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : Log, default=Log()
-        Logger instance
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process
+path : str or None, default None
+    Path to BED file. BED format: chr	start	end (0-based, half-open intervals).
+    Supports uncompressed (.bed) and gzipped (.bed.gz) files.
+chrom : str, default "CHR"
+    Column name for chromosome in sumstats
+pos : str, default "POS"
+    Column name for position in sumstats
+keep : bool, default True
+    If True, keep variants within BED regions (filter in).
+    If False, remove variants within BED regions (filter out).
+verbose : bool, default True
+    If True, writes progress to log
+log : Log, default Log()
+    Logger instance
+Returns
+-------
+pd.DataFrame
+    Filtered summary statistics table
         
-    Returns
-    -------
-    pd.DataFrame
-        Filtered summary statistics table
-        
-    Notes
-    -----
+Notes
+-----
     BED file format (0-based, half-open intervals):
     - Column 0 (chrom): Chromosome name (can be "1", "chr1", "X", "chrX", etc.)
     - Column 1 (chromStart): Start position (0-based, inclusive)
@@ -677,18 +667,18 @@ def _filter_bed(
     Uses packed uint8 arrays (8x memory efficient vs boolean arrays) with vectorized bit operations
     for O(1) position lookups. Direct position indexing eliminates offset calculations.
     
-    References
-    ----------
+References
+----------
     UCSC BED format specification: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
     
-    Examples
-    --------
+Examples
+--------
     >>> # Filter to keep variants in BED regions
     >>> filtered = _filter_bed(sumstats, path="regions.bed", keep=True)
     >>> 
     >>> # Filter to remove variants in BED regions
     >>> filtered = _filter_bed(sumstats, path="regions.bed", keep=False)
-    """
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         sumstats = sumstats_or_dataframe.copy()
@@ -772,10 +762,9 @@ def _filter_bed(
     bed_indicator = np.zeros(len(sumstats), dtype=np.bool_)
     
     def _set_interval_packed(mask_u8: np.ndarray, start: int, end: int) -> None:
-        """
-        Set bits for [start, end) in packed uint8 array.
+        """Set bits for [start, end) in packed uint8 array.
         Bit convention: LSB (bit 0) corresponds to position % 8 (little-endian within byte).
-        """
+"""
         if end <= start:
             return
         b0 = start >> 3  # byte index for start
@@ -801,7 +790,8 @@ def _filter_bed(
         mask_u8[b1] |= np.uint8((1 << (o1 + 1)) - 1)
     
     def _lookup_packed(mask_u8: np.ndarray, pos0: np.ndarray) -> np.ndarray:
-        """Vectorized membership lookup for 0-based positions in packed uint8 array."""
+        """Vectorized membership lookup for 0-based positions in packed uint8 array.
+"""
         byte_idx = pos0 >> 3  # byte index
         bit_idx = pos0 & 7  # bit offset within byte
         return ((mask_u8[byte_idx] >> bit_idx) & 1).astype(np.bool_)
@@ -872,31 +862,90 @@ def _filter_bed(
     
     return result
 
+def _match_build_from_hapmap3(
+    sumstats_data: pd.DataFrame,
+    chrom: str = "CHR",
+    pos: str = "POS",
+    log: Log = Log(),
+    verbose: bool = True,
+) -> Tuple[str, str, int, int]:
+    """Compare CHR:POS overlap with HapMap3 panels for hg19 and hg38.
+
+Returns
+-------
+tuple
+    (inferred_build, confidence, match_count_19, match_count_38)
+"""
+    inferred_build = "Unknown"
+    build_confidence = "unknown"
+    log.write(" -Loading Hapmap3 variants data...", verbose=verbose)
+    hapmap3_df_19 = _get_hapmap_df_polars("19")
+    hapmap3_df_38 = _get_hapmap_df_polars("38")
+    log.write(" -CHR and POS will be used for matching...", verbose=verbose)
+
+    sumstats_pl = pl.from_pandas(sumstats_data[[chrom, pos]])
+    sumstats_pl = sumstats_pl.filter(
+        pl.col(chrom).is_not_null() & pl.col(pos).is_not_null()
+    ).with_columns([
+        pl.col(chrom).cast(pl.Int64).alias("CHR"),
+        pl.col(pos).cast(pl.Int64).alias("POS"),
+    ])
+
+    match_count_for_19 = sumstats_pl.join(hapmap3_df_19, on=["CHR", "POS"], how="semi").height
+    match_count_for_38 = sumstats_pl.join(hapmap3_df_38, on=["CHR", "POS"], how="semi").height
+    log.write(" -Matching variants for hg19: num_hg19 = ", match_count_for_19, verbose=verbose)
+    log.write(" -Matching variants for hg38: num_hg38 = ", match_count_for_38, verbose=verbose)
+
+    if max(match_count_for_19, match_count_for_38) < 10000:
+        log.warning("Please be cautious due to the limited number of variants.", verbose=verbose)
+        build_confidence = "low"
+
+    if match_count_for_19 > match_count_for_38:
+        log.write(
+            " -Since num_hg19 >> num_hg38, set the genome build to hg19 for the STATUS code....",
+            verbose=verbose,
+        )
+        inferred_build = "19"
+        if build_confidence != "low":
+            build_confidence = "high"
+    elif match_count_for_19 < match_count_for_38:
+        log.write(
+            " -Since num_hg19 << num_hg38, set the genome build to hg38 for the STATUS code....",
+            verbose=verbose,
+        )
+        inferred_build = "38"
+        if build_confidence != "low":
+            build_confidence = "high"
+    else:
+        log.write(
+            " -Since num_hg19 = num_hg38, unable to infer genome build (tie). Build remains unknown.",
+            verbose=verbose,
+        )
+
+    return inferred_build, build_confidence, match_count_for_19, match_count_for_38
+
+
 @with_logging("infer genome build version using hapmap3 SNPs", 
               "inferring genome build version using hapmap3 SNPs",
               start_function=".infer_build()",
               start_cols=["CHR","POS"],
-              check_dtype=True)
+              check_dtype=True,
+              on_missing_cols="skip")
 def _infer_build(sumstats: Union['Sumstats', pd.DataFrame], status: str = "STATUS", chrom: str = "CHR", pos: str = "POS", 
                ea: str = "EA", nea: str = "NEA", build: str = "19",
                change_status: bool = True, 
                verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Infer genome build version using Hapmap3 SNPs.
-    
+    """Infer genome build version using Hapmap3 SNPs.
 
-
-    
-    Returns
-    -------
-    pandas.DataFrame
-        Updated summary statistics DataFrame with inferred build version.
-        When called via :meth:`Sumstats.infer_build()`, updates the Sumstats object in place
-        (modifies ``self.data``, ``self.build``, and ``self.meta["gwaslab"]["genome_build"]``)
-        and the method returns ``None``.
-    """
+Returns
+-------
+pandas.DataFrame
+    Updated summary statistics DataFrame with inferred build version.
+    When called via :meth:`Sumstats.infer_build()`, updates the Sumstats object in place
+    (modifies ``self.data``, ``self.build``, and ``self.meta["gwaslab"]["genome_build"]``)
+    and the method returns ``None``.
+"""
     import pandas as pd
-    # Handle both DataFrame and Sumstats object
     if isinstance(sumstats, pd.DataFrame):
         sumstats_data = sumstats
         is_dataframe = True
@@ -905,89 +954,69 @@ def _infer_build(sumstats: Union['Sumstats', pd.DataFrame], status: str = "STATU
         sumstats_data = sumstats_obj.data
         is_dataframe = False
 
-    inferred_build = "Unknown"
-    log.write(" -Loading Hapmap3 variants data...", verbose=verbose)
-    hapmap3_df_19 = _get_hapmap_df_polars("19")
-    hapmap3_df_38 = _get_hapmap_df_polars("38")
-    log.write(" -CHR and POS will be used for matching...", verbose=verbose)
-    
-    # Convert sumstats to Polars for fast matching (no pandas operations)
-    # with_logging decorator with check_dtype=True ensures CHR and POS are Int64
-    sumstats_pl = pl.from_pandas(sumstats_data[[chrom, pos]])
-    
-    # Filter out null values and ensure correct types
-    sumstats_pl = sumstats_pl.filter(
-        pl.col(chrom).is_not_null() & pl.col(pos).is_not_null()
-    ).with_columns([
-        pl.col(chrom).cast(pl.Int64).alias("CHR"),
-        pl.col(pos).cast(pl.Int64).alias("POS")
-    ])
-    
-    # Use Polars semi_join for fast counting - more efficient than full join
-    # semi_join only checks existence without creating full join result
-    # This is highly optimized in Polars and avoids pandas conversions
-    match_count_for_19 = sumstats_pl.join(
-        hapmap3_df_19, on=["CHR", "POS"], how="semi"
-    ).height
-    match_count_for_38 = sumstats_pl.join(
-        hapmap3_df_38, on=["CHR", "POS"], how="semi"
-    ).height
-    log.write(" -Matching variants for hg19: num_hg19 = ", match_count_for_19, verbose=verbose)
-    log.write(" -Matching variants for hg38: num_hg38 = ", match_count_for_38, verbose=verbose)
-    
-    if max(match_count_for_19, match_count_for_38)<10000:
-        log.warning("Please be cautious due to the limited number of variants.", verbose=verbose) 
-    
-    if match_count_for_19 > match_count_for_38:
-        log.write(" -Since num_hg19 >> num_hg38, set the genome build to hg19 for the STATUS code....", verbose=verbose) 
-        if change_status==True:
-            sumstats_data[status] = vchange_status(sumstats_data[status],1,"9","1")
-        inferred_build="19"
-    elif match_count_for_19 < match_count_for_38:
-        log.write(" -Since num_hg19 << num_hg38, set the genome build to hg38 for the STATUS code....", verbose=verbose) 
-        if change_status==True:
-            sumstats_data[status] = vchange_status(sumstats_data[status],1,"9","3")
-            sumstats_data[status] = vchange_status(sumstats_data[status],2,"9","8")
-        inferred_build="38"
-    else:
-        log.write(" -Since num_hg19 = num_hg38, unable to infer...", verbose=verbose) 
-    
-    # Update Sumstats object if called with one
+    inferred_build, build_confidence, _, _ = _match_build_from_hapmap3(
+        sumstats_data, chrom=chrom, pos=pos, log=log, verbose=verbose
+    )
+
+    if inferred_build == "19" and change_status is True:
+        sumstats_data[status] = vchange_status(sumstats_data[status], 1, "9", "1")
+    elif inferred_build == "38" and change_status is True:
+        sumstats_data[status] = vchange_status(sumstats_data[status], 1, "9", "3")
+        sumstats_data[status] = vchange_status(sumstats_data[status], 2, "9", "8")
+
     if not is_dataframe:
         sumstats_obj.data = sumstats_data
-        # Use setter to ensure consistency between self.build and meta
-        sumstats_obj.build = inferred_build
-    
+        from gwaslab.qc.qc_build import _sync_build
+        if inferred_build not in ("Unknown", "99"):
+            _sync_build(
+                sumstats_obj,
+                inferred_build,
+                update_status=not change_status,
+                status=status,
+                source="infer",
+                confidence=build_confidence,
+                log=log,
+                verbose=verbose,
+            )
+        else:
+            _sync_build(
+                sumstats_obj,
+                "99",
+                update_status=False,
+                status=status,
+                source="infer",
+                confidence="unknown",
+                log=log,
+                verbose=False,
+            )
+
     return sumstats_data
 
 @with_logging_filter("randomly select variants from the sumstats", "sampling")
 def _sampling(sumstats: pd.DataFrame, n: int = 1, p: Optional[float] = None, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
-    """
-    Randomly sample variants from summary statistics.
+    """Randomly sample variants from summary statistics.
     
-    Parameters:
-    -----------
-    n : int, default=1
-        Number of variants to sample
-    p : float, default=None
-        Fraction of variants to sample (alternative to n)
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
+Parameters
+----------
+n : int, default 1
+    Number of variants to sample
+p : float, default None
+    Fraction of variants to sample (alternative to n)
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
     **kwargs : dict
-        Additional arguments for pandas.DataFrame.sample
-    
-    Returns:
-    --------
-    pandas.DataFrame
-        Subsampled summary statistics table.
-        When called via :meth:`Sumstats.random_variants()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    
-    """
+    Additional arguments for pandas.DataFrame.sample
+Returns
+-------
+pandas.DataFrame
+    Subsampled summary statistics table.
+    When called via :meth:`Sumstats.random_variants()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     if p is None:
         log.write(" -Number of variants selected from the sumstats:",n, verbose=verbose)
         if n > len(sumstats):
@@ -1011,31 +1040,29 @@ def _sampling(sumstats: pd.DataFrame, n: int = 1, p: Optional[float] = None, ver
 
 @with_logging_filter("extract variants in the flanking regions", "extracting variants in the flanking regions")
 def _get_flanking(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: str, windowsizekb: int = 500, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
-    """
-    Extract variants in flanking regions around a specified variant.
+    """Extract variants in flanking regions around a specified variant.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    snpid : str
-        ID of the central variant (must exist in SNPID column)
-    windowsizekb : int, default=500
-        Size of flanking region in kilobases
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Variants in flanking regions.
-        When called via :meth:`Sumstats.filter_flanking()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+snpid : str
+    ID of the central variant (must exist in SNPID column)
+windowsizekb : int, default 500
+    Size of flanking region in kilobases
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Variants in flanking regions.
+    When called via :meth:`Sumstats.filter_flanking()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -1063,31 +1090,29 @@ def _get_flanking(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid:
 
 @with_logging_filter("extract variants in the flanking regions using rsID or SNPID", "extracting variants in the flanking regions")
 def _get_flanking_by_id(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: Union[str, List[str]], windowsizekb: int = 500, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
-    """
-    Extract variants in flanking regions using rsID or SNPID.
+    """Extract variants in flanking regions using rsID or SNPID.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    snpid : str or list
-        Variant ID(s) to use as center (searches in rsID/SNPID columns)
-    windowsizekb : int, default=500
-        Size of flanking region in kilobases
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Variants in flanking regions.
-        When called via :meth:`Sumstats.filter_flanking_by_id()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+snpid : str or list
+    Variant ID(s) to use as center (searches in rsID/SNPID columns)
+windowsizekb : int, default 500
+    Size of flanking region in kilobases
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Variants in flanking regions.
+    When called via :meth:`Sumstats.filter_flanking_by_id()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -1133,30 +1158,28 @@ def _get_flanking_by_id(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], 
 
 @with_logging_filter("extract variants in the flanking regions using CHR and POS", "extracting variants in the flanking regions")
 def _get_flanking_by_chrpos(sumstats: pd.DataFrame, chrpos: Union[List[Union[int, float]], List[List[Union[int, float]]]], windowsizekb: int = 500, verbose: bool = True, log: Log = Log(), **kwargs: Any) -> pd.DataFrame:
-    """
-    Extract variants in flanking regions using chromosome and position.
+    """Extract variants in flanking regions using chromosome and position.
     
-    Parameters:
-    -----------
-    chrpos : list or list of lists
-        Chromosome and position coordinate(s) to use as center
-        Format: [chromosome, position]
-    windowsizekb : int, default=500
-        Size of flanking region in kilobases
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Variants in flanking regions.
-        When called via :meth:`Sumstats.filter_flanking_by_chrpos()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+chrpos : list or list of lists
+    Chromosome and position coordinate(s) to use as center
+Format : [chromosome, position]
+windowsizekb : int, default 500
+    Size of flanking region in kilobases
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Variants in flanking regions.
+    When called via :meth:`Sumstats.filter_flanking_by_chrpos()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats, pd.DataFrame):
@@ -1196,27 +1219,25 @@ def _get_flanking_by_chrpos(sumstats: pd.DataFrame, chrpos: Union[List[Union[int
 
 @with_logging_filter("filter palindromic variants", "filtering variants")
 def _filter_palindromic(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: str = "NEA", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Filter palindromic variants based on allele symmetry.
+    """Filter palindromic variants based on allele symmetry.
     
-    Parameters:
-    -----------
-    mode : str, default="in"
-        "in" to keep palindromic variants, "out" to remove them
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table.
-        When called via :meth:`Sumstats.filter_palindromic()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+mode : str, default "in"
+    "in" to keep palindromic variants, "out" to remove them
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table.
+    When called via :meth:`Sumstats.filter_palindromic()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     is_palindromic_snp = is_palindromic(sumstats[[nea,ea]],a1=nea,a2=ea)   
     
     log.write(" -Identified palindromic variants: {}".format(sum(is_palindromic_snp)),verbose=verbose)
@@ -1230,27 +1251,25 @@ def _filter_palindromic(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA"
 
 @with_logging_filter("filter indels", "filtering variants")
 def _filter_indel(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: str = "NEA", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Filter indels based on allele length differences.
+    """Filter indels based on allele length differences.
     
-    Parameters:
-    -----------
-    mode : str, default="in"
-        "in" to keep indels, "out" to remove indels
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table.
-        When called via :meth:`Sumstats.filter_indel()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+mode : str, default "in"
+    "in" to keep indels, "out" to remove indels
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table.
+    When called via :meth:`Sumstats.filter_indel()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     is_indel = (sumstats[ea].str.len()!=sumstats[nea].str.len()) 
     
     log.write(" -Identified indels: {}".format(sum(is_indel)),verbose=verbose)
@@ -1262,27 +1281,25 @@ def _filter_indel(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea:
 
 @with_logging_filter("filter SNPs", "filtering variants")
 def _filter_snp(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: str = "NEA", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Filter SNPs based on allele length.
+    """Filter SNPs based on allele length.
     
-    Parameters:
-    -----------
-    mode : str, default="in"
-        "in" to keep SNPs, "out" to remove SNPs
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table.
-        When called via :meth:`Sumstats.filter_snp()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+mode : str, default "in"
+    "in" to keep SNPs, "out" to remove SNPs
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table.
+    When called via :meth:`Sumstats.filter_snp()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
     
     log.write(" -Identified SNPs: {}".format(sum(is_snp)),verbose=verbose)
@@ -1294,37 +1311,35 @@ def _filter_snp(sumstats: pd.DataFrame, mode: str = "in", ea: str = "EA", nea: s
 
 @with_logging_filter("exclude variants in HLA regions", "filtering variants")
 def _exclude_hla(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS", lower: Optional[int] = None, upper: Optional[int] = None, build: Optional[str] = None, mode: str = "xmhc", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Exclude variants in HLA regions based on genomic coordinates.
+    """Exclude variants in HLA regions based on genomic coordinates.
     
-    Parameters:
-    -----------
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    lower : int or None, default=None
-        Lower bound of genomic region
-    upper : int or None, default=None
-        Upper bound of genomic region
-    build : str or None, default=None
-        Genome build version (19 or 38)
-    mode : str, default="xmhc"
-        "xmhc" for extended MHC region, "hla" or "mhc" for classical HLA region
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table with HLA variants removed.
-        When called via :meth:`Sumstats.exclude_hla()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+chrom : str, default "CHR"
+    Column name for chromosome information
+pos : str, default "POS"
+    Column name for position information
+lower : int or None, default None
+    Lower bound of genomic region
+upper : int or None, default None
+    Upper bound of genomic region
+build : str or None, default None
+    Genome build version (19 or 38)
+mode : str, default "xmhc"
+    "xmhc" for extended MHC region, "hla" or "mhc" for classical HLA region
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table with HLA variants removed.
+    When called via :meth:`Sumstats.exclude_hla()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     if build is not None:
         build = _process_build(build = build,log = log,verbose = verbose)
         # xMHC : HIST1H2AA ~ 7.6mb ~ RPL12P1
@@ -1381,26 +1396,24 @@ def _exclude_hla(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS", l
 
 @with_logging_filter("exclude variants on sex chromosomes", "filtering variants")
 def _exclude_sexchr(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS", sexchrs: List[int] = [23,24,25], log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Exclude variants on sex chromosomes.
+    """Exclude variants on sex chromosomes.
     
-    Parameters:
-    -----------
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    sexchrs : list, default=[23,24,25]
-        List of sex chromosome numbers to exclude
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table with sex chromosome variants removed
-    """
+Parameters
+----------
+chrom : str, default "CHR"
+    Column name for chromosome information
+sexchrs : list, default [23,24,25]
+    List of sex chromosome numbers to exclude
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table with sex chromosome variants removed
+"""
     raw_len = len(sumstats)
     
     if str(sumstats[chrom].dtype) == "string":
@@ -1419,32 +1432,30 @@ def _exclude_sexchr(sumstats: pd.DataFrame, chrom: str = "CHR", pos: str = "POS"
 
 @with_logging_filter("exclude variants in pseudo-autosomal regions (PAR)", "filtering variants")
 def _filter_par(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", pos: str = "POS", build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Exclude variants located in pseudo-autosomal regions (PAR) on the X chromosome.
+    """Exclude variants located in pseudo-autosomal regions (PAR) on the X chromosome.
     
     PAR regions are regions on the X chromosome that have homologous sequences on the Y chromosome.
     These regions are often excluded from GWAS analyses due to their unique inheritance patterns.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    build : str, default="19"
-        Genome build version (19 or 38) for PAR region definitions
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : Log, default=Log()
-        Logger instance
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table with PAR region variants removed
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+chrom : str, default "CHR"
+    Column name for chromosome information
+pos : str, default "POS"
+    Column name for position information
+build : str, default "19"
+    Genome build version (19 or 38) for PAR region definitions
+verbose : bool, default True
+    If True, writes progress to log
+log : Log, default Log()
+    Logger instance
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table with PAR region variants removed
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -1469,32 +1480,30 @@ def _filter_par(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], chrom: s
 
 @with_logging_filter("exclude variants in high LD regions", "filtering variants")
 def _filter_high_ld(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", pos: str = "POS", build: str = "19", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Exclude variants located in high linkage disequilibrium (LD) regions.
+    """Exclude variants located in high linkage disequilibrium (LD) regions.
     
     High LD regions, such as the HLA region on chromosome 6, are often excluded from GWAS analyses
     due to complex LD patterns that can confound association signals.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    build : str, default="19"
-        Genome build version (19 or 38) for high LD region definitions
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : Log, default=Log()
-        Logger instance
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Filtered summary statistics table with high LD region variants removed
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+chrom : str, default "CHR"
+    Column name for chromosome information
+pos : str, default "POS"
+    Column name for position information
+build : str, default "19"
+    Genome build version (19 or 38) for high LD region definitions
+verbose : bool, default True
+    If True, writes progress to log
+log : Log, default Log()
+    Logger instance
+Returns
+-------
+pandas.DataFrame
+    Filtered summary statistics table with high LD region variants removed
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -1519,26 +1528,24 @@ def _filter_high_ld(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], chro
 
 @with_logging_filter("extract specific variants by ID", "extracting variants")
 def _extract(sumstats: pd.DataFrame, extract: Optional[List[str]] = None, id_use: str = "SNPID", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Extract specific variants by ID.
+    """Extract specific variants by ID.
     
-    Parameters:
-    -----------
-    extract : list or None, default=None
-        List of variant IDs to extract
-    id_use : str, default="SNPID"
-        Column name containing variant IDs
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Subset of summary statistics with specified variants
-    """
+Parameters
+----------
+extract : list or None, default None
+    List of variant IDs to extract
+id_use : str, default "SNPID"
+    Column name containing variant IDs
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Subset of summary statistics with specified variants
+"""
     if extract is not None:
         log.write(" -Extracting {} variants from sumstats...".format(len(extract)),verbose=verbose)
         sumstats = sumstats.loc[sumstats[id_use].isin(extract),:]
@@ -1547,26 +1554,24 @@ def _extract(sumstats: pd.DataFrame, extract: Optional[List[str]] = None, id_use
 
 @with_logging_filter("exclude specific variants by ID", "filtering variants")
 def _exclude(sumstats: pd.DataFrame, exclude: Optional[List[str]] = None, id_use: str = "SNPID", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Exclude specific variants by ID.
+    """Exclude specific variants by ID.
     
-    Parameters:
-    -----------
-    exclude : list or None, default=None
-        List of variant IDs to exclude
-    id_use : str, default="SNPID"
-        Column name containing variant IDs
-    verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Subset of summary statistics without excluded variants
-    """
+Parameters
+----------
+exclude : list or None, default None
+    List of variant IDs to exclude
+id_use : str, default "SNPID"
+    Column name containing variant IDs
+verbose : bool, default True
+    If True, writes progress to log
+inplace : bool, default False
+    If False, return a new `Sumstats` object containing the filtered results.
+    If True, apply the filter to the current object in place and return None.
+Returns
+-------
+pandas.DataFrame
+    Subset of summary statistics without excluded variants
+"""
     if exclude is not None:
         log.write(" -Excluding {} variants from sumstats...".format(len(exclude)),verbose=verbose)
         sumstats = sumstats.loc[~sumstats[id_use].isin(exclude),:]
@@ -1575,43 +1580,41 @@ def _exclude(sumstats: pd.DataFrame, exclude: Optional[List[str]] = None, id_use
 
 @with_logging_filter("filter variants within a specific genomic region", "filtering variants")
 def _filter_region(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], region: Optional[Union[List[Union[int, str]], str]] = None, chrom: str = "CHR", pos: str = "POS", build: str = "19", log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Filter variants within a specific genomic region.
+    """Filter variants within a specific genomic region.
     
-    Parameters:
-    -----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    region : List, str, or None, default=None
-        Genomic region to filter. Can be:
-        - List/tuple [chr, start, end]: Specific genomic region coordinates
-        - String formats (normalized automatically):
-          - "chr:start-end" (e.g., "chr1:1000-5000")
-          - "chr:pos:flanking" (e.g., "1:5000:2000" or "1:5000:2kb")
-          - "snpid:flanking" (e.g., "rs123:500" or "1:5000:C:T:2000")
-        - Special strings:
-          - "HLA": Filter variants in HLA region (excludes HLA)
-          - "HIGH_LD": Filter variants in high LD regions (excludes high LD)
-          - "PAR": Filter variants in pseudo-autosomal regions (excludes PAR)
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    build : str, default="19"
-        Genome build version (19 or 38) for HLA/HIGH_LD/PAR regions
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : Log, default=Log()
-        Logger instance
-
-    Returns:
-    --------
-    pandas.DataFrame
-        Subset of summary statistics in the specified region (or with specified regions excluded).
-        When called via :meth:`Sumstats.filter_region()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+region : List, str, or None, default None
+    Genomic region to filter. Can be:
+    - List/tuple [chr, start, end]: Specific genomic region coordinates
+    - String formats (normalized automatically):
+    - "chr:start-end" (e.g., "chr1:1000-5000")
+    - "chr:pos:flanking" (e.g., "1:5000:2000" or "1:5000:2kb")
+    - "snpid:flanking" (e.g., "rs123:500" or "1:5000:C:T:2000")
+    - Special strings:
+    - "HLA": Filter variants in HLA region (excludes HLA)
+    - "HIGH_LD": Filter variants in high LD regions (excludes high LD)
+    - "PAR": Filter variants in pseudo-autosomal regions (excludes PAR)
+chrom : str, default "CHR"
+    Column name for chromosome information
+pos : str, default "POS"
+    Column name for position information
+build : str, default "19"
+    Genome build version (19 or 38) for HLA/HIGH_LD/PAR regions
+verbose : bool, default True
+    If True, writes progress to log
+log : Log, default Log()
+    Logger instance
+Returns
+-------
+pandas.DataFrame
+    Subset of summary statistics in the specified region (or with specified regions excluded).
+    When called via :meth:`Sumstats.filter_region()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -1679,37 +1682,35 @@ def _search_variants(sumstats: pd.DataFrame, snplist: Optional[List[Union[str, L
                      snpid: str = "SNPID", rsid: str = "rsID",
                      chrom: str = "CHR", pos: str = "POS", ea: str = "EA", nea: str = "NEA",
                      log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Search for variants in summary statistics using multiple identifier formats.
+    """Search for variants in summary statistics using multiple identifier formats.
     
-    Parameters:
-    -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
-    snplist : list or None, default=None
-        List of variant identifiers to search for. Accepts multiple formats:
-        - CHR:POS (e.g., '1:123456')
-        - CHR-POS (e.g., '1_123456')
-        - rsID (e.g., 'rs12345')
-        - SNPID (e.g., '1:123456:A:G')
-        - List of [CHR, POS]
-        - Full variant IDs with alleles (e.g., 'chr1:123456:A:G')
-    verbose : bool, default=True
-        If True, writes progress to log
+Parameters
+----------
+sumstats : pandas.DataFrame
+    GWAS summary statistics table
+snplist : list or None, default None
+    List of variant identifiers to search for. Accepts multiple formats:
+    - CHR:POS (e.g., '1:123456')
+    - CHR-POS (e.g., '1_123456')
+    - rsID (e.g., 'rs12345')
+    - SNPID (e.g., '1:123456:A:G')
+    - List of [CHR, POS]
+    - Full variant IDs with alleles (e.g., 'chr1:123456:A:G')
+verbose : bool, default True
+    If True, writes progress to log
+Returns
+-------
+pandas.DataFrame
+    Subset of summary statistics containing matching variants.
+    When called via :meth:`Sumstats.search()`, returns a new Sumstats object
+    if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
+    and returns ``None`` if ``inplace=True``.
     
-    Returns:
-    --------
-    pandas.DataFrame
-        Subset of summary statistics containing matching variants.
-        When called via :meth:`Sumstats.search()`, returns a new Sumstats object
-        if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
-        and returns ``None`` if ``inplace=True``.
-    
-    Examples:
-    ---------
+Examples
+--------
     >>> variants = _search_variants(sumstats, snplist=["rs1234", "1:100500", [2, 202000], "19:45100000:C:T"])
     >>> print(variants.shape)
-    """
+"""
     # create a boolean col with FALSE 
     if snplist is None:
         return sumstats.iloc[0:0,:].copy()
@@ -1766,25 +1767,23 @@ def _get_region_start_and_end(
     verbose: bool = True,
     log: Optional[Log] = None,
     **kwargs: Any) -> List[Union[int, str]]:
-    """
-    Determine the [chr, start, end] for a region. 
+    """Determine the [chr, start, end] for a region. 
 
-    Parameters
-    ----------
-    chrom : str or int
-        Chromosome identifier.
-    pos : int or float or str
-        Base-pair position.
-    windowsizekb : int, default=500
-        Window size in kilobases.
-    verbose : bool, default=True
-        Print log message.
-
-    Returns
-    -------
-    list
-        [chrom, start, end], where start and end are base-pair coordinates (int).
-    """
+Parameters
+----------
+chrom : str or int
+    Chromosome identifier.
+pos : int or float or str
+    Base-pair position.
+windowsizekb : int, default 500
+    Window size in kilobases.
+verbose : bool, default True
+    Print log message.
+Returns
+-------
+list
+    [chrom, start, end], where start and end are base-pair coordinates (int).
+"""
     # Ensure chrom is str
     chrom = str(chrom)
 
@@ -1818,42 +1817,40 @@ def _get_region_start_and_end(
 @with_logging_filter("filter duplicate/multiallelic variants", "filtering variants")
 def _filter_dup(sumstats_obj: Union['Sumstats', pd.DataFrame], mode: str = "dm", chrom: str = "CHR", pos: str = "POS", snpid: str = "SNPID", ea: str = "EA", nea: str = "NEA", rsid: str = "rsID", 
 keep: Union[str, bool] = 'first', keep_col: str = "P", remove_na: bool = False, keep_ascend: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Filter to keep only duplicate or multiallelic variants based on user-selected criteria.
+    """Filter to keep only duplicate or multiallelic variants based on user-selected criteria.
     
     This function works like remove_dup but keeps only the duplicate rows instead of removing them.
     Useful for inspecting duplicate variants before removal.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats or pandas.DataFrame
-        Sumstats object or DataFrame containing the data to filter.
-    mode : str, default="dm"
-        String encoding the deduplication rules; may include one or more of:
-        - 'ds' : Identify duplicates using SNPID.
-        - 'dr' : Identify duplicates using rsID.
-        - 'dc' : Identify duplicates using chromosome, position, effect allele, and non-effect allele.
-        - 'm' : Identify multi-allelic variants (same chromosome + position).
-    keep : {'first', 'last', False}, default 'first'
-        Which duplicates to show:
-        - 'first': Show all duplicates except the first occurrence (the ones that would be removed)
-        - 'last': Show all duplicates except the last occurrence (the ones that would be removed)
-        - False: Show all duplicate rows (all occurrences)
-    keep_col : str, default="P"
-        Column to sort by before filtering (for consistency with remove_dup).
-    remove_na : bool, default=False
-        If True, remove rows containing missing values in deduplication-relevant columns.
-    keep_ascend : bool, default=True
-        If True, sort in ascending order.
-    verbose : bool, default=True
-        If True, writes progress to log
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics containing only duplicate and multi-allelic variants
-        according to the specified mode.
-    """
+Parameters
+----------
+sumstats_obj : Sumstats or pandas.DataFrame
+    Sumstats object or DataFrame containing the data to filter.
+mode : str, default "dm"
+    String encoding the deduplication rules; may include one or more of:
+    - 'ds' : Identify duplicates using SNPID.
+    - 'dr' : Identify duplicates using rsID.
+    - 'dc' : Identify duplicates using chromosome, position, effect allele, and non-effect allele.
+    - 'm' : Identify multi-allelic variants (same chromosome + position).
+keep : {'first', 'last', False}, default 'first'
+    Which duplicates to show:
+    - 'first': Show all duplicates except the first occurrence (the ones that would be removed)
+    - 'last': Show all duplicates except the last occurrence (the ones that would be removed)
+    - False: Show all duplicate rows (all occurrences)
+keep_col : str, default "P"
+    Column to sort by before filtering (for consistency with remove_dup).
+remove_na : bool, default False
+    If True, remove rows containing missing values in deduplication-relevant columns.
+keep_ascend : bool, default True
+    If True, sort in ascending order.
+verbose : bool, default True
+    If True, writes progress to log
+Returns
+-------
+pandas.DataFrame
+    Summary statistics containing only duplicate and multi-allelic variants
+    according to the specified mode.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):

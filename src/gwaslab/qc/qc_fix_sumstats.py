@@ -49,53 +49,53 @@ if TYPE_CHECKING:
         start_function= ".fix_id()",
         start_cols=[],
         check_dtype=False,
-        fix=False
+        fix=False,
+        meta_step="id",
+        on_missing_cols="skip",
 )
 def _fix_ID(sumstats_obj: Union['Sumstats', pd.DataFrame],
        snpid: str = "SNPID", rsid: str = "rsID", chrom: str = "CHR", pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS", fixprefix: bool = False,
        fixchrpos: bool = False, fixid: bool = False, fixeanea: bool = False, fixeanea_flip: bool = False, fixsep: bool = False, reversea: bool = False,
        overwrite: bool = False, verbose: bool = True, forcefixid: bool = False, log: Log = Log()) -> pd.DataFrame:  
     
-    '''
-    Fix various aspects of genomic data including SNPID, rsID, chromosome positions, and allele information.
+    '''Fix various aspects of genomic data including SNPID, rsID, chromosome positions, and allele information.
     
     This function performs multiple data quality checks and fixes: (1) validates and fixes SNPID format
     (CHR:POS:NEA:EA pattern), (2) extracts and fixes chromosome and position from SNPID or rsID, (3) validates
     rsID format (rsxxxxxx pattern), (4) extracts and fixes EA and NEA from SNPID, (5) standardizes separators
     and removes prefixes in SNPID, and (6) generates new SNPID from available CHR, POS, EA, NEA data.
     
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to fix.
-    fixprefix : bool
-        Whether to remove 'chr' prefix in SNPID.
-    fixchrpos : bool
-        Whether to fix chromosome and position from SNPID.
-    fixid : bool
-        Whether to generate new SNPID from available data.
-    fixeanea : bool
-        Whether to fix EA and NEA from SNPID.
-    fixeanea_flip : bool
-        Whether to flip EA and NEA during fixing.
-    fixsep : bool
-        Whether to standardize separators in SNPID.
-    reversea : bool
-        Whether to reverse alleles in SNPID.
-    overwrite : bool
-        Whether to overwrite existing values.
-    verbose : bool, optional
-        Whether to print progress.
-    forcefixid : bool
-        Whether to force fix even without status check.
-
-    Returns
-    -------
-    pd.DataFrame
-        Modified sumstats.data with fixed data.
-        When called via :meth:`Sumstats.fix_id()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to fix.
+fixprefix : bool
+    Whether to remove 'chr' prefix in SNPID.
+fixchrpos : bool
+    Whether to fix chromosome and position from SNPID.
+fixid : bool
+    Whether to generate new SNPID from available data.
+fixeanea : bool
+    Whether to fix EA and NEA from SNPID.
+fixeanea_flip : bool
+    Whether to flip EA and NEA during fixing.
+fixsep : bool
+    Whether to standardize separators in SNPID.
+reversea : bool
+    Whether to reverse alleles in SNPID.
+overwrite : bool
+    Whether to overwrite existing values.
+verbose : bool, optional
+    Whether to print progress.
+forcefixid : bool
+    Whether to force fix even without status check.
+Returns
+-------
+pd.DataFrame
+    Modified sumstats.data with fixed data.
+    When called via :meth:`Sumstats.fix_id()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -403,17 +403,6 @@ def _fix_ID(sumstats_obj: Union['Sumstats', pd.DataFrame],
     if not is_dataframe:
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_qc_step
-            id_kwargs = {
-                'snpid': snpid, 'rsid': rsid, 'chrom': chrom, 'pos': pos, 'nea': nea, 'ea': ea, 'status': status,
-                'fixprefix': fixprefix, 'fixchrpos': fixchrpos, 'fixid': fixid, 'fixeanea': fixeanea,
-                'fixeanea_flip': fixeanea_flip, 'fixsep': fixsep, 'reversea': reversea, 'overwrite': overwrite,
-                'forcefixid': forcefixid
-            }
-            _update_qc_step(sumstats_obj, "id", id_kwargs, True)
-        except:
-            pass
         return sumstats_obj.data
     else:
         return sumstats
@@ -425,28 +414,27 @@ def _fix_ID(sumstats_obj: Union['Sumstats', pd.DataFrame],
         start_cols=["SNPID"]
 )
 def _strip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: str = "SNPID", overwrite: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:  
-    '''
-    Strip non-standard characters from SNPID values to standardize format.
+    '''Strip non-standard characters from SNPID values to standardize format.
     
     Removes leading and trailing non-standard characters from SNPID values that match
     the pattern (xxx:)CHR:POS:ATCG_Allele:ATCG_Allele(:xxx), keeping only the core
     CHR:POS:NEA:EA format.
 
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    overwrite : bool
-        Whether to overwrite existing values.
-    verbose : bool, optional
-        Whether to print progress.
-    Returns
-    -------
-    pd.DataFrame
-        Modified sumstats with stripped SNPIDs.
-        When called via :meth:`Sumstats.strip_snpid()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    '''
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+overwrite : bool
+    Whether to overwrite existing values.
+verbose : bool, optional
+    Whether to print progress.
+Returns
+-------
+pd.DataFrame
+    Modified sumstats with stripped SNPIDs.
+    When called via :meth:`Sumstats.strip_snpid()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
+'''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -477,31 +465,29 @@ def _strip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: 
         start_cols=["SNPID"]
 )
 def _flip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: str = "SNPID", overwrite: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:  
-    '''
-    Flip alleles in SNPID values without changing status codes or statistics.
+    '''Flip alleles in SNPID values without changing status codes or statistics.
     
     Converts SNPID from CHR:POS:EA:NEA format to CHR:POS:NEA:EA format by swapping
     the last two allele components. This function only modifies the SNPID column and
     does not affect EA, NEA, STATUS, or any statistics.
 
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    snpid : str
-        Column name for SNPID.
-    overwrite : bool
-        Whether to overwrite existing values.
-    verbose : bool, optional
-        Whether to print progress.
-
-    Returns
-    -------
-    pd.DataFrame
-        Modified sumstats with flipped alleles.
-        When called via :meth:`Sumstats.flip_snpid()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    '''
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+snpid : str
+    Column name for SNPID.
+overwrite : bool
+    Whether to overwrite existing values.
+verbose : bool, optional
+    Whether to print progress.
+Returns
+-------
+pd.DataFrame
+    Modified sumstats with flipped alleles.
+    When called via :meth:`Sumstats.flip_snpid()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
+'''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -529,48 +515,47 @@ def _flip_SNPID(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame], snpid: s
         start_to_msg= "remove duplicated/multiallelic variants",
         finished_msg= "removing duplicated/multiallelic variants",
         start_function= ".remove_dup()",
-        start_cols=None
+        start_cols=None,
+        meta_step="remove_dup",
+        on_missing_cols="skip",
 )
 def _remove_dup(sumstats_obj: Union['Sumstats', pd.DataFrame], mode: str = "dm", chrom: str = "CHR", pos: str = "POS", snpid: str = "SNPID", ea: str = "EA", nea: str = "NEA", rsid: str = "rsID", keep: str = 'first', keep_col: str = "P", remove_na: bool = False, keep_ascend: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Remove duplicate or multiallelic variants based on user-selected criteria.
+    """Remove duplicate or multiallelic variants based on user-selected criteria.
 
     Supports multiple duplicate-identification strategies depending on variant identifiers
     (SNPID, rsID) or allele and coordinate combinations. Can also collapse multi-allelic
     sites by retaining a single representative variant. Variants are sorted by a specified
     column (e.g., P-value) before removal to ensure the best variant is kept.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to process.
-    mode : str
-        String encoding the deduplication rules; may include one or more of:
-        - 'ds' : Identify duplicates using SNPID.
-        - 'dr' : Identify duplicates using rsID.
-        - 'dc' : Identify duplicates using chromosome, position, effect allele, and non-effect allele.
-        - 'm' : Identify multi-allelic variants (same chromosome + position).
-    keep : {'first', 'last', False}, default 'first'
-        Which record to retain when duplicates are detected.
-    keep_col : str, optional
-        Column to sort by prior to duplicate removal; used only when `keep` is
-        not False.
-    remove_na : bool, default False
-        If True, remove rows containing missing values in deduplication-relevant columns.
-    keep_ascend : bool, default True
-        If True, sort in ascending order when determining which duplicate to keep.
-    verbose : bool, default False
-        If True, print progress and summary information.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics with duplicates and multi-allelic variants removed
-        according to the specified mode.
-        When called via :meth:`Sumstats.remove_dup()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-
-    """
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to process.
+mode : str
+    String encoding the deduplication rules; may include one or more of:
+    - 'ds' : Identify duplicates using SNPID.
+    - 'dr' : Identify duplicates using rsID.
+    - 'dc' : Identify duplicates using chromosome, position, effect allele, and non-effect allele.
+    - 'm' : Identify multi-allelic variants (same chromosome + position).
+keep : {'first', 'last', False}, default 'first'
+    Which record to retain when duplicates are detected.
+keep_col : str, optional
+    Column to sort by prior to duplicate removal; used only when `keep` is
+    not False.
+remove_na : bool, default False
+    If True, remove rows containing missing values in deduplication-relevant columns.
+keep_ascend : bool, default True
+    If True, sort in ascending order when determining which duplicate to keep.
+verbose : bool, default False
+    If True, print progress and summary information.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics with duplicates and multi-allelic variants removed
+    according to the specified mode.
+    When called via :meth:`Sumstats.remove_dup()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+"""
     sumstats = sumstats_obj.data
 
     log.log_operation("Removing mode:{}".format(mode), verbose=verbose)
@@ -675,36 +660,23 @@ def _remove_dup(sumstats_obj: Union['Sumstats', pd.DataFrame], mode: str = "dm",
     # Update the sumstats_obj.data with the filtered dataframe
     sumstats_obj.data = sumstats
     
-    # Update QC status
-    try:
-        from gwaslab.info.g_meta import _update_qc_step
-        remove_dup_kwargs = {
-            'mode': mode, 'chrom': chrom, 'pos': pos, 'snpid': snpid, 'ea': ea, 'nea': nea, 'rsid': rsid,
-            'keep': keep, 'keep_col': keep_col, 'remove_na': remove_na, 'keep_ascend': keep_ascend
-        }
-        _update_qc_step(sumstats_obj, "remove_dup", remove_dup_kwargs, True)
-    except:
-        pass
-
     return sumstats_obj.data
 
 def _build_chrom_list_with_numeric(chrom_list, chromosomes_obj):
-    """
-    Build a chromosome list that includes both string and numeric representations.
+    """Build a chromosome list that includes both string and numeric representations.
     This is needed after sex chromosomes are converted to numeric values.
     
-    Parameters:
-    -----------
-    chrom_list : list
-        Original chromosome list with string identifiers
-    chromosomes_obj : Chromosomes or None
-        Chromosomes instance to get numeric mappings
-        
-    Returns:
-    --------
-    list
-        Extended chromosome list with numeric sex chromosome values
-    """
+Parameters
+----------
+chrom_list : list
+    Original chromosome list with string identifiers
+chromosomes_obj : Chromosomes or None
+    Chromosomes instance to get numeric mappings
+Returns
+-------
+list
+    Extended chromosome list with numeric sex chromosome values
+"""
     chrom_list_with_numeric = chrom_list.copy()
     
     if chromosomes_obj is not None:
@@ -721,8 +693,7 @@ def _build_chrom_list_with_numeric(chrom_list, chromosomes_obj):
 
 def _convert_sex_chromosomes_to_numeric(sumstats, fixable_indices, 
                                        x, y, mt, chrom, log, verbose):
-    """
-    Convert sex chromosome labels (X, Y, MT) to numeric values.
+    """Convert sex chromosome labels (X, Y, MT) to numeric values.
     
     Optimized version that:
     - Uses set operations for faster lookups
@@ -730,21 +701,21 @@ def _convert_sex_chromosomes_to_numeric(sumstats, fixable_indices,
     - Directly maps only the subset that needs conversion
     - Checks sumstats directly after values have been assigned
     
-    Parameters:
-    -----------
-    sumstats : pd.DataFrame
-        Summary statistics dataframe (already contains extracted chromosome values)
-    fixable_indices : pd.Index
-        Indices of variants that were fixable (where extracted values were assigned)
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics dataframe (already contains extracted chromosome values)
+fixable_indices : pd.Index
+    Indices of variants that were fixable (where extracted values were assigned)
     x, y, mt : tuple
-        Chromosome mappings as (label, numeric_value)
-    chrom : str
-        Column name for chromosome
-    log : Log
-        Logging object
-    verbose : bool
-        Verbosity flag
-    """
+    Chromosome mappings as (label, numeric_value)
+chrom : str
+    Column name for chromosome
+log : Log
+    Logging object
+verbose : bool
+    Verbosity flag
+"""
     import pandas as pd
     
     # Early return if no fixable indices
@@ -812,11 +783,12 @@ def _convert_sex_chromosomes_to_numeric(sumstats, fixable_indices,
         start_function= ".fix_chr()",
         start_cols=["CHR","STATUS"],
         check_dtype=False,
-        fix=False
+        fix=False,
+        meta_step="chr",
+        on_missing_cols="skip",
 )
 def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", status: str = "STATUS", add_prefix: str = "", remove: bool = False, verbose: bool = True, skip_status: bool = False, log: Log = Log()) -> pd.DataFrame:
-    """
-    Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
+    """Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
     
     All chromosome notations are converted to string type first. After fix, all chromosome
     notations will be int. This function normalizes chromosome labels to a consistent format,
@@ -827,27 +799,26 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
     Chromosome mappings (x, y, mt), chrom_list, and minchr are automatically derived from
     the Sumstats object's chromosomes attribute (Chromosomes instance).
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to fix.
-    add_prefix : str, optional, default=""
-        Prefix to prepend to chromosome labels (e.g., "chr").
-    remove : bool, default False
-        If True, remove records with invalid or unrecognized chromosome labels.
-    verbose : bool, default False
-        If True, print progress or diagnostic messages.
-    skip_status : bool, default False
-        If True, skip updating the STATUS column. Useful when STATUS column has issues
-        or when STATUS column is not needed.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics table with standardized chromosome identifiers.
-        When called via :meth:`Sumstats.fix_chr()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    """
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to fix.
+add_prefix : str, optional, default ""
+    Prefix to prepend to chromosome labels (e.g., "chr").
+remove : bool, default False
+    If True, remove records with invalid or unrecognized chromosome labels.
+verbose : bool, default False
+    If True, print progress or diagnostic messages.
+skip_status : bool, default False
+    If True, skip updating the STATUS column. Useful when STATUS column has issues
+    or when STATUS column is not needed.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics table with standardized chromosome identifiers.
+    When called via :meth:`Sumstats.fix_chr()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+"""
     import pandas as pd
     
     # ============================================================================
@@ -996,15 +967,6 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
     # ============================================================================
     if not is_dataframe:
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_qc_step
-            chr_kwargs = {
-                'chrom': chrom, 'status': status, 'add_prefix': add_prefix,
-                'remove': remove
-            }
-            _update_qc_step(sumstats_obj, "chr", chr_kwargs, True)
-        except:
-            pass
         return sumstats_obj.data
     else:
         return sumstats
@@ -1017,42 +979,42 @@ def _fix_chr(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", 
         start_function= ".fix_pos()",
         start_cols=["POS","STATUS"],
         check_dtype=False,
-        fix=False
+        fix=False,
+        meta_step="pos",
+        on_missing_cols="skip",
 )
 def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", status: str = "STATUS", remove: bool = False, verbose: bool = True, lower_limit: int = 0, upper_limit: Optional[int] = None, limit: int = 250000000, skip_status: bool = False, log: Log = Log()) -> pd.DataFrame:
-    '''
-    Standardize and validate genomic base-pair positions.
+    '''Standardize and validate genomic base-pair positions.
     
     This function checks that reported genomic positions fall within valid chromosomal bounds
     and optionally removes invalid entries. It handles string-formatted positions with thousands
     separators, converts positions to Int64 type, and filters out positions outside the specified
     range. If explicit limits are not provided, a default maximum bound is applied.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to fix.
-    remove : bool, default False
-        If True, remove records with invalid or out-of-range positions.
-    verbose : bool, default False
-        If True, print progress or diagnostic messages.
-    lower_limit : int, optional
-        Minimum acceptable genomic position. Default is 0.
-    upper_limit : int, optional
-        Maximum acceptable genomic position.
-    limit : int, default 250000000
-        Default upper limit applied when `upper_limit` is not provided.
-    skip_status : bool, default False
-        If True, skip updating the STATUS column. Useful when STATUS column has issues
-        or when STATUS column is not needed.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics with standardized and validated base-pair positions.
-        When called via :meth:`Sumstats.fix_pos()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to fix.
+remove : bool, default False
+    If True, remove records with invalid or out-of-range positions.
+verbose : bool, default False
+    If True, print progress or diagnostic messages.
+lower_limit : int, optional
+    Minimum acceptable genomic position. Default is 0.
+upper_limit : int, optional
+    Maximum acceptable genomic position.
+limit : int, default 250000000
+    Default upper limit applied when `upper_limit` is not provided.
+skip_status : bool, default False
+    If True, skip updating the STATUS column. Useful when STATUS column has issues
+    or when STATUS column is not needed.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics with standardized and validated base-pair positions.
+    When called via :meth:`Sumstats.fix_pos()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -1128,15 +1090,6 @@ def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", st
     if not is_dataframe:
         # Assign filtered dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_qc_step
-            pos_kwargs = {
-                'pos': pos, 'status': status, 'remove': remove, 'lower_limit': lower_limit,
-                'upper_limit': upper_limit, 'limit': limit
-            }
-            _update_qc_step(sumstats_obj, "pos", pos_kwargs, True)
-        except:
-            pass
         return sumstats_obj.data
     else:
         return sumstats
@@ -1149,33 +1102,33 @@ def _fix_pos(sumstats_obj: Union['Sumstats', pd.DataFrame], pos: str = "POS", st
         start_function= ".fix_allele()",
         start_cols=["EA","NEA","STATUS"],
         check_dtype=False,
-        fix=False
+        fix=False,
+        meta_step="allele",
+        on_missing_cols="skip",
 )
 def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", nea: str = "NEA", status: str = "STATUS", remove: bool = False, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    """
-    Validate and standardize allele representations.
+    """Validate and standardize allele representations.
     
     This function checks allele fields for valid nucleotide characters (A, T, C, G), converts
     all alleles to uppercase, standardizes their format using categorical data types, and
     classifies variants as SNPs, indels, normalized, or not normalized. Optionally, rows with
     invalid allele values can be removed.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to fix.
-    remove : bool, default False
-        If True, remove variants with invalid allele representations.
-    verbose : bool, default False
-        If True, print progress or warning messages.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics table with validated and standardized allele values.
-        When called via :meth:`Sumstats.fix_allele()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    """
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to fix.
+remove : bool, default False
+    If True, remove variants with invalid allele representations.
+verbose : bool, default False
+    If True, print progress or warning messages.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics table with validated and standardized allele values.
+    When called via :meth:`Sumstats.fix_allele()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -1312,14 +1265,6 @@ def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", n
     if not is_dataframe:
         # Assign filtered dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_qc_step
-            allele_kwargs = {
-                'ea': ea, 'nea': nea, 'status': status, 'remove': remove
-            }
-            _update_qc_step(sumstats_obj, "allele", allele_kwargs, True)
-        except:
-            pass
         return sumstats_obj.data
     else:
         return sumstats
@@ -1331,33 +1276,33 @@ def _fix_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], ea: str = "EA", n
         start_to_msg= "normalize indels",
         finished_msg= "normalizing indels",
         start_function= ".normalize()",
-        start_cols=["EA","NEA","STATUS"]
+        start_cols=["EA","NEA","STATUS"],
+        meta_step="normalize",
+        on_missing_cols="skip",
 )
 def _parallelize_normalize_allele(sumstats_obj: Union['Sumstats', pd.DataFrame], snpid: str = "SNPID", rsid: str = "rsID", pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS", chunk: int = 3000000, threads: int = 1, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    '''
-    Normalize indels in parallel using left-alignment and parsimony principles.
+    '''Normalize indels in parallel using left-alignment and parsimony principles.
     
     This function standardizes allele representations for insertion/deletion variants by
     left-aligning and trimming shared sequence context. It removes common suffixes and
     prefixes from both alleles and adjusts positions accordingly, following the VCF
     normalization standard.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to normalize.
-    chunk : int, default 3000000
-        Size of chunks for parallel processing.
-    threads : int, default 1
-        Number of threads used for parallel processing.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics with normalized indel allele representations.
-        When called via :meth:`Sumstats.normalize_allele()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to normalize.
+chunk : int, default 3000000
+    Size of chunks for parallel processing.
+threads : int, default 1
+    Number of threads used for parallel processing.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics with normalized indel allele representations.
+    When called via :meth:`Sumstats.normalize_allele()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     sumstats = sumstats_obj.data
     ############################################################################################
 
@@ -1435,24 +1380,6 @@ def _parallelize_normalize_allele(sumstats_obj: Union['Sumstats', pd.DataFrame],
     # Assign modified dataframe back to the Sumstats object
     sumstats_obj.data = sumstats
   
-    # Update QC status
-    try:
-        from gwaslab.info.g_meta import _update_qc_step
-        # Extract relevant kwargs for QC status tracking (exclude internal variables)
-        normalize_kwargs = {
-            'snpid': snpid,
-            'rsid': rsid,
-            'pos': pos,
-            'nea': nea,
-            'ea': ea,
-            'status': status,
-            'chunk': chunk,
-            'threads': threads
-        }
-        _update_qc_step(sumstats_obj, "normalize", normalize_kwargs, True)
-    except:
-        pass
-  
     return sumstats_obj.data
 
 def fastnormalizeallele(insumstats: pd.DataFrame, pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS", chunk: int = 3000000, log: Log = Log(), verbose: bool = False) -> Tuple[pd.DataFrame, np.ndarray]:
@@ -1478,10 +1405,9 @@ def fastnormalizeallele(insumstats: pd.DataFrame, pos: str = "POS", nea: str = "
     return insumstats, changed_index
 
 def normalizae_chunk(sumstats: pd.DataFrame, pos: str = "POS", nea: str = "NEA", ea: str = "EA", status: str = "STATUS") -> Tuple[pd.DataFrame, np.ndarray]:
-    """
-    Normalize indels in a chunk by removing common suffixes and prefixes.
+    """Normalize indels in a chunk by removing common suffixes and prefixes.
     Optimized version using vectorized pandas operations.
-    """
+"""
     # Early exit if empty
     if len(sumstats) == 0:
         return sumstats, np.array([], dtype=int)
@@ -1571,31 +1497,28 @@ def get_reverse_complementary_allele(a: str) -> str:
     return reverse_complement(a)
 
 def flip_direction(series: pd.Series) -> pd.Series:
-    """
-    Flip direction string by swapping '+' and '-' characters (vectorized).
+    """Flip direction string by swapping '+' and '-' characters (vectorized).
     
     Converts '+' to '-' and '-' to '+', while preserving '?' and other characters.
     This is used to flip the direction of effect when alleles are swapped.
     
-    Parameters
-    ----------
-    series : pd.Series
-        Series of direction strings to flip (e.g., "++-?", "+-+", etc.)
-        
-    Returns
-    -------
-    pd.Series
-        Series with flipped direction strings (e.g., "--+?", "-+-", etc.)
-    """
+Parameters
+----------
+series : pd.Series
+    Series of direction strings to flip (e.g., "++-?", "+-+", etc.)
+Returns
+-------
+pd.Series
+    Series with flipped direction strings (e.g., "--+?", "-+-", etc.)
+"""
     # Use vectorized string operations with translate for maximum performance
     # Create translation table once and apply to all values
     translation_table = str.maketrans("+-", "-+")
     return series.astype(str).apply(lambda x: x.translate(translation_table) if pd.notna(x) else x)
 
 def flip_by_swap(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool) -> pd.DataFrame:
-    """
-    Swap NEA and EA columns for matched variants.
-    """
+    """Swap NEA and EA columns for matched variants.
+"""
     # Early exit if no matches
     if not matched_index.any():
         return sumstats
@@ -1607,9 +1530,8 @@ def flip_by_swap(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, ver
     return sumstats
 
 def flip_by_inverse(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool, cols: Optional[List[str]] = None, factor: float = 1) -> pd.DataFrame:
-    """
-    Flip ratio statistics (OR, HR) by taking inverse (1/x) for matched variants.
-    """
+    """Flip ratio statistics (OR, HR) by taking inverse (1/x) for matched variants.
+"""
     # Early exit if no matches
     if not matched_index.any():
         return sumstats
@@ -1661,9 +1583,8 @@ def flip_by_inverse(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, 
     return sumstats
 
 def flip_by_subtract(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool, cols: Optional[List[str]] = None, factor: float = 1) -> pd.DataFrame:
-    """
-    Flip frequency statistics (EAF) by subtracting from factor (1 - EAF) for matched variants.
-    """
+    """Flip frequency statistics (EAF) by subtracting from factor (1 - EAF) for matched variants.
+"""
     # Early exit if no matches
     if not matched_index.any():
         return sumstats
@@ -1674,9 +1595,8 @@ def flip_by_subtract(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log,
     return sumstats
 
 def flip_by_sign(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool, cols: Optional[List[str]] = None) -> pd.DataFrame:
-    """
-    Flip sign of effect size statistics (BETA, Z, T) and swap confidence intervals for matched variants.
-    """
+    """Flip sign of effect size statistics (BETA, Z, T) and swap confidence intervals for matched variants.
+"""
     # Early exit if no matches
     if not matched_index.any():
         return sumstats
@@ -1721,11 +1641,13 @@ def flip_by_sign(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, ver
         start_to_msg= "adjust statistics based on STATUS code",
         finished_msg= "adjusting statistics based on STATUS code",
         start_function= ".flip_allele_stats()",
-        start_cols=None
+        start_cols=None,
+        meta_section="harmonize",
+        meta_step="flip_allele_stats",
+        on_missing_cols="skip",
 )
 def _flip_allele_stats(sumstats_obj: Union['Sumstats', pd.DataFrame], status: str = "STATUS", verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    '''
-    Adjust statistics when allele direction has changed based on STATUS codes.
+    '''Adjust statistics when allele direction has changed based on STATUS codes.
     
     This function adjusts effect sizes and allele-specific statistics when variants have been
     flipped or converted to reverse complement. It handles multiple scenarios: reverse
@@ -1733,20 +1655,19 @@ def _flip_allele_stats(sumstats_obj: Union['Sumstats', pd.DataFrame], status: st
     standardized indels, and strand flipping for palindromic variants. Run after checking
     with reference sequence.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats or pandas.DataFrame
-        Sumstats object or DataFrame containing the data to process.
-    verbose : bool, default False
-        If True, print progress messages during processing.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics with effect sizes and alleles flipped where required.
-        When called via :meth:`Sumstats.flip_allele_stats()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats or pandas.DataFrame
+    Sumstats object or DataFrame containing the data to process.
+verbose : bool, default False
+    If True, print progress messages during processing.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics with effect sizes and alleles flipped where required.
+    When called via :meth:`Sumstats.flip_allele_stats()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
         # Called with DataFrame
@@ -1868,12 +1789,6 @@ def _flip_allele_stats(sumstats_obj: Union['Sumstats', pd.DataFrame], status: st
     if not is_dataframe:
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_harmonize_step
-            flip_kwargs = {'status': status}
-            _update_harmonize_step(sumstats_obj, "flip_allele_stats", flip_kwargs, True)
-        except:
-            pass
         return sumstats_obj.data
     else:
         return sumstats
@@ -1886,29 +1801,29 @@ def _flip_allele_stats(sumstats_obj: Union['Sumstats', pd.DataFrame], status: st
         finished_msg= "sorting coordinates",
         start_function= ".sort_coordinate()",
         start_cols=["CHR","POS"],
-        show_shape=False
+        show_shape=False,
+        meta_step="sort_coord",
+        on_missing_cols="skip",
 )
 def _sort_coordinate(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str = "CHR", pos: str = "POS", reindex: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    '''
-    Sort variants by genomic coordinates (chromosome, then position).
+    '''Sort variants by genomic coordinates (chromosome, then position).
     
     Sorts the dataframe first by chromosome number, then by position in ascending order.
     The index is reset to sequential integers after sorting.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats or pandas.DataFrame
-        Sumstats object or DataFrame containing the data to sort.
-    verbose : bool, default False
-        If True, print progress messages.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame with sorted genomic coordinates.
-        When called via :meth:`Sumstats.sort_coordinate()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats or pandas.DataFrame
+    Sumstats object or DataFrame containing the data to sort.
+verbose : bool, default False
+    If True, print progress messages.
+Returns
+-------
+pandas.DataFrame
+    DataFrame with sorted genomic coordinates.
+    When called via :meth:`Sumstats.sort_coordinate()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
         # Called with DataFrame
@@ -1935,14 +1850,7 @@ def _sort_coordinate(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str =
     if not is_dataframe:
         # Assign sorted dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_qc_step
-            sort_coord_kwargs = {'chrom': chrom, 'pos': pos, 'reindex': reindex}
-            _update_qc_step(sumstats_obj, "sort_coord", sort_coord_kwargs, True)
-            # Set metadata
-            sumstats_obj.meta["is_sorted"] = True
-        except:
-            pass
+        sumstats_obj.meta["is_sorted"] = True
         return sumstats_obj.data
     else:
         return sumstats
@@ -1953,30 +1861,30 @@ def _sort_coordinate(sumstats_obj: Union['Sumstats', pd.DataFrame], chrom: str =
         finished_msg= "reordering the columns",
         start_function= ".sort_column()",
         start_cols=None,
-        show_shape=False
+        show_shape=False,
+        meta_step="sort_column",
+        on_missing_cols="skip",
 )
 def _sort_column(sumstats_obj: Union['Sumstats', pd.DataFrame], verbose: bool = True, log: Log = Log(), order: Optional[List[str]] = None) -> pd.DataFrame:
-    '''
-    Reorder columns according to a specified order.
+    '''Reorder columns according to a specified order.
     
     Reorders the dataframe columns to match a predefined standard order, placing standard
     GWAS columns first (SNPID, rsID, CHR, POS, EA, NEA, statistics, etc.) followed by
     any additional columns not in the standard list.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame containing the data to reorder.
-    verbose : bool, optional
-        Whether to print progress. Default is True.
-
-    Returns
-    -------
-    pd.DataFrame
-        Modified sumstats with reordered columns.
-        When called via :meth:`Sumstats.sort_column()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame containing the data to reorder.
+verbose : bool, optional
+    Whether to print progress. Default is True.
+Returns
+-------
+pd.DataFrame
+    Modified sumstats with reordered columns.
+    When called via :meth:`Sumstats.sort_column()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_obj, pd.DataFrame):
@@ -2009,14 +1917,7 @@ def _sort_column(sumstats_obj: Union['Sumstats', pd.DataFrame], verbose: bool = 
     if not is_dataframe:
         # Assign reordered dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_qc_step
-            sort_column_kwargs = {'order': order}
-            _update_qc_step(sumstats_obj, "sort_column", sort_column_kwargs, True)
-            # Set metadata
-            sumstats_obj.meta["is_sorted"] = True
-        except:
-            pass
+        sumstats_obj.meta["is_sorted"] = True
         return sumstats_obj.data
     else:
         return sumstats

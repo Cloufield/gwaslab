@@ -19,42 +19,40 @@ from gwaslab.g_Sumstats import Sumstats
 
 #20250215
 class SumstatsSet(Sumstats):
-    """
-    A class for working with multiple GWAS summary statistics datasets.
+    """A class for working with multiple GWAS summary statistics datasets.
 
     SumstatsSet allows you to load and combine variants from multiple studies,
     either by providing a dictionary of Sumstats objects or by using a glob pattern
     to automatically discover and load multiple files.
 
-    Parameters
-    ----------
-    sumstats_dic : Union[Dict[str, Any], str]
-        Either:
-        - A dictionary mapping study names to Sumstats objects or file paths
-        - A glob pattern string (e.g., "./study_*.txt") to auto-discover files
-    variant_set : Optional[Any], default=None
-        Collection of variants to extract. See `_extract_variant` for details.
-    build : str, default="99"
-        Genome build version.
-    species : str, default="homo sapiens"
-        Species name.
-    build_infer : bool, default=False
-        Whether to infer genome build.
-    set : str, default="set1"
-        Name for this set of summary statistics.
-    verbose : bool, default=True
-        Whether to print log messages.
+Parameters
+----------
+sumstats_dic : Union[Dict[str, Any], str]
+    Either:
+    - A dictionary mapping study names to Sumstats objects or file paths
+    - A glob pattern string (e.g., "./study_*.txt") to auto-discover files
+variant_set : Optional[Any], default None
+    Collection of variants to extract. See `_extract_variant` for details.
+build : str, default "99"
+    Genome build version.
+species : str, default "homo sapiens"
+    Species name.
+build_infer : bool, default False
+    Whether to infer genome build.
+set : str, default "set1"
+    Name for this set of summary statistics.
+verbose : bool, default True
+    Whether to print log messages.
     **readargs : Any
-        Additional arguments passed to Sumstats initialization when loading from files.
-
-    Examples
-    --------
+    Additional arguments passed to Sumstats initialization when loading from files.
+Examples
+--------
     >>> # Load from a dictionary of Sumstats objects
     >>> ss = SumstatsSet({"study1": sumstats1, "study2": sumstats2}, variant_set=["rs12345"])
 
     >>> # Load from a glob pattern
     >>> ss = SumstatsSet("./data/study_*.txt", variant_set=["rs12345"], fmt="auto")
-    """
+"""
 
     def __init__(
         self,
@@ -107,26 +105,24 @@ class SumstatsSet(Sumstats):
         log: 'Log' = None,
         verbose: bool = True
     ) -> pd.DataFrame:
-        """
-        Concatenate all variants from multiple Sumstats objects.
+        """Concatenate all variants from multiple Sumstats objects.
 
         Used when variant_set is None to load all data from all studies.
 
-        Parameters
-        ----------
-        sumstats_dic : Dict[str, Sumstats]
-            Dictionary mapping study names to Sumstats objects.
-        log : Log, optional
-            Log object for messages.
-        verbose : bool, default=True
-            Whether to print log messages.
-
-        Returns
-        -------
+Parameters
+----------
+sumstats_dic : Dict[str, Sumstats]
+    Dictionary mapping study names to Sumstats objects.
+log : Log, optional
+    Log object for messages.
+verbose : bool, default True
+    Whether to print log messages.
+Returns
+-------
         pd.DataFrame
             Combined DataFrame with all variants from all studies,
             with a "STUDY" column indicating the source.
-        """
+"""
         if log is None:
             log = Log()
 
@@ -158,37 +154,35 @@ class SumstatsSet(Sumstats):
         verbose: bool = True,
         **readargs: Any
     ) -> Dict[str, 'Sumstats']:
-        """
-        Load multiple Sumstats objects from files matching a glob pattern.
+        """Load multiple Sumstats objects from files matching a glob pattern.
 
-        Parameters
-        ----------
-        pattern : str
-            A glob pattern to match files (e.g., "./study_*.txt", "./data/trait_?.tsv").
-            Supports standard glob wildcards: * (any characters), ? (single character).
-        build : str, default="99"
-            Genome build version passed to each Sumstats object.
-        species : str, default="homo sapiens"
-            Species name passed to each Sumstats object.
-        verbose : bool, default=True
-            Whether to print log messages.
-        **readargs : Any
-            Additional arguments passed to Sumstats initialization.
-
-        Returns
-        -------
+Parameters
+----------
+pattern : str
+    A glob pattern to match files (e.g., "./study_*.txt", "./data/trait_?.tsv").
+    Supports standard glob wildcards: * (any characters), ? (single character).
+build : str, default "99"
+    Genome build version passed to each Sumstats object.
+species : str, default "homo sapiens"
+    Species name passed to each Sumstats object.
+verbose : bool, default True
+    Whether to print log messages.
+    **readargs : Any
+    Additional arguments passed to Sumstats initialization.
+Returns
+-------
         Dict[str, Sumstats]
             A dictionary mapping derived study names to Sumstats objects.
             Study names are derived from filenames by removing directory path
             and common extensions (.txt, .tsv, .gz, etc.).
 
-        Raises
-        ------
+Raises
+------
         FileNotFoundError
             If no files match the given pattern.
 
-        Notes
-        -----
+Notes
+-----
         The study name is derived from the filename using the following logic:
         1. Extract the basename (remove directory path)
         2. Remove common extensions: .gz, .txt, .tsv, .csv, .sumstats
@@ -196,7 +190,7 @@ class SumstatsSet(Sumstats):
         For example:
         - "./data/study_EUR.txt" -> "study_EUR"
         - "./trait_1.sumstats.gz" -> "trait_1"
-        """
+"""
         # Expand glob pattern
         matched_files = sorted(glob.glob(pattern))
         
@@ -231,26 +225,24 @@ class SumstatsSet(Sumstats):
 
     @staticmethod
     def _derive_study_name(filepath: str) -> str:
-        """
-        Derive a study name from a file path.
+        """Derive a study name from a file path.
 
-        Parameters
-        ----------
-        filepath : str
-            Full path to the file.
-
-        Returns
-        -------
+Parameters
+----------
+filepath : str
+    Full path to the file.
+Returns
+-------
         str
             Derived study name based on the filename.
 
-        Examples
-        --------
+Examples
+--------
         >>> SumstatsSet._derive_study_name("./data/study_EUR.txt")
         'study_EUR'
         >>> SumstatsSet._derive_study_name("./trait_1.sumstats.gz")
         'trait_1'
-        """
+"""
         # Get basename
         name = os.path.basename(filepath)
         
@@ -263,8 +255,18 @@ class SumstatsSet(Sumstats):
         return name
 
     def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
-        params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
-        return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
+        plot_key = key or func.__name__
+        user_keys = set(kwargs.keys()) | set(self.viz_params.get(plot_key, mode).keys())
+        params = self.viz_params.merge(plot_key, kwargs, mode=mode)
+        return self.viz_params.filter(
+            func,
+            params,
+            key=plot_key,
+            mode=mode,
+            log=self.log,
+            verbose=kwargs.get("verbose", True),
+            user_keys=user_keys,
+        )
 
     def plot_effect(self, **kwargs: Any) -> None:
         _plot_effect(self.data,**self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))

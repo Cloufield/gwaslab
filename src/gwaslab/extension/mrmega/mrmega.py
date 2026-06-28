@@ -1,5 +1,4 @@
-"""
-Meta-Regression for Genome-wide Association Studies (MR-MEGA)
+"""Meta-Regression for Genome-wide Association Studies (MR-MEGA)
 
 This module implements the MR-MEGA algorithm for meta-regression of GWAS summary statistics.
 
@@ -211,8 +210,7 @@ def _parse_mrmega_output(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> Optional[Sumstats]:
-    """
-    Parse MR-MEGA output file (.result file).
+    """Parse MR-MEGA output file (.result file).
     
     MR-MEGA output columns:
     - MarkerName, Chromosome, Position, EA, NEA, EAF, Nsample, Ncohort, Effects
@@ -222,20 +220,19 @@ def _parse_mrmega_output(
     - chisq_residual_het, ndf_residual_het, P-value_residual_het
     - lnBF, Comments
     
-    Parameters
-    ----------
-    output_file : str
-        Path to MR-MEGA .result file.
-    log : Log, optional
-        Log object for logging messages.
-    verbose : bool, default True
-        Whether to print progress messages.
-    
-    Returns
-    -------
+Parameters
+----------
+output_file : str
+    Path to MR-MEGA .result file.
+log : Log, optional
+    Log object for logging messages.
+verbose : bool, default True
+    Whether to print progress messages.
+Returns
+-------
     Sumstats or None
         Parsed MR-MEGA results as Sumstats object.
-    """
+"""
     if log is None:
         log = Log()
     
@@ -329,19 +326,17 @@ def _parse_mrmega_output(
 
 
 def _check_mrmega_available(mrmega_path: Optional[str] = None) -> Optional[str]:
-    """
-    Check if MR-MEGA is available in PATH or at specified path.
+    """Check if MR-MEGA is available in PATH or at specified path.
     
-    Parameters
-    ----------
-    mrmega_path : str, optional
-        Path to MR-MEGA executable. If None, searches PATH.
-    
-    Returns
-    -------
+Parameters
+----------
+mrmega_path : str, optional
+    Path to MR-MEGA executable. If None, searches PATH.
+Returns
+-------
     str or None
         Path to MR-MEGA executable if found, None otherwise.
-    """
+"""
     if mrmega_path is not None:
         if os.path.isfile(mrmega_path) and os.access(mrmega_path, os.X_OK):
             return mrmega_path
@@ -355,22 +350,20 @@ def _check_mrmega_available(mrmega_path: Optional[str] = None) -> Optional[str]:
 def _calculate_eaf_distance_matrix(
     eaf_matrix: np.ndarray
 ) -> np.ndarray:
-    """
-    Calculate distance matrix from EAF (Effect Allele Frequency) values.
+    """Calculate distance matrix from EAF (Effect Allele Frequency) values.
     
     Distance between cohorts i and j is: mean((EAF_k_i - EAF_k_j)^2) over all markers k.
     This matches MR-MEGA's distance() method in structures.cpp.
     
-    Parameters
-    ----------
-    eaf_matrix : np.ndarray
-        EAF matrix of shape (n_markers, n_cohorts)
-    
-    Returns
-    -------
+Parameters
+----------
+eaf_matrix : np.ndarray
+    EAF matrix of shape (n_markers, n_cohorts)
+Returns
+-------
     np.ndarray
         Distance matrix of shape (n_cohorts, n_cohorts)
-    """
+"""
     n_markers, n_cohorts = eaf_matrix.shape
     # eaf_matrix should already be float64 from caller, but ensure for safety
     if eaf_matrix.dtype != np.float64:
@@ -389,24 +382,22 @@ def _calculate_mds_from_distance(
     dist_matrix: np.ndarray,
     n_components: int
 ) -> np.ndarray:
-    """
-    Calculate MDS (Multidimensional Scaling) from distance matrix.
+    """Calculate MDS (Multidimensional Scaling) from distance matrix.
     
     This implements MR-MEGA's calculateMDS function using double-centering
     and eigendecomposition.
     
-    Parameters
-    ----------
-    dist_matrix : np.ndarray
-        Distance matrix of shape (n_cohorts, n_cohorts)
-    n_components : int
-        Number of MDS components to extract
-    
-    Returns
-    -------
+Parameters
+----------
+dist_matrix : np.ndarray
+    Distance matrix of shape (n_cohorts, n_cohorts)
+n_components : int
+    Number of MDS components to extract
+Returns
+-------
     np.ndarray
         MDS coordinates of shape (n_cohorts, n_components)
-    """
+"""
     n_cohorts = dist_matrix.shape[0]
     
     # dist_matrix should already be float64 from caller, but ensure for safety
@@ -457,25 +448,23 @@ def _weighted_least_squares(
     X: np.ndarray,
     W: np.ndarray
 ) -> tuple:
-    """
-    Perform weighted least squares regression.
+    """Perform weighted least squares regression.
     
     This implements MR-MEGA's lr_w function from regression.cpp.
     
     Model: Y = X @ beta + error
     Weights: W (inverse variance)
     
-    Parameters
-    ----------
-    Y : np.ndarray
-        Dependent variable (beta values), shape (n,)
-    X : np.ndarray
-        Design matrix, shape (n, p) where p is number of predictors
-    W : np.ndarray
-        Weights (inverse variance), shape (n,)
-    
-    Returns
-    -------
+Parameters
+----------
+Y : np.ndarray
+    Dependent variable (beta values), shape (n,)
+X : np.ndarray
+    Design matrix, shape (n, p) where p is number of predictors
+W : np.ndarray
+    Weights (inverse variance), shape (n,)
+Returns
+-------
     tuple
         (beta_hat, se_beta, TSS, TSS0, RSS, var_cov)
         - beta_hat: coefficient estimates, shape (p,)
@@ -484,7 +473,7 @@ def _weighted_least_squares(
         - TSS0: total sum of squares (weighted, centered at 0)
         - RSS: residual sum of squares (weighted)
         - var_cov: variance-covariance matrix, shape (p, p)
-    """
+"""
     n, p = X.shape
     df = n - p
     
@@ -550,8 +539,7 @@ def _weighted_least_squares_batch(
     X: np.ndarray,
     W: np.ndarray
 ) -> tuple:
-    """
-    Vectorized batch version of weighted least squares regression.
+    """Vectorized batch version of weighted least squares regression.
     
     Processes multiple variants with the same valid study pattern simultaneously.
     Uses SciPy's batched linear algebra operations for improved performance.
@@ -560,17 +548,16 @@ def _weighted_least_squares_batch(
     Model: Y = X @ beta + error (for each variant)
     Weights: W (inverse variance)
     
-    Parameters
-    ----------
-    Y : np.ndarray
-        Dependent variable (beta values), shape (n_variants, n_valid)
-    X : np.ndarray
-        Design matrix, shape (n_valid, p) where p is number of predictors
-    W : np.ndarray
-        Weights (inverse variance), shape (n_variants, n_valid)
-    
-    Returns
-    -------
+Parameters
+----------
+Y : np.ndarray
+    Dependent variable (beta values), shape (n_variants, n_valid)
+X : np.ndarray
+    Design matrix, shape (n_valid, p) where p is number of predictors
+W : np.ndarray
+    Weights (inverse variance), shape (n_variants, n_valid)
+Returns
+-------
     tuple
         (beta_hat, se_beta, TSS, TSS0, RSS)
         - beta_hat: coefficient estimates, shape (n_variants, p)
@@ -579,12 +566,12 @@ def _weighted_least_squares_batch(
         - TSS0: total sum of squares (weighted, centered at 0), shape (n_variants,)
         - RSS: residual sum of squares (weighted), shape (n_variants,)
     
-    Notes
-    -----
+Notes
+-----
     This function uses SciPy's batched linear algebra operations (solve, inv) which
     process all variants simultaneously for better performance. If batched operations
     fail (e.g., due to singular matrices), it falls back to per-variant processing.
-    """
+"""
     n_variants, n_valid = Y.shape
     p = X.shape[1]
     df = n_valid - p
@@ -689,8 +676,7 @@ def meta_regress_mrmega_python(
     verbose: bool = True,
     selected_marker_snpids: Optional[list] = None
 ) -> Optional[Sumstats]:
-    """
-    Perform meta-regression using MR-MEGA algorithm implemented in pure Python.
+    """Perform meta-regression using MR-MEGA algorithm implemented in pure Python.
     
     This reimplements the MR-MEGA algorithm without requiring the external executable.
     The algorithm:
@@ -702,28 +688,27 @@ def meta_regress_mrmega_python(
        Y = beta_0 + beta_1*PC1 + beta_2*PC2 + ... + error
     5. Calculates association, ancestry heterogeneity, and residual heterogeneity statistics
     
-    Parameters
-    ----------
-    sumstats_multi : SumstatsMulti
-        SumstatsMulti object containing summary statistics from multiple studies.
-    num_pcs : int, default 2
-        Number of principal components to use. Must satisfy: num_pcs < nstudy - 2
-    use_genomic_control : bool, default True
-        Whether to apply genomic control correction to standard errors (--gc flag).
-    use_gco : bool, default True
-        Whether to apply second genomic control correction to output chi-squares (--gco flag).
-    min_maf : float, default 0.01
-        Minimum minor allele frequency for marker selection (1%).
-    log : Log, optional
-        Log object for logging messages. If None, creates a new Log.
-    verbose : bool, default True
-        Whether to print progress messages.
-    
-    Returns
-    -------
+Parameters
+----------
+sumstats_multi : SumstatsMulti
+    SumstatsMulti object containing summary statistics from multiple studies.
+num_pcs : int, default 2
+    Number of principal components to use. Must satisfy: num_pcs < nstudy - 2
+use_genomic_control : bool, default True
+    Whether to apply genomic control correction to standard errors (--gc flag).
+use_gco : bool, default True
+    Whether to apply second genomic control correction to output chi-squares (--gco flag).
+min_maf : float, default 0.01
+    Minimum minor allele frequency for marker selection (1%).
+log : Log, optional
+    Log object for logging messages. If None, creates a new Log.
+verbose : bool, default True
+    Whether to print progress messages.
+Returns
+-------
     Sumstats or None
         Sumstats object containing MR-MEGA results.
-    """
+"""
     if log is None:
         log = Log()
     
@@ -1225,8 +1210,7 @@ def meta_regress_mrmega(
     verbose: bool = True,
     selected_marker_snpids: Optional[list] = None
 ) -> Optional[Sumstats]:
-    """
-    Perform meta-regression using MR-MEGA algorithm (pure Python implementation).
+    """Perform meta-regression using MR-MEGA algorithm (pure Python implementation).
     
     This function reimplements the MR-MEGA algorithm in pure Python without requiring
     the external executable. MR-MEGA uses an MDS-based approach:
@@ -1250,28 +1234,27 @@ def meta_regress_mrmega(
        - Ancestry heterogeneity: chi-square for PC coefficients only
        - Residual heterogeneity: chi-square for residuals
     
-    Parameters
-    ----------
-    sumstats_multi : SumstatsMulti
-        SumstatsMulti object containing summary statistics from multiple studies.
-    num_pcs : int, default 2
-        Number of principal components to use. Must satisfy: num_pcs < nstudy - 2
-    use_genomic_control : bool, default True
-        Whether to apply genomic control correction to standard errors (--gc flag).
-    use_gco : bool, default True
-        Whether to apply second genomic control correction to output (--gco flag).
-    min_maf : float, default 0.01
-        Minimum minor allele frequency for marker selection (1%).
-    log : Log, optional
-        Log object for logging messages. If None, creates a new Log.
-    verbose : bool, default True
-        Whether to print progress messages.
-    
-    Returns
-    -------
+Parameters
+----------
+sumstats_multi : SumstatsMulti
+    SumstatsMulti object containing summary statistics from multiple studies.
+num_pcs : int, default 2
+    Number of principal components to use. Must satisfy: num_pcs < nstudy - 2
+use_genomic_control : bool, default True
+    Whether to apply genomic control correction to standard errors (--gc flag).
+use_gco : bool, default True
+    Whether to apply second genomic control correction to output (--gco flag).
+min_maf : float, default 0.01
+    Minimum minor allele frequency for marker selection (1%).
+log : Log, optional
+    Log object for logging messages. If None, creates a new Log.
+verbose : bool, default True
+    Whether to print progress messages.
+Returns
+-------
     Sumstats or None
         Sumstats object containing MR-MEGA results.
-    """
+"""
     if log is None:
         log = Log()
     

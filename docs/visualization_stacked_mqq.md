@@ -364,6 +364,12 @@ You can customize each plot using options for plot_mqq() by adding a number to t
 
 ### turn off legend marker
 
+| Parameter | Scope | Description |
+|-----------|-------|-------------|
+| `region_ld_legends` | `plot_stacked_mqq` | Panel indices that show the LD colorbar inset (default: first MQQ panel) |
+| `region_ld_legend` | single regional panel | Whether to show the LD inset (stacked mode sets this per panel from `region_ld_legends`) |
+| `region_legend_marker` | regional / stacked | Whether to draw reference marker glyphs inside the LD inset |
+
 !!! example
     ```python
     gl.plot_stacked_mqq(objects=[gl1,gl2],

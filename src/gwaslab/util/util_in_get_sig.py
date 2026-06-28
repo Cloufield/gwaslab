@@ -54,38 +54,36 @@ def _get_sig(insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
            source: str = "ensembl",
            gtf_path: Optional[str] = None,
            verbose: bool = True) -> Optional[pd.DataFrame]:
-    """
-    Extract lead variants by P values using a sliding window approach with significance thresholding.
+    """Extract lead variants by P values using a sliding window approach with significance thresholding.
 
     This function identifies lead variants from summary statistics using a sliding window 
     algorithm based on either -log10(p-values) or p-values. It prioritizes -log10(p-values) 
     if available, otherwise falls back to p-values. It handles data preprocessing, 
     significance filtering, and optional gene annotation and Winner's Curse correction.
 
-    Parameters
-    ----------
-    insumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    windowsizekb : int, default=500
-        Window size in kilobases for lead variant identification, default=500
-    sig_level : float, default=5e-8
-        Significance threshold for variant selection, default=5e-8
-    xymt : list, default=["X","Y","MT"]
-        List of non-autosomal chromosome identifiers
-    wc_correction : bool, default=False
-        If True, apply Winner's Curse correction to effect sizes
+Parameters
+----------
+insumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+windowsizekb : int, default 500
+    Window size in kilobases for lead variant identification, default 500
+sig_level : float, default 5e-8
+    Significance threshold for variant selection, default 5e-8
+xymt : list, default ["X","Y","MT"]
+    List of non-autosomal chromosome identifiers
+wc_correction : bool, default False
+    If True, apply Winner's Curse correction to effect sizes
+Returns
+-------
+pandas.DataFrame
+    DataFrame containing significant lead variants with:
+    - Original summary statistics columns
+    - Annotated gene names (if anno=True)
+    - Winner's Curse corrected BETA values (if wc_correction=True)
+    - Additional metadata columns
 
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame containing significant lead variants with:
-        - Original summary statistics columns
-        - Annotated gene names (if anno=True)
-        - Winner's Curse corrected BETA values (if wc_correction=True)
-        - Additional metadata columns
-
-    Notes
-    -----
+Notes
+-----
     The function performs multiple steps:
     1. Data validation and preprocessing
     2. Significance filtering using specified threshold
@@ -94,7 +92,7 @@ def _get_sig(insumstats_or_dataframe: Union['Sumstats', pd.DataFrame],
     5. Optional Winner's Curse correction
 
     When no significant variants are found, returns None after logging a message.
-    """
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):
@@ -210,35 +208,33 @@ def _get_top(
     gtf_path: Optional[str] = None,
     verbose: bool = True
 ) -> Optional[pd.DataFrame]:
-    """
-    Extract top variants by maximizing a metric within sliding windows. (used for get top density variants)
+    """Extract top variants by maximizing a metric within sliding windows. (used for get top density variants)
 
     This function identifies top variants by selecting, within each
     contiguous window on a chromosome, the variant with the highest value
     of a specified column (e.g., `DENSITY`). It follows the same windowing
     logic as `getsig`, but does not rely on `P` or `MLOG10P`.
 
-    Parameters
-    ----------
-    insumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    by : str, default="DENSITY"
-        Column name whose values are maximized to choose leads.
-    threshold : float or None, default=None
-        If provided, only variants with `by` >= `threshold` are considered. Deafult threshold is the median of maximum values of each chormosome.
-    windowsizekb : int,
-        Sliding window size in kilobases used to determine locus boundaries.  default=500
-    bwindowsizekb : int, 
-        Window size for calculating density. default=100
-    anno : bool, default=False
-        If True, annotate output with nearest gene names.
-
-    Returns
-    -------
-    pandas.DataFrame or None
-        DataFrame containing the selected lead variants. Returns None if
-        no variants have valid values in the `by` column.
-    """
+Parameters
+----------
+insumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+by : str, default "DENSITY"
+    Column name whose values are maximized to choose leads.
+threshold : float or None, default None
+    If provided, only variants with `by` >= `threshold` are considered. Deafult threshold is the median of maximum values of each chormosome.
+windowsizekb : int,
+    Sliding window size in kilobases used to determine locus boundaries.  default=500
+bwindowsizekb : int,
+    Window size for calculating density. default=100
+anno : bool, default False
+    If True, annotate output with nearest gene names.
+Returns
+-------
+pandas.DataFrame or None
+    DataFrame containing the selected lead variants. Returns None if
+    no variants have valid values in the `by` column.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):
@@ -345,29 +341,28 @@ def _collect_leads_generic(
 
 
 class SimpleGenome:
-    """
-    Simple replacement for pyensembl.Genome that uses local GTF files.
+    """Simple replacement for pyensembl.Genome that uses local GTF files.
     Provides gene_names_at_locus and gene_ids_at_locus methods.
-    """
+"""
     def __init__(self, gtf_path_or_url, reference_name=None, annotation_name=None):
-        """
-        Initialize with a GTF file path.
+        """Initialize with a GTF file path.
         
-        Parameters
-        ----------
-        gtf_path_or_url : str
-            Path to GTF file (can be gzipped)
-        reference_name : str, optional
-            Reference name (for compatibility, not used)
-        annotation_name : str, optional
-            Annotation name (for compatibility, not used)
-        """
+Parameters
+----------
+gtf_path_or_url : str
+    Path to GTF file (can be gzipped)
+reference_name : str, optional
+    Reference name (for compatibility, not used)
+annotation_name : str, optional
+    Annotation name (for compatibility, not used)
+"""
         self.gtf_path = gtf_path_or_url
         self._genes_df = None
         self._indexed = False
     
     def index(self):
-        """Load and index the GTF file. This is called automatically on first query."""
+        """Load and index the GTF file. This is called automatically on first query.
+"""
         if not self._indexed:
             # Load GTF file and filter to gene features
             self._genes_df = read_gtf(
@@ -381,12 +376,14 @@ class SimpleGenome:
             self._indexed = True
     
     def _ensure_indexed(self):
-        """Ensure the GTF is loaded and indexed."""
+        """Ensure the GTF is loaded and indexed.
+"""
         if not self._indexed:
             self.index()
     
     def _normalize_contig(self, contig):
-        """Normalize chromosome/contig name for matching."""
+        """Normalize chromosome/contig name for matching.
+"""
         # Use ChromosomeMapper for normalization
         # Normalize to string format (preserves NC format, converts numeric to string)
         # Default to human species if not specified
@@ -397,21 +394,19 @@ class SimpleGenome:
         return str(normalized)
     
     def gene_names_at_locus(self, contig, position):
-        """
-        Get gene names at a specific genomic position.
+        """Get gene names at a specific genomic position.
         
-        Parameters
-        ----------
-        contig : str
-            Chromosome/contig name (e.g., "1", "X", "chr1")
-        position : int
-            Genomic position (1-based)
-        
-        Returns
-        -------
+Parameters
+----------
+contig : str
+    Chromosome/contig name (e.g., "1", "X", "chr1")
+position : int
+    Genomic position (1-based)
+Returns
+-------
         list
             List of gene names at the position (empty if none)
-        """
+"""
         self._ensure_indexed()
         contig_norm = self._normalize_contig(contig)
         
@@ -433,21 +428,19 @@ class SimpleGenome:
         return gene_names
     
     def gene_ids_at_locus(self, contig, position):
-        """
-        Get gene IDs at a specific genomic position.
+        """Get gene IDs at a specific genomic position.
         
-        Parameters
-        ----------
-        contig : str
-            Chromosome/contig name (e.g., "1", "X", "chr1")
-        position : int
-            Genomic position (1-based)
-        
-        Returns
-        -------
+Parameters
+----------
+contig : str
+    Chromosome/contig name (e.g., "1", "X", "chr1")
+position : int
+    Genomic position (1-based)
+Returns
+-------
         list
             List of gene IDs at the position (empty if none)
-        """
+"""
         self._ensure_indexed()
         contig_norm = self._normalize_contig(contig)
         
@@ -469,27 +462,25 @@ class SimpleGenome:
         return gene_ids
     
     def closest_gene(self, chrom, pos, use_gene_id=False, max_distance=1000000):
-        """
-        Find the closest gene to a given chromosome and position.
+        """Find the closest gene to a given chromosome and position.
         
-        Parameters
-        ----------
-        chrom : str or int
-            Chromosome number or name (e.g., "1", "X", 23, or NC_ format for RefSeq)
-        pos : int
-            Genomic position (1-based)
-        use_gene_id : bool, default False
-            If True, use gene_id instead of gene_name (for RefSeq)
-        max_distance : int, default 1000000
-            Maximum distance to search for genes (1Mb default)
-        
-        Returns
-        -------
+Parameters
+----------
+chrom : str or int
+    Chromosome number or name (e.g., "1", "X", 23, or NC_ format for RefSeq)
+pos : int
+    Genomic position (1-based)
+use_gene_id : bool, default False
+    If True, use gene_id instead of gene_name (for RefSeq)
+max_distance : int, default 1000000
+    Maximum distance to search for genes (1Mb default)
+Returns
+-------
         tuple
             (distance, gene_names) where:
             - distance: int, distance to gene (0 if within gene, negative if upstream, positive if downstream)
             - gene_names: str, comma-separated gene names (or "intergenic" if no gene found)
-        """
+"""
         self._ensure_indexed()
         
         # Normalize chromosome name
@@ -569,25 +560,23 @@ class SimpleGenome:
         return distance, ",".join(gene_names)
     
     def closest_genes_vectorized(self, chrom, positions, use_gene_id=False, max_distance=1000000):
-        """
-        Find closest genes for multiple positions on the same chromosome (vectorized).
+        """Find closest genes for multiple positions on the same chromosome (vectorized).
         
-        Parameters
-        ----------
-        chrom : str or int
-            Chromosome number or name
-        positions : array-like
-            Array of genomic positions (1-based)
-        use_gene_id : bool, default False
-            If True, use gene_id instead of gene_name
-        max_distance : int, default 1000000
-            Maximum distance to search for genes
-        
-        Returns
-        -------
+Parameters
+----------
+chrom : str or int
+    Chromosome number or name
+positions : array-like
+    Array of genomic positions (1-based)
+use_gene_id : bool, default False
+    If True, use gene_id instead of gene_name
+max_distance : int, default 1000000
+    Maximum distance to search for genes
+Returns
+-------
         pandas.DataFrame
             DataFrame with columns ['distance', 'gene_names'] and same index as positions
-        """
+"""
         self._ensure_indexed()
         
         # Normalize chromosome name
@@ -695,29 +684,27 @@ def closest_gene(
     source: str = "ensembl", 
     build: str = "19"
 ) -> Tuple[int, str]:
-    """
-    Find the closest gene to a variant position.
+    """Find the closest gene to a variant position.
     
-    Parameters
-    ----------
-    x : pandas.Series
-        Row from DataFrame containing variant information
-    data : SimpleGenome
-        SimpleGenome instance with loaded GTF data
-    chrom : str, default "CHR"
-        Column name for chromosome
-    pos : str, default "POS"
-        Column name for position
-    source : str, default "ensembl"
-        Data source ("ensembl" or "refseq")
-    build : str, default "19"
-        Genome build version
-    
-    Returns
-    -------
-    tuple
-        (distance, gene_names) where distance is int and gene_names is str
-    """
+Parameters
+----------
+x : pandas.Series
+    Row from DataFrame containing variant information
+data : SimpleGenome
+    SimpleGenome instance with loaded GTF data
+chrom : str, default "CHR"
+    Column name for chromosome
+pos : str, default "POS"
+    Column name for position
+source : str, default "ensembl"
+    Data source ("ensembl" or "refseq")
+build : str, default "19"
+    Genome build version
+Returns
+-------
+tuple
+    (distance, gene_names) where distance is int and gene_names is str
+"""
     use_gene_id = (source == "refseq")
     
     # Handle chromosome conversion for RefSeq
@@ -883,37 +870,35 @@ def _get_known_variants_from_gwascatalog(
     verbose: bool = True, 
     log: Log = Log()
 ) -> pd.DataFrame:
-    """
-    Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
+    """Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
     
     This function delegates to the GWASCatalogClient.get_known_variants_for_trait method,
     which handles all the GWAS Catalog API logic, then processes the results.
     
-    Parameters
-    ----------
-    client : GWASCatalogClient
-        GWAS Catalog API client instance
-    efo : str
-        EFO trait ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"),
-        or trait name (e.g., "duodenal ulcer")
-    sig_level : float
-        P-value threshold for filtering associations
-    show_child_traits : bool
-        If True, include child traits in GWAS Catalog results (default: True)
-    use_cache : bool
-        If True, use cache when falling back to legacy GWAS Catalog API (default: True)
-    cache_dir : str
-        Directory for cache files when using legacy API (default: "./")
-    verbose : bool
-        Whether to print log messages
-    log : Log
-        Logging object
-        
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with columns: SNPID, CHR, POS, and other association metadata
-    """
+Parameters
+----------
+client : GWASCatalogClient
+    GWAS Catalog API client instance
+efo : str
+    EFO trait ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"),
+    or trait name (e.g., "duodenal ulcer")
+sig_level : float
+    P-value threshold for filtering associations
+show_child_traits : bool
+    If True, include child traits in GWAS Catalog results (default: True)
+use_cache : bool
+    If True, use cache when falling back to legacy GWAS Catalog API (default: True)
+cache_dir : str
+    Directory for cache files when using legacy API (default: "./")
+verbose : bool
+    Whether to print log messages
+log : Log
+    Logging object
+Returns
+-------
+pd.DataFrame
+    DataFrame with columns: SNPID, CHR, POS, and other association metadata
+"""
     
     # Delegate to the client method which handles all GWAS Catalog API logic
     knownsig = client.get_known_variants_for_trait(
@@ -976,45 +961,43 @@ def _get_novel(
     show_child_traits: bool = True,
     verbose: bool = True
 ) -> pd.DataFrame:
-    """
-    Identify novel variants by comparing against known variant databases.
+    """Identify novel variants by comparing against known variant databases.
 
     This function determines whether variants in summary statistics are novel by comparing them 
     against known variants from GWAS catalog or user-provided reference data. It handles 
     coordinate conversion, distance calculations, and group-based comparisons.
 
-    Parameters
-    ----------
-    insumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    known : pd.DataFrame or str, optional
-        DataFrame or path to file containing known variants with CHR/POS columns
-    efo : str or list, optional
-        EFO ID(s), MONDO ID(s), or trait name(s) for querying GWAS Catalog. A list
-        may mix formats, e.g. efo=['coffee consumption', 'MONDO_0004247', 'EFO_0004330'].
-    only_novel : bool, default=False
-        If True, return only novel variants
-    group_key : str, optional
-        Column name for grouping variants (e.g., trait/phenotype ID)
-    if_get_lead : bool, default=True
-        If True, first extract lead variants using getsig
-    windowsizekb : int, default=500
-        Window size (kb) for lead variant identification
-    windowsizekb_for_novel : int, default=1000
-        Distance threshold (kb) to define novelty
-    show_child_traits : bool, default=True
-        If True, include child traits in GWAS Catalog results when querying by efo
+Parameters
+----------
+insumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+known : pd.DataFrame or str, optional
+    DataFrame or path to file containing known variants with CHR/POS columns
+efo : str or list, optional
+    EFO ID(s), MONDO ID(s), or trait name(s) for querying GWAS Catalog. A list
+    may mix formats, e.g. efo=['coffee consumption', 'MONDO_0004247', 'EFO_0004330'].
+only_novel : bool, default False
+    If True, return only novel variants
+group_key : str, optional
+    Column name for grouping variants (e.g., trait/phenotype ID)
+if_get_lead : bool, default True
+    If True, first extract lead variants using getsig
+windowsizekb : int, default 500
+    Window size (kb) for lead variant identification
+windowsizekb_for_novel : int, default 1000
+    Distance threshold (kb) to define novelty
+show_child_traits : bool, default True
+    If True, include child traits in GWAS Catalog results when querying by efo
+Returns
+-------
+pandas.DataFrame or tuple
+    If only_novel=False and output_known=False: DataFrame with all variants and NOVEL column
+    If only_novel=True and output_known=False: DataFrame with only novel variants
+    If output_known=True: tuple of (variants DataFrame, known variants DataFrame)
+    The returned DataFrame includes a "NOVEL" column indicating novelty status.
 
-    Returns
-    -------
-    pandas.DataFrame or tuple
-        If only_novel=False and output_known=False: DataFrame with all variants and NOVEL column
-        If only_novel=True and output_known=False: DataFrame with only novel variants
-        If output_known=True: tuple of (variants DataFrame, known variants DataFrame)
-        The returned DataFrame includes a "NOVEL" column indicating novelty status.
-
-    Notes
-    -----
+Notes
+-----
     When build is hg19/GRCh37, coordinates are first lifted over to hg38, then the same
     steps are run. GWAS catalog and novelty checks use hg38; returned coordinates are
     in hg38 in that case.
@@ -1031,7 +1014,7 @@ def _get_novel(
     When there are no lead variants to compare (or input is empty), returns early with an
     empty DataFrame (and an empty known-variants frame if ``output_known=True``) without
     querying GWAS Catalog or user reference files.
-    """
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(insumstats_or_dataframe, pd.DataFrame):

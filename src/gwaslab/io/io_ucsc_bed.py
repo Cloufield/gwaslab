@@ -1,5 +1,4 @@
-"""
-UCSC BED format I/O utilities.
+"""UCSC BED format I/O utilities.
 
 This module provides functions for reading and processing BED (Browser Extensible Data)
 format files according to the UCSC Genome Browser specification.
@@ -44,41 +43,39 @@ def read_bed(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Read a BED file into a pandas DataFrame.
+    """Read a BED file into a pandas DataFrame.
     
     BED files use 0-based, half-open intervals [chromStart, chromEnd).
     The chromEnd position is exclusive (not included in the feature).
     
-    Parameters
-    ----------
-    bed_path : str
-        Path to BED file. Supports uncompressed (.bed) and gzipped (.bed.gz) files.
-    usecols : list of int, optional
-        Column indices to read (0-based). If None, reads all columns.
-        Default columns: chrom (0), chromStart (1), chromEnd (2), and optional fields.
-    header : bool, optional
-        Whether the file has a header line. BED files typically don't have headers,
-        but custom tracks may have "browser" or "track" lines.
-        If None, auto-detects by checking for "browser" or "track" lines.
-    comment : str, optional
-        Character(s) that indicate comment lines to skip. Default is "#".
-        BED custom tracks may have "browser" or "track" header lines.
-    verbose : bool, default=False
-        If True, prints information about the file being read.
-    log : Log, optional
-        Logger instance for messages.
+Parameters
+----------
+bed_path : str
+    Path to BED file. Supports uncompressed (.bed) and gzipped (.bed.gz) files.
+usecols : list of int, optional
+    Column indices to read (0-based). If None, reads all columns.
+    Default columns: chrom (0), chromStart (1), chromEnd (2), and optional fields.
+header : bool, optional
+    Whether the file has a header line. BED files typically don't have headers,
+    but custom tracks may have "browser" or "track" lines.
+    If None, auto-detects by checking for "browser" or "track" lines.
+comment : str, optional
+    Character(s) that indicate comment lines to skip. Default is "#".
+    BED custom tracks may have "browser" or "track" header lines.
+verbose : bool, default False
+    If True, prints information about the file being read.
+log : Log, optional
+    Logger instance for messages.
+Returns
+-------
+pd.DataFrame
+    DataFrame with BED data. Column names depend on number of columns:
+    - BED3: chrom, chromStart, chromEnd
+    - BED4+: chrom, chromStart, chromEnd, name, ...
+    Columns are named according to BED specification.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with BED data. Column names depend on number of columns:
-        - BED3: chrom, chromStart, chromEnd
-        - BED4+: chrom, chromStart, chromEnd, name, ...
-        Columns are named according to BED specification.
-    
-    Notes
-    -----
+Notes
+-----
     BED format specification:
     - chrom: Chromosome name (e.g., chr1, chrX, 1, X)
     - chromStart: Starting position (0-based)
@@ -90,10 +87,10 @@ def read_bed(
     - For example, chromStart=0, chromEnd=100 spans bases 0-99
     - In 1-based coordinates, this corresponds to positions 1-100
     
-    References
-    ----------
+References
+----------
     UCSC BED format: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
-    """
+"""
     if not os.path.exists(bed_path):
         raise FileNotFoundError(f"BED file not found: {bed_path}")
     
@@ -153,21 +150,19 @@ def read_bed(
 
 
 def _detect_bed_header(bed_path: str, is_gzipped: bool) -> bool:
-    """
-    Detect if BED file has header lines (browser or track lines).
+    """Detect if BED file has header lines (browser or track lines).
     
-    Parameters
-    ----------
-    bed_path : str
-        Path to BED file
-    is_gzipped : bool
-        Whether the file is gzipped
-    
-    Returns
-    -------
-    bool
-        True if header lines are detected, False otherwise
-    """
+Parameters
+----------
+bed_path : str
+    Path to BED file
+is_gzipped : bool
+    Whether the file is gzipped
+Returns
+-------
+bool
+    True if header lines are detected, False otherwise
+"""
     try:
         if is_gzipped:
             f = gzip.open(bed_path, 'rt')
@@ -190,19 +185,17 @@ def _detect_bed_header(bed_path: str, is_gzipped: bool) -> bool:
 
 
 def _validate_bed_coordinates(bed_df: pd.DataFrame) -> bool:
-    """
-    Validate BED coordinates (chromStart < chromEnd).
+    """Validate BED coordinates (chromStart < chromEnd).
     
-    Parameters
-    ----------
-    bed_df : pd.DataFrame
-        BED DataFrame with chrom, chromStart, chromEnd columns
-    
-    Returns
-    -------
-    bool
-        True if all coordinates are valid, False otherwise
-    """
+Parameters
+----------
+bed_df : pd.DataFrame
+    BED DataFrame with chrom, chromStart, chromEnd columns
+Returns
+-------
+bool
+    True if all coordinates are valid, False otherwise
+"""
     if 'chromStart' not in bed_df.columns or 'chromEnd' not in bed_df.columns:
         return False
     
@@ -220,47 +213,45 @@ def bed_to_sumstats_coordinates(
     verbose: bool = False,
     log: Optional[Log] = None
 ) -> pd.DataFrame:
-    """
-    Convert BED coordinates to sumstats-compatible format.
+    """Convert BED coordinates to sumstats-compatible format.
     
     Converts:
     - Chromosome notation: BED chrom → sumstats CHR format
     - Coordinates: BED 0-based [start, end) → 1-based [start+1, end] for matching
     
-    Parameters
-    ----------
-    bed_df : pd.DataFrame
-        BED DataFrame with chrom, chromStart, chromEnd columns
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome conversion.
-        If None, creates a new mapper.
-    chrom_col : str, default='chrom'
-        Column name for chromosome in BED file
-    start_col : str, default='chromStart'
-        Column name for start position in BED file
-    end_col : str, default='chromEnd'
-        Column name for end position in BED file
-    verbose : bool, default=False
-        If True, prints conversion information
-    log : Log, optional
-        Logger instance for messages
+Parameters
+----------
+bed_df : pd.DataFrame
+    BED DataFrame with chrom, chromStart, chromEnd columns
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance for chromosome conversion.
+    If None, creates a new mapper.
+chrom_col : str, default 'chrom'
+    Column name for chromosome in BED file
+start_col : str, default 'chromStart'
+    Column name for start position in BED file
+end_col : str, default 'chromEnd'
+    Column name for end position in BED file
+verbose : bool, default False
+    If True, prints conversion information
+log : Log, optional
+    Logger instance for messages
+Returns
+-------
+pd.DataFrame
+    DataFrame with converted coordinates:
+    - CHR: Chromosome in sumstats format
+    - START: Start position for matching (1-based, inclusive)
+    - END: End position for matching (1-based, inclusive)
+    Original BED columns are preserved with '_bed' suffix.
     
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with converted coordinates:
-        - CHR: Chromosome in sumstats format
-        - START: Start position for matching (1-based, inclusive)
-        - END: End position for matching (1-based, inclusive)
-        Original BED columns are preserved with '_bed' suffix.
-    
-    Notes
-    -----
+Notes
+-----
     BED uses 0-based, half-open intervals [chromStart, chromEnd).
     For matching with 1-based sumstats POS:
     - BED [start, end) in 0-based = [start+1, end] in 1-based
     - We convert to: START = start + 1, END = end (both inclusive for matching)
-    """
+"""
     if mapper is None:
         mapper = ChromosomeMapper(species="homo sapiens", log=log, verbose=verbose)
     
@@ -310,32 +301,30 @@ def bed_contains_position(
     end_col: str = 'END',
     mapper: Optional[ChromosomeMapper] = None
 ) -> bool:
-    """
-    Check if a position (chrom, pos) is contained in any BED region.
+    """Check if a position (chrom, pos) is contained in any BED region.
     
-    Parameters
-    ----------
-    bed_df : pd.DataFrame
-        BED DataFrame with converted coordinates (from bed_to_sumstats_coordinates)
-    chrom : str or int
-        Chromosome identifier (in sumstats format)
-    pos : int
-        Position (1-based)
-    chrom_col : str, default='CHR'
-        Column name for chromosome in converted BED DataFrame
-    start_col : str, default='START'
-        Column name for start position in converted BED DataFrame
-    end_col : str, default='END'
-        Column name for end position in converted BED DataFrame
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance for chromosome conversion.
-        If None, assumes chrom is already in the same format as bed_df[chrom_col].
-    
-    Returns
-    -------
-    bool
-        True if position is contained in any BED region, False otherwise
-    """
+Parameters
+----------
+bed_df : pd.DataFrame
+    BED DataFrame with converted coordinates (from bed_to_sumstats_coordinates)
+chrom : str or int
+    Chromosome identifier (in sumstats format)
+pos : int
+    Position (1-based)
+chrom_col : str, default 'CHR'
+    Column name for chromosome in converted BED DataFrame
+start_col : str, default 'START'
+    Column name for start position in converted BED DataFrame
+end_col : str, default 'END'
+    Column name for end position in converted BED DataFrame
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance for chromosome conversion.
+    If None, assumes chrom is already in the same format as bed_df[chrom_col].
+Returns
+-------
+bool
+    True if position is contained in any BED region, False otherwise
+"""
     if len(bed_df) == 0:
         return False
     

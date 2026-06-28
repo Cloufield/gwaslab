@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING, Optional, Union, Dict, Any, List, Tuple, Callable
 import numpy as np
 import pandas as pd
-from gwaslab.info.g_object_helper import add_doc, suppress_display
+from gwaslab.info.g_object_helper import add_doc, add_viz_doc, suppress_display
 
 if TYPE_CHECKING:
     from gwaslab.info.g_Log import Log
@@ -22,9 +22,11 @@ from gwaslab.info.g_meta import (
     _update_step_status,
     _update_qc_step,
     _update_harmonize_step,
+    _validate_meta,
 )
 from gwaslab.info.g_meta import _update_meta
 from gwaslab.qc.qc_build import _set_build
+from gwaslab.qc.qc_pipeline import _run_qc_core
 # ----- QC: Fix Sumstats -----
 from gwaslab.qc.qc_fix_sumstats import (
     _fix_allele,
@@ -173,6 +175,7 @@ from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.io.io_input_type import _get_id_column
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
+from gwaslab.hm.hm_assign_rsid import _annotate_sumstats
 from gwaslab.hm.hm_check_af import _check_af_with_annotation, _infer_af_with_annotation, _infer_af_with_maf_annotation
 from datetime import datetime
 
@@ -352,44 +355,36 @@ class Sumstats():
     
     @property
     def build(self) -> str:
-        if self._build =="Unknown" or self._build =="99":
-            if self.meta["gwaslab"]["species"] == "homo sapiens":
-                self.log.warning("Build is unknown. .infer_build first.")
-                try:
-                    self.infer_build(log=self.log, verbose=verbose)
-                except:
-                    pass
+        if self._build in ("Unknown", "99"):
+            self.log.warning(
+                "Build is unknown. Run .infer_build() or .set_build() explicitly.",
+                verbose=True,
+            )
         return self._build
 
     @build.setter
     def build(self, value: Union[str, int]) -> None:
-        # Process the build value and update both _build and meta
-        from gwaslab.qc.qc_build import _process_build
-        # Ensure meta["gwaslab"] exists
-        if "gwaslab" not in self.meta:
-            self.meta["gwaslab"] = {}
-        species = self.meta.get("gwaslab", {}).get("species", "homo sapiens")
-        processed_build = _process_build(value, log=self.log, verbose=False, species=species)
-        self._build = processed_build
-        self.meta["gwaslab"]["genome_build"] = processed_build
-        
-        # Update mapper with new build if mapper exists
-        if hasattr(self, 'mapper'):
-            self.mapper.build = processed_build
-            self.mapper._build_nc_mappings()  # Rebuild NC mappings for new build
+        from gwaslab.qc.qc_build import _sync_build
+        _sync_build(
+            self,
+            value,
+            update_status=False,
+            source="setter",
+            log=self.log,
+            verbose=False,
+        )
     
     def _update_mapper_from_data(self, chrom_col: str = "CHR"):
-        """
-        Auto-detect chromosome format from data and rebuild sumstats layer in mapper.
+        """Auto-detect chromosome format from data and rebuild sumstats layer in mapper.
         
         This method should be called whenever the chromosome column is modified
         (e.g., after fix_chr, after loading new data, etc.).
         
-        Parameters
-        ----------
-        chrom_col : str, default="CHR"
-            Column name for chromosome data in self.data.
-        """
+Parameters
+----------
+chrom_col : str, default "CHR"
+    Column name for chromosome data in self.data.
+"""
         if not hasattr(self, 'data') or self.data.empty:
             return
         
@@ -412,97 +407,125 @@ class Sumstats():
     
     @property
     def ldsc_h2(self) -> Optional[float]:
-        """LDSC heritability estimate (backward compatibility)."""
+        """LDSC heritability estimate (backward compatibility).
+"""
         return self.downstream.ldsc_h2
     
     @ldsc_h2.setter
     def ldsc_h2(self, value: Optional[float]) -> None:
-        """Set LDSC heritability estimate (backward compatibility)."""
+        """Set LDSC heritability estimate (backward compatibility).
+"""
         self.downstream.ldsc_h2 = value
     
     @property
     def ldsc_h2_results(self) -> Optional[Any]:
-        """Detailed LDSC heritability results (backward compatibility)."""
+        """Detailed LDSC heritability results (backward compatibility).
+"""
         return self.downstream.ldsc_h2_results
     
     @ldsc_h2_results.setter
     def ldsc_h2_results(self, value: Optional[Any]) -> None:
-        """Set detailed LDSC heritability results (backward compatibility)."""
+        """Set detailed LDSC heritability results (backward compatibility).
+"""
         self.downstream.ldsc_h2_results = value
     
     @property
     def ldsc_rg(self) -> pd.DataFrame:
-        """LDSC genetic correlation results (backward compatibility)."""
+        """LDSC genetic correlation results (backward compatibility).
+"""
         return self.downstream.ldsc_rg
     
     @ldsc_rg.setter
     def ldsc_rg(self, value: pd.DataFrame) -> None:
-        """Set LDSC genetic correlation results (backward compatibility)."""
+        """Set LDSC genetic correlation results (backward compatibility).
+"""
         self.downstream.ldsc_rg = value
     
     @property
     def ldsc_h2_cts(self) -> Optional[Any]:
-        """LDSC cell-type-specific heritability results (backward compatibility)."""
+        """LDSC cell-type-specific heritability results (backward compatibility).
+"""
         return self.downstream.ldsc_h2_cts
     
     @ldsc_h2_cts.setter
     def ldsc_h2_cts(self, value: Optional[Any]) -> None:
-        """Set LDSC cell-type-specific heritability results (backward compatibility)."""
+        """Set LDSC cell-type-specific heritability results (backward compatibility).
+"""
         self.downstream.ldsc_h2_cts = value
     
     @property
     def ldsc_partitioned_h2_summary(self) -> Optional[Any]:
-        """LDSC partitioned heritability summary (backward compatibility)."""
+        """LDSC partitioned heritability summary (backward compatibility).
+"""
         return self.downstream.ldsc_partitioned_h2_summary
     
     @ldsc_partitioned_h2_summary.setter
     def ldsc_partitioned_h2_summary(self, value: Optional[Any]) -> None:
-        """Set LDSC partitioned heritability summary (backward compatibility)."""
+        """Set LDSC partitioned heritability summary (backward compatibility).
+"""
         self.downstream.ldsc_partitioned_h2_summary = value
     
     @property
     def ldsc_partitioned_h2_results(self) -> Optional[Any]:
-        """Detailed LDSC partitioned heritability results (backward compatibility)."""
+        """Detailed LDSC partitioned heritability results (backward compatibility).
+"""
         return self.downstream.ldsc_partitioned_h2_results
     
     @ldsc_partitioned_h2_results.setter
     def ldsc_partitioned_h2_results(self, value: Optional[Any]) -> None:
-        """Set detailed LDSC partitioned heritability results (backward compatibility)."""
+        """Set detailed LDSC partitioned heritability results (backward compatibility).
+"""
         self.downstream.ldsc_partitioned_h2_results = value
     
     @property
     def finemapping(self) -> Dict[str, Any]:
-        """Finemapping results dictionary (backward compatibility)."""
+        """Finemapping results dictionary (backward compatibility).
+"""
         return self.downstream.finemapping
     
     @finemapping.setter
     def finemapping(self, value: Dict[str, Any]) -> None:
-        """Set finemapping results dictionary (backward compatibility)."""
+        """Set finemapping results dictionary (backward compatibility).
+"""
         self.downstream.finemapping = value
     
     @property
     def clumps(self) -> Dict[str, Any]:
-        """Clumping results dictionary (backward compatibility)."""
+        """Clumping results dictionary (backward compatibility).
+"""
         return self.downstream.clumps
     
     @clumps.setter
     def clumps(self, value: Dict[str, Any]) -> None:
-        """Set clumping results dictionary (backward compatibility)."""
+        """Set clumping results dictionary (backward compatibility).
+"""
         self.downstream.clumps = value
     
     @property
     def pipcs(self) -> pd.DataFrame:
-        """PIPCS results (backward compatibility)."""
+        """PIPCS results (backward compatibility).
+"""
         return self.downstream.pipcs
     
     @pipcs.setter
     def pipcs(self, value: pd.DataFrame) -> None:
-        """Set PIPCS results (backward compatibility)."""
+        """Set PIPCS results (backward compatibility).
+"""
         self.downstream.pipcs = value
 
     def _apply_viz_params(self, func: Callable[..., Any], kwargs: Dict[str, Any], key: Optional[str] = None, mode: Optional[str] = None) -> Dict[str, Any]:
-        params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
-        return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
+        plot_key = key or func.__name__
+        user_keys = set(kwargs.keys()) | set(self.viz_params.get(plot_key, mode).keys())
+        params = self.viz_params.merge(plot_key, kwargs, mode=mode)
+        return self.viz_params.filter(
+            func,
+            params,
+            key=plot_key,
+            mode=mode,
+            log=self.log,
+            verbose=kwargs.get("verbose", True),
+            user_keys=user_keys,
+        )
 
     def __getitem__(self, index: Any) -> Any:
         return self.data[index]
@@ -523,7 +546,8 @@ class Sumstats():
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
     
     def __deepcopy__(self, memo: Dict[int, Any]) -> 'Sumstats':
-        """Custom deepcopy implementation to properly copy Sumstats objects."""
+        """Custom deepcopy implementation to properly copy Sumstats objects.
+"""
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -532,12 +556,14 @@ class Sumstats():
         return result
     
     def copy(self) -> 'Sumstats':
-        """Return a deep copy of the Sumstats object."""
+        """Return a deep copy of the Sumstats object.
+"""
         return copy.deepcopy(self)
 #### healper #################################################################################
-    #@add_doc(_update_meta)
-    #def update_meta(self, **kwargs):
-    #    self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)
+    @add_doc(_update_meta)
+    def update_meta(self, verbose: bool = True, **kwargs: Any) -> None:
+        kwargs = remove_overlapping_kwargs(kwargs, {"log", "verbose", "object"})
+        self.meta = _update_meta(self.meta, self.data, log=self.log, verbose=verbose, **kwargs)
     
     @add_doc(summarize)
     def summary(self) -> Any:
@@ -583,8 +609,7 @@ class Sumstats():
                     normalize=True,
                     normalize_allele_kwargs={},
                     verbose=True):
-        """
-        All-in-one function for Sumstats quality control (QC), which is a wrapper of separate functions including:
+        """All-in-one function for Sumstats quality control (QC), which is a wrapper of separate functions including:
         `fix_id` for SNPID and rsID check, `fix_chr` for chromosome notation (CHR) check,
         `fix_pos` for basepair position (POS) check, `fix_allele` for allele notation (EA and NEA) check,
         `check_sanity` for statistics sanity check and datatype check (BETA, SE, P and so forth),
@@ -594,76 +619,64 @@ class Sumstats():
 
         For a detailed description of all checks performed, see the documentation in docs/QC&Filtering.md.
 
-        Parameters
-        ----------
-        remove : bool, optional
-            Whether to remove bad quality variants detected in _fix_chr, _fix_pos, and _fix_allele.
-        remove_dup : bool, optional
-            Whether to remove duplicated or multi-allelic variants using remove_dup.
-        threads : int, optional
-            Number of threads to use for parallel processing.
-        fix_id_kwargs : dict, optional
-            Keyword arguments passed to `fix_id`.
-        remove_dup_kwargs : dict, optional
-            Keyword arguments passed to `remove_dup`.
-        fix_chr_kwargs : dict, optional
-            Keyword arguments passed to `fix_chr`.
-        fix_pos_kwargs : dict, optional
-            Keyword arguments passed to `fix_pos`.
-        fix_allele_kwargs : dict, optional
-            Keyword arguments passed to `fix_allele`.
-        sanity_check_stats_kwargs : dict, optional
-            Keyword arguments passed to `check_sanity`.
-        consistency_check_kwargs : dict, optional
-            Keyword arguments passed to `check_data_consistency`.
-        normalize : bool, optional
-            Whether to perform indel normalization.
-        normalize_allele_kwargs : dict, optional
-            Keyword arguments passed to `normalize_allele`.
-        verbose : bool, optional
-            Whether to print progress information.
-        """
+Parameters
+----------
+remove : bool, default False
+    Whether to remove bad quality variants detected in _fix_chr, _fix_pos, and _fix_allele.
+remove_dup : bool, default False
+    Whether to remove duplicated or multi-allelic variants using remove_dup.
+threads : int, default 1
+    Number of threads to use for parallel processing.
+fix_id_kwargs : dict, default {}
+    Keyword arguments passed to `fix_id`.
+remove_dup_kwargs : dict, default {}
+    Keyword arguments passed to `remove_dup`.
+fix_chr_kwargs : dict, default {}
+    Keyword arguments passed to `fix_chr`.
+fix_pos_kwargs : dict, default {}
+    Keyword arguments passed to `fix_pos`.
+fix_allele_kwargs : dict, default {}
+    Keyword arguments passed to `fix_allele`.
+sanity_check_stats_kwargs : dict, default {}
+    Keyword arguments passed to `check_sanity`.
+consistency_check_kwargs : dict, default {}
+    Keyword arguments passed to `check_data_consistency`.
+normalize : bool, default True
+    Whether to perform indel normalization.
+normalize_allele_kwargs : dict, default {}
+    Keyword arguments passed to `normalize_allele`.
+verbose : bool, default True
+    Whether to print progress information.
+Returns
+-------
+Sumstats
+    ``self`` after QC.
+
+Examples
+--------
+>>> mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="plink2")
+>>> mysumstats.basic_check()
+"""
         saved_kwargs = {**locals()}
-        # prepare status section
-        ###############################################
-        # Sequential version (original implementation)
-        # try to fix data without dropping any information 
-        
-        fix_id_kwargs = remove_overlapping_kwargs(fix_id_kwargs,{"log", "remove", "verbose"})
-        self.data = _fix_ID(self,log=self.log,verbose=verbose, **fix_id_kwargs)
-        
-        fix_chr_kwargs = remove_overlapping_kwargs(fix_chr_kwargs,{"log", "remove", "verbose"})
-        self.data = _fix_chr(self,log=self.log,remove=remove,verbose=verbose,**fix_chr_kwargs)
-        # Auto-detect and rebuild mapper after chromosome column is modified
-        self._update_mapper_from_data()
-        
-        fix_pos_kwargs = remove_overlapping_kwargs(fix_pos_kwargs,{"log", "remove", "verbose"})
-        self.data = _fix_pos(self,log=self.log,remove=remove,verbose=verbose,**fix_pos_kwargs)
-        
-        fix_allele_kwargs = remove_overlapping_kwargs(fix_allele_kwargs,{"log", "remove", "verbose"})
-        self.data = _fix_allele(self,log=self.log, remove=remove, verbose=verbose,**fix_allele_kwargs)
-        
-        sanity_check_stats_kwargs = remove_overlapping_kwargs(sanity_check_stats_kwargs,{"log", "remove", "verbose"})
-        self.data = _sanity_check_stats(self,log=self.log,verbose=verbose,**sanity_check_stats_kwargs)
-        
-        consistency_check_kwargs = remove_overlapping_kwargs(consistency_check_kwargs,{"log", "remove", "verbose"})
-        _check_data_consistency(self,log=self.log,verbose=verbose,**consistency_check_kwargs)
-        
-        if normalize is True:
-            normalize_allele_kwargs = remove_overlapping_kwargs(normalize_allele_kwargs,{"log", "remove", "verbose","threads"})
-            self.data = _parallelize_normalize_allele(self,threads=threads,verbose=verbose,log=self.log,**normalize_allele_kwargs)
-        
-        if remove_dup is True:
-            remove_dup_kwargs = remove_overlapping_kwargs(remove_dup_kwargs,{"log", "remove", "verbose"})
-            self.data = _remove_dup(self,log=self.log,verbose=verbose,**remove_dup_kwargs)
-        
-        self.data = _sort_coordinate(self,verbose=verbose,log=self.log)
-        self.data = _sort_column(self,verbose=verbose,log=self.log)
-        
-        # is_sorted is already set by _sort_column
-        
-        _set_qc_status(self, saved_kwargs)
-        ###############################################
+        qc_report = _run_qc_core(
+            self,
+            remove=remove,
+            remove_dup=remove_dup,
+            normalize=normalize,
+            threads=threads,
+            include_consistency=True,
+            verbose=verbose,
+            fix_id_kwargs=fix_id_kwargs,
+            fix_chr_kwargs=fix_chr_kwargs,
+            fix_pos_kwargs=fix_pos_kwargs,
+            fix_allele_kwargs=fix_allele_kwargs,
+            sanity_check_stats_kwargs=sanity_check_stats_kwargs,
+            consistency_check_kwargs=consistency_check_kwargs,
+            normalize_allele_kwargs=normalize_allele_kwargs,
+            remove_dup_kwargs=remove_dup_kwargs,
+        )
+        _set_qc_status(self, saved_kwargs, qc_report=qc_report)
+        self.update_meta(verbose=verbose)
         return self
         
     
@@ -694,87 +707,96 @@ class Sumstats():
               verbose=True,
               sweep_mode=False,
               ):
-        """
-        Standard pipeline for harmonizing sumstats including:
+        """Standard pipeline for harmonizing sumstats including:
         1. Basic check and standardization using fix_id, fix_chr, fix_pos, fix_allele, check_sanity, normalize_allele, sort_coordinate, and sort_column.
         2. Reference-based annotation and flipping using check_ref, flip_allele_stats, infer_strand, and assign_rsid.
         3. Optional duplicate removal with removedup and final sorting via sort_coordinate and sort_column.
         For infer_strand, and assign_rsid, check_ref with ref_seq is required.
 
-        Parameters
-        ----------
-        basic_check : bool, optional
-            Whether to run basic QC pipeline (_fix_ID, _fix_chr, _fix_pos, etc.)
-        ref_seq : str or None
-            Full path to reference sequence file in fasta format for allele flipping
-        ref_rsid_tsv : str or None
-            Full path to rsID TSV reference file
-        ref_rsid_vcf : str or None
-            Full path to rsID VCF/BCF reference file
-        ref_infer : str or None
-            Full path to Reference VCF/BCF file for strand inference
-        ref_alt_freq : str or None
-            Allele frequency field name in VCF/BCF INFO for strand inference. Default is "AF".
-        ref_maf_threshold : float
-            MAF threshold (applied to reference VCF/BCF) for strand inference
-        maf_threshold : float
-            MAF threshold (applied to sumstats) for strand inference
-        threads : int, optional
-            Number of threads for parallel processing
-        extract_threads : int, optional
-            Worker count for VCF/BCF lookup extraction during infer_strand2 and
-            assign_rsid2 sweep mode. Defaults to 1 inside extract (memory-safe).
-        remove : bool, optional
-            Whether to remove bad variants during QC
-        check_ref_kwargs : dict, optional
-            Arguments passed to check_ref
-        remove_dup_kwargs : dict, optional
-            Arguments passed to remove_dup
-        assign_rsid_kwargs : dict, optional
-            Arguments passed to assign_rsid
-        infer_strand_kwargs : dict, optional
-            Arguments passed to infer_strand
-        flip_allele_stats_kwargs : dict, optional
-            Arguments passed to flip_allele_stats
-        fix_id_kwargs : dict, optional
-            Arguments passed to fix_ID
-        fix_chr_kwargs : dict, optional
-            Arguments passed to fix_chr
-        fix_pos_kwargs : dict, optional
-            Arguments passed to fix_pos
-        fix_allele_kwargs : dict, optional
-            Arguments passed to fix_allele
-        sanity_check_stats_kwargs : dict, optional
-            Arguments passed to check_sanity
-        normalize_allele_kwargs : dict, optional
-            Arguments passed to normalize_allele
-        verbose : bool, optional
-            Whether to print progress information.
-        sweep_mode:bool, optional
-            If false, use lookup (per-variant) mode. If true, use sweep model (fast for large dataset).
-        """
+Parameters
+----------
+basic_check : bool, default True
+    Whether to run basic QC pipeline (``fix_id``, ``fix_chr``, ``fix_pos``, etc.).
+ref_seq : str, optional
+    Full path to reference sequence file in FASTA format for allele flipping.
+ref_rsid_tsv : str, optional
+    Full path to rsID TSV reference file.
+ref_rsid_vcf : str, optional
+    Full path to rsID VCF/BCF reference file.
+ref_infer : str, optional
+    Full path to reference VCF/BCF file for strand inference.
+ref_alt_freq : str, optional
+    Allele frequency field name in VCF/BCF INFO for strand inference.
+ref_maf_threshold : float, default 0.4
+    MAF threshold (reference VCF/BCF) for strand inference.
+maf_threshold : float, default 0.4
+    MAF threshold (sumstats) for strand inference.
+threads : int, default 1
+    Number of threads for parallel processing.
+extract_threads : int, optional
+    Worker count for VCF/BCF lookup extraction during ``infer_strand2`` and
+    ``assign_rsid2`` sweep mode. Defaults to 1 inside extract (memory-safe).
+remove : bool, default False
+    Whether to remove bad variants during QC.
+check_ref_kwargs : dict, default {}
+    Arguments passed to ``check_ref``.
+remove_dup_kwargs : dict, default {}
+    Arguments passed to ``remove_dup``.
+assign_rsid_kwargs : dict, default {}
+    Arguments passed to ``assign_rsid``.
+infer_strand_kwargs : dict, default {}
+    Arguments passed to ``infer_strand``.
+flip_allele_stats_kwargs : dict, default {}
+    Arguments passed to ``flip_allele_stats``.
+liftover_kwargs : dict, default {}
+    Reserved for liftover integration; not applied in the current harmonize pipeline.
+fix_id_kwargs : dict, default {}
+    Arguments passed to ``fix_id``.
+fix_chr_kwargs : dict, default {}
+    Arguments passed to ``fix_chr``.
+fix_pos_kwargs : dict, default {}
+    Arguments passed to ``fix_pos``.
+fix_allele_kwargs : dict, default {}
+    Arguments passed to ``fix_allele``.
+sanity_check_stats_kwargs : dict, default {}
+    Arguments passed to ``check_sanity``.
+normalize_allele_kwargs : dict, default {}
+    Arguments passed to ``normalize_allele``.
+verbose : bool, default True
+    Whether to print progress information.
+sweep_mode : bool, default False
+    If False, use lookup (per-variant) mode. If True, use sweep mode (fast for large datasets).
+Returns
+-------
+Sumstats
+    The Sumstats object (``self``).
+
+Examples
+--------
+>>> mysumstats.harmonize(ref_seq=gl.get_path("fasta38"), ref_infer=gl.get_path("1kg_eur_vcf"))
+"""
         saved_kwargs = {**locals()}
         # prepare status helpers
 
         if basic_check is True:
-            fix_id_kwargs = remove_overlapping_kwargs(fix_id_kwargs,{"log", "remove", "verbose"})
-            self.data = _fix_ID(self,log=self.log,verbose=verbose,**fix_id_kwargs)
-            fix_chr_kwargs = remove_overlapping_kwargs(fix_chr_kwargs,{"log", "remove", "verbose"})
-            self.data = _fix_chr(self,remove=remove,log=self.log,verbose=verbose,**fix_chr_kwargs)
-            fix_pos_kwargs = remove_overlapping_kwargs(fix_pos_kwargs,{"log", "remove", "verbose"})
-            self.data = _fix_pos(self,remove=remove,log=self.log,verbose=verbose,**fix_pos_kwargs)
-            fix_allele_kwargs = remove_overlapping_kwargs(fix_allele_kwargs,{"log", "remove", "verbose"})
-            self.data = _fix_allele(self,log=self.log,verbose=verbose,**fix_allele_kwargs)
-            sanity_check_stats_kwargs = remove_overlapping_kwargs(sanity_check_stats_kwargs,{"log", "remove", "verbose"})
-            self.data = _sanity_check_stats(self,log=self.log,verbose=verbose,**sanity_check_stats_kwargs)
-            normalize_allele_kwargs = remove_overlapping_kwargs(normalize_allele_kwargs,{"log", "remove", "verbose","threads"})
-            self.data = _parallelize_normalize_allele(self,log=self.log,threads=threads,verbose=verbose,**normalize_allele_kwargs)
-            
-            self.data = _sort_column(self,log=self.log,verbose=verbose)
-
-            self.data = _sort_coordinate(self,log=self.log,verbose=verbose)
-
-            _set_qc_status(self, saved_kwargs)
+            qc_report = _run_qc_core(
+                self,
+                remove=remove,
+                remove_dup=False,
+                normalize=True,
+                threads=threads,
+                include_consistency=True,
+                verbose=verbose,
+                fix_id_kwargs=fix_id_kwargs,
+                fix_chr_kwargs=fix_chr_kwargs,
+                fix_pos_kwargs=fix_pos_kwargs,
+                fix_allele_kwargs=fix_allele_kwargs,
+                sanity_check_stats_kwargs=sanity_check_stats_kwargs,
+                consistency_check_kwargs={},
+                normalize_allele_kwargs=normalize_allele_kwargs,
+                remove_dup_kwargs=remove_dup_kwargs,
+            )
+            _set_qc_status(self, saved_kwargs, qc_report=qc_report)
             gc.collect()
         
         #####################################################
@@ -840,7 +862,7 @@ class Sumstats():
             
         if ref_infer is not None: 
             _inf_extract = infer_strand_kwargs.get("extract_threads", extract_threads)
-            infer_strand_kwargs = remove_overlapping_kwargs(infer_strand_kwargs,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","threads","extract_threads","path","assign_cols"})
+            infer_strand_kwargs = remove_overlapping_kwargs(infer_strand_kwargs,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","threads","extract_threads","path","assign_cols","log_run_plan","cpu_tier","storage_profile"})
             if sweep_mode:
                 self.data = _infer_strand_with_annotation(self, 
                                                         path = ref_infer, 
@@ -872,7 +894,7 @@ class Sumstats():
         #####################################################
         
         if ref_rsid_tsv is not None:
-            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose"})
+            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose","log_run_plan","cpu_tier","storage_profile"})
             self.data = _parallelize_assign_rsid(self,path=ref_rsid_tsv,ref_mode="tsv",
                                                  threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)
 
@@ -881,7 +903,7 @@ class Sumstats():
 
         if ref_rsid_vcf is not None:
             _rsid_extract = assign_rsid_kwargs.get("extract_threads", extract_threads)
-            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose"})
+            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose","log_run_plan","cpu_tier","storage_profile"})
 
             if sweep_mode:
                 self.data = _assign_rsid(self, path = ref_rsid_vcf, threads=threads, extract_threads=_rsid_extract, log=self.log,verbose=verbose,**assign_rsid_kwargs)
@@ -909,6 +931,21 @@ class Sumstats():
         return self
     
     def align_with_template(self, template, **kwargs):
+        """Align summary statistics to a template mold by CHR/POS.
+
+        Merges ``template`` with ``self``, aligns columns to the mold schema,
+        and flips allele statistics when orientations disagree.
+
+        Parameters
+        ----------
+        template : Sumstats or pandas.DataFrame
+            Reference mold with target column layout and allele orientation.
+
+        Returns
+        -------
+        None
+            Updates ``self.data`` in place.
+        """
         ## merge
         molded_sumstats, sumstats1 = _merge_mold_with_sumstats_by_chrpos(mold=template, 
                                             sumstats_or_dataframe=self,
@@ -926,6 +963,11 @@ class Sumstats():
     @add_doc(_check_sumstats_qc_status)
     def check_sumstats_qc_status(self) -> Any:
         return _check_sumstats_qc_status(self)
+
+    @add_doc(_validate_meta)
+    def validate_meta(self) -> Dict[str, Any]:
+        return _validate_meta(self)
+
     ############################################################################################################
     #customizable API to build your own QC pipeline
     @add_doc(_fix_ID)
@@ -974,6 +1016,7 @@ class Sumstats():
         _check_data_consistency(self,log=self.log,**kwargs)
         return self
     def check_id(self, **kwargs: Any) -> None:
+        """Validate variant identifiers (not yet implemented)."""
         pass
     @add_doc(_check_ref)
     def check_ref(self, ref_seq: Any, **kwargs: Any) -> 'Sumstats':
@@ -1000,8 +1043,8 @@ class Sumstats():
         self.data = _parallelize_normalize_allele(self,log=self.log,**kwargs)
         return self
 
+    @add_doc(_annotate_sumstats)
     def annotate_sumstats(self, **kwargs: Any) -> None:
-        from gwaslab.hm.hm_assign_rsid import _annotate_sumstats
         self.data = _annotate_sumstats(self,**kwargs)
     
     @add_doc(_assign_rsid)
@@ -1248,36 +1291,43 @@ class Sumstats():
 
     ######################################################################
     
+    @add_doc(_parallelize_check_af)
     def check_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.data = _parallelize_check_af(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallelize_check_af
     
+    @add_doc(_check_af_with_annotation)
     def check_af2(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _check_af_with_annotation(self,**kwargs)
         # Metadata is already set by _check_af_with_annotation
     
+    @add_doc(_parallelize_infer_af)
     def infer_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.data = _parallelize_infer_af(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallelize_infer_af
     
+    @add_doc(_infer_af_with_annotation)
     def infer_af2(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _infer_af_with_annotation(self,**kwargs)
         # Metadata is already set by _infer_af_with_annotation
     
+    @add_doc(_parallele_infer_af_with_maf)
     def infer_eaf_from_maf(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.data = _parallele_infer_af_with_maf(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallele_infer_af_with_maf
     
+    @add_doc(_infer_af_with_maf_annotation)
     def infer_eaf_from_maf2(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _infer_af_with_maf_annotation(self,**kwargs)
         # Metadata is already set by _infer_af_with_maf_annotation    
     
+    @add_viz_doc(plotdaf, "plot_daf", None)
     @suppress_display
     def plot_daf(self, **kwargs: Any) -> Tuple[Any, Any]:
         fig, outliers = plotdaf(self, **self._apply_viz_params(plotdaf, kwargs, key="plot_daf"))
@@ -1292,13 +1342,24 @@ class Sumstats():
                                                                     **kwargs)
         return self.meta["gwaslab"]["inferred_ancestry"]
 
+    @add_viz_doc(
+        _gwheatmap,
+        "plot_gwheatmap",
+        None,
+        summary="Genome-wide association heatmap across traits or loci. Additional Manhattan-style kwargs are forwarded via ``mqq_kwargs`` inside the implementation.",
+    )
     @suppress_display
     def plot_gwheatmap(self, **kwargs: Any) -> Any:
         params = self._apply_viz_params(_gwheatmap, kwargs, key="plot_gwheatmap")
         fig = _gwheatmap(self, **params)
         return fig
     
-    @add_doc(_mqqplot)
+    @add_viz_doc(
+        _mqqplot,
+        "plot_mqq",
+        None,
+        summary="Combined Manhattan–QQ plot by default; set ``mode`` for other layouts. For mode-specific parameter lists use ``plot_manhattan()``, ``plot_qq()``, ``plot_region()``, or ``plot_snp_density()``.",
+    )
     @suppress_display
     def plot_mqq(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         mode = kwargs.get("mode", None)
@@ -1308,7 +1369,7 @@ class Sumstats():
         plot, log = _mqqplot(self, **params)
         return plot
     
-    @add_doc(_mqqplot)
+    @add_viz_doc(_mqqplot, "plot_manhattan", None, summary="Genome-wide Manhattan plot (``mode='m'``).")
     @suppress_display
     def plot_manhattan(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         params = self._apply_viz_params(_mqqplot, kwargs, key="plot_manhattan")
@@ -1317,25 +1378,30 @@ class Sumstats():
         plot, log = _mqqplot(self, **params)
         return plot
     
-    @add_doc(_process_density)
+    @add_viz_doc(_mqqplot, "plot_snp_density", "b", summary="Brisbane-style SNP density plot.")
     @suppress_display
     def plot_snp_density(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
         return plot
     
-    @add_doc(_plot_qq)
+    @add_viz_doc(_mqqplot, "plot_qq", "qq", summary="Quantile–quantile plot.")
     @suppress_display
     def plot_qq(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
         return plot
     
-    @add_doc(_plot_regional)
+    @add_viz_doc(_mqqplot, "plot_region", "r", summary="Regional association plot with optional LD, recombination, and gene tracks.")
     @suppress_display
     def plot_region(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
         return plot
 
-    @add_doc(_plot_trumpet)
+    @add_viz_doc(
+        _plot_trumpet,
+        "plot_trumpet",
+        None,
+        summary="Trumpet plot for quantitative (mode='q') or binary (mode='b') traits. Binary-only parameters: prevalence, ncase, ncontrol, or_to_rr.",
+    )
     @suppress_display
     def plot_trumpet(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         fig = _plot_trumpet(
@@ -1345,7 +1411,7 @@ class Sumstats():
         )
         return fig
 
-    @add_doc(_plot_phenogram)
+    @add_viz_doc(_plot_phenogram, "plot_phenogram", None)
     @suppress_display
     def plot_phenogram(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         params = self._apply_viz_params(_plot_phenogram, kwargs, key="plot_phenogram")
@@ -1354,7 +1420,7 @@ class Sumstats():
         fig = _plot_phenogram(self, **params)
         return fig
 
-    @add_doc(_plot_ld_block)
+    @add_viz_doc(_plot_ld_block, "plot_ld_block", None)
     @suppress_display
     def plot_ld_block(self, **kwargs: Any) -> Any:
         params = self._apply_viz_params(_plot_ld_block, kwargs, key="plot_ld_block")
@@ -1365,37 +1431,35 @@ class Sumstats():
         return fig
 
     def Panel(self, panel_type: str, **kwargs: Any) -> Panel:
-        """
-        Create a Panel object with this Sumstats object's data.
+        """Create a Panel object with this Sumstats object's data.
         
         Works like the Panel class constructor, but automatically passes self.data
         to the sumstats parameter for panel types that require it (e.g., "region", "ld_block").
         
-        Parameters
-        ----------
-        panel_type : str
-            Type of panel ("track", "arc", "ld_block", "region")
-        **kwargs
-            Panel-specific parameters
-        
-        Returns
-        -------
+Parameters
+----------
+panel_type : str
+    Type of panel ("track", "arc", "ld_block", "region")
+    **kwargs
+    Panel-specific parameters
+Returns
+-------
         Panel
             Panel object that can be used with plot_panels
         
-        Examples
-        --------
+Examples
+--------
         >>> mysumstats = gl.Sumstats("data.txt.gz")
         >>> panel1 = mysumstats.Panel("region", region=(1, 1000000, 2000000), vcf_path="ld.vcf.gz")
         >>> panel2 = mysumstats.Panel("track", track_path="genes.gtf", region=(1, 1000000, 2000000))
         >>> gl.plot_panels([panel1, panel2])
-        """
+"""
         # Automatically pass self.data to sumstats for panel types that need it
         if panel_type in ["region", "ld_block"]:
             kwargs["insumstats"] = self.data
         return Panel(panel_type, **kwargs)
 
-    @add_doc(_plot_effect)
+    @add_viz_doc(_plot_effect, "plot_effect", None)
     def plot_effect(self, **kwargs: Any) -> None:
         _plot_effect(self, **self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))
 
@@ -1483,30 +1547,43 @@ class Sumstats():
                            **kwargs)
         return output
     
+    @add_doc(_extract_associations)
     def get_associations(self, **kwargs):
-        """
-        Extract GWAS Catalog associations for variants in sumstats.
-        
-        Returns
-        -------
-        pandas.DataFrame
-            Summary DataFrame containing GWAS Catalog associations for variants in sumstats.
-            The full associations are stored in self.associations.
-        """
         associations_full,associations_summary  = _extract_associations(self,**kwargs)
         self.associations = associations_full
         return associations_summary
     
-    @add_doc(_plot_associations)
+    @add_viz_doc(_plot_associations, "plot_associations", None)
     def plot_associations(self,**kwargs):
-        _plot_associations(self.associations, **self._apply_viz_params(_plot_associations, kwargs, key="plot_associations"))
+        return _plot_associations(self.associations, **self._apply_viz_params(_plot_associations, kwargs, key="plot_associations"))
 
-    @add_doc(plot_sankey)
+    @add_viz_doc(
+        plot_sankey,
+        "plot_sankey",
+        None,
+        summary="Sankey diagram across ordered categorical stages. Pass stage names via ``columns`` (list of column or preset names).",
+    )
     @suppress_display
     def plot_sankey(self, **kwargs: Any) -> Any:
-        return plot_sankey(self, **self._apply_viz_params(plot_sankey, kwargs, key="plot_sankey"))
+        if "columns" not in kwargs:
+            raise TypeError("plot_sankey() missing required argument: columns")
+        columns = kwargs.pop("columns")
+        params = self._apply_viz_params(plot_sankey, kwargs, key="plot_sankey")
+        return plot_sankey(self, columns, **params)
 
     def check_cis(self, gls=False, **kwargs):
+        """Test whether lead variants fall within known cis-regulatory windows.
+
+        Parameters
+        ----------
+        gls : bool, default False
+            If True, return a new Sumstats object with annotated results.
+
+        Returns
+        -------
+        pandas.DataFrame or Sumstats
+            Cis-window test results, or a Sumstats wrapper when ``gls=True``.
+        """
         output = _check_cis(self,
                            log=self.log,
                            **kwargs)
@@ -1520,6 +1597,13 @@ class Sumstats():
         return output
     
     def check_novel_set(self, **kwargs):
+        """Compare variant sets against a reference catalog of known associations.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Overlap summary between sumstats variants and the reference set.
+        """
         output = _check_novel_set(self,
                            log=self.log,
                            **kwargs)
@@ -1527,6 +1611,15 @@ class Sumstats():
         return output
 
     def check_cs_overlap(self, **kwargs):
+        """Compare credible-set variants against a reference known-association set.
+
+        Uses ``self.pipcs`` as the variant source.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Overlap summary for credible-set SNPs.
+        """
         output = _check_novel_set(self.pipcs,
                            log=self.log,
                            **kwargs)
@@ -1534,6 +1627,13 @@ class Sumstats():
         return output
 
     def anno_gene(self, **kwargs):
+        """Annotate variants with nearest gene names from Ensembl or a custom GTF.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Input table with gene annotation columns added.
+        """
         output = _anno_gene(self,
                            log=self.log,
                            **kwargs)
@@ -1554,7 +1654,25 @@ class Sumstats():
         self.meta["Genomic inflation factor"] = output
         return output
         
-    def abf_finemapping(self, region=None, chrpos=None, snpid=None,**kwargs):        
+    def abf_finemapping(self, region=None, chrpos=None, snpid=None,**kwargs):
+        """Run approximate Bayes factor (ABF) fine-mapping in a locus window.
+
+        Parameters
+        ----------
+        region : tuple, optional
+            Locus as ``(chrom, start, end)``.
+        chrpos : tuple, optional
+            Center variant as ``(chrom, pos)``; flanking window from kwargs.
+        snpid : str, optional
+            Center variant by ID; flanking window from kwargs.
+
+        Returns
+        -------
+        region_data : pandas.DataFrame
+            Variants in the locus with ABF and PIP columns.
+        credible_sets : pandas.DataFrame
+            Variants comprising the 95% credible set.
+        """
         region_data = _abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
         credible_sets = _make_cs(region_data,threshold=0.95,log=self.log)
         return region_data, credible_sets
@@ -1603,6 +1721,7 @@ class Sumstats():
                                                                   **kwargs)
         return self.ldsc_h2_results
     
+    @add_doc(_estimate_rg_by_ldsc)
     def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", get_hm3=True,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","meta","log","verbose"})
         if build is None:
@@ -1668,13 +1787,12 @@ class Sumstats():
         #self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
     
     def run_susie_rss2(self,**kwargs):
-        """
-        Run finemapping using SuSieR from command line using the RScriptRunner framework.
+        """Run finemapping using SuSieR from command line using the RScriptRunner framework.
         
         This is an improved version that uses the centralized RScriptRunner for better
         error handling, timeout support, and robust execution.
         
-        Args:
+Parameters
             **kwargs: Arguments passed to _run_susie_rss2, including:
                 - r: Path to Rscript executable (default: "Rscript")
                 - mode: Mode for susie_rss ("z" or "bs", default: "bs")
@@ -1691,9 +1809,9 @@ class Sumstats():
                 - verbose: Verbose logging (default: True)
                 - show_diagnostic: Display diagnostic image using matplotlib if found (default: True)
         
-        Returns:
+Returns
             None (results stored in self.pipcs and self.finemapping["pipcs"])
-        """
+"""
         kwargs = remove_overlapping_kwargs(kwargs, {"log"})
         verbose = kwargs.pop("verbose", self.verbose)
         self.pipcs=_run_susie_rss2(self, self.finemapping["path"], log=self.log, verbose=verbose, **kwargs)
@@ -1725,6 +1843,7 @@ class Sumstats():
         self.pipcs = _read_pipcs(temp_data,prefix, study= self.meta["gwaslab"]["study_name"], **kwargs)
         self.finemapping["pipcs"] = self.pipcs
 
+    @add_viz_doc(_plot_cs, "plot_pipcs", None)
     def plot_pipcs(self, region=None, locus=None, **kwargs):
         _plot_cs(self.pipcs, region=region, locus=locus, **self._apply_viz_params(_plot_cs, kwargs, key="plot_pipcs"))
 

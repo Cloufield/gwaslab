@@ -110,7 +110,8 @@ class TestMQQPlotOptions(unittest.TestCase):
         fig = self.sumstats.plot_manhattan(
             mode="m",
             sig_line=True,
-            sig_level_plot=1e-6,
+            sig_level=1e-6,
+            anno_sig_level=1e-5,
             suggestive_sig_line=True,
             suggestive_sig_level=1e-5,
             additional_line=[1e-4, 1e-3],

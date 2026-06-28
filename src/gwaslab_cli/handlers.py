@@ -185,6 +185,13 @@ def run_list_ref(args) -> None:
         payload["available"] = gl.check_available_ref(verbose=verbose, show_all=False)
     if show_d:
         payload["downloaded"] = gl.check_downloaded_ref(verbose=verbose)
+        from gwaslab.bd.bd_download import filter_downloaded_registry
+
+        payload["downloaded"] = filter_downloaded_registry(
+            payload["downloaded"],
+            source=getattr(args, "source", None),
+            kind=getattr(args, "kind", None),
+        )
 
     if args.json:
         print(json.dumps(payload, indent=2))
@@ -212,18 +219,83 @@ def run_list_ref(args) -> None:
             print(f"  {key}{extra}")
 
 
-def run_init(args) -> None:
-    """Scan a directory for reference files and register matches in config."""
+def run_config_set(args) -> None:
+    """Handle the ``config set`` subcommand."""
     import gwaslab as gl
+
+    key = args.key
+    value = os.path.abspath(os.path.expanduser(args.path))
+    allowed = {"data_directory", "config"}
+    if key not in allowed:
+        print(f"Unsupported config key: {key}. Allowed: {', '.join(sorted(allowed))}", file=sys.stderr)
+        sys.exit(1)
+
+    if key == "data_directory":
+        gl.set_default_directory(value, persist=True)
+    else:
+        gl.options.set_option(key, value, persist=True)
+        if key == "config":
+            parent = os.path.dirname(value)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+            if not os.path.exists(value):
+                with open(value, "w", encoding="utf-8") as handle:
+                    json.dump({"downloaded": {}}, handle, indent=4)
+
+    print(f"{key}: {gl.options.paths[key]}")
+
+
+def run_init(args) -> None:
+    """Prepare local reference registry: dirs, config migration, optional data_directory, scan."""
+    import gwaslab as gl
+    from gwaslab.bd.bd_config import ensure_user_layout
+
+    ensure_user_layout()
 
     scan_dir = None
     if getattr(args, "scan_dir", None):
         scan_dir = os.path.abspath(os.path.expanduser(args.scan_dir))
         if not os.path.isdir(scan_dir):
-            print(f"Directory not found: {scan_dir}", file=sys.stderr)
-            sys.exit(1)
+            os.makedirs(scan_dir, exist_ok=True)
+        gl.set_default_directory(scan_dir, persist=True)
+    else:
+        scan_dir = gl.get_default_directory()
 
-    ok = gl.scan_downloaded_files(verbose=not args.quiet, directory=scan_dir)
+    ok = gl.scan_downloaded_files(
+        verbose=not args.quiet,
+        directory=scan_dir,
+        recursive=getattr(args, "recursive", False),
+    )
+    if not ok:
+        sys.exit(1)
+
+
+def run_ref_add(args) -> None:
+    """Register a local reference file in the registry."""
+    import gwaslab as gl
+
+    local_path = os.path.abspath(os.path.expanduser(args.path))
+    tbi = os.path.abspath(os.path.expanduser(args.tbi)) if getattr(args, "tbi", None) else None
+    ok = gl.add_local_data(
+        args.keyword,
+        local_path,
+        description=getattr(args, "description", None),
+        tbi=tbi,
+    )
+    if not ok:
+        sys.exit(1)
+    resolved = gl.get_path(args.keyword, verbose=False)
+    print(resolved if resolved else local_path)
+
+
+def run_ref_remove(args) -> None:
+    """Remove a registry entry; optionally delete files from disk."""
+    import gwaslab as gl
+
+    ok = gl.remove_local_record(
+        args.keyword,
+        delete_file=getattr(args, "delete_file", False),
+    )
     if not ok:
         sys.exit(1)
 

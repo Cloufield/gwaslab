@@ -1,5 +1,4 @@
-"""
-GWASLab Standard Format (GSF) - Efficient storage format for GWAS sumstats.
+"""GWASLab Standard Format (GSF) - Efficient storage format for GWAS sumstats.
 GSF uses Parquet format internally for optimal compression and performance.
 """
 
@@ -22,7 +21,8 @@ from gwaslab.info.g_meta import _init_meta
 
 
 def _get_optimal_column_order(sumstats: pd.DataFrame) -> List[str]:
-    """Get optimal column order: info -> stats -> others."""
+    """Get optimal column order: info -> stats -> others.
+"""
     info_cols = _get_headers(mode="info")
     stats_cols = _get_headers(mode="stats")
     others_cols = [h for h in _get_headers() if h not in info_cols and h not in stats_cols]
@@ -42,7 +42,8 @@ def _get_optimal_column_order(sumstats: pd.DataFrame) -> List[str]:
 
 
 def _optimize_dtypes_for_parquet(sumstats: pd.DataFrame) -> pd.DataFrame:
-    """Optimize data types for GSF (Parquet-based): category -> string, preserve int/float types."""
+    """Optimize data types for GSF (Parquet-based): category -> string, preserve int/float types.
+"""
     sumstats = sumstats.copy()
     
     for col in sumstats.columns:
@@ -67,7 +68,8 @@ def _optimize_dtypes_for_parquet(sumstats: pd.DataFrame) -> pd.DataFrame:
 
 
 def _prepare_metadata(meta: Optional[Dict] = None) -> Dict[str, str]:
-    """Prepare metadata for GSF file metadata."""
+    """Prepare metadata for GSF file metadata.
+"""
     parquet_meta = {
         "gwaslab_format": "gsf",
         "gwaslab_version": "1.0",
@@ -97,36 +99,34 @@ def write_gsf(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> str:
-    """
-    Save sumstats to GSF (GWASLab Standard Format) file.
+    """Save sumstats to GSF (GWASLab Standard Format) file.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to process.
-    path : str or Path
-        Output path (.gsf file or directory for partitioned)
-    meta : dict, optional
-        GWASLab metadata dictionary
-    partition_cols : list of str, optional
-        Columns to partition by (e.g., ["CHR"])
-    compression : str, default "zstd"
-        Compression codec: "snappy", "gzip", "brotli", "zstd", "lz4"
-    log : Log, optional
-        Log object
-    verbose : bool, default True
-        Print progress messages
-        
-    Examples
-    --------
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to process.
+path : str or Path
+    Output path (.gsf file or directory for partitioned)
+meta : dict, optional
+    GWASLab metadata dictionary
+partition_cols : list of str, optional
+    Columns to partition by (e.g., ["CHR"])
+compression : str, default "zstd"
+    Compression codec: "snappy", "gzip", "brotli", "zstd", "lz4"
+log : Log, optional
+    Log object
+verbose : bool, default True
+    Print progress messages
+Examples
+--------
     >>> write_gsf(sumstats, "sumstats.gsf")
     >>> write_gsf(sumstats, "sumstats_partitioned", partition_cols=["CHR"])
         
-    Returns
-    -------
-    str
-        Path to written file
-    """
+Returns
+-------
+str
+    Path to written file
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -233,18 +233,17 @@ def write_gsf(
 
 
 def _parse_filter_string(filter_str: str, schema: pa.Schema = None):
-    """
-    Parse filter string to PyArrow Expression.
+    """Parse filter string to PyArrow Expression.
     
     Supports operators: ==, !=, <, <=, >, >=, in
     Supports logical operators: & (AND), | (OR)
     
-    Examples:
+Examples
         "P < 5e-8"
         "CHR == 1"
         "P < 5e-8 & CHR == 1"
         "CHR in [1, 2, 3]"
-    """
+"""
     import re
     
     # Split by & or | while handling brackets in 'in' operator
@@ -438,41 +437,39 @@ def load_gsf(
     filters: Optional[str] = None,
     verbose: bool = True
 ) -> 'Sumstats':
-    """
-    Load GWAS sumstats from GSF (GWASLab Standard Format) file.
+    """Load GWAS sumstats from GSF (GWASLab Standard Format) file.
     
-    Parameters
-    ----------
-    path : str or Path
-        Path to .gsf file or directory (for partitioned)
-    columns : list of str, optional
-        Columns to read (None = all columns)
-    filters : str, optional
-        Filter string for predicate pushdown. Supports:
-        - Operators: ==, !=, <, <=, >, >=, in
-        - Logical operators: & (AND), | (OR)
-        Examples:
-          "P < 5e-8"
-          "CHR == 1"
-          "P < 5e-8 & CHR == 1"
-          "CHR in [1, 2, 3]"
-          "P < 5e-8 | P > 0.99"
-    verbose : bool, default True
-        Print progress messages
-        
-    Returns
-    -------
-    Sumstats
-        GWASLab Sumstats object
-        
+Parameters
+----------
+path : str or Path
+    Path to .gsf file or directory (for partitioned)
+columns : list of str, optional
+    Columns to read (None = all columns)
+filters : str, optional
+    Filter string for predicate pushdown. Supports:
+    - Operators: ==, !=, <, <=, >, >=, in
+    - Logical operators: & (AND), | (OR)
     Examples
-    --------
+    "P < 5e-8"
+    "CHR == 1"
+    "P < 5e-8 & CHR == 1"
+    "CHR in [1, 2, 3]"
+    "P < 5e-8 | P > 0.99"
+verbose : bool, default True
+    Print progress messages
+Returns
+-------
+Sumstats
+    GWASLab Sumstats object
+        
+Examples
+--------
     >>> mysumstats = gl.load_gsf("sumstats.gsf")
     >>> mysumstats = gl.load_gsf("sumstats.gsf", columns=["CHR", "POS", "BETA", "P"])
     >>> mysumstats = gl.load_gsf("sumstats.gsf", filters="CHR == 1")
     >>> mysumstats = gl.load_gsf("sumstats.gsf", filters="P < 5e-8 & CHR == 1")
     >>> mysumstats = gl.load_gsf("sumstats.gsf", filters="CHR in [1, 2, 3]")
-    """
+"""
     log = Log()
     path = Path(path)
     

@@ -60,8 +60,14 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`mode`|`mqq`,`qqm`,`qq`,`m`|Determine the layout of Manhattan plot and QQ plot. <br/> `mqq`: left Manhattan, right QQ plot <br/>`qqm`: left QQ plot, right Manhattan plot <br/>`m`: only Manhattan plot<br/> `"qq"`: only QQ plot|`mqq`|
+|`mode`|`mqq`,`qqm`,`qq`,`m`, and also `r`, `b`, `mb`|Determine the layout. `mqq`: left Manhattan, right QQ (default). `qqm`: left QQ, right Manhattan. `m`: Manhattan only. `qq`: QQ only. `r`: regional plot — see [RegionalPlot.md](RegionalPlot.md). `b` / `mb`: Brisbane SNP density — see [BrisbanePlot.md](BrisbanePlot.md).|`mqq`|
 |`mqqratio`|`float`|width ratio of Manhattan plot and QQ plot|`3`|
+
+| Parameter | Role |
+|-----------|------|
+| `sig_level` | Horizontal significance line and largest Manhattan marker tier |
+| `anno_sig_level` | P threshold for selecting variants to annotate (independent of `sig_level`) |
+| `suggestive_sig_level` | Suggestive line position when `suggestive_sig_line=True` |
 
 !!! info "Layout"
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593277-0908d49e-40aa-4fe3-b214-d774ab4d0382.png">
@@ -90,13 +96,12 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`skip`|`float`|Sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values for plotting. For example, we can omit variants with -log10(P) lower than 3 from the plot by specifying `skip=3`. Calculation of lambda GC won't be affected by this|`None`|
-|`cut`|`float`|loci with extremely large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. |`None`|
+|`skip`|`float`|Sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values for plotting. For example, we can omit variants with -log10(P) lower than 3 from the plot by specifying `skip=3`. Calculation of lambda GC won't be affected by this|`0`|
+|`cut`|`float`|loci with extremely large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. |`0`|
 |`cutfactor`|`float`|shrinkage factor|`10`|
 |`cut_line_color`|`string`|the color of the line above which y axis is rescaled.|`"#ebebeb"`|
-|`sig_level`|`float`|genome-wide significance threshold for extracting lead variants to annotate |`5e-8`|
-|`sig_level_plot`|`float`|significance threshold for plotting the significance line |`5e-8`|
-|`sig_level_lead`|`float`|significance threshold for extracting lead variants to annotate |`5e-8`|
+|`sig_level`|`float`|Genome-wide threshold: significance line, marker size tier, and lead-window basis|`5e-8`|
+|`anno_sig_level`|`float`|P threshold for selecting variants to annotate (independent of sig line position)|`5e-8`|
 
 
 !!! info "Auxiliary lines"
@@ -111,7 +116,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`anno`|`boolean` or `string` or `"GENENAME"`|If `anno = True`, variants will be annotated with chr:pos; or `string`, the column name used for annotation; or `"GENENAME"`, automatically annotate nearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`) |`False`|
+|`anno`|`boolean` or `string` or `"GENENAME"`|If `anno = True`, variants will be annotated with chr:pos; or `string`, the column name used for annotation; or `"GENENAME"`, automatically annotate nearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`) |`None`|
 |`anno_set`|`list`|If you want to annotate only a few specific variants, you can simply provide a list of SNPIDs or rsIDs for annotation. If None, the variants to annotate will be selected automatically using a sliding window with `windowsizekb=500`kb.|`None`|
 |`repel_force`|`float`|when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations.|`0.03`|
 |`anno_alias`|`dict`|snpid:text dictionary for customized annotation|`None`|
@@ -250,10 +255,10 @@ Pinpoint certain variants in the Manhattan plot.
 |Line Option|DataType|Description|Default|
 |-|-|-|-|
 |`sig_line`|`boolean`|If True, plot the significant threshold line|`True`|
-|`sig_level`|`float`|The significance threshold|`5e-8`|
-|`sig_level_lead`|`float`|The significance threshold for extracting lead variants to annotate|`5e-8`|
+|`sig_level`|`float`|Significance line position and largest Manhattan marker tier|`5e-8`|
+|`anno_sig_level`|`float`|P threshold for selecting variants to annotate|`5e-8`|
 |`sig_line_color`|`string`|Color for the significance threshold line|`"grey"`|
-|`suggestive_sig_line`|`boolean`|If True, plot the suggestive threshold line|`True`|
+|`suggestive_sig_line`|`boolean`|If True, plot the suggestive threshold line|`False`|
 |`suggestive_sig_level`|`float`|The suggestive threshold|`5e-6`|
 |`suggestive_sig_line_color`|`string`|Color for the suggestive threshold line|`"grey"`|
 |`additional_line`|`list`|list of P values used to plot additional lines|`None`|
@@ -269,7 +274,7 @@ Pinpoint certain variants in the Manhattan plot.
                     cut=20,
                     cut_line_color="purple",
                     sig_level=5e-8,  
-                    sig_level_lead=1e-6, 
+                    anno_sig_level=1e-6, 
                     sig_line_color="grey",
                     suggestive_sig_line = True,
                     suggestive_sig_level = 1e-6,
@@ -332,6 +337,7 @@ Font-related options
 | `fontsize`       | `int` or `float`   | fontsize for ticklabels. | `9`       |
 | `title_fontsize` | `int`     | fontsize for title.      | `13`      |
 | `anno_fontsize`  | `int` or `float`     | fontsize for annotation. | `9`       |
+| `marker_size`    | `tuple`  | `(min, max)` point sizes for Manhattan tiers; `(n, n)` for fixed size. Regional default `(40, 65)` — see [RegionalPlot.md](RegionalPlot.md). | `(5, 20)` |
 | `font_family`    | `string` | font family              | `"Arial"` |
 
 !!! example

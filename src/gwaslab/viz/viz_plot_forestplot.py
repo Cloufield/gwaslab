@@ -1,5 +1,4 @@
-"""
-Forest plot visualization for meta-analysis results.
+"""Forest plot visualization for meta-analysis results.
 
 This module provides functionality to create forest plots showing
 individual study results and combined meta-analysis estimates.
@@ -45,65 +44,18 @@ def plot_forest(
     verbose: bool = True,
     log: Log = Log(),
 ) -> Tuple[plt.Figure, List]:
-    """
-    Create a forest plot for meta-analysis results.
+    """Create a forest plot for meta-analysis results.
     
     A forest plot displays individual study effect estimates with confidence
     intervals, along with a combined meta-analysis estimate (fixed or random effects).
+
+Returns
+-------
+tuple
+    (fig, axes) where fig is matplotlib Figure and axes is list of axes
     
-    Parameters
-    ----------
-    data : pd.DataFrame or str
-        DataFrame containing study data, or path to a whitespace-separated file.
-        Required columns: study_col, beta_col, se_col
-    study_col : str
-        Column name containing study identifiers
-    group_col : str, bool, or None, optional
-        Column name for grouping studies. If False or None, all studies are
-        placed in a single group "Group1". Default: None
-    beta_col : str, optional
-        Column name for effect estimates (beta). Default: "beta"
-    se_col : str, optional
-        Column name for standard errors. Default: "se"
-    compact_factor : float, optional
-        Factor to adjust figure height (higher = more compact). Default: 1.0
-    width_ratios : list of float, optional
-        Width ratios for the three subplot columns [group, plot, text].
-        Default: [2, 6, 2]
-    sharex : str, optional
-        Whether to share x-axis across rows. Default: "col"
-    meta : bool, optional
-        Whether to perform and display meta-analysis statistics. Default: True
-    combine_effects_kwargs : dict, optional
-        Additional arguments passed to combine_effects function.
-        Default: None
-    fig_kwargs : dict, optional
-        Additional arguments passed to plt.subplots(). Default: None
-    save : str, bool, or None, optional
-        If str: file path to save figure
-        If True: save to default path
-        If None/False: don't save. Default: None
-    save_kwargs : dict, optional
-        Additional arguments for saving figure. Default: None
-    fontsize : int, optional
-        Font size for labels and text. Default: 12
-    font_family : str, optional
-        Font family for text. Default: "Arial"
-    colors : list of str, optional
-        List of colors for alternating studies. If None, uses default
-        colors from plot_mqq: ["#597FBD", "#74BAD3"]. Default: None
-    verbose : bool, optional
-        Whether to print progress messages. Default: True
-    log : Log, optional
-        Logging object. Default: Log()
-    
-    Returns
-    -------
-    tuple
-        (fig, axes) where fig is matplotlib Figure and axes is list of axes
-    
-    Examples
-    --------
+Examples
+--------
     >>> import pandas as pd
     >>> data = pd.DataFrame({
     ...     'study': ['Study1', 'Study2', 'Study3'],
@@ -111,7 +63,7 @@ def plot_forest(
     ...     'se': [0.2, 0.15, 0.18]
     ... })
     >>> fig, axes = plot_forest(data, study_col='study')
-    """
+"""
     log.write("Start to create forest plot...", verbose=verbose)
     
     # Load data
@@ -289,7 +241,8 @@ def plot_forest(
 
 
 def _format_pvalue_mathtext(p: float) -> str:
-    """Return p-value fragment for use inside ``$\\mathregular{...}$`` (no outer $)."""
+    """Return p-value fragment for use inside ``$\mathregular{...}$`` (no outer $).
+"""
     if p <= 1e-300:
         return r"p < 1 \times 10^{-300}"
     try:
@@ -313,7 +266,8 @@ def _format_pvalue_mathtext(p: float) -> str:
 def _format_het_stats_label(
     Q: float, Qdf: float, Qp: float, I2: float
 ) -> str:
-    """Two-line mathtext label for Cochran Q heterogeneity statistics."""
+    """Two-line mathtext label for Cochran Q heterogeneity statistics.
+"""
     line1 = rf"$\mathregular{{Q = {Q:.2f}, Q_{{df}} = {Qdf:.0f}}}$"
     p_part = _format_pvalue_mathtext(Qp)
     line2 = rf"$\mathregular{{{p_part}, I^{{2}} = {I2:.1f}\%}}$"
@@ -331,30 +285,8 @@ def plot_row(
     font_family: str = "Arial",
     colors: Optional[List[str]] = None,
 ) -> None:
-    """
-    Plot a single row of the forest plot.
-    
-    Parameters
-    ----------
-    axes : np.ndarray
-        Array of 3 axes [group_label, plot, text]
-    df_to_plot : pd.DataFrame
-        DataFrame with study results and meta-analysis
-    group_name : str
-        Name of the group
-    het_stats : tuple or None
-        Heterogeneity statistics (Q, Qdf, Qp, I2) or None
-    meta : bool
-        Whether to show meta-analysis statistics
-    is_first_row : bool
-        Whether this is the first row (for titles)
-    fontsize : int, optional
-        Font size. Default: 12
-    font_family : str, optional
-        Font family. Default: "Arial"
-    colors : list of str, optional
-        List of colors for alternating studies. Default: None
-    """
+    """Plot a single row of the forest plot.
+"""
     # Set up colors
     if colors is None:
         colors = ["#597FBD", "#74BAD3"]  # Default colors from plot_mqq
@@ -499,23 +431,13 @@ def _simple_meta_analysis(
     se: Union[np.ndarray, List[float]],
     row_names: Union[np.ndarray, List[str]]
 ) -> pd.DataFrame:
-    """
-    Simple fixed-effects meta-analysis (fallback when statsmodels unavailable).
-    
-    Parameters
-    ----------
-    beta : np.ndarray
-        Effect estimates
-    se : np.ndarray
-        Standard errors
-    row_names : np.ndarray
-        Study names
-    
-    Returns
-    -------
-    pd.DataFrame
-        Summary frame with individual studies and fixed effect
-    """
+    """Simple fixed-effects meta-analysis (fallback when statsmodels unavailable).
+
+Returns
+-------
+pd.DataFrame
+    Summary frame with individual studies and fixed effect
+"""
     # Calculate weights (inverse variance)
     weights = 1 / (se ** 2)
     from gwaslab.algorithm.heterogeneity.meta import fixed_effect_meta

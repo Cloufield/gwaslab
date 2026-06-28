@@ -26,10 +26,9 @@ from gwaslab.algorithm.core.simulation import z_to_mlog10p as _z_to_mlog10p
 
 
 def _make_blocks_by_bp(pos: np.ndarray, window_bp: int) -> List[Tuple[int, int]]:
-    """
-    Partition sorted variant positions into blocks of ~window_bp basepairs.
+    """Partition sorted variant positions into blocks of ~window_bp basepairs.
     Returns half-open index intervals [start, end).
-    """
+"""
     blocks: List[Tuple[int, int]] = []
     n = len(pos)
     i = 0
@@ -56,31 +55,29 @@ def _read_vcf_variants(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> pl.DataFrame:
-    """
-    Read variants from VCF file and return Polars DataFrame with CHR, POS, EA, NEA, EAF, INFO.
+    """Read variants from VCF file and return Polars DataFrame with CHR, POS, EA, NEA, EAF, INFO.
     
-    Parameters
-    ----------
-    vcf_path : str
-        Path to VCF file
-    region : tuple, optional
-        (chromosome, start, end) region to extract
-    vcf_chr_dict : dict, optional
-        Chromosome mapping dictionary
-    tabix : bool, optional
-        Whether to use tabix indexing
-    mapper : ChromosomeMapper, optional
-        Chromosome mapper instance
-    log : Log, optional
-        Logging object
-    verbose : bool
-        Verbose flag
-        
-    Returns
-    -------
-    pl.DataFrame
-        Polars DataFrame with columns: CHR, POS, EA, NEA, EAF, INFO (if available)
-    """
+Parameters
+----------
+vcf_path : str
+    Path to VCF file
+region : tuple, optional
+    (chromosome, start, end) region to extract
+vcf_chr_dict : dict, optional
+    Chromosome mapping dictionary
+tabix : bool, optional
+    Whether to use tabix indexing
+mapper : ChromosomeMapper, optional
+    Chromosome mapper instance
+log : Log, optional
+    Logging object
+verbose : bool
+    Verbose flag
+Returns
+-------
+pl.DataFrame
+    Polars DataFrame with columns: CHR, POS, EA, NEA, EAF, INFO (if available)
+"""
     if log is None:
         log = Log()
     
@@ -278,43 +275,41 @@ def _get_standardized_genotypes_for_block(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Extract and standardize genotypes for a block of variants.
+    """Extract and standardize genotypes for a block of variants.
     
     Returns standardized genotype matrix X where:
         X_ij = (G_ij - 2p_j) / sqrt(2p_j(1-p_j))
     
-    Parameters
-    ----------
-    vcf_path : str
-        Path to VCF file
-    variant_df : pd.DataFrame
-        DataFrame with variant information (must have CHR, POS, EA, NEA, EAF)
-    start_idx : int
-        Start index of block in variant_df
-    end_idx : int
-        End index of block in variant_df
-    region : tuple, optional
-        Original region specification
-    vcf_chr_dict : dict, optional
-        Chromosome mapping dictionary
-    tabix : bool, optional
-        Whether to use tabix indexing
-    mapper : ChromosomeMapper, optional
-        Chromosome mapper instance
-    log : Log, optional
-        Logging object
-    verbose : bool
-        Verbose flag
-        
-    Returns
-    -------
-    tuple
-        (X, p, matched_indices) where:
-        - X: standardized genotype matrix (n_samples x n_variants), standardized using sample mean and SD
-        - p: effect allele frequencies (n_variants,) - returned for compatibility but not used in standardization
-        - matched_indices: indices in variant_df that were matched (n_variants,)
-    """
+Parameters
+----------
+vcf_path : str
+    Path to VCF file
+variant_df : pd.DataFrame
+    DataFrame with variant information (must have CHR, POS, EA, NEA, EAF)
+start_idx : int
+    Start index of block in variant_df
+end_idx : int
+    End index of block in variant_df
+region : tuple, optional
+    Original region specification
+vcf_chr_dict : dict, optional
+    Chromosome mapping dictionary
+tabix : bool, optional
+    Whether to use tabix indexing
+mapper : ChromosomeMapper, optional
+    Chromosome mapper instance
+log : Log, optional
+    Logging object
+verbose : bool
+    Verbose flag
+Returns
+-------
+tuple
+    (X, p, matched_indices) where:
+    - X: standardized genotype matrix (n_samples x n_variants), standardized using sample mean and SD
+    - p: effect allele frequencies (n_variants,) - returned for compatibility but not used in standardization
+    - matched_indices: indices in variant_df that were matched (n_variants,)
+"""
     if log is None:
         log = Log()
     
@@ -510,11 +505,10 @@ def _filter_variants(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> pl.DataFrame:
-    """
-    Apply variant-level filters (MAF, EAF, rare variant exclusion) using Polars.
+    """Apply variant-level filters (MAF, EAF, rare variant exclusion) using Polars.
     
     Returns filtered Polars DataFrame.
-    """
+"""
     if log is None:
         log = Log()
     
@@ -609,14 +603,13 @@ def _setup_sample_sizes(
     n_drop_min: float = 0.5,
     rng: Optional[np.random.Generator] = None
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Setup sample sizes (N) and effective sample sizes (N_eff) for variants.
+    """Setup sample sizes (N) and effective sample sizes (N_eff) for variants.
     
-    Returns
-    -------
-    tuple
-        (N, N_eff) arrays of length m
-    """
+Returns
+-------
+tuple
+    (N, N_eff) arrays of length m
+"""
     if rng is None:
         rng = np.random.default_rng()
     
@@ -669,14 +662,13 @@ def _setup_info_scores(
     info_max: float = 1.0,
     rng: Optional[np.random.Generator] = None
 ) -> np.ndarray:
-    """
-    Setup INFO scores for variants (from VCF or simulated).
+    """Setup INFO scores for variants (from VCF or simulated).
     
-    Returns
-    -------
-    np.ndarray
-        INFO scores array of length m
-    """
+Returns
+-------
+np.ndarray
+    INFO scores array of length m
+"""
     if rng is None:
         rng = np.random.default_rng()
     
@@ -708,14 +700,13 @@ def _select_causal_variants(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Select causal variants and assign effect sizes.
+    """Select causal variants and assign effect sizes.
     
-    Returns
-    -------
-    tuple
-        (beta_true, is_causal) arrays of length m
-    """
+Returns
+-------
+tuple
+    (beta_true, is_causal) arrays of length m
+"""
     if log is None:
         log = Log()
     if rng is None:
@@ -834,14 +825,13 @@ def _convert_z_to_sumstats(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Convert Z-scores to summary statistics (SE, BETA, P, MLOG10P).
+    """Convert Z-scores to summary statistics (SE, BETA, P, MLOG10P).
     
-    Returns
-    -------
-    tuple
-        (se, beta_hat, p, mlog10p) arrays
-    """
+Returns
+-------
+tuple
+    (se, beta_hat, p, mlog10p) arrays
+"""
     if log is None:
         log = Log()
     
@@ -896,11 +886,10 @@ def _extract_causal_snp_ids(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> List[str]:
-    """
-    Extract causal SNP IDs from Polars DataFrame.
+    """Extract causal SNP IDs from Polars DataFrame.
     
     Uses VCF ID field if available, otherwise constructs as "CHR:POS:EA:NEA".
-    """
+"""
     if log is None:
         log = Log()
     
@@ -1007,188 +996,146 @@ def simulate_sumstats_region(
     trait_name: str = "Simulated_Trait",
     build: str = "38",
 ) -> Tuple[Sumstats, List[str]]:
-    """
-    Simulate GWAS summary statistics (BETA/SE/Z/P) for a genomic region using a reference panel LD model.
+    """Simulate GWAS summary statistics (BETA/SE/Z/P) for a genomic region using a reference panel LD model.
     
     This function uses an efficient X^T X approach to simulate Z-scores without explicitly constructing
     large LD matrices. It supports MAF-dependent effect size architectures and processes the entire
     region at once for efficient simulation.
 
-    Parameters
-    ----------
-    vcf_path : str
-        Path to VCF/BCF file containing reference panel genotypes. The VCF should contain:
-        - Genotype data (calldata/GT) for LD computation
-        - AF field in INFO (or variants/AF) for effect allele frequency
-        - Optional: INFO field for imputation quality scores
+Parameters
+----------
+vcf_path : str
+    Path to VCF/BCF file containing reference panel genotypes. The VCF should contain:
+    - Genotype data (calldata/GT) for LD computation
+    - AF field in INFO (or variants/AF) for effect allele frequency
+    - Optional: INFO field for imputation quality scores
+region : tuple, optional
+    Optional tuple (chr, start, end) specifying genomic region to simulate.
+    If provided, only variants in this region are used.
+Example : region=("1", 100_000, 2_000_000)
+    If None, uses all variants in the VCF.
+trait : str, default "quant"
+    Trait type: "quant" for quantitative trait or "binary" for case-control
+n : int, optional, default 300000
+    Sample size for quantitative trait (required if trait="quant")
+n_case : int, optional
+    Number of cases for binary trait (required if trait="binary")
+n_ctrl : int, optional
+    Number of controls for binary trait (required if trait="binary")
+mode : str, default "sparse"
+    Genetic architecture mode:
+    - "polygenic": Causal variants selected with probability pi
+    - "sparse": Exactly n_causal causal variants selected
+pi : float, default 2e-3
+    Causal fraction if mode="polygenic" (probability each variant is causal)
+n_causal : int, default 1
+    Number of causal variants if mode="sparse"
+effect_sd : float, default 0.05
+    Standard deviation of causal effects (standardized units).
+    Only used when alpha=0 (MAF-independent effects).
+    When alpha>0, effect size variance scales as [2p(1-p)]^(-alpha) and effect_sd is ignored.
+alpha : float, default 0
+    MAF dependence parameter for effect size architecture.
+    Effect size variance scales as [2p_j(1-p_j)]^(-alpha) where p_j is the effect
+    allele frequency (EAF).
+    - alpha=0: MAF-independent effects (uses effect_sd)
+    - alpha>0: Rarer variants have larger effect sizes on average
+    Typical values: 0.0 (no dependence), 0.2 (moderate), 0.5 (strong)
+maf_min : float, default 0.01
+    Minimum MAF for variants to include in simulation.
+    Variants with MAF < maf_min are excluded. Set to 0.0 for no filter.
+maf_max : float, default 0.5
+    Maximum MAF for variants to include in simulation.
+    Variants with MAF > maf_max are excluded. Set to 0.5 for no filter.
+eaf_min : float, default 0.0
+    Minimum EAF for variants to include in simulation.
+    Variants with EAF < eaf_min are excluded. Set to 0.0 for no filter.
+eaf_max : float, default 1.0
+    Maximum EAF for variants to include in simulation.
+    Variants with EAF > eaf_max are excluded. Set to 1.0 for no filter.
+exclude_rare : bool, default False
+    If True, exclude rare variants with MAF < rare_maf_threshold
+rare_maf_threshold : float, default 0.01
+    MAF threshold for rare variants when exclude_rare=True
+thin : float, optional
+    Fraction of variants to randomly keep after filtering (between 0 and 1, exclusive).
+    If None (default), keeps all variants after filtering.
+    If specified (e.g., 0.1), randomly samples that fraction of variants to simulate
+    incomplete GWAS coverage (real GWAS don't cover all sites).
+    Useful for simulating genotyping arrays or imputation panels that only cover
+    a subset of variants.
+causal_maf_min : float, optional
+    Minimum MAF for variants eligible to be selected as causal (None = no filter).
+    This is separate from maf_min which filters all variants.
+causal_maf_max : float, optional
+    Maximum MAF for variants eligible to be selected as causal (None = no filter)
+causal_eaf_min : float, optional
+    Minimum EAF for variants eligible to be selected as causal (None = no filter)
+causal_eaf_max : float, optional
+    Maximum EAF for variants eligible to be selected as causal (None = no filter)
+n_drop_rate : float, default 0.15
+    Fraction of SNPs with reduced sample size (simulates missingness/QC issues)
+n_drop_min : float, default 0.5
+    Minimum N multiplier for dropped SNPs (N is multiplied by random factor in [n_drop_min, 1.0])
+use_info : bool, default True
+    If True and INFO column exists in VCF, use it for N_eff attenuation.
+    Otherwise, simulates INFO scores.
+info_mean : float, default 0.95
+    Mean INFO score if simulating (when INFO not in VCF or use_info=False)
+info_sd : float, default 0.05
+    Standard deviation of INFO score if simulating
+info_min : float, default 0.3
+    Minimum INFO score (clipped to this value)
+info_max : float, default 1.0
+    Maximum INFO score (clipped to this value)
+lambda_gc : float, default 1.01
+    Cryptic relatedness / global inflation parameter (λ).
+    Scales the noise term: ε = λ * ε_0 where ε_0 ~ N(0, R).
+    - lambda_gc = 1.0: No inflation (default)
+    - lambda_gc > 1.0: Genomic control inflation (e.g., 1.0-1.1 mild, 1.1-1.3 noticeable)
+    - Captures global effects of relatedness/unmodeled covariance in GWAS residuals
+sigma_strat : float, default 0.05
+    Population stratification parameter (σ_strat).
+    Adds LD-correlated bias: b_strat ~ N(0, σ_strat^2 R).
+    - sigma_strat = 0.0: No stratification (default)
+    - sigma_strat > 0.0: Creates LD-shaped structured confounding
+    - Typical values: 0.0-0.2 (small), 0.2-0.5 (moderate), 0.5-1.0 (strong)
+    - Creates genome-wide shifts and correlated "hills" of signal across LD blocks
+seed : int, default 1
+    Random seed for reproducibility
+causal_idx : np.ndarray, optional
+    Explicit indices of causal variants (0-based, relative to filtered variant order).
+    If provided, overrides mode/pi/n_causal selection.
+causal_beta : np.ndarray, optional
+    Explicit causal effect sizes (must match causal_idx length).
+    If provided, overrides effect_sd/alpha effect size sampling.
+vcf_chr_dict : dict, optional
+    Chromosome mapping dictionary for VCF. If None, auto-detected.
+Format : {sumstats_chr_format: vcf_chr_format}, e.g., {"1": "chr1"}
+tabix : bool, optional
+    Whether to use tabix indexing for VCF. If None, auto-detected based on file extension.
+verbose : bool, default True
+    Verbose output with progress messages
+log : Log, optional
+    Logging object. If None, creates a new one.
+study : str, default "Simulated_Study"
+    Study name for Sumstats object metadata
+trait_name : str, default "Simulated_Trait"
+    Trait name for Sumstats object metadata
+build : str, default "38"
+    Genome build version for Sumstats object ("37" or "38")
+Returns
+-------
+tuple
+    A tuple containing:
+    - Sumstats: GWASLab Sumstats object with simulated summary statistics.
+      Contains columns: CHR, POS, EA, NEA, EAF, BETA, SE, Z, P, MLOG10P, N, N_EFF, INFO,
+      IS_CAUSAL, BETA_TRUE
+    - List[str]: List of causal SNP IDs. Uses VCF ID field if available,
+      otherwise constructed as "CHR:POS:EA:NEA"
         
-    region : tuple, optional
-        Optional tuple (chr, start, end) specifying genomic region to simulate.
-        If provided, only variants in this region are used.
-        Example: region=("1", 100_000, 2_000_000)
-        If None, uses all variants in the VCF.
-        
-    trait : str, default="quant"
-        Trait type: "quant" for quantitative trait or "binary" for case-control
-        
-    n : int, optional, default=300000
-        Sample size for quantitative trait (required if trait="quant")
-        
-    n_case : int, optional
-        Number of cases for binary trait (required if trait="binary")
-        
-    n_ctrl : int, optional
-        Number of controls for binary trait (required if trait="binary")
-        
-    mode : str, default="sparse"
-        Genetic architecture mode:
-        - "polygenic": Causal variants selected with probability pi
-        - "sparse": Exactly n_causal causal variants selected
-        
-    pi : float, default=2e-3
-        Causal fraction if mode="polygenic" (probability each variant is causal)
-        
-    n_causal : int, default=1
-        Number of causal variants if mode="sparse"
-        
-    effect_sd : float, default=0.05
-        Standard deviation of causal effects (standardized units).
-        Only used when alpha=0 (MAF-independent effects).
-        When alpha>0, effect size variance scales as [2p(1-p)]^(-alpha) and effect_sd is ignored.
-        
-    alpha : float, default=0
-        MAF dependence parameter for effect size architecture.
-        Effect size variance scales as [2p_j(1-p_j)]^(-alpha) where p_j is the effect
-        allele frequency (EAF). 
-        - alpha=0: MAF-independent effects (uses effect_sd)
-        - alpha>0: Rarer variants have larger effect sizes on average
-        Typical values: 0.0 (no dependence), 0.2 (moderate), 0.5 (strong)
-        
-    maf_min : float, default=0.01
-        Minimum MAF for variants to include in simulation.
-        Variants with MAF < maf_min are excluded. Set to 0.0 for no filter.
-        
-    maf_max : float, default=0.5
-        Maximum MAF for variants to include in simulation.
-        Variants with MAF > maf_max are excluded. Set to 0.5 for no filter.
-        
-    eaf_min : float, default=0.0
-        Minimum EAF for variants to include in simulation.
-        Variants with EAF < eaf_min are excluded. Set to 0.0 for no filter.
-        
-    eaf_max : float, default=1.0
-        Maximum EAF for variants to include in simulation.
-        Variants with EAF > eaf_max are excluded. Set to 1.0 for no filter.
-        
-    exclude_rare : bool, default=False
-        If True, exclude rare variants with MAF < rare_maf_threshold
-        
-    rare_maf_threshold : float, default=0.01
-        MAF threshold for rare variants when exclude_rare=True
-        
-    thin : float, optional
-        Fraction of variants to randomly keep after filtering (between 0 and 1, exclusive).
-        If None (default), keeps all variants after filtering.
-        If specified (e.g., 0.1), randomly samples that fraction of variants to simulate
-        incomplete GWAS coverage (real GWAS don't cover all sites).
-        Useful for simulating genotyping arrays or imputation panels that only cover
-        a subset of variants.
-        
-    causal_maf_min : float, optional
-        Minimum MAF for variants eligible to be selected as causal (None = no filter).
-        This is separate from maf_min which filters all variants.
-        
-    causal_maf_max : float, optional
-        Maximum MAF for variants eligible to be selected as causal (None = no filter)
-        
-    causal_eaf_min : float, optional
-        Minimum EAF for variants eligible to be selected as causal (None = no filter)
-        
-    causal_eaf_max : float, optional
-        Maximum EAF for variants eligible to be selected as causal (None = no filter)
-        
-    n_drop_rate : float, default=0.15
-        Fraction of SNPs with reduced sample size (simulates missingness/QC issues)
-        
-    n_drop_min : float, default=0.5
-        Minimum N multiplier for dropped SNPs (N is multiplied by random factor in [n_drop_min, 1.0])
-        
-    use_info : bool, default=True
-        If True and INFO column exists in VCF, use it for N_eff attenuation.
-        Otherwise, simulates INFO scores.
-        
-    info_mean : float, default=0.95
-        Mean INFO score if simulating (when INFO not in VCF or use_info=False)
-        
-    info_sd : float, default=0.05
-        Standard deviation of INFO score if simulating
-        
-    info_min : float, default=0.3
-        Minimum INFO score (clipped to this value)
-        
-    info_max : float, default=1.0
-        Maximum INFO score (clipped to this value)
-        
-    lambda_gc : float, default=1.01
-        Cryptic relatedness / global inflation parameter (λ).
-        Scales the noise term: ε = λ * ε_0 where ε_0 ~ N(0, R).
-        - lambda_gc = 1.0: No inflation (default)
-        - lambda_gc > 1.0: Genomic control inflation (e.g., 1.0-1.1 mild, 1.1-1.3 noticeable)
-        - Captures global effects of relatedness/unmodeled covariance in GWAS residuals
-        
-    sigma_strat : float, default=0.05
-        Population stratification parameter (σ_strat).
-        Adds LD-correlated bias: b_strat ~ N(0, σ_strat^2 R).
-        - sigma_strat = 0.0: No stratification (default)
-        - sigma_strat > 0.0: Creates LD-shaped structured confounding
-        - Typical values: 0.0-0.2 (small), 0.2-0.5 (moderate), 0.5-1.0 (strong)
-        - Creates genome-wide shifts and correlated "hills" of signal across LD blocks
-        
-    seed : int, default=1
-        Random seed for reproducibility
-        
-    causal_idx : np.ndarray, optional
-        Explicit indices of causal variants (0-based, relative to filtered variant order).
-        If provided, overrides mode/pi/n_causal selection.
-        
-    causal_beta : np.ndarray, optional
-        Explicit causal effect sizes (must match causal_idx length).
-        If provided, overrides effect_sd/alpha effect size sampling.
-        
-    vcf_chr_dict : dict, optional
-        Chromosome mapping dictionary for VCF. If None, auto-detected.
-        Format: {sumstats_chr_format: vcf_chr_format}, e.g., {"1": "chr1"}
-        
-    tabix : bool, optional
-        Whether to use tabix indexing for VCF. If None, auto-detected based on file extension.
-        
-    verbose : bool, default=True
-        Verbose output with progress messages
-        
-    log : Log, optional
-        Logging object. If None, creates a new one.
-        
-    study : str, default="Simulated_Study"
-        Study name for Sumstats object metadata
-        
-    trait_name : str, default="Simulated_Trait"
-        Trait name for Sumstats object metadata
-        
-    build : str, default="38"
-        Genome build version for Sumstats object ("37" or "38")
-
-    Returns
-    -------
-    tuple
-        A tuple containing:
-        - Sumstats: GWASLab Sumstats object with simulated summary statistics.
-          Contains columns: CHR, POS, EA, NEA, EAF, BETA, SE, Z, P, MLOG10P, N, N_EFF, INFO,
-          IS_CAUSAL, BETA_TRUE
-        - List[str]: List of causal SNP IDs. Uses VCF ID field if available,
-          otherwise constructed as "CHR:POS:EA:NEA"
-        
-    Notes
-    -----
+Notes
+-----
     **Workflow Overview**
     
     The function implements an efficient workflow for simulating GWAS summary statistics:
@@ -1260,8 +1207,8 @@ def simulate_sumstats_region(
        - Converts to Pandas for Sumstats object creation
        - Returns Sumstats object and list of causal SNP IDs
     
-    Examples
-    --------
+Examples
+--------
     >>> from gwaslab import simulate_sumstats_region
     >>> 
     >>> # Simulate a 2Mb region with default settings
@@ -1289,8 +1236,8 @@ def simulate_sumstats_region(
     --------
     simulate_sumstats_global : Simulate summary statistics genome-wide with global heritability calibration
     
-    Notes
-    -----
+Notes
+-----
     **Mathematical Model**
     
     The simulation uses a reference-panel LD model to generate Z-scores:
@@ -1330,7 +1277,7 @@ def simulate_sumstats_region(
     - Processes entire region at once (no block-wise division)
     - Vectorized NumPy operations throughout
     - Supports tabix-indexed VCF files for fast region queries
-    """
+"""
     if log is None:
         log = Log()
     
@@ -1717,139 +1664,101 @@ def simulate_sumstats_global(
     trait_name: str = "Simulated_Trait",
     build: str = "19",
 ) -> Tuple[Sumstats, List[str]]:
-    """
-    Simulate genome-wide GWAS summary statistics using efficient reference-panel LD model.
+    """Simulate genome-wide GWAS summary statistics using efficient reference-panel LD model.
     
     This function implements the model described in the documentation, using the efficient
     X^T X approach to avoid constructing explicit LD matrices. It processes chromosomes
     sequentially and applies global heritability calibration.
     
-    Parameters
-    ----------
-    vcf_path : str
-        Path to VCF/BCF file containing reference panel genotypes
+Parameters
+----------
+vcf_path : str
+    Path to VCF/BCF file containing reference panel genotypes
+chromosomes : list, optional
+    List of chromosomes to simulate (e.g., [1, 2, 3] or ["1", "2", "3"]).
+    If None, simulates all chromosomes found in VCF.
+trait : str, default "quant"
+    "quant" for quantitative trait or "binary" for case-control
+n : int, optional, default 300000
+    Sample size for quantitative trait (required if trait="quant")
+n_case : int, optional
+    Number of cases for binary trait (required if trait="binary")
+n_ctrl : int, optional
+    Number of controls for binary trait (required if trait="binary")
+window_bp : int, default 1000000
+    Window size in basepairs for block-wise simulation (1Mb default)
+mode : str, default "polygenic"
+    "polygenic" or "sparse" genetic architecture
+pi : float, default 2e-3
+    Causal fraction if mode="polygenic"
+n_causal : int, optional
+    Number of causal variants if mode="sparse". If None and mode="sparse",
+    uses a default based on chromosome size.
+h2 : float, default 0.1
+    Target heritability (genetic variance on standardized genotype scale)
+alpha : float, default 0.0
+    MAF dependence parameter. Effect size variance scales as [2p(1-p)]^(-alpha).
+    alpha=0: MAF-independent effects
+    alpha>0: rarer variants have larger effect sizes on average
+maf_min : float, default 0.01
+    Minimum MAF for variants to include
+maf_max : float, default 0.5
+    Maximum MAF for variants to include
+eaf_min : float, default 0.0
+    Minimum EAF for variants to include
+eaf_max : float, default 1.0
+    Maximum EAF for variants to include
+exclude_rare : bool, default False
+    If True, exclude rare variants (MAF < rare_maf_threshold)
+rare_maf_threshold : float, default 0.01
+    MAF threshold for rare variants when exclude_rare=True
+causal_maf_min : float, optional
+    Minimum MAF for variants eligible to be selected as causal
+causal_maf_max : float, optional
+    Maximum MAF for variants eligible to be selected as causal
+causal_eaf_min : float, optional
+    Minimum EAF for variants eligible to be selected as causal
+causal_eaf_max : float, optional
+    Maximum EAF for variants eligible to be selected as causal
+n_drop_rate : float, default 0.15
+    Fraction of SNPs with reduced sample size
+n_drop_min : float, default 0.5
+    Minimum N multiplier for dropped SNPs
+use_info : bool, default True
+    If True and INFO column exists in VCF, use it for N_eff attenuation
+info_mean : float, default 0.95
+    Mean INFO score if simulating
+info_sd : float, default 0.05
+    Standard deviation of INFO score if simulating
+info_min : float, default 0.3
+    Minimum INFO score
+info_max : float, default 1.0
+    Maximum INFO score
+seed : int, default 1
+    Random seed for reproducibility
+vcf_chr_dict : dict, optional
+    Chromosome mapping dictionary for VCF. If None, auto-detected.
+tabix : bool, optional
+    Whether to use tabix indexing. If None, auto-detected.
+verbose : bool, default True
+    Verbose output
+log : Log, optional
+    Logging object. If None, creates a new one.
+study : str, default "Simulated_Study"
+    Study name for Sumstats object
+trait_name : str, default "Simulated_Trait"
+    Trait name for Sumstats object
+build : str, default "19"
+    Genome build version for Sumstats object
+Returns
+-------
+tuple
+    A tuple containing:
+    - Sumstats: GWASLab Sumstats object with simulated summary statistics
+    - List[str]: List of causal SNP IDs
         
-    chromosomes : list, optional
-        List of chromosomes to simulate (e.g., [1, 2, 3] or ["1", "2", "3"]).
-        If None, simulates all chromosomes found in VCF.
-        
-    trait : str, default="quant"
-        "quant" for quantitative trait or "binary" for case-control
-        
-    n : int, optional, default=300000
-        Sample size for quantitative trait (required if trait="quant")
-        
-    n_case : int, optional
-        Number of cases for binary trait (required if trait="binary")
-        
-    n_ctrl : int, optional
-        Number of controls for binary trait (required if trait="binary")
-        
-    window_bp : int, default=1000000
-        Window size in basepairs for block-wise simulation (1Mb default)
-        
-    mode : str, default="polygenic"
-        "polygenic" or "sparse" genetic architecture
-        
-    pi : float, default=2e-3
-        Causal fraction if mode="polygenic"
-        
-    n_causal : int, optional
-        Number of causal variants if mode="sparse". If None and mode="sparse",
-        uses a default based on chromosome size.
-        
-    h2 : float, default=0.1
-        Target heritability (genetic variance on standardized genotype scale)
-        
-    alpha : float, default=0.0
-        MAF dependence parameter. Effect size variance scales as [2p(1-p)]^(-alpha).
-        alpha=0: MAF-independent effects
-        alpha>0: rarer variants have larger effect sizes on average
-        
-    maf_min : float, default=0.01
-        Minimum MAF for variants to include
-        
-    maf_max : float, default=0.5
-        Maximum MAF for variants to include
-        
-    eaf_min : float, default=0.0
-        Minimum EAF for variants to include
-        
-    eaf_max : float, default=1.0
-        Maximum EAF for variants to include
-        
-    exclude_rare : bool, default=False
-        If True, exclude rare variants (MAF < rare_maf_threshold)
-        
-    rare_maf_threshold : float, default=0.01
-        MAF threshold for rare variants when exclude_rare=True
-        
-    causal_maf_min : float, optional
-        Minimum MAF for variants eligible to be selected as causal
-        
-    causal_maf_max : float, optional
-        Maximum MAF for variants eligible to be selected as causal
-        
-    causal_eaf_min : float, optional
-        Minimum EAF for variants eligible to be selected as causal
-        
-    causal_eaf_max : float, optional
-        Maximum EAF for variants eligible to be selected as causal
-        
-    n_drop_rate : float, default=0.15
-        Fraction of SNPs with reduced sample size
-        
-    n_drop_min : float, default=0.5
-        Minimum N multiplier for dropped SNPs
-        
-    use_info : bool, default=True
-        If True and INFO column exists in VCF, use it for N_eff attenuation
-        
-    info_mean : float, default=0.95
-        Mean INFO score if simulating
-        
-    info_sd : float, default=0.05
-        Standard deviation of INFO score if simulating
-        
-    info_min : float, default=0.3
-        Minimum INFO score
-        
-    info_max : float, default=1.0
-        Maximum INFO score
-        
-    seed : int, default=1
-        Random seed for reproducibility
-        
-    vcf_chr_dict : dict, optional
-        Chromosome mapping dictionary for VCF. If None, auto-detected.
-        
-    tabix : bool, optional
-        Whether to use tabix indexing. If None, auto-detected.
-        
-    verbose : bool, default=True
-        Verbose output
-        
-    log : Log, optional
-        Logging object. If None, creates a new one.
-        
-    study : str, default="Simulated_Study"
-        Study name for Sumstats object
-        
-    trait_name : str, default="Simulated_Trait"
-        Trait name for Sumstats object
-        
-    build : str, default="19"
-        Genome build version for Sumstats object
-
-    Returns
-    -------
-    tuple
-        A tuple containing:
-        - Sumstats: GWASLab Sumstats object with simulated summary statistics
-        - List[str]: List of causal SNP IDs
-        
-    Notes
-    -----
+Notes
+-----
     The function implements the reference-panel LD model:
     
     1. Standardizes genotypes using sample statistics: X_ij = (G_ij - μ_j) / σ_j
@@ -1865,7 +1774,7 @@ def simulate_sumstats_global(
     
     This approach scales as O(nm) per block and avoids constructing explicit
     LD matrices, making it suitable for whole-genome simulation.
-    """
+"""
     if log is None:
         log = Log()
     

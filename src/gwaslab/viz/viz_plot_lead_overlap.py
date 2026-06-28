@@ -41,7 +41,69 @@ def plot_lead_overlap(
     verbose: bool = True,
     **kwargs: Any,
 ) -> List[Any]:
-    """Plot overlap of annotated lead loci across multiple Sumstats objects."""
+    """Plot overlap of annotated lead loci across multiple Sumstats objects.
+
+    Parameters
+    ----------
+    objects : sequence of Sumstats
+        At least two GWASLab Sumstats objects to compare.
+    titles : sequence of str, optional
+        Display names for each study. Defaults to ``meta["gwaslab"]["study_name"]``
+        or ``Sumstats_N``.
+    mode : str
+        ``"auto"`` (Venn for 2–3 studies, UpSet for 4+), ``"venn"``, or ``"upset"``.
+    sig_level : float
+        Genome-wide significance threshold for lead extraction.
+    windowsizekb : int
+        Sliding window (kb) for lead extraction within each study.
+    windowsizekb_for_overlap : int
+        Window (kb) for merging leads from different studies into shared loci.
+    use_p : bool
+        If True, rank leads by P instead of MLOG10P.
+    get_lead_kwargs : dict, optional
+        Extra kwargs forwarded to lead extraction (``_get_sig`` / ``get_lead``).
+    anno : bool
+        Annotate leads with nearest gene names.
+    build : str or sequence of str, optional
+        Genome build for annotation per object.
+    source : str
+        Gene annotation backend (``"ensembl"`` or ``"refseq"``).
+    gtf_path : str, optional
+        Custom GTF path for gene annotation.
+    wc_correction : bool
+        Apply Winner's Curse correction during lead extraction.
+    show_counts : bool
+        Show intersection counts on the plot.
+    show_genes : bool
+        Show gene labels on UpSet intersections.
+    max_gene_labels : int
+        Maximum gene labels on UpSet plot.
+    sort_by : str
+        UpSet row sort key (e.g. ``"count"``).
+    venn_kwargs, upset_kwargs : dict, optional
+        Extra kwargs for Venn or UpSet drawing.
+    fig_kwargs, save_kwargs, font_kwargs, legend_kwargs : dict, optional
+        Figure styling and save options.
+    save : bool or str
+        Save figure to default or custom path.
+    title : str, optional
+        Figure title.
+    log : Log
+        GWASLab log object.
+    verbose : bool
+        Print progress messages.
+
+    Returns
+    -------
+    list
+        ``[overlap_df, fig, log]``. ``overlap_df`` has one row per locus group with
+        columns such as ``MEMBERSHIP_KEY``, ``N_STUDIES``, ``GENE``, and ``IN_<study>``.
+        For UpSet plots, ``overlap_df.attrs["set_list"]`` maps set IDs to memberships.
+
+    See Also
+    --------
+    Sumstats.get_lead : Single-study lead extraction.
+    """
     log.write("Start to plot lead overlap across sumstats objects...", verbose=verbose)
     labels = _normalize_labels(objects, titles)
     selected_mode = _resolve_mode(mode, len(objects))

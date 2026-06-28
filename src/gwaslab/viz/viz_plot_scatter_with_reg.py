@@ -348,7 +348,8 @@ def create_reg_string(reg: Any, r_se_jackknife_string: str) -> str:
     return reg_string
 
 def jackknife_r(df: pd.DataFrame, x: str, y: str, log: Log, verbose: bool) -> float:
-    """Jackknife estimation of se for rsq"""
+    """Jackknife estimation of se for rsq
+"""
     from gwaslab.algorithm.heterogeneity.jackknife import jackknife_correlation_se
 
     df_nona = df.loc[:,[x,y]].dropna()

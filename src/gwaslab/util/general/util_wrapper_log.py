@@ -1,5 +1,4 @@
-"""
-Wrapper Logging Framework
+"""Wrapper Logging Framework
 
 Provides a centralized logging framework for R, Python, and command-line script execution.
 Creates comprehensive log files with version information, execution details, and outputs.
@@ -18,7 +17,8 @@ from gwaslab.info.g_version import gwaslab_info
 
 @dataclass
 class ExecutionResult:
-    """Generic execution result structure compatible with R, Python, and Command runners."""
+    """Generic execution result structure compatible with R, Python, and Command runners.
+"""
     success: bool
     output: str
     exit_code: int
@@ -31,23 +31,21 @@ class ExecutionResult:
 
 
 class WrapperLogger:
-    """
-    Centralized logging for script execution (R, Python, command-line).
+    """Centralized logging for script execution (R, Python, command-line).
     Creates comprehensive log files with version information, execution details, and outputs.
-    """
+"""
     
     def __init__(
         self,
         log: Optional[Log] = None,
         verbose: bool = True
     ):
-        """
-        Initialize wrapper logger.
+        """Initialize wrapper logger.
         
-        Args:
+Parameters
             log: Log instance for logging (default: None, creates new Log)
             verbose: Whether to log verbosely (default: True)
-        """
+"""
         self.log = log if log is not None else Log()
         self.verbose = verbose
     
@@ -64,10 +62,9 @@ class WrapperLogger:
         tool_path: Optional[str] = None,
         package_name: Optional[str] = None
     ) -> str:
-        """
-        Create a comprehensive log file for script execution.
+        """Create a comprehensive log file for script execution.
         
-        Args:
+Parameters
             result: Execution result (from RScriptRunner, PythonScriptRunner, or CommandRunner)
             script_type: Type of script ("R", "Python", or "Command")
             script_content: Content of the script (for R/Python scripts)
@@ -79,9 +76,9 @@ class WrapperLogger:
             tool_path: Path to the tool executable (e.g., "Rscript", "python", "plink")
             package_name: Package name to check version (e.g., "susieR", "pandas")
         
-        Returns:
+Returns
             Path to the created log file
-        """
+"""
         if log_file_path is None:
             # Generate unique log file name
             timestamp = int(time.time() * 1000) % 1000000000
@@ -145,7 +142,8 @@ class WrapperLogger:
         tool_path: Optional[str] = None,
         package_name: Optional[str] = None
     ) -> Dict[str, str]:
-        """Get version information for the execution environment."""
+        """Get version information for the execution environment.
+"""
         version_info = {}
         
         # Get GWASLab version (always)
@@ -258,7 +256,8 @@ class WrapperLogger:
         return version_info
     
     def _normalize_result(self, result: Any) -> ExecutionResult:
-        """Convert any execution result type to ExecutionResult."""
+        """Convert any execution result type to ExecutionResult.
+"""
         if isinstance(result, ExecutionResult):
             return result
         
@@ -276,7 +275,8 @@ class WrapperLogger:
         )
     
     def _write_version_section(self, f, version_info: Dict[str, str]):
-        """Write version information section."""
+        """Write version information section.
+"""
         f.write("=" * 80 + "\n")
         f.write("VERSION INFORMATION\n")
         f.write("=" * 80 + "\n")
@@ -286,7 +286,8 @@ class WrapperLogger:
         f.write("\n")
     
     def _write_execution_time_section(self, f, result: ExecutionResult):
-        """Write execution time section."""
+        """Write execution time section.
+"""
         execution_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         f.write("=" * 80 + "\n")
         f.write("EXECUTION TIME\n")
@@ -302,7 +303,8 @@ class WrapperLogger:
         f.write("\n")
     
     def _write_metadata_section(self, f, metadata: Dict[str, Any]):
-        """Write metadata section."""
+        """Write metadata section.
+"""
         f.write("=" * 80 + "\n")
         f.write("METADATA\n")
         f.write("=" * 80 + "\n")
@@ -317,7 +319,8 @@ class WrapperLogger:
         output_files: Dict[str, str],
         working_dir: Optional[str] = None
     ):
-        """Write output files section."""
+        """Write output files section.
+"""
         f.write("=" * 80 + "\n")
         f.write("OUTPUT FILES\n")
         f.write("=" * 80 + "\n")
@@ -341,7 +344,8 @@ class WrapperLogger:
         f.write("\n")
     
     def _write_script_section(self, f, script_content: str, script_label: str = "SCRIPT"):
-        """Write script content section."""
+        """Write script content section.
+"""
         f.write("=" * 80 + "\n")
         f.write(f"{script_label}\n")
         f.write("=" * 80 + "\n")
@@ -349,7 +353,8 @@ class WrapperLogger:
         f.write("\n\n")
     
     def _write_command_section(self, f, command: str):
-        """Write command section."""
+        """Write command section.
+"""
         f.write("=" * 80 + "\n")
         f.write("COMMAND\n")
         f.write("=" * 80 + "\n")
@@ -357,7 +362,8 @@ class WrapperLogger:
         f.write("\n")
     
     def _write_output_section(self, f, output: str):
-        """Write execution output section."""
+        """Write execution output section.
+"""
         f.write("=" * 80 + "\n")
         f.write("EXECUTION OUTPUT\n")
         f.write("=" * 80 + "\n")
@@ -380,7 +386,8 @@ def create_r_log(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> str:
-    """Create a log file for R script execution."""
+    """Create a log file for R script execution.
+"""
     logger = WrapperLogger(log=log, verbose=verbose)
     return logger.create_log_file(
         result=result,
@@ -405,7 +412,8 @@ def create_python_log(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> str:
-    """Create a log file for Python script execution."""
+    """Create a log file for Python script execution.
+"""
     logger = WrapperLogger(log=log, verbose=verbose)
     return logger.create_log_file(
         result=result,
@@ -429,7 +437,8 @@ def create_command_log(
     log: Optional[Log] = None,
     verbose: bool = True
 ) -> str:
-    """Create a log file for command-line execution."""
+    """Create a log file for command-line execution.
+"""
     logger = WrapperLogger(log=log, verbose=verbose)
     return logger.create_log_file(
         result=result,

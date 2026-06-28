@@ -1,5 +1,4 @@
-"""
-GWAS Catalog summary statistics downloader.
+"""GWAS Catalog summary statistics downloader.
 
 Workflow overview
 -----------------
@@ -64,10 +63,12 @@ from urllib.parse import urljoin, urlparse
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_config import options
 from gwaslab.bd.bd_download import update_description
+from gwaslab.bd.bd_io import stream_download
 
 
 def _looks_like_sumstats_url(url: str, gcst_id: str) -> bool:
-    """Check whether a URL likely points to a summary statistics resource."""
+    """Check whether a URL likely points to a summary statistics resource.
+"""
     if not isinstance(url, str):
         return False
     lowered = url.lower()
@@ -87,7 +88,8 @@ def _looks_like_sumstats_url(url: str, gcst_id: str) -> bool:
 
 
 def _collect_urls(payload: Any) -> List[str]:
-    """Recursively collect URL-like strings from nested JSON objects."""
+    """Recursively collect URL-like strings from nested JSON objects.
+"""
     urls: List[str] = []
     if isinstance(payload, dict):
         for value in payload.values():
@@ -102,7 +104,8 @@ def _collect_urls(payload: Any) -> List[str]:
 
 
 def _normalize_download_url(url: str) -> str:
-    """Convert FTP URLs to HTTPS URLs so requests can download them."""
+    """Convert FTP URLs to HTTPS URLs so requests can download them.
+"""
     if url.startswith("ftp://ftp.ebi.ac.uk/"):
         return "https://ftp.ebi.ac.uk/" + url.split("ftp://ftp.ebi.ac.uk/", 1)[1]
     if url.startswith("http://ftp.ebi.ac.uk/"):
@@ -111,7 +114,8 @@ def _normalize_download_url(url: str) -> str:
 
 
 def _build_ftp_gcst_dir(gcst_id: str) -> str:
-    """Build GWAS Catalog FTP directory URL for a GCST accession."""
+    """Build GWAS Catalog FTP directory URL for a GCST accession.
+"""
     gcst_numeric = gcst_id.replace("GCST", "")
     gcst_number = int(gcst_numeric)
     width = max(len(gcst_numeric), 8)
@@ -129,7 +133,8 @@ def _build_ftp_gcst_dir(gcst_id: str) -> str:
 
 
 def _list_directory_entries(url: str, timeout: int) -> List[str]:
-    """List href targets from an EBI FTP directory index page."""
+    """List href targets from an EBI FTP directory index page.
+"""
     response = requests.get(url, timeout=timeout)
     response.raise_for_status()
     hrefs = re.findall(r'href="([^"]+)"', response.text)
@@ -137,7 +142,8 @@ def _list_directory_entries(url: str, timeout: int) -> List[str]:
 
 
 def _list_directory_entries_safe(url: str, timeout: int) -> List[str]:
-    """List href targets and return an empty list on request errors."""
+    """List href targets and return an empty list on request errors.
+"""
     try:
         return _list_directory_entries(url, timeout=timeout)
     except requests.exceptions.RequestException:
@@ -145,7 +151,8 @@ def _list_directory_entries_safe(url: str, timeout: int) -> List[str]:
 
 
 def _is_likely_sumstats_file(name: str) -> bool:
-    """Check whether filename looks like a downloadable sumstats file."""
+    """Check whether filename looks like a downloadable sumstats file.
+"""
     lowered = name.lower()
     if lowered.endswith("/"):
         return False
@@ -155,7 +162,8 @@ def _is_likely_sumstats_file(name: str) -> bool:
 
 
 def _pick_best_sumstats_entry(entries: List[str], gcst_id: str, prefer_harmonised: bool) -> Optional[str]:
-    """Pick the best sumstats filename from directory entries."""
+    """Pick the best sumstats filename from directory entries.
+"""
     candidates = [entry for entry in entries if _is_likely_sumstats_file(entry)]
     if not candidates:
         return None
@@ -197,7 +205,8 @@ def _pick_best_sumstats_entry(entries: List[str], gcst_id: str, prefer_harmonise
 
 
 def _compute_md5(path: str, chunk_size: int = 1024 * 1024) -> str:
-    """Compute MD5 checksum for a local file."""
+    """Compute MD5 checksum for a local file.
+"""
     md5 = hashlib.md5()
     with open(path, "rb") as handle:
         while True:
@@ -209,7 +218,8 @@ def _compute_md5(path: str, chunk_size: int = 1024 * 1024) -> str:
 
 
 def _parse_md5sum_for_file(md5_text: str, target_name: str) -> Optional[str]:
-    """Parse md5sum.txt content and return checksum for target filename."""
+    """Parse md5sum.txt content and return checksum for target filename.
+"""
     target_name = target_name.strip()
     lines = [line.strip() for line in md5_text.splitlines() if line.strip()]
     if not lines:
@@ -246,7 +256,8 @@ def _download_if_exists(
     log: Log,
     verbose: bool
 ) -> Optional[str]:
-    """Download a sidecar file from directory index if present."""
+    """Download a sidecar file from directory index if present.
+"""
     entries = _list_directory_entries_safe(base_url, timeout=timeout)
     if entry_name not in entries:
         return None
@@ -258,12 +269,15 @@ def _download_if_exists(
         return target_path
 
     log.write(" -Downloading auxiliary file: {}".format(target_url), verbose=verbose)
-    _stream_download(target_url, target_path, timeout=timeout, chunk_size=chunk_size)
+    stream_download(
+        target_url, target_path, timeout=timeout, chunk_size=chunk_size, overwrite=overwrite
+    )
     return target_path
 
 
 def _prepare_gcst_output_dir(base_output_dir: str, gcst_id: str, log: Log, verbose: bool) -> str:
-    """Prepare a GCST-specific output directory, handling name collisions safely."""
+    """Prepare a GCST-specific output directory, handling name collisions safely.
+"""
     gcst_output_dir = os.path.abspath(os.path.join(base_output_dir, gcst_id))
     if os.path.exists(gcst_output_dir) and not os.path.isdir(gcst_output_dir):
         fallback_dir = gcst_output_dir + "_files"
@@ -284,7 +298,8 @@ def _discover_ftp_sumstats_url(
     verbose: bool,
     harmonised: bool = True
 ) -> Optional[str]:
-    """Discover sumstats URL from FTP index, with optional harmonised preference."""
+    """Discover sumstats URL from FTP index, with optional harmonised preference.
+"""
     study_dir_url = _build_ftp_gcst_dir(gcst_id)
     try:
         log.write(" -Trying FTP directory: {}".format(study_dir_url), verbose=verbose)
@@ -319,7 +334,8 @@ def _discover_ftp_sumstats_url(
 
 
 def _discover_sumstats_url(gcst_id: str, timeout: int, log: Log, verbose: bool) -> Optional[str]:
-    """Try several metadata endpoints and extract a downloadable sumstats URL."""
+    """Try several metadata endpoints and extract a downloadable sumstats URL.
+"""
     metadata_endpoints = [
         f"https://www.ebi.ac.uk/gwas/summary-statistics/api/studies/{gcst_id}",
         f"https://www.ebi.ac.uk/gwas/rest/api/v2/studies/{gcst_id}",
@@ -347,21 +363,10 @@ def _discover_sumstats_url(gcst_id: str, timeout: int, log: Log, verbose: bool) 
     return None
 
 
-def _stream_download(url: str, output_path: str, timeout: int, chunk_size: int) -> None:
-    """Download URL content to output_path with streaming."""
-    tmp_path = output_path + ".part"
-    with requests.get(url, stream=True, timeout=timeout) as response:
-        response.raise_for_status()
-        with open(tmp_path, "wb") as handle:
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    handle.write(chunk)
-    os.replace(tmp_path, output_path)
-
-
 def download_sumstats(
     gcst_id: str,
     output_dir: Optional[str] = None,
+    directory: Optional[str] = None,
     filename: Optional[str] = None,
     harmonised: bool = True,
     timeout: int = 60,
@@ -370,54 +375,56 @@ def download_sumstats(
     verbose: bool = True,
     log: Optional[Log] = None,
 ) -> str:
-    """
-    Download GWAS Catalog summary statistics for a given GCST accession.
+    """Download GWAS Catalog summary statistics for a given GCST accession.
 
-    Parameters
-    ----------
-    gcst_id : str
-        GWAS Catalog study accession (e.g. "GCST90002446").
-    output_dir : str, optional
-        Directory to store downloaded file. If None, uses the GWASLab default
-        data directory from ``options.paths["data_directory"]``. Files are then
-        stored under ``<output_dir>/<GCST_ID>/``.
-    filename : str, optional
-        Output filename. If None, defaults to "{GCST}_sumstats.tsv.gz".
-    harmonised : bool, optional
-        If True, prioritize harmonised files. If harmonised files are not
-        available, fall back to raw files. If False, select raw files directly
-        (default: True).
-    timeout : int, optional
-        HTTP request timeout in seconds (default: 60).
-    chunk_size : int, optional
-        Download chunk size in bytes (default: 1MB).
-    overwrite : bool, optional
-        Whether to overwrite existing output file (default: False).
-    verbose : bool, optional
-        Whether to print log messages (default: True).
-    log : Log, optional
-        Logger object. If None, a new logger is created.
+Parameters
+----------
+gcst_id : str
+    GWAS Catalog study accession (e.g. "GCST90002446").
+output_dir : str, optional
+    Directory to store downloaded file. If None, uses the GWASLab default
+    data directory from ``options.paths["data_directory"]``. Files are then
+    stored under ``<output_dir>/<GCST_ID>/``.
+directory : str, optional
+    Alias for ``output_dir``.
+filename : str, optional
+    Output filename. If None, defaults to "{GCST}_sumstats.tsv.gz".
+harmonised : bool, optional
+    If True, prioritize harmonised files. If harmonised files are not
+    available, fall back to raw files. If False, select raw files directly
+    (default: True).
+timeout : int, optional
+    HTTP request timeout in seconds (default: 60).
+chunk_size : int, optional
+    Download chunk size in bytes (default: 1MB).
+overwrite : bool, optional
+    Whether to overwrite existing output file (default: False).
+verbose : bool, optional
+    Whether to print log messages (default: True).
+log : Log, optional
+    Logger object. If None, a new logger is created.
+Returns
+-------
+str
+    Absolute path of downloaded file.
 
-    Returns
-    -------
-    str
-        Absolute path of downloaded file.
-
-    Raises
-    ------
+Raises
+------
     ValueError
         If GCST ID format is invalid.
     RuntimeError
         If no downloadable summary statistics URL can be found.
     requests.exceptions.RequestException
         If the download request fails.
-    """
+"""
     logger = log if log is not None else Log()
 
     gcst_id = gcst_id.strip().upper()
     if not re.match(r"^GCST\d+$", gcst_id):
         raise ValueError("Invalid GCST ID: {}. Expected format like GCST90002446.".format(gcst_id))
 
+    if output_dir is None:
+        output_dir = directory
     if output_dir is None:
         output_dir = options.paths["data_directory"]
     gcst_output_dir = _prepare_gcst_output_dir(output_dir, gcst_id, log=logger, verbose=verbose)
@@ -479,7 +486,9 @@ def download_sumstats(
         logger.write(" -File already exists: {} (overwrite=False)".format(output_path), verbose=verbose)
     else:
         logger.write(" -Using discovered download URL: {}".format(selected_url), verbose=verbose)
-        _stream_download(selected_url, output_path, timeout=timeout, chunk_size=chunk_size)
+        stream_download(
+            selected_url, output_path, timeout=timeout, chunk_size=chunk_size, overwrite=overwrite
+        )
         logger.write(" -Downloaded summary statistics to {}".format(output_path), verbose=verbose)
 
     # Download optional sidecar files and perform MD5 verification when possible.
@@ -568,7 +577,8 @@ def download_sumstats(
             "local_path": output_path,
             "description": "GWAS Catalog summary statistics for {}".format(gcst_id),
             "suggested_use": "Use as external GWAS summary statistics for downstream analyses.",
-            "source": "GWAS Catalog",
+            "source": "gwas_catalog",
+            "kind": "sumstats",
             "url": selected_url,
             "format": file_format,
             "gcst_id": gcst_id,

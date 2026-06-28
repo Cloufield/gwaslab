@@ -87,6 +87,23 @@ def test_config_subcommand_json() -> None:
     assert "paths" in data
 
 
+def test_config_set_data_directory(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    import gwaslab as gl
+
+    target = tmp_path / "refs"
+    target.mkdir()
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        from gwaslab_cli.cli import main as cli_main
+
+        cli_main(["config", "set", "data_directory", str(target)])
+    assert gl.options.paths["data_directory"].startswith(str(target))
+    assert "data_directory:" in buf.getvalue()
+
+
 def test_init_subcommand_invokes_scan(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -96,12 +113,18 @@ def test_init_subcommand_invokes_scan(
     import gwaslab
 
     mock_scan = MagicMock(return_value=True)
+    mock_set_dir = MagicMock()
+    mock_ensure = MagicMock()
     monkeypatch.setattr(gwaslab, "scan_downloaded_files", mock_scan)
+    monkeypatch.setattr(gwaslab, "set_default_directory", mock_set_dir)
+    monkeypatch.setattr("gwaslab.bd.bd_config.ensure_user_layout", mock_ensure)
     from gwaslab_cli.cli import main as cli_main
 
     ref_dir = tmp_path / "refs"
     ref_dir.mkdir()
     cli_main(["init", "--dir", str(ref_dir)])
+    mock_ensure.assert_called_once()
+    mock_set_dir.assert_called_once()
     mock_scan.assert_called_once()
     _, kwargs = mock_scan.call_args
     assert kwargs["verbose"] is True
@@ -114,13 +137,15 @@ def test_init_subcommand_quiet(monkeypatch: pytest.MonkeyPatch) -> None:
     import gwaslab
 
     mock_scan = MagicMock(return_value=True)
+    mock_ensure = MagicMock()
     monkeypatch.setattr(gwaslab, "scan_downloaded_files", mock_scan)
+    monkeypatch.setattr("gwaslab.bd.bd_config.ensure_user_layout", mock_ensure)
     from gwaslab_cli.cli import main as cli_main
 
     cli_main(["init", "--quiet"])
     _, kwargs = mock_scan.call_args
     assert kwargs["verbose"] is False
-    assert kwargs["directory"] is None
+    assert kwargs["directory"] == gwaslab.get_default_directory()
 
 
 def test_config_show_config_json() -> None:

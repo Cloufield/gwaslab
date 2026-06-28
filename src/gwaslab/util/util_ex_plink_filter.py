@@ -2,13 +2,12 @@ from typing import Tuple, Any, List
 import pandas as pd
 
 def _run_plink_filter(filter_flag: str, out_prefix: str) -> None:
-    '''
-    run plink filter functions to generate bim and fam files
+    '''run plink filter functions to generate bim and fam files
     
-    Returns:
+Returns
         bim as pd.DataFrame: SNPID,CHR,POS,NEA,EA
         fam as pd.DataFrame: FID,IID
-    '''
+'''
     plink_script='''
     plink2 \
     {} \

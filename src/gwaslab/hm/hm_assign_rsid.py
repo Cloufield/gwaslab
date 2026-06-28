@@ -1,5 +1,4 @@
-"""
-Module for assigning rsIDs and annotating GWAS summary statistics from reference files.
+"""Module for assigning rsIDs and annotating GWAS summary statistics from reference files.
 
 This module provides functionality to:
 - Assign rsIDs to variants in GWAS summary statistics by matching against reference VCF/BCF/TSV files
@@ -22,6 +21,7 @@ where applicable and includes comprehensive logging and error handling.
 
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 import subprocess
@@ -47,7 +47,10 @@ from gwaslab.util.util_in_reference_run import (
     start_to_msg="assign rsID from reference",
     finished_msg="assigning rsID from reference",
     start_cols=["CHR","POS","EA","NEA","STATUS"],
-    start_function=".assign_rsid2()"
+    start_function=".assign_rsid2()",
+    meta_section="harmonize",
+    meta_step="assign_rsid",
+    on_missing_cols="skip",
 )
 def _assign_rsid(
     sumstats: pd.DataFrame,
@@ -73,60 +76,58 @@ def _assign_rsid(
     storage_profile: str | None = None,
     reuse_lookup: bool = True,
 ):
-    """
-    Assign rsIDs to GWAS summary statistics using reference data with allele matching and STATUS filtering.
+    """Assign rsIDs to GWAS summary statistics using reference data with allele matching and STATUS filtering.
 
     This function assigns rsIDs to a GWAS summary statistics DataFrame by matching variants against a reference
     VCF or TSV file. It performs allele-aware matching and applies STATUS-based filtering to determine which
     variants should be assigned rsIDs. The function handles various reference formats and allows control over
     overwrite behavior for existing rsID values.
 
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object.
-    path : str or None, optional
-        Path to reference file (VCF/BCF or TSV). Overrides `tsv_path`.
-    vcf_path : str or None, optional
-        Path to VCF/BCF file. Overrides `path` and `tsv_path`.
-    tsv_path : str or None, optional
-        Path to precomputed lookup TSV file. If not provided, generated from VCF.
-    reuse_lookup : bool, optional
-        If True, reuse existing lookup TSV if available.
-    convert_to_bcf : bool, optional
-        If True, convert VCF to BCF before processing.
-    strip_info : bool, optional
-        If True, strip INFO fields when converting VCF to BCF.
-    threads : int, optional
-        Number of threads for bcftools operations.
-    overwrite : str, optional
-        Overwrite mode: "all", "invalid", or "empty". Determines which existing rsID values to overwrite.
-        Default is "empty".
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
-        If not provided, creates a default mapper with automatic format detection.
-    log : gwaslab.g_Log.Log, optional
-        Log object for recording progress. Default is a new Log instance.
-    verbose : bool, optional
-        If True, log detailed progress messages. Default is True.
+Parameters
+----------
+sumstats : pd.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object.
+path : str or None, optional
+    Path to reference file (VCF/BCF or TSV). Overrides `tsv_path`.
+vcf_path : str or None, optional
+    Path to VCF/BCF file. Overrides `path` and `tsv_path`.
+tsv_path : str or None, optional
+    Path to precomputed lookup TSV file. If not provided, generated from VCF.
+reuse_lookup : bool, optional
+    If True, reuse existing lookup TSV if available.
+convert_to_bcf : bool, optional
+    If True, convert VCF to BCF before processing.
+strip_info : bool, optional
+    If True, strip INFO fields when converting VCF to BCF.
+threads : int, optional
+    Number of threads for bcftools operations.
+overwrite : str, optional
+    Overwrite mode: "all", "invalid", or "empty". Determines which existing rsID values to overwrite.
+    Default is "empty".
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+    If not provided, creates a default mapper with automatic format detection.
+log : gwaslab.g_Log.Log, optional
+    Log object for recording progress. Default is a new Log instance.
+verbose : bool, optional
+    If True, log detailed progress messages. Default is True.
+Returns
+-------
+pd.DataFrame
+    The input `sumstats` DataFrame with rsID column updated.
+    When called via :meth:`Sumstats.assign_rsid2()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
 
-    Returns
-    -------
-    pd.DataFrame
-        The input `sumstats` DataFrame with rsID column updated.
-        When called via :meth:`Sumstats.assign_rsid2()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-
-    Raises
-    ------
+Raises
+------
     ValueError
         If required columns are missing in `sumstats` or invalid `overwrite` value is provided.
     FileNotFoundError
         If specified reference file is not found.
 
-    Notes
-    -----
+Notes
+-----
     - The function first checks for required columns in `sumstats`.
     - STATUS filtering uses a regex pattern to identify variants eligible for rsID assignment.
     - Overwrite modes:
@@ -134,7 +135,7 @@ def _assign_rsid(
       * "invalid": overwrite only non-rsID formatted values (e.g., not matching "rs[0-9]+")
       * "empty": only fill missing rsID values
     - If `ref_mode` is "auto", the function determines whether to use VCF or TSV based on file extension.
-    """
+"""
     import os
     import re
 
@@ -280,20 +281,33 @@ def _assign_rsid(
         )
         mapper.detect_reference_format(path_to_use)
 
-        lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
+        from gwaslab.hm.hm_lookup_cache import (
+            is_lookup_bundle,
+            lookup_bundle_size_bytes,
+            resolve_lookup_for_vcf,
+        )
+
+        lookup_tsv, rm_tmp_lookup = resolve_lookup_for_vcf(
             vcf_path=path_to_use,
-            sumstats=variants_needing_rsid,
-            mapper=mapper,
+            targets=variants_needing_rsid,
             assign_cols=["rsID"],
-            out_lookup=lookup_path,
+            mapper=mapper,
+            lookup_path=lookup_path,
+            tsv_path=tsv_path,
+            reuse_lookup=reuse_lookup,
             threads=threads,
             extract_threads=extract_threads,
+            convert_to_bcf=convert_to_bcf,
+            strip_info=strip_info,
             verbose=verbose,
             log=log,
             log_run_plan=log_run_plan,
         )
 
-    lookup_size = os.path.getsize(lookup_tsv) if lookup_tsv and os.path.exists(lookup_tsv) else 0
+    if lookup_tsv and is_lookup_bundle(lookup_tsv):
+        lookup_size = lookup_bundle_size_bytes(Path(lookup_tsv))
+    else:
+        lookup_size = os.path.getsize(lookup_tsv) if lookup_tsv and os.path.exists(lookup_tsv) else 0
     if log_run_plan:
         assign_plan = estimate_run_plan(
             "lookup_assign",
@@ -331,24 +345,16 @@ def _assign_rsid(
 
     # Update harmonization status only if called with Sumstats object
     if not is_dataframe:
-        # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.info.g_meta import _append_meta_record, _update_harmonize_step
-            # Determine which path was used (path_to_use is already determined above)
+            from gwaslab.info.g_meta import _append_meta_record
             if path_to_use is not None:
                 if ref_mode == "vcf/bcf":
                     sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(
                         sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_vcf"], path_to_use)
                 else:
                     sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_tsv"] = path_to_use
-                assign_rsid_kwargs = {
-                    'path': path, 'vcf_path': vcf_path, 'tsv_path': tsv_path, 'lookup_path': lookup_path,
-                    'threads': threads, 'rsid': rsid, 'chrom': chrom, 'pos': pos, 'ea': ea, 'nea': nea,
-                    'overwrite': overwrite, 'convert_to_bcf': convert_to_bcf, 'strip_info': strip_info
-                }
-                _update_harmonize_step(sumstats_obj, "assign_rsid", assign_rsid_kwargs, True)
-        except:
+        except Exception:
             pass
         return sumstats_obj.data
     else:
@@ -358,7 +364,8 @@ def _assign_rsid(
     start_to_msg="annotate GWAS summary statistics",
     finished_msg="annotating GWAS summary statistics",
     start_cols=["CHR","POS","EA","NEA"],
-    start_function=".annotate_sumstats()"
+    start_function=".annotate_sumstats()",
+    on_missing_cols="skip",
 )
 def _annotate_sumstats(
     sumstats: pd.DataFrame,
@@ -381,40 +388,38 @@ def _annotate_sumstats(
     log=Log(),
     log_run_plan: bool = True,
 ):
-    """
-    Annotate GWAS summary statistics by assigning fields (e.g., rsID, AF)
+    """Annotate GWAS summary statistics by assigning fields (e.g., rsID, AF)
     from a lookup table extracted from a VCF/BCF.
 
     Two modes:
       (1) If tsv_path exists and reuse_lookup=True → skip extraction.
       (2) Otherwise extract from VCF → create tsv_path → annotate.
 
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object. Must contain CHR, POS, EA, NEA.
-    vcf_path : str or None
-        Required if lookup table needs to be generated.
-    tsv_path : str
-        Lookup table file (tsv or tsv.gz).
-    assign_cols : tuple[str]
-        Columns to assign (e.g., ("rsID","AF")).
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
-        If not provided, creates a default mapper with automatic format detection.
-    threads : int
-        bcftools threads.
+Parameters
+----------
+sumstats : pd.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object. Must contain CHR, POS, EA, NEA.
+vcf_path : str or None
+    Required if lookup table needs to be generated.
+tsv_path : str
+    Lookup table file (tsv or tsv.gz).
+assign_cols : tuple[str]
+    Columns to assign (e.g., ("rsID","AF")).
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+    If not provided, creates a default mapper with automatic format detection.
+threads : int
+    bcftools threads.
     chrom, pos, ea, nea : str
-        Column names in sumstats.
-    reuse_lookup : bool
-        If True, reuse lookup if exists.
-
-    Returns
-    -------
-    sumstats : pd.DataFrame
-    tsv_path : str
-    """
+    Column names in sumstats.
+reuse_lookup : bool
+    If True, reuse lookup if exists.
+Returns
+-------
+sumstats : pd.DataFrame
+tsv_path : str
+"""
     import os
 
     # Handle both DataFrame and Sumstats object
@@ -550,14 +555,20 @@ def _annotate_sumstats(
 
         mapper.detect_reference_format(path_to_use)
 
-        lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
+        from gwaslab.hm.hm_lookup_cache import resolve_lookup_for_vcf
+
+        lookup_tsv, rm_tmp_lookup = resolve_lookup_for_vcf(
             vcf_path=path_to_use,
-            sumstats=variants_needing_annotation,
-            mapper=mapper,
+            targets=variants_needing_annotation,
             assign_cols=assign_cols_list,
-            out_lookup=lookup_path,
+            mapper=mapper,
+            lookup_path=lookup_path,
+            tsv_path=tsv_path,
+            reuse_lookup=reuse_lookup,
             threads=threads,
             extract_threads=extract_threads,
+            convert_to_bcf=convert_to_bcf,
+            strip_info=strip_info,
             verbose=verbose,
             log=log,
             log_run_plan=log_run_plan,
@@ -594,7 +605,8 @@ def _annotate_sumstats(
     start_to_msg="extract lookup table from vcf/bcf",
     finished_msg="extracting lookup table from vcf/bcf",
     start_cols=["CHR","POS"],
-    start_function="._extract_lookup_table_from_vcf_bcf()"
+    start_function="._extract_lookup_table_from_vcf_bcf()",
+    on_missing_cols="skip",
 )
 def _extract_lookup_table_from_vcf_bcf_old(
     vcf_path,
@@ -798,7 +810,8 @@ def _lookup_table_header(id_col, info_tags):
 
 
 def _worker_bcf_lookup(args):
-    """Run bcftools query for one chromosome; write TSV to a temp file (no in-memory buffer)."""
+    """Run bcftools query for one chromosome; write TSV to a temp file (no in-memory buffer).
+"""
     if len(args) >= 7:
         chr_val, df_chr, vcf_path, fmt, split_by_chr, mapper, bcf_threads = args
     else:
@@ -857,7 +870,8 @@ def _worker_bcf_lookup(args):
 
 
 def _append_chr_lookup_file(out_f, chr_path, mapper, vcf_path):
-    """Stream bcftools query output into the lookup file; convert CHR to sumstats notation."""
+    """Stream bcftools query output into the lookup file; convert CHR to sumstats notation.
+"""
     rows = 0
     with open(chr_path, "r") as inf:
         for line in inf:
@@ -888,7 +902,12 @@ def _consume_chr_lookup_file(out_f, lookup_path, mapper, vcf_path):
 
 
 def _lookup_output_kind(path: str) -> str:
-    """Return lookup file kind: parquet, txt_gz, or txt."""
+    """Return lookup file kind: bundle, parquet, txt_gz, or txt.
+"""
+    from gwaslab.hm.hm_lookup_cache import is_lookup_bundle
+
+    if is_lookup_bundle(path):
+        return "bundle"
     p = str(path).lower()
     if p.endswith(".parquet"):
         return "parquet"
@@ -898,7 +917,8 @@ def _lookup_output_kind(path: str) -> str:
 
 
 def _lookup_build_paths(out_lookup: str) -> tuple[str, str]:
-    """Return (final_path, streaming_build_path) for lookup extract."""
+    """Return (final_path, streaming_build_path) for lookup extract.
+"""
     kind = _lookup_output_kind(out_lookup)
     if kind == "parquet":
         return out_lookup, f"{out_lookup}.build"
@@ -913,7 +933,10 @@ def _lookup_build_paths(out_lookup: str) -> tuple[str, str]:
 
 def _lookup_table_columns(lookup_table: str) -> list:
     import pandas as pd
+    from gwaslab.hm.hm_lookup_cache import is_lookup_bundle, lookup_bundle_columns
 
+    if is_lookup_bundle(lookup_table):
+        return lookup_bundle_columns(Path(lookup_table))
     if _lookup_output_kind(lookup_table) == "parquet":
         import pyarrow.parquet as pq
 
@@ -923,7 +946,10 @@ def _lookup_table_columns(lookup_table: str) -> list:
 
 def _lookup_table_has_rows(lookup_table: str) -> bool:
     import pandas as pd
+    from gwaslab.hm.hm_lookup_cache import is_lookup_bundle, lookup_bundle_has_rows
 
+    if is_lookup_bundle(lookup_table):
+        return lookup_bundle_has_rows(Path(lookup_table))
     if _lookup_output_kind(lookup_table) == "parquet":
         import pyarrow.parquet as pq
 
@@ -936,9 +962,29 @@ def _lookup_table_has_rows(lookup_table: str) -> bool:
         return False
 
 
-def _iter_lookup_table_chunks(lookup_table, usecols, dtype, chunksize):
+def _iter_lookup_table_chunks(
+    lookup_table,
+    usecols,
+    dtype,
+    chunksize,
+    chrs=None,
+    pos_filter_by_chr=None,
+):
     import pandas as pd
+    from gwaslab.hm.hm_lookup_cache import is_lookup_bundle, iter_lookup_bundle_chunks
 
+    if is_lookup_bundle(lookup_table):
+        chr_set = chrs if chrs is not None else set()
+        for chunk in iter_lookup_bundle_chunks(
+            Path(lookup_table),
+            usecols,
+            chr_set,
+            pos_filter_by_chr,
+            dtype,
+            chunksize,
+        ):
+            yield chunk
+        return
     if _lookup_output_kind(lookup_table) == "parquet":
         import pyarrow.parquet as pq
 
@@ -1003,7 +1049,8 @@ def _finalize_lookup_build_path(out_lookup, build_path):
     start_to_msg="extract lookup table from vcf/bcf",
     finished_msg="extracting lookup table from vcf/bcf",
     start_cols=["CHR","POS"],
-    start_function="._extract_lookup_table_from_vcf_bcf()"
+    start_function="._extract_lookup_table_from_vcf_bcf()",
+    on_missing_cols="skip",
 )
 def _extract_lookup_table_from_vcf_bcf(
     vcf_path,
@@ -1147,7 +1194,8 @@ def _lookup_chromosome_series_to_middle(
     mapper: ChromosomeMapper,
     reference_file: str | None = None,
 ) -> pd.Series:
-    """Map lookup-table CHR values (e.g. chrX, NC_*) to middle-layer ints to match sumstats."""
+    """Map lookup-table CHR values (e.g. chrX, NC_*) to middle-layer ints to match sumstats.
+"""
 
     def _one(v):
         if v is None:
@@ -1193,7 +1241,8 @@ def _lookup_chromosome_series_to_middle(
     finished_msg="assigning from lookup table",
     start_cols=["CHR","POS"],
     start_function="._assign_from_lookup()",
-    must_kwargs=["lookup_table"]
+    must_kwargs=["lookup_table"],
+    on_missing_cols="skip",
 )
 def _assign_from_lookup(
     sumstats,
@@ -1210,13 +1259,12 @@ def _assign_from_lookup(
     reference_file: str | None = None,
     log_run_plan: bool = False,
 ):
-    """
-    Assign annotation values from a lookup table to sumstats by matching CHR:POS:EA:NEA.
+    """Assign annotation values from a lookup table to sumstats by matching CHR:POS:EA:NEA.
     
     This function performs allele-aware matching, handling both forward (EA:NEA) and 
     reverse (NEA:EA) allele orders. It processes the lookup table in chunks for memory
     efficiency and tracks which variants were updated and which had allele flips.
-    """
+"""
     import pandas as pd
     import numpy as np
     chunksize = 5_000_000  # Process lookup table in chunks of 5M rows to manage memory
@@ -1225,9 +1273,19 @@ def _assign_from_lookup(
     # Step 1: Validate lookup table file exists
     # ============================================================================
     import os
-    if isinstance(lookup_table, str) and not os.path.exists(lookup_table):
-        log.warning(f"Lookup table not found: {lookup_table}, skipping assignment...", verbose=verbose)
-        return sumstats
+    from gwaslab.hm.hm_lookup_cache import is_lookup_bundle
+
+    if isinstance(lookup_table, str):
+        if is_lookup_bundle(lookup_table):
+            if not os.path.isdir(lookup_table):
+                log.warning(
+                    f"Lookup bundle not found: {lookup_table}, skipping assignment...",
+                    verbose=verbose,
+                )
+                return sumstats
+        elif not os.path.exists(lookup_table):
+            log.warning(f"Lookup table not found: {lookup_table}, skipping assignment...", verbose=verbose)
+            return sumstats
 
     # ============================================================================
     # Step 2: Read lookup table header to understand structure
@@ -1396,8 +1454,24 @@ def _assign_from_lookup(
     for c in sumstats_chrs:
         chr_row_index[c] = sumstats.index[sumstats_chr_int == c].to_numpy()
 
+    need_mask = initial_missing.any(axis=1)
+    pos_filter_by_chr: dict[int, set[int]] = {}
+    if need_mask.any():
+        sub_chr = pd.to_numeric(sumstats.loc[need_mask, chrom], errors="coerce")
+        sub_pos = sumstats.loc[need_mask, pos]
+        for c in sub_chr.dropna().unique():
+            ci = int(c)
+            pos_filter_by_chr[ci] = {
+                int(x) for x in sub_pos.loc[sub_chr == c].dropna().unique()
+            }
+
     for chunk in _iter_lookup_table_chunks(
-        lookup_table, usecols, dtype, chunksize
+        lookup_table,
+        usecols,
+        dtype,
+        chunksize,
+        chrs=sumstats_chrs,
+        pos_filter_by_chr=pos_filter_by_chr,
     ):
         # ========================================================================
         # Step 14a: Skip empty chunks
@@ -1652,30 +1726,28 @@ def _convert_vcf_to_bcf(reference,
                         ref_fa=None, 
                         log=Log(), 
                         verbose=True):
-    """
-    Normalize a reference VCF (multi-allelic splitting) with optional INFO/FORMAT stripping
+    """Normalize a reference VCF (multi-allelic splitting) with optional INFO/FORMAT stripping
     and optional left-normalization using a reference FASTA.
 
-    Parameters
-    ----------
-    reference : str or Path
-        Path to the reference VCF (bgzipped). If missing '.gz', it will be appended.
-    threads : int
-        Number of threads for bcftools processing.
-    strip : bool, default=True
-        If True, remove all INFO and FORMAT fields and name output as <reference>.strip.bcf.
-        If False, keep INFO/FORMAT and name output <reference>.bcf.
-    ref_fa : str or Path, optional
-        Reference FASTA for left-normalization (`bcftools norm -f ref.fa`). If None, skip.
-        FASTA must be indexed (.fai).
-    log : Log
-    verbose : bool
-
-    Returns
-    -------
-    str
-        Path to the generated .bcf file.
-    """
+Parameters
+----------
+reference : str or Path
+    Path to the reference VCF (bgzipped). If missing '.gz', it will be appended.
+threads : int
+    Number of threads for bcftools processing.
+strip : bool, default True
+    If True, remove all INFO and FORMAT fields and name output as <reference>.strip.bcf.
+    If False, keep INFO/FORMAT and name output <reference>.bcf.
+ref_fa : str or Path, optional
+    Reference FASTA for left-normalization (`bcftools norm -f ref.fa`). If None, skip.
+    FASTA must be indexed (.fai).
+log : Log
+verbose : bool
+Returns
+-------
+str
+    Path to the generated .bcf file.
+"""
 
     reference = str(reference)
     if not reference.endswith(".gz"):
@@ -1746,10 +1818,9 @@ def _run_bcftools_extract(args):
 
 
 def _expand_multiallelic_fast(df, ea_col, nea_col):
-    """
-    Expand multi-allelic lookup rows in a fast and memory-efficient way.
+    """Expand multi-allelic lookup rows in a fast and memory-efficient way.
     A,T,G → 3 biallelic rows.
-    """
+"""
 
     # Detect if any multiallelic rows exist
     if not df[ea_col].str.contains(",").any():

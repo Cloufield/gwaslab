@@ -77,64 +77,63 @@ def multisusie(
     variant_ids = None
     ):
 
-    """ Top-level function for running MultiSuSiE with individual level data
+    """Top-level function for running MultiSuSiE with individual level data
 
     This function takes genotype and phenotype matrices and runs MultiSuSiE on them
 
-    Parameters
-    ----------
-    X_list: Length K list of numpy arrays, one for each population. Rows correspond
-        to samples and the columns correspond to variants. Each array should
-        contain the same set of variants in the same order. Its fine if 
-        some columns are constant. 
-    Y_list: Length K list of one dimensional numpy arrays, one for each population. 
-        Rows correspond to samples. Samples should be in the same order as in 
-        X_list. 
-    rho: PxP numpy array representing the effect size correlation matrix (P is the
-        number of variants). In the manuscript, we show that this parameter has 
-        little impact on the estimated PIPs in practice.
-    L: integer representing the maximum number of causal variants
-    scaled_prior_variance: float representing the effect size prior variance,
-        scaled by the residual variance. It's fine to set this to a number 
-        larger than what you expect the squared effect size to be (like the 
-        default value of 0.2) as long as estimate_prior_variance is set to True
-        and estimate_prior_method is not set to None.
-    prior_weights: numpy P-array of floats representing the prior probability
-        of causality for each variant. Give None to use a uniform prior
-    standardize: boolnea, whether to standardize the genotypes to have
-        variance of 1.
-    residual_variance: Length K numpy array of floats representing the residual
-        variance for each population.
-    estimate_residual_variance: boolean, whether to estimate the residual variance, $\\sigma^2_k$ in the manuscript
-    estimate_prior_variance: boolean, whether to estimate the prior variance,
-        $A^{(l)}$ in the manuscript
-    estimate_prior_method: string, method to estimate the prior variance. Recommended
-        values are 'early_EM' or None
-    pop_spec_effect_priors: boolean, whether to estimate separate prior 
-        variance parameters for each population
-    iter_before_zeroing_effects: integer, number of iterations to run before
-        zeroing out component-population pairs (or components if 
-        pop_spec_effect_priors is False) that have a lower likelihood than a 
-        null model
-    prior_tol: float which places a filter on the minimum prior variance
-        for a component to be included when estimating PIPs
-    max_iter: integer, maximum number of iterations to run
-    residual_variance_upperbound: float, upper bound on the residual variance
-    residual_variance_lowerbound: float, lower bound on the residual variance
-    tol: float, after iter_before_zeroing_effects iterations, results
-        are returned if the ELBO increases by less than tol in an ieration
-    verbose: boolean which indicates if the objective function should be printed
-    coverage: float representing the minimum coverage of credible sets
-    min_abs_corr: float representing the minimum absolute correlation between
-        any pair of variants in a credible set (purity). For each pair of variants,
-        the max is taken across ancestries. In the case where min_abs_corr = 0,
-        low_memory_mode = True, and recover_R = False, the purity of credible
-        sets will not be calculated. 
-    variant_ids: length P list of strings representing the variant IDs. If 
-        provided, sets will contain a fifth entry, containing the variant ids
-        of the variants contained in each set. 
-
-    """
+Parameters
+----------
+X_list : Length K list of numpy arrays, one for each population. Rows correspond
+    to samples and the columns correspond to variants. Each array should
+    contain the same set of variants in the same order. Its fine if
+    some columns are constant.
+Y_list : Length K list of one dimensional numpy arrays, one for each population.
+    Rows correspond to samples. Samples should be in the same order as in
+    X_list.
+rho : PxP numpy array representing the effect size correlation matrix (P is the
+    number of variants). In the manuscript, we show that this parameter has
+    little impact on the estimated PIPs in practice.
+L : integer representing the maximum number of causal variants
+scaled_prior_variance : float representing the effect size prior variance,
+    scaled by the residual variance. It's fine to set this to a number
+    larger than what you expect the squared effect size to be (like the
+    default value of 0.2) as long as estimate_prior_variance is set to True
+    and estimate_prior_method is not set to None.
+prior_weights : numpy P-array of floats representing the prior probability
+    of causality for each variant. Give None to use a uniform prior
+standardize : boolnea, whether to standardize the genotypes to have
+    variance of 1.
+residual_variance : Length K numpy array of floats representing the residual
+    variance for each population.
+estimate_residual_variance : boolean, whether to estimate the residual variance, $\sigma^2_k$ in the manuscript
+estimate_prior_variance : boolean, whether to estimate the prior variance,
+    $A^{(l)}$ in the manuscript
+estimate_prior_method : string, method to estimate the prior variance. Recommended
+    values are 'early_EM' or None
+pop_spec_effect_priors : boolean, whether to estimate separate prior
+    variance parameters for each population
+iter_before_zeroing_effects : integer, number of iterations to run before
+    zeroing out component-population pairs (or components if
+    pop_spec_effect_priors is False) that have a lower likelihood than a
+    null model
+prior_tol : float which places a filter on the minimum prior variance
+    for a component to be included when estimating PIPs
+max_iter : integer, maximum number of iterations to run
+residual_variance_upperbound : float, upper bound on the residual variance
+residual_variance_lowerbound : float, lower bound on the residual variance
+tol : float, after iter_before_zeroing_effects iterations, results
+    are returned if the ELBO increases by less than tol in an ieration
+verbose : boolean which indicates if the objective function should be printed
+coverage : float representing the minimum coverage of credible sets
+min_abs_corr : float representing the minimum absolute correlation between
+    any pair of variants in a credible set (purity). For each pair of variants,
+    the max is taken across ancestries. In the case where min_abs_corr = 0,
+    low_memory_mode = True, and recover_R = False, the purity of credible
+    sets will not be calculated.
+variant_ids : length P list of strings representing the variant IDs. If
+    provided, sets will contain a fifth entry, containing the variant ids
+    of the variants contained in each set.
+"""
 
     t0 = time.time()
     #check input
@@ -313,8 +312,8 @@ def multisusie(
 
 
 def get_ER2(X_std, Y, alpha, mu, mu2, Xr, X_l2):
-    """ expected squared residuals
-    """
+    """expected squared residuals
+"""
     Xr_L = X_std.dot((alpha*mu).T)
     postb2 = alpha*mu2
     r = Y - Xr
@@ -322,11 +321,11 @@ def get_ER2(X_std, Y, alpha, mu, mu2, Xr, X_l2):
     return result     
 
 def SER_posterior_e_loglik(X_std_list, Y_list, s2, Eb, Eb2, X_l2_arr, n):
-    """ posterior expected loglikelihood for a SER (Eq B.6 - B.9 (after expanding the L2-norm))
+    """posterior expected loglikelihood for a SER (Eq B.6 - B.9 (after expanding the L2-norm))
 
     Eb the posterior mean of b (p vector) (alpha * mu)
     Eb2 the posterior second moment of b (p vector) (alpha * mu2)
-    """
+"""
     result = -0.5 * n.dot(np.log(2*np.pi*s2))
     for i in range(len(Y_list)):
         Y = Y_list[i]
@@ -339,7 +338,7 @@ def SER_posterior_e_loglik(X_std_list, Y_list, s2, Eb, Eb2, X_l2_arr, n):
 
 def Eloglik(X_std_list, Y_list, s, X_l2_arr):
     """expected log-likelihood for a susie fit
-    """
+"""
     result = -0.5 * s.n.dot(np.log(2*np.pi*s.sigma2))
     for i in range(len(Y_list)):
         result -= 0.5/s.sigma2[i] * get_ER2(X_std_list[i], Y_list[i], s.alpha, s.mu[i], s.mu2[i, i], s.Xr_list[i], X_l2_arr[i])

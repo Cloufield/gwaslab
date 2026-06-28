@@ -1,13 +1,14 @@
+"""HDF5 allele-frequency cache for legacy infer_strand() (tabix avoidance).
+"""
 from pathlib import Path
 import os
-import pickle
 import concurrent.futures
 import threading
 import multiprocessing as mp
-import time
 import h5py
 
 from gwaslab.info.g_Log import Log
+from gwaslab.algorithm.allele.palindrome import is_indel_pair, is_palindromic_pair
 
 from platformdirs import user_cache_dir
 from pysam import VariantFile
@@ -47,7 +48,8 @@ def get_write_path(base_path):
     raise Exception('No write access to any cache directory')
 
 def cache_exists(path, ref_alt_freq, category='all'):
-    ''' Check if the cache file exists and contains the required data '''
+    '''Check if the cache file exists and contains the required data
+'''
     found = False
     try:
         found = is_in_h5py(path, ref_alt_freq, category)
@@ -56,10 +58,9 @@ def cache_exists(path, ref_alt_freq, category='all'):
     return found
 
 def is_in_h5py(path, ref_alt_freq, category='all'):
-    '''
-    Check if the cache file exists and contains the required data.
+    '''Check if the cache file exists and contains the required data.
     Raise an exception if the cache file does not exist.
-    '''
+'''
     if not path or not os.path.exists(path):
         raise Exception('Cache file not found')
     
@@ -93,22 +94,11 @@ def build_cache(base_path, ref_alt_freq=None, threads=1, return_cache=False, fil
     if return_cache:
         return cache_builder.get_cache()
 
-def is_palindromic(ref, alt):
-    gc = (ref=="G") & (alt=="C")
-    cg = (ref=="C") & (alt=="G")
-    at = (ref=="A") & (alt=="T")
-    ta = (ref=="T") & (alt=="A")
-    palindromic = gc | cg | at | ta 
-    return palindromic
-
-def is_indel(ref, alt):
-    return len(ref) != len(alt)
-
 def filter_fn_pi(*, ref, alt):
-    return is_palindromic(ref, alt) or is_indel(ref, alt)
+    return is_palindromic_pair(ref, alt) or is_indel_pair(ref, alt)
 
 def filter_fn_np(*, ref, alt):
-    return not is_palindromic(ref, alt)
+    return not is_palindromic_pair(ref, alt)
 
 PALINDROMIC_INDEL = 'pi' # palindromic + indel
 NON_PALINDROMIC = 'np' # non-palindromic
@@ -151,7 +141,8 @@ class CacheMainManager:
         return self._cache
 
     def build_cache(self):
-        ''' Build and load the cache'''    
+        '''Build and load the cache
+'''    
         self._cache = build_cache(
             self.base_path, ref_alt_freq=self.ref_alt_freq, threads=self.threads,
             filter_fn=self.filter_fn, category=self.category,
@@ -221,15 +212,14 @@ class CacheManager(CacheMainManager):
 
 
 class CacheProcess(mp.Process):
-    '''
-    A class for managing a cache in a separate process. It is used to reduce memory consumption when the cache is very large.
+    '''A class for managing a cache in a separate process. It is used to reduce memory consumption when the cache is very large.
     This class will load the cache in a separate process and provide methods to perform operations on the cache directly on the subprocess.
     In this way, the cache is not copied to the main process, but the operations are performed on the cache in the subprocess and only the
     input and output of the operations are communicated (i.e. copied) between the main and the subprocess.
     
     This is very useful when the cache is huge (e.g. 40GB in memory) and we want to perform operations on it based on a relatively small input
     (e.g. a "small" dataframe, where small is relative to the cache size) and the output is also relatively small.
-    '''
+'''
     def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         super().__init__()
         self.base_path = base_path
@@ -303,10 +293,9 @@ class CacheProcess(mp.Process):
         return self.result_queue.get()
     
     def apply_fn(self, fn, **kwargs):
-        '''
-        Apply an arbitrary function to the cache. The function should take the cache as an argument,
+        '''Apply an arbitrary function to the cache. The function should take the cache as an argument,
         and all the arguments should be passed as named arguments.
-        '''
+'''
         self._call_method('apply_fn', fn, **kwargs)
         return self.result_queue.get()
     
@@ -319,102 +308,6 @@ class CacheProcess(mp.Process):
 
 
 ################################################# CACHE BUILDER #################################################
-
-class CacheBuilderOld:
-    def __init__(self, ref_infer, ref_alt_freq=None, threads=1, log=Log(), verbose=True):
-        self.ref_infer = ref_infer
-        self.ref_alt_freq = ref_alt_freq
-        self.threads = threads
-        self.log = log
-        self.verbose = verbose
-
-        self.cache = {}
-        self.lock = threading.Lock()  # For thread-safe cache access
-        self.cancelled = False  # Flag for cancelling the cache building process
-        self.running = False
-        self.executor = None  # Thread pool executor
-        self.futures = None  # Stores Future objects
-
-    def start_building(self):
-        if self.running:
-            print("Cache building is already running. If you want to restart, please stop the current process first.")
-            return
-        
-        threads = self.threads
-        contigs = self.get_contigs()
-        
-        self.cancelled = False
-        self.running = True
-
-        self.log.write(f" -Building cache on {threads} cores...", verbose=self.verbose)
-        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=threads)
-        self.futures = [self.executor.submit(self.build_cache, chrom) for chrom in contigs]
-
-    def get_contigs(self):
-        vcf_reader = VariantFile(self.ref_infer, drop_samples=True)
-        contigs = [v.name for v in vcf_reader.header.contigs.values()]
-        vcf_reader.close()
-        return contigs
-
-    def build_cache(self, chrom):
-        vcf_reader = VariantFile(self.ref_infer, drop_samples=True)
-        #self.log.write(f"   -Fetching contig '{chrom}'...")
-        seq = vcf_reader.fetch(chrom)
-        
-        first = True
-        for record in seq:
-            if first:
-                #self.log.write(f"   -Found at least one record for contig '{chrom}'...")
-                first = False
-            chrom = record.chrom
-            start = record.pos - 1
-            end = record.pos
-            cache_key = f"{chrom}:{start}:{end}"
-            to_add = [record.pos, record.ref, record.alts, record.info[self.ref_alt_freq][0]]
-            self.add_to_cache(cache_key, to_add)
-
-    def stop_building(self, wait=False, verbose=False):
-        if self.futures:
-            self.cancelled = True
-            for future in self.futures:
-                future.cancel()
-            self.executor.shutdown(wait=wait)  # Whether to wait for threads to finish
-            self.futures = None
-            self.executor = None
-            self.running = False
-
-        if verbose:
-            print(f"Cache contains {len(self.get_cache())} variants")
-
-    def add_to_cache(self, key, value):
-        self.lock.acquire()
-        if key in self.cache:
-            self.cache[key].append(value)
-        else:
-            self.cache[key] = [value]
-        self.lock.release()
-
-    def get_cache(self, complete=False):
-        if complete:
-            concurrent.futures.wait(self.futures)
-
-        self.lock.acquire()
-        cache = self.cache
-        self.lock.release()
-        return cache
-    
-    def reset_cache(self):
-        self.lock.acquire()
-        self.cache = {}
-        self.lock.release()
-
-    def save_cache(self, save_path):
-        cache = self.get_cache(complete=True)
-        self.log.write(f' -Saving cache to {save_path}', verbose=self.verbose)
-        with open(save_path, 'wb') as f:
-            pickle.dump(cache, f, protocol=pickle.HIGHEST_PROTOCOL)
-        self.log.write(' -Cache saved', verbose=self.verbose)
-
 
 class CacheBuilder:
     def __init__(self, ref_infer, ref_alt_freq=None, threads=1, log=Log(), verbose=True):
@@ -518,7 +411,8 @@ class CacheBuilder:
         return result
     
     def handle_output(self, queue):
-        ''' Function that monitors a queue and writes the cache to a file as soon as it receives the output from the subprocess.'''
+        '''Function that monitors a queue and writes the cache to a file as soon as it receives the output from the subprocess.
+'''
         first = True
         m = queue.get() # wait for the first message, to avoid creating an empty cache file
         
@@ -591,13 +485,12 @@ class CacheLoader:
 
 
 class CacheLoaderThread(CacheLoader):
-    '''
-    A class for loading a cache in a separate thread. It is used to load the cache in the background while the main process is running.
+    '''A class for loading a cache in a separate thread. It is used to load the cache in the background while the main process is running.
     
     In theory, this should be the best and simplest approach to directly load the cache in the same process as the main process, without further 
     copying the cache to the main process. However, due to the GIL (Global Interpreter Lock) in Python, this approach is not efficient and
     it slows down the main process.
-    '''
+'''
     def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, threads=threads, log=log, verbose=verbose)
         self.cache = {}
@@ -640,22 +533,16 @@ class CacheLoaderThread(CacheLoader):
 
 
 def _load_cache_process(path, ref_alt_freq, category, cache):
-    #start = time.time()
     local_cache = load_h5py_cache(path, ref_alt_freq=ref_alt_freq, category=category)
-    #print(f" ********* DONE LOADING local in {time.time() - start} seconds *********")
-
-    #start = time.time()
     cache.update(local_cache)
-    #print(f" ********* DONE COPYING shared in {time.time() - start} seconds *********")
     del local_cache
 
 class CacheLoaderProcess(CacheLoader):
-    '''
-    A class for loading a cache in a separate process. It is used to load the cache in the background while the main process is running.
+    '''A class for loading a cache in a separate process. It is used to load the cache in the background while the main process is running.
 
     Unlike CacheLoaderThread, this class is more efficient because it loads the cache in a separate process, which is not affected by the GIL.
     However, a lot of memory and time is wasted in copying the cache from the subprocess to the main process.
-    '''
+'''
     def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, threads=threads, log=log, verbose=verbose)
         self.manager = mp.Manager()

@@ -74,43 +74,21 @@ def plot_stacked_mqq(   objects,
                         log=Log(),
                         **mqq_kwargs
                         ):
-    """
-    Create stacked Manhattan/QQ/regional plots by iteratively calling plot_mqq.
+    """Create stacked Manhattan/QQ/regional plots by iteratively calling plot_mqq.
+
+Returns
+-------
+fig : matplotlib.figure.Figure
+    The created matplotlib figure object.
+log : gwaslab.Log
+    Updated logging object with operation records.
     
-    Parameters
-    ----------
-    objects : list
-        List of Sumstats objects or DataFrames to plot
-    vcfs : list, optional
-        List of VCF file paths for LD calculation. Default is None.
-    mode : str, default="r"
-        Plot mode: "r" for regional, "m" for Manhattan, "mqq" for Manhattan+QQ
-    region_ld_legends : list, optional, default=None
-        List of panel indices to show LD legends (cbar). 
-        If None, automatically enables legends for all mqq panels.
-        After plotting, if all panels with legends share the same legend (same lead variant),
-        duplicate legends are automatically removed (keeping only the first panel's legend).
-        If panels have different legends, all legends are kept.
-    region_lead_grids : list, optional, default=None
-        List of panel indices to draw vertical grid lines for lead variants.
-        If None, draws grid lines for all panels.
-    **mqq_kwargs
-        Additional keyword arguments passed to plot_mqq for each panel.
-        Panel-specific arguments can be specified with numeric suffix (e.g., region_ref1, region_ref2).
-    
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-        The created matplotlib figure object.
-    log : gwaslab.Log
-        Updated logging object with operation records.
-    
-    Notes
-    -----
+Notes
+-----
     - By default, LD legends are automatically enabled for all mqq panels
     - Duplicate legends are removed only when ALL panels with legends share the same lead variant
     - If any panel has a different lead variant, all legends are kept to show the differences
-    """
+"""
     
     log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
     # load sumstats
@@ -309,11 +287,10 @@ def plot_stacked_mqq(   objects,
         axes_before_panel = set(fig.axes)
         #################################################################
         if index==0:
-            # plot last m and gene track 
-            # Remove region_ld_legend and region_lead_grid from kwargs since they're set explicitly
+            # plot last m and gene track
             plot_kwargs = dict(mqq_kwargs_for_each_plot[index])
-            plot_kwargs.pop("region_ld_legend", None)
-            plot_kwargs.pop("region_lead_grid", None)
+            _strip_mqqplot_explicit(plot_kwargs)
+            panel_gtf_path = gtf if gtf is not None else "default"
             fig,log,lead_snp_is,lead_snp_is_color = _mqqplot(sumstats,
                             chrom="CHR",
                             pos="POS",
@@ -327,7 +304,7 @@ def plot_stacked_mqq(   objects,
                             font_family=font_family,
                             region_lead_grid=False,
                             region_ld_legend=region_ld_legend,
-                            gtf_path="default",
+                            gtf_path=panel_gtf_path,
                             rr_ylabel=rr_ylabel,
                             figax=figax,
                             _get_region_lead=True,
@@ -343,10 +320,8 @@ def plot_stacked_mqq(   objects,
         else:
             if pm[index]=="m":
                 # plot only the scatter plot
-                # Remove region_ld_legend and region_lead_grid from kwargs since they're set explicitly
                 plot_kwargs = dict(mqq_kwargs_for_each_plot[index])
-                plot_kwargs.pop("region_ld_legend", None)
-                plot_kwargs.pop("region_lead_grid", None)
+                _strip_mqqplot_explicit(plot_kwargs)
                 fig,log,lead_snp_is,lead_snp_is_color = _mqqplot(sumstats,
                                 chrom="CHR",
                                 pos="POS",
@@ -492,30 +467,12 @@ def plot_stacked_mqq(   objects,
     return fig, log
 
 def _remove_duplicate_ld_legends(fig, axes, mqq_panel_indices, lead_variants_is, panel_ld_legend_axes, log, verbose):
-    """
-    Remove duplicate LD legends (cbar) ONLY when ALL mqq panels share the same legend.
+    """Remove duplicate LD legends (cbar) ONLY when ALL mqq panels share the same legend.
     
     Logic: 
     - If ANY panel has a different legend, keep ALL legends (do NOT remove any)
     - Only when ALL panels have the EXACT SAME legend, remove duplicates (keep first one)
-    
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure containing all axes
-    axes : list
-        List of axes for all panels
-    mqq_panel_indices : list
-        List of indices for mqq panels
-    lead_variants_is : dict
-        Dictionary mapping panel index to list of lead variant positions (i values)
-    panel_ld_legend_axes : dict
-        Dictionary mapping panel index to the corresponding LD legend axis.
-    log : gwaslab.Log
-        Logging object
-    verbose : bool
-        Whether to show verbose messages
-    """
+"""
     # Step 1: Collect lead variant positions for all mqq panels
     lead_variant_positions = {}
     for idx in mqq_panel_indices:
@@ -561,7 +518,8 @@ def _remove_duplicate_ld_legends(fig, axes, mqq_panel_indices, lead_variants_is,
             log.write(f" -Not all panels have valid lead variant positions. Keeping all legends.", verbose=verbose)
 
 def _find_panel_ld_legend_axis(fig, panel_ax, axes_before_panel):
-    """Find LD legend axis created by a specific panel call."""
+    """Find LD legend axis created by a specific panel call.
+"""
     new_axes = [ax for ax in fig.axes if ax not in axes_before_panel and ax is not panel_ax]
     panel_pos = panel_ax.get_position()
     candidates = []
@@ -591,24 +549,8 @@ def _find_panel_ld_legend_axis(fig, panel_ax, axes_before_panel):
 
 
 def _remove_cbar_from_axis(fig, ax, panel_idx, first_panel_idx, panel_ld_legend_axes, log, verbose):
-    """
-    Helper function to find and remove cbar (LD legend) from a specific axis.
-    
-    Parameters
-    ----------
-    fig : matplotlib.figure.Figure
-        The figure containing all axes
-    ax : matplotlib.axes.Axes
-        The axis to remove cbar from
-    panel_idx : int
-        Index of the panel (for logging)
-    first_panel_idx : int
-        Index of the first panel that keeps its legend (for logging)
-    log : gwaslab.Log
-        Logging object
-    verbose : bool
-        Whether to show verbose messages
-    """
+    """Helper function to find and remove cbar (LD legend) from a specific axis.
+"""
     cbar_found = False
     cbar_ax = panel_ld_legend_axes.get(panel_idx)
     if cbar_ax is not None and cbar_ax in fig.axes:
@@ -661,6 +603,21 @@ def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsiz
         fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',
                  fontsize=fontsize,
                  family=font_family)    
+
+_MQQPLOT_EXPLICIT_KEYS = frozenset({
+    "chrom", "pos", "p", "region", "mlog10p", "snpid", "vcf_path", "mode",
+    "fontsize", "font_family", "region_lead_grid", "region_ld_legend", "gtf_path",
+    "rr_ylabel", "figax", "_get_region_lead", "_if_quick_qc", "_posdiccul",
+    "build", "verbose", "log",
+})
+
+
+def _strip_mqqplot_explicit(plot_kwargs):
+    """Remove kwargs passed explicitly to _mqqplot from per-panel plot_kwargs.
+"""
+    for key in _MQQPLOT_EXPLICIT_KEYS:
+        plot_kwargs.pop(key, None)
+
 
 def _sort_kwargs(mqq_kwargs, n_plot):
     mqq_kwargs_for_each_plot={i:{} for i in range(n_plot)}

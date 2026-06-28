@@ -1,5 +1,4 @@
-"""
-MR-MEGA (Meta-Regression for Genome-wide Association Studies) Extension Module
+"""MR-MEGA (Meta-Regression for Genome-wide Association Studies) Extension Module
 
 This module provides the MR-MEGA algorithm for meta-regression of GWAS summary statistics.
 MR-MEGA uses a Multidimensional Scaling (MDS) based approach with principal components

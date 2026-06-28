@@ -78,7 +78,8 @@ import inspect
 from functools import wraps
 
 def resolve_overlapping_kwargs(strategy: str = "prefer_explicit", verbose: bool = False) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Decorator factory for any function."""
+    """Decorator factory for any function.
+"""
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -107,21 +108,19 @@ def remove_overlapping_kwargs(
     kwargs_dict: Dict[str, Any],
     protected_keys: Iterable[str]
 ) -> Dict[str, Any]:
-    """
-    Return a new dict with keys in `protected_keys` removed.
+    """Return a new dict with keys in `protected_keys` removed.
 
-    Parameters
-    ----------
-    kwargs_dict : dict
-        Original kwargs dictionary.
-    protected_keys : Iterable[str]
-        Keys that should NOT appear in the returned dict.
-
-    Returns
-    -------
-    dict
-        A cleaned dictionary with protected_keys removed.
-    """
+Parameters
+----------
+kwargs_dict : dict
+    Original kwargs dictionary.
+protected_keys : Iterable[str]
+    Keys that should NOT appear in the returned dict.
+Returns
+-------
+dict
+    A cleaned dictionary with protected_keys removed.
+"""
     return {k: v for k, v in kwargs_dict.items() if k not in protected_keys}
 
 

@@ -10,7 +10,8 @@ from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
     finished_msg="checking the difference between EAF (sumstats) and ALT frequency (reference VCF) using sweep mode",
     start_cols=["CHR","POS","EA","NEA","EAF","STATUS"],
     start_function=".check_af2()",
-    must_kwargs=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"],
+    on_missing_cols="skip",
 )
 def _check_af_with_annotation(
     sumstats: pd.DataFrame,
@@ -36,8 +37,7 @@ def _check_af_with_annotation(
     log: "Log" = Log(),
     verbose: bool = True,
 ) -> pd.DataFrame:
-    """
-    Check the difference between effect allele frequency (EAF) in summary statistics and 
+    """Check the difference between effect allele frequency (EAF) in summary statistics and 
     alternative allele frequency in reference VCF using sweep mode.
     
     This function performs a two-step process:
@@ -58,75 +58,74 @@ def _check_af_with_annotation(
     - Before harmonization to identify potential allele mismatches
     - For quality control to flag variants with unusual frequency differences
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA, EAF.
-    path : str or None, optional
-        Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`. 
-        The function will automatically detect the file format.
-    vcf_path : str or None, optional
-        Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
-    tsv_path : str or None, optional
-        Path to precomputed lookup TSV file. If not provided and `vcf_path` is given, 
-        a lookup table will be generated from the VCF/BCF file.
-    assign_cols : tuple or str, default=("AF",)
-        Column names to extract from reference file during annotation. The first column 
-        will be used as the reference AF for DAF calculation.
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
-        If not provided, creates a default mapper.
-    threads : int, default=6
-        Number of threads for parallel processing during annotation and lookup table generation.
-    reuse_lookup : bool, default=True
-        If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
-    convert_to_bcf : bool, default=False
-        If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be 
-        set to False if converting to BCF (INFO fields are needed for AF extraction).
-    strip_info : bool, default=True
-        If True, strip INFO fields from VCF during lookup table generation to reduce file size.
-        Set to False if INFO fields are needed for other purposes.
-    chrom : str, default="CHR"
-        Column name for chromosome in sumstats.
-    pos : str, default="POS"
-        Column name for position in sumstats.
-    ea : str, default="EA"
-        Column name for effect allele in sumstats.
-    nea : str, default="NEA"
-        Column name for non-effect allele in sumstats.
-    eaf : str, default="EAF"
-        Column name for effect allele frequency in sumstats.
-    ref_alt_freq : str, default="AF"
-        Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", 
-        "gnomAD_AF"). This should match the field name in the reference VCF.
-    column_name : str, default="DAF"
-        Name of the column to store the difference values. The final column name will be 
-        `column_name + suffix`.
-    suffix : str, default=""
-        Suffix to append to the column name (e.g., "_pop1", "_gnomad"). Useful when comparing 
-        multiple reference populations.
-    status : str, default="STATUS"
-        Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
-        (standardized and normalized), unless `force=True`.
-    force : bool, default=False
-        If True, check all variants regardless of STATUS codes. If False, only processes variants 
-        with valid harmonization status (STATUS digit 4 = 0).
-    verbose : bool, default=True
-        If True, print progress messages and DAF statistics.
-    log : Log, default=Log()
-        Logging object for recording process information.
+Parameters
+----------
+sumstats : pd.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA, EAF.
+path : str or None, optional
+    Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`.
+    The function will automatically detect the file format.
+vcf_path : str or None, optional
+    Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
+tsv_path : str or None, optional
+    Path to precomputed lookup TSV file. If not provided and `vcf_path` is given,
+    a lookup table will be generated from the VCF/BCF file.
+assign_cols : tuple or str, default ("AF",)
+    Column names to extract from reference file during annotation. The first column
+    will be used as the reference AF for DAF calculation.
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+    If not provided, creates a default mapper.
+threads : int, default 6
+    Number of threads for parallel processing during annotation and lookup table generation.
+reuse_lookup : bool, default True
+    If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
+convert_to_bcf : bool, default False
+    If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be
+    set to False if converting to BCF (INFO fields are needed for AF extraction).
+strip_info : bool, default True
+    If True, strip INFO fields from VCF during lookup table generation to reduce file size.
+    Set to False if INFO fields are needed for other purposes.
+chrom : str, default "CHR"
+    Column name for chromosome in sumstats.
+pos : str, default "POS"
+    Column name for position in sumstats.
+ea : str, default "EA"
+    Column name for effect allele in sumstats.
+nea : str, default "NEA"
+    Column name for non-effect allele in sumstats.
+eaf : str, default "EAF"
+    Column name for effect allele frequency in sumstats.
+ref_alt_freq : str, default "AF"
+    Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax",
+    "gnomAD_AF"). This should match the field name in the reference VCF.
+column_name : str, default "DAF"
+    Name of the column to store the difference values. The final column name will be
+    `column_name + suffix`.
+suffix : str, default ""
+    Suffix to append to the column name (e.g., "_pop1", "_gnomad"). Useful when comparing
+    multiple reference populations.
+status : str, default "STATUS"
+    Column name for status codes. By default, only processes variants with STATUS digit 4 = 0
+    (standardized and normalized), unless `force=True`.
+force : bool, default False
+    If True, check all variants regardless of STATUS codes. If False, only processes variants
+    with valid harmonization status (STATUS digit 4 = 0).
+verbose : bool, default True
+    If True, print progress messages and DAF statistics.
+log : Log, default Log()
+    Logging object for recording process information.
+Returns
+-------
+pd.DataFrame or Sumstats
+    If input is a DataFrame, returns updated DataFrame with DAF column.
+    If input is a Sumstats object, returns the Sumstats object with updated data.
+    When called via :meth:`Sumstats.check_af2()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
     
-    Returns
-    -------
-    pd.DataFrame or Sumstats
-        If input is a DataFrame, returns updated DataFrame with DAF column.
-        If input is a Sumstats object, returns the Sumstats object with updated data.
-        When called via :meth:`Sumstats.check_af2()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    
-    Notes
-    -----
+Notes
+-----
     - This function uses optimized bulk lookup methods for faster processing compared to 
       per-variant VCF queries.
     - The function automatically handles chromosome name mapping using ChromosomeMapper.
@@ -144,7 +143,7 @@ def _check_af_with_annotation(
     --------
     _infer_af_with_annotation : Function that infers EAF from reference VCF before checking differences.
     _infer_strand_with_annotation : Function that infers strand orientation which may affect DAF values.
-    """
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats, pd.DataFrame):
         # Called with DataFrame
@@ -295,7 +294,8 @@ def _check_af_with_annotation(
     finished_msg="inferring sumstats EAF using reference VCF ALT frequency in sweep mode",
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".infer_af2()",
-    must_kwargs=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"],
+    on_missing_cols="skip",
 )
 def _infer_af_with_annotation(
     sumstats: pd.DataFrame,
@@ -319,8 +319,7 @@ def _infer_af_with_annotation(
     log: "Log" = Log(),
     verbose: bool = True,
 ) -> pd.DataFrame:
-    """
-    Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency 
+    """Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency 
     in sweep mode.
     
     This function performs a two-step process:
@@ -342,70 +341,69 @@ def _infer_af_with_annotation(
     - When you want to fill in EAF from a reference population (e.g., 1000 Genomes, gnomAD).
     - As a preprocessing step before strand inference or allele frequency comparison.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA.
-    path : str or None, optional
-        Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`. 
-        The function will automatically detect the file format.
-    vcf_path : str or None, optional
-        Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
-    tsv_path : str or None, optional
-        Path to precomputed lookup TSV file. If not provided and `vcf_path` is given, 
-        a lookup table will be generated from the VCF/BCF file.
-    assign_cols : tuple or str, default=("AF",)
-        Column names to extract from reference file during annotation. The first column 
-        will be used as the reference AF for EAF inference.
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
-        If not provided, creates a default mapper.
-    threads : int, default=6
-        Number of threads for parallel processing during annotation and lookup table generation.
-    reuse_lookup : bool, default=True
-        If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
-    convert_to_bcf : bool, default=False
-        If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be 
-        set to False if converting to BCF (INFO fields are needed for AF extraction).
-    strip_info : bool, default=True
-        If True, strip INFO fields from VCF during lookup table generation to reduce file size.
-        Set to False if INFO fields are needed for other purposes.
-    chrom : str, default="CHR"
-        Column name for chromosome in sumstats.
-    pos : str, default="POS"
-        Column name for position in sumstats.
-    ea : str, default="EA"
-        Column name for effect allele in sumstats.
-    nea : str, default="NEA"
-        Column name for non-effect allele in sumstats.
-    eaf : str, default="EAF"
-        Column name for effect allele frequency. This column will be created if it doesn't exist, 
-        and existing values will be updated where inference is successful.
-    ref_alt_freq : str, default="AF"
-        Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", 
-        "gnomAD_AF"). This should match the field name in the reference VCF.
-    status : str, default="STATUS"
-        Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
-        (standardized and normalized), unless `force=True`.
-    force : bool, default=False
-        If True, infer EAF for all variants regardless of STATUS codes. If False, only processes 
-        variants with valid harmonization status (STATUS digit 4 = 0).
-    verbose : bool, default=True
-        If True, print progress messages and statistics about inference success rate.
-    log : Log, default=Log()
-        Logging object for recording process information.
+Parameters
+----------
+sumstats : pd.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA.
+path : str or None, optional
+    Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`.
+    The function will automatically detect the file format.
+vcf_path : str or None, optional
+    Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
+tsv_path : str or None, optional
+    Path to precomputed lookup TSV file. If not provided and `vcf_path` is given,
+    a lookup table will be generated from the VCF/BCF file.
+assign_cols : tuple or str, default ("AF",)
+    Column names to extract from reference file during annotation. The first column
+    will be used as the reference AF for EAF inference.
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+    If not provided, creates a default mapper.
+threads : int, default 6
+    Number of threads for parallel processing during annotation and lookup table generation.
+reuse_lookup : bool, default True
+    If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
+convert_to_bcf : bool, default False
+    If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be
+    set to False if converting to BCF (INFO fields are needed for AF extraction).
+strip_info : bool, default True
+    If True, strip INFO fields from VCF during lookup table generation to reduce file size.
+    Set to False if INFO fields are needed for other purposes.
+chrom : str, default "CHR"
+    Column name for chromosome in sumstats.
+pos : str, default "POS"
+    Column name for position in sumstats.
+ea : str, default "EA"
+    Column name for effect allele in sumstats.
+nea : str, default "NEA"
+    Column name for non-effect allele in sumstats.
+eaf : str, default "EAF"
+    Column name for effect allele frequency. This column will be created if it doesn't exist,
+    and existing values will be updated where inference is successful.
+ref_alt_freq : str, default "AF"
+    Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax",
+    "gnomAD_AF"). This should match the field name in the reference VCF.
+status : str, default "STATUS"
+    Column name for status codes. By default, only processes variants with STATUS digit 4 = 0
+    (standardized and normalized), unless `force=True`.
+force : bool, default False
+    If True, infer EAF for all variants regardless of STATUS codes. If False, only processes
+    variants with valid harmonization status (STATUS digit 4 = 0).
+verbose : bool, default True
+    If True, print progress messages and statistics about inference success rate.
+log : Log, default Log()
+    Logging object for recording process information.
+Returns
+-------
+pd.DataFrame or Sumstats
+    If input is a DataFrame, returns updated DataFrame with inferred EAF values.
+    If input is a Sumstats object, returns the Sumstats object with updated data.
+    When called via :meth:`Sumstats.infer_af2()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
     
-    Returns
-    -------
-    pd.DataFrame or Sumstats
-        If input is a DataFrame, returns updated DataFrame with inferred EAF values.
-        If input is a Sumstats object, returns the Sumstats object with updated data.
-        When called via :meth:`Sumstats.infer_af2()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    
-    Notes
-    -----
+Notes
+-----
     - This function uses optimized bulk lookup methods for faster processing compared to 
       per-variant VCF queries.
     - The function automatically handles chromosome name mapping using ChromosomeMapper.
@@ -422,7 +420,7 @@ def _infer_af_with_annotation(
     --------
     _check_af_with_annotation : Calculate difference between EAF (sumstats) and ALT_AF (reference) after inference.
     _infer_strand_with_annotation : Function that infers strand orientation which may affect EAF values.
-    """
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats, pd.DataFrame):
         # Called with DataFrame
@@ -582,7 +580,8 @@ def _infer_af_with_annotation(
     finished_msg="inferring sumstats EAF from sumstats MAF using reference VCF ALT frequency in sweep mode",
     start_cols=["CHR","POS","EA","NEA","MAF","STATUS"],
     start_function=".infer_eaf_from_maf2()",
-    must_kwargs=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"],
+    on_missing_cols="skip",
 )
 def _infer_af_with_maf_annotation(
     sumstats: pd.DataFrame,
@@ -608,8 +607,7 @@ def _infer_af_with_maf_annotation(
     log: "Log" = Log(),
     verbose: bool = True,
 ) -> pd.DataFrame:
-    """
-    Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency 
+    """Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency 
     in sweep mode.
     
     This function performs a two-step process:
@@ -633,75 +631,74 @@ def _infer_af_with_maf_annotation(
     - When you want to infer EAF from MAF using a reference population (e.g., 1000 Genomes, gnomAD).
     - As an alternative to `infer_af2()` when you have MAF but not direct EAF information.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA, MAF.
-    path : str or None, optional
-        Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`. 
-        The function will automatically detect the file format.
-    vcf_path : str or None, optional
-        Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
-    tsv_path : str or None, optional
-        Path to precomputed lookup TSV file. If not provided and `vcf_path` is given, 
-        a lookup table will be generated from the VCF/BCF file.
-    assign_cols : tuple or str, default=("AF",)
-        Column names to extract from reference file during annotation. The first column 
-        will be used as the reference AF for EAF inference.
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
-        If not provided, creates a default mapper.
-    threads : int, default=6
-        Number of threads for parallel processing during annotation and lookup table generation.
-    reuse_lookup : bool, default=True
-        If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
-    convert_to_bcf : bool, default=False
-        If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be 
-        set to False if converting to BCF (INFO fields are needed for AF extraction).
-    strip_info : bool, default=True
-        If True, strip INFO fields from VCF during lookup table generation to reduce file size.
-        Set to False if INFO fields are needed for other purposes.
-    chrom : str, default="CHR"
-        Column name for chromosome in sumstats.
-    pos : str, default="POS"
-        Column name for position in sumstats.
-    ea : str, default="EA"
-        Column name for effect allele in sumstats.
-    nea : str, default="NEA"
-        Column name for non-effect allele in sumstats.
-    eaf : str, default="EAF"
-        Column name for effect allele frequency. This column will be created if it doesn't exist, 
-        and existing values will be updated where inference is successful.
-    maf : str, default="MAF"
-        Column name for minor allele frequency in sumstats. This is required for EAF inference.
-    ref_alt_freq : str, default="AF"
-        Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", 
-        "gnomAD_AF"). This should match the field name in the reference VCF.
-    ref_eaf : str, default="_REF_EAF"
-        Temporary column name for storing reference allele frequency. This column will be created 
-        during annotation and dropped before returning.
-    status : str, default="STATUS"
-        Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
-        (standardized and normalized), unless `force=True`.
-    force : bool, default=False
-        If True, infer EAF for all variants regardless of STATUS codes. If False, only processes 
-        variants with valid harmonization status (STATUS digit 4 = 0).
-    verbose : bool, default=True
-        If True, print progress messages and statistics about inference success rate.
-    log : Log, default=Log()
-        Logging object for recording process information.
+Parameters
+----------
+sumstats : pd.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA, MAF.
+path : str or None, optional
+    Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`.
+    The function will automatically detect the file format.
+vcf_path : str or None, optional
+    Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
+tsv_path : str or None, optional
+    Path to precomputed lookup TSV file. If not provided and `vcf_path` is given,
+    a lookup table will be generated from the VCF/BCF file.
+assign_cols : tuple or str, default ("AF",)
+    Column names to extract from reference file during annotation. The first column
+    will be used as the reference AF for EAF inference.
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+    If not provided, creates a default mapper.
+threads : int, default 6
+    Number of threads for parallel processing during annotation and lookup table generation.
+reuse_lookup : bool, default True
+    If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
+convert_to_bcf : bool, default False
+    If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be
+    set to False if converting to BCF (INFO fields are needed for AF extraction).
+strip_info : bool, default True
+    If True, strip INFO fields from VCF during lookup table generation to reduce file size.
+    Set to False if INFO fields are needed for other purposes.
+chrom : str, default "CHR"
+    Column name for chromosome in sumstats.
+pos : str, default "POS"
+    Column name for position in sumstats.
+ea : str, default "EA"
+    Column name for effect allele in sumstats.
+nea : str, default "NEA"
+    Column name for non-effect allele in sumstats.
+eaf : str, default "EAF"
+    Column name for effect allele frequency. This column will be created if it doesn't exist,
+    and existing values will be updated where inference is successful.
+maf : str, default "MAF"
+    Column name for minor allele frequency in sumstats. This is required for EAF inference.
+ref_alt_freq : str, default "AF"
+    Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax",
+    "gnomAD_AF"). This should match the field name in the reference VCF.
+ref_eaf : str, default "_REF_EAF"
+    Temporary column name for storing reference allele frequency. This column will be created
+    during annotation and dropped before returning.
+status : str, default "STATUS"
+    Column name for status codes. By default, only processes variants with STATUS digit 4 = 0
+    (standardized and normalized), unless `force=True`.
+force : bool, default False
+    If True, infer EAF for all variants regardless of STATUS codes. If False, only processes
+    variants with valid harmonization status (STATUS digit 4 = 0).
+verbose : bool, default True
+    If True, print progress messages and statistics about inference success rate.
+log : Log, default Log()
+    Logging object for recording process information.
+Returns
+-------
+pd.DataFrame or Sumstats
+    If input is a DataFrame, returns updated DataFrame with inferred EAF values.
+    If input is a Sumstats object, returns the Sumstats object with updated data.
+    When called via :meth:`Sumstats.infer_af2()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
     
-    Returns
-    -------
-    pd.DataFrame or Sumstats
-        If input is a DataFrame, returns updated DataFrame with inferred EAF values.
-        If input is a Sumstats object, returns the Sumstats object with updated data.
-        When called via :meth:`Sumstats.infer_af2()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
-    
-    Notes
-    -----
+Notes
+-----
     - This function uses optimized bulk lookup methods for faster processing compared to 
       per-variant VCF queries.
     - The function automatically handles chromosome name mapping using ChromosomeMapper.
@@ -720,7 +717,7 @@ def _infer_af_with_maf_annotation(
     --------
     _infer_af_with_annotation : Function that infers EAF directly from reference ALT_AF.
     _check_af_with_annotation : Calculate difference between EAF (sumstats) and ALT_AF (reference) after inference.
-    """
+"""
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats, pd.DataFrame):
         # Called with DataFrame

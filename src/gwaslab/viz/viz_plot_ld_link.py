@@ -27,21 +27,12 @@ def _plot_ld_link(
     log=Log(),
     verbose=True
 ):
-    """
-    Internal function to plot LD lines on regional plot axes.
+    """Internal function to plot LD lines on regional plot axes.
     Draws straight lines connecting variant pairs with LD above minimum threshold.
     Lines connect the actual variant positions (i, scaled_P).
     Line colors are assigned based on LD categories using region_ld_threshold and region_ld_colors.
     Only draws lines, does not modify axes labels or other properties.
-    
-    Parameters
-    ----------
-    region_ld_threshold : list
-        LD r² thresholds for color categories, e.g., [0.2, 0.4, 0.6, 0.8]
-    region_ld_colors : list
-        Colors for each LD category. Should have length len(region_ld_threshold) + 3:
-        [no_data_color, 0<thr[0], thr[0]<thr[1], ..., thr[-1]<1.0, lead_color]
-    """
+"""
     log.write("Adding LD link plot...", verbose=verbose)
     
     # Use region_ld_colors if provided, otherwise extract from palette, otherwise use default
@@ -164,7 +155,7 @@ def _plot_ld_link(
         Index 2: threshold[0] < LD <= threshold[1]
         ...
         Index len(thresholds)+1: threshold[-1] < LD <= 1.0
-        """
+"""
         if np.isnan(ld_value) or ld_value <= 0:
             return 0
         # Check thresholds in reverse order to find the highest threshold that LD exceeds

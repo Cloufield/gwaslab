@@ -574,6 +574,20 @@ class TestPlotPanels(unittest.TestCase):
             # Expected if files don't exist
             pass
 
+    def test_chromatin_panel_uses_param_manager(self):
+        """Chromatin panels should route kwargs through VizParamsManager."""
+        panel = Panel(
+            "chromatin",
+            region_chromatin_files=["fake.bed.gz"],
+            region=self.region,
+            fontsize=14,
+            invalid_chromatin_kwarg="drop_me",
+            verbose=False,
+        )
+        self.assertEqual(panel.get_type(), "chromatin")
+        self.assertEqual(panel.get_kwarg("fontsize"), 14)
+        self.assertNotIn("invalid_chromatin_kwarg", panel.get_kwargs())
+
 
 if __name__ == "__main__":
     unittest.main()

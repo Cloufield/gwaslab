@@ -72,6 +72,7 @@ def compare_effect(path1,
                    log = Log(),
                    save=False,
                    save_kwargs=None,
+                   save_merged=False,
                    verbose=False,
                    **kwargs):
 
@@ -482,9 +483,13 @@ def compare_effect(path1,
     else:
         sig_list_merged = reorder_columns(sig_list_merged)
 
-    save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
-    log.write(" -Saving the merged data to:",save_path, verbose=verbose)
-    sig_list_merged.to_csv(save_path,sep="\t")
+    if save_merged is not False:
+        if save_merged is True:
+            save_path = label[0] + "_" + label[1] + "_beta_sig_list_merged.tsv"
+        else:
+            save_path = save_merged
+        log.write(" -Saving the merged data to:", save_path, verbose=verbose)
+        sig_list_merged.to_csv(save_path, sep="\t")
 
     return [sig_list_merged, fig,log]
 
@@ -898,7 +903,8 @@ def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose
     return df
 
 def jackknife_r(df,x="EFFECT_1",y="EFFECT_2_aligned"):
-    """Jackknife estimation of se for rsq"""
+    """Jackknife estimation of se for rsq
+"""
     from gwaslab.algorithm.heterogeneity.jackknife import jackknife_correlation_se
 
     df_nona = df.loc[:,[x,y]].dropna()

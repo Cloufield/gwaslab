@@ -16,25 +16,23 @@ def meta_analyze_polars(
     nstudy: int = 1,
     log: Log = Log()
 ) -> pl.DataFrame:
-    """
-    Perform meta-analysis using polars DataFrame.
+    """Perform meta-analysis using polars DataFrame.
     
-    Parameters
-    ----------
-    sumstats_multi : pl.DataFrame
-        Polars DataFrame with columns BETA_1, SE_1, N_1, EAF_1, etc. for each study
-    random_effects : bool, optional
-        Whether to compute random effects model, by default False
-    nstudy : int, optional
-        Number of studies, by default 1
-    log : Log, optional
-        Log object for logging, by default Log()
-    
-    Returns
-    -------
-    pl.DataFrame
-        Polars DataFrame with meta-analysis results
-    """
+Parameters
+----------
+sumstats_multi : pl.DataFrame
+    Polars DataFrame with columns BETA_1, SE_1, N_1, EAF_1, etc. for each study
+random_effects : bool, optional
+    Whether to compute random effects model, by default False
+nstudy : int, optional
+    Number of studies, by default 1
+log : Log, optional
+    Log object for logging, by default Log()
+Returns
+-------
+pl.DataFrame
+    Polars DataFrame with meta-analysis results
+"""
     log.write("Start to perform meta-analysis...")
     log.write(" -Initiating result DataFrame...")
     
@@ -279,31 +277,29 @@ def meta_analyze_polars2(
     streaming: bool = False,
     log: Log = Log()
 ) -> Union[pl.DataFrame, pl.LazyFrame]:
-    """
-    Perform meta-analysis using polars LazyFrame (optimized for lazy evaluation).
+    """Perform meta-analysis using polars LazyFrame (optimized for lazy evaluation).
     
     This function is optimized for LazyFrames and maintains lazy evaluation
     throughout the computation, only materializing when necessary (e.g., for
     scipy statistical functions). This reduces memory usage for large datasets.
     
-    Parameters
-    ----------
-    sumstats_multi : pl.LazyFrame or pl.DataFrame
-        Polars LazyFrame or DataFrame with columns BETA_1, SE_1, N_1, EAF_1, etc. for each study
-    random_effects : bool, optional
-        Whether to compute random effects model, by default False
-    nstudy : int, optional
-        Number of studies, by default 1
-    streaming : bool, optional
-        Whether to use streaming mode for materialization, by default False
-    log : Log, optional
-        Log object for logging, by default Log()
-    
-    Returns
-    -------
-    pl.LazyFrame
-        Polars LazyFrame with meta-analysis results (lazy until collected)
-    """
+Parameters
+----------
+sumstats_multi : pl.LazyFrame or pl.DataFrame
+    Polars LazyFrame or DataFrame with columns BETA_1, SE_1, N_1, EAF_1, etc. for each study
+random_effects : bool, optional
+    Whether to compute random effects model, by default False
+nstudy : int, optional
+    Number of studies, by default 1
+streaming : bool, optional
+    Whether to use streaming mode for materialization, by default False
+log : Log, optional
+    Log object for logging, by default Log()
+Returns
+-------
+pl.LazyFrame
+    Polars LazyFrame with meta-analysis results (lazy until collected)
+"""
     log.write("Start to perform meta-analysis (lazy-optimized)...")
     log.write(" -Initiating result LazyFrame...")
     

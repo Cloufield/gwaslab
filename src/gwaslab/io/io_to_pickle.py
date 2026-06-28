@@ -56,22 +56,20 @@ def dump_pickle_multi(glsummulti: 'SumstatsMulti', path: str = "~/mysummulti.pic
     glsummulti.log.write("Finished dumping.")
 
 def load_pickle(path: str) -> Optional[Union['Sumstats', 'SumstatsPair', 'SumstatsMulti']]:
-    """
-    Load a previously saved GWASLab object from a pickle file.
+    """Load a previously saved GWASLab object from a pickle file.
     
     Automatically detects and loads Sumstats, SumstatsPair, or SumstatsMulti objects.
     
-    Parameters
-    ----------
-    path : str
-        File path to the pickle file. Supports `~` for home directory expansion.
-    
-    Returns
-    -------
-    Optional[Union[Sumstats, SumstatsPair, SumstatsMulti]]
-        The loaded GWASLab object (type is automatically detected).
-        Returns None if the file does not exist.
-    """
+Parameters
+----------
+path : str
+    File path to the pickle file. Supports `~` for home directory expansion.
+Returns
+-------
+Optional[Union[Sumstats, SumstatsPair, SumstatsMulti]]
+    The loaded GWASLab object (type is automatically detected).
+    Returns None if the file does not exist.
+"""
     path = os.path.expanduser(path)
     
     if not os.path.exists(path):
@@ -141,14 +139,13 @@ def load_data_from_pickle(path: str, usecols: Optional[List[str]] = None) -> pd.
     return data
 
 def _force_memory_release():
-    """
-    Force Python's memory allocator to release memory back to OS.
+    """Force Python's memory allocator to release memory back to OS.
     Works on Linux by calling malloc_trim() from glibc.
     
     Note: This only works on Linux with glibc. On other systems,
     Python's memory allocator may not release memory back to the OS
     even after objects are deleted and garbage collected.
-    """
+"""
     if MALLOC_TRIM_AVAILABLE:
         try:
             # Call malloc_trim(0) to force glibc to return freed memory to OS
@@ -179,23 +176,21 @@ def _offload(df: pd.DataFrame, path: str, log: Log) -> None:
     _force_memory_release()  # Force memory allocator to release memory to OS (Linux only)
 
 def _reload(path: str, log: Log, delete_files: Optional[List[str]] = None) -> pd.DataFrame:
-    """
-    Reload data from temporary pickle file.
+    """Reload data from temporary pickle file.
     
-    Parameters
-    ----------
-    path : str
-        Path to the pickle file to reload
-    log : Log
-        Logger instance
-    delete_files : list of str, optional
-        Additional files to delete after successful reload
-        
-    Returns
-    -------
-    pd.DataFrame
-        Reloaded dataframe
-    """
+Parameters
+----------
+path : str
+    Path to the pickle file to reload
+log : Log
+    Logger instance
+delete_files : list of str, optional
+    Additional files to delete after successful reload
+Returns
+-------
+pd.DataFrame
+    Reloaded dataframe
+"""
     with open(path, 'rb') as file:
         df =  pickle.load(file)
         log.write("Loaded dataframe back from : ", path)

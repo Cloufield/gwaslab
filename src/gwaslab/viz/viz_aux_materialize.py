@@ -1,5 +1,4 @@
-"""
-Materialize deferred AlphaGenome panels (ag_spec) via gwaslab-alphagenome.
+"""Materialize deferred AlphaGenome panels (ag_spec) via gwaslab-alphagenome.
 """
 
 from __future__ import annotations
@@ -23,11 +22,10 @@ def materialize_ag_panels(
     log: Log = Log(),
     verbose: bool = True,
 ) -> List[Panel]:
-    """
-    Resolve ``ag_spec`` on panels by calling ``gwaslab_alphagenome.extract_batch``.
+    """Resolve ``ag_spec`` on panels by calling ``gwaslab_alphagenome.extract_batch``.
 
     Panels without ``ag_spec`` or with ``bundle`` already set are unchanged.
-    """
+"""
     deferred: List[Tuple[int, Panel]] = []
     for i, p in enumerate(panels):
         if p.get_kwarg("ag_spec") is not None and p.get_kwarg("bundle") is None:

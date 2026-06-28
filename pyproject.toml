@@ -31,6 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+docs = ["mkdocstrings-python>=1.0"]
 dev = ["pytest>=7"]
 
 [project.urls]

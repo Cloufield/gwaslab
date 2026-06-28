@@ -40,104 +40,102 @@ def _clump(gls: 'Sumstats',
            verbose: bool = True,
            plink: str = "plink",
            plink2: str = "plink2") -> Tuple[pd.DataFrame, pd.DataFrame, str]:
-    """
-    Perform LD clumping of GWAS summary statistics using PLINK2.
+    """Perform LD clumping of GWAS summary statistics using PLINK2.
 
-    Parameters
-    ----------
-    vcf : str or None, optional
-        Path or prefix to reference VCF or genotype data compatible with PLINK2.
-        Used when deriving `--pfile` inputs.
-    bfile : str or None, optional
-        Prefix to PLINK binary files (`.bed/.bim/.fam`). May include "@"
-        as a chromosome placeholder.
-    pfile : str or None, optional
-        Prefix to PLINK2 files (`.pgen/.pvar/.psam`). May include "@"
-        as a chromosome placeholder.
-    scaled : bool, optional
-        If True, clump on `mlog10p` using PLINK2 `--clump-log10`. If False,
-        clump on `p`.
-    out : str or None, optional
-        Output prefix. If None, uses "./{study}_clumpping".
-    p : str, optional
-        Column name of p-values in `gls.data`.
-    mlog10p : str, optional
-        Column name of -log10(p) in `gls.data`.
-    overwrite : bool, optional
-        Whether to overwrite any intermediate reference files produced while
-        preparing inputs.
-    study : str or None, optional
-        Study name used when `out` is None.
-    threads : int, optional
-        Number of threads to pass to PLINK2 via `--threads`.
-    memory : int or None, optional
-        Memory limit (MB) for PLINK2 via `--memory`.
-    chrom : any, optional
-        Unused parameter kept for API compatibility.
-    clump_p1 : float, optional
-        Primary p-value threshold (`--clump-p1` or `--clump-log10-p1`).
-    clump_p2 : float, optional
-        Secondary p-value threshold (`--clump-p2` or `--clump-log10-p2`).
-    clump_r2 : float, optional
-        LD threshold (`--clump-r2`).
-    clump_kb : int, optional
-        Window size in kilobases (`--clump-kb`).
-    log : gwaslab.g_Log.Log, optional
-        Logger instance used for progress reporting.
-    verbose : bool, optional
-        Whether to emit verbose log messages.
-    plink : str, optional
-        Path to PLINK (v1). Not used directly in clumping.
-    plink2 : str, optional
-        Path to PLINK2 binary.
+Parameters
+----------
+vcf : str or None, optional
+    Path or prefix to reference VCF or genotype data compatible with PLINK2.
+    Used when deriving `--pfile` inputs.
+bfile : str or None, optional
+    Prefix to PLINK binary files (`.bed/.bim/.fam`). May include "@"
+    as a chromosome placeholder.
+pfile : str or None, optional
+    Prefix to PLINK2 files (`.pgen/.pvar/.psam`). May include "@"
+    as a chromosome placeholder.
+scaled : bool, optional
+    If True, clump on `mlog10p` using PLINK2 `--clump-log10`. If False,
+    clump on `p`.
+out : str or None, optional
+    Output prefix. If None, uses "./{study}_clumpping".
+p : str, optional
+    Column name of p-values in `gls.data`.
+mlog10p : str, optional
+    Column name of -log10(p) in `gls.data`.
+overwrite : bool, optional
+    Whether to overwrite any intermediate reference files produced while
+    preparing inputs.
+study : str or None, optional
+    Study name used when `out` is None.
+threads : int, optional
+    Number of threads to pass to PLINK2 via `--threads`.
+memory : int or None, optional
+    Memory limit (MB) for PLINK2 via `--memory`.
+chrom : any, optional
+    Unused parameter kept for API compatibility.
+clump_p1 : float, optional
+    Primary p-value threshold (`--clump-p1` or `--clump-log10-p1`).
+clump_p2 : float, optional
+    Secondary p-value threshold (`--clump-p2` or `--clump-log10-p2`).
+clump_r2 : float, optional
+    LD threshold (`--clump-r2`).
+clump_kb : int, optional
+    Window size in kilobases (`--clump-kb`).
+log : gwaslab.g_Log.Log, optional
+    Logger instance used for progress reporting.
+verbose : bool, optional
+    Whether to emit verbose log messages.
+plink : str, optional
+    Path to PLINK (v1). Not used directly in clumping.
+plink2 : str, optional
+    Path to PLINK2 binary.
+Returns
+-------
+results_sumstats : pandas.DataFrame
+    Subset of input summary statistics for clumped lead variants.
+results : pandas.DataFrame
+    Concatenated PLINK2 `.clumps` output across processed chromosomes.
+plink_log : str
+    Combined PLINK2 log output captured during execution.
 
-    Returns
-    -------
-    results_sumstats : pandas.DataFrame
-        Subset of input summary statistics for clumped lead variants.
-    results : pandas.DataFrame
-        Concatenated PLINK2 `.clumps` output across processed chromosomes.
-    plink_log : str
-        Combined PLINK2 log output captured during execution.
+Workflow
+--------
+The clumping process follows these steps:
+    
+1. **Filter significant variants**: Extract variants below the p-value threshold
+   (clump_p1 or clump_p2) from the input sumstats.
+    
+2. **Process reference files**: Convert VCF/BGEN to PLINK format (bfile/pfile) if needed,
+   and load BIM/PVAR variant information for matching.
+    
+3. **Match variants with reference**: Match sumstats variants with reference BIM using
+   CHR, POS, and optionally EA/NEA to assign reference SNPIDs. This ensures PLINK
+   uses consistent IDs that match the reference panel.
+    
+4. **Create temporary input files**: For each chromosome, create a temporary SNPIDP file
+   containing variant IDs and p-values in a temporary directory.
+    
+5. **Run PLINK2 clumping**: Execute PLINK2 clumping for each chromosome separately,
+   using the reference panel and temporary input files. PLINK2 identifies lead variants
+   and their clumped variants based on LD (r²) within the specified window.
+    
+6. **Process results**: Read and concatenate clumping results from all chromosomes,
+   map BIM SNPIDs back to original sumstats SNPIDs, and filter sumstats to include
+   only clumped lead variants.
+    
+7. **Cleanup**: Delete temporary files and intermediate clumps output files after
+   successful data reload.
 
-    Workflow
-    --------
-    The clumping process follows these steps:
-    
-    1. **Filter significant variants**: Extract variants below the p-value threshold
-       (clump_p1 or clump_p2) from the input sumstats.
-    
-    2. **Process reference files**: Convert VCF/BGEN to PLINK format (bfile/pfile) if needed,
-       and load BIM/PVAR variant information for matching.
-    
-    3. **Match variants with reference**: Match sumstats variants with reference BIM using
-       CHR, POS, and optionally EA/NEA to assign reference SNPIDs. This ensures PLINK
-       uses consistent IDs that match the reference panel.
-    
-    4. **Create temporary input files**: For each chromosome, create a temporary SNPIDP file
-       containing variant IDs and p-values in a temporary directory.
-    
-    5. **Run PLINK2 clumping**: Execute PLINK2 clumping for each chromosome separately,
-       using the reference panel and temporary input files. PLINK2 identifies lead variants
-       and their clumped variants based on LD (r²) within the specified window.
-    
-    6. **Process results**: Read and concatenate clumping results from all chromosomes,
-       map BIM SNPIDs back to original sumstats SNPIDs, and filter sumstats to include
-       only clumped lead variants.
-    
-    7. **Cleanup**: Delete temporary files and intermediate clumps output files after
-       successful data reload.
-
-    Notes
-    -----
+Notes
+-----
     - Writes temporary files in a temporary directory, which are automatically removed.
     - Produces per-chromosome output files "{out}.{chr}.clumps" which are deleted after
       successful reload if delete_files option is used.
     - Variant matching uses CHR, POS, EA, NEA to ensure ID consistency between sumstats
       and reference panel, preventing missing matches due to ID mismatches.
 
-    Examples
-    --------
+Examples
+--------
     >>> results_sumstats, results, logstr = _clump(
     ...     bfile="ref/chr@",
     ...     clump_p1=5e-8,
@@ -146,7 +144,7 @@ def _clump(gls: 'Sumstats',
     ...     clump_kb=250,
     ...     threads=4
     ... )
-    """
+"""
     ##start function with col checking##########################################################
     
     # Reload data if it has been offloaded

@@ -26,42 +26,40 @@ def _fill_data(
     extreme: bool = False,
     log: Log = Log()
     ) -> pd.DataFrame:
-    """
-    Fill missing statistical values in genetic summary statistics from available columns.
+    """Fill missing statistical values in genetic summary statistics from available columns.
     
     This function systematically derives missing statistical values using relationships
     between different statistical measures (e.g., converting beta/SE to Z-scores, or ORs
     to betas). It handles multiple conversion pathways and maintains data consistency.
     
-    Parameters
-    ----------
-    insumstats : pandas.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object.
-    to_fill : str or list of str
-        Column name(s) to fill. Common values include "OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF", etc.
-    overwrite : bool, optional, default=False
-        If True, overwrite existing values in target columns.
-    verbose : bool, optional, default=True
-        Whether to display progress messages.
-    extreme : bool, optional, default=False
-        If True, use extreme value calculations for -log10(P). Helpful when P<1e-300 (float64 datatype limits).
-    
-    Returns
-    -------
-    pandas.DataFrame
-        Modified summary statistics DataFrame with filled values.
-        When called via :meth:`Sumstats.fill_data()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``None``.
+Parameters
+----------
+insumstats : pandas.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object.
+to_fill : str or list of str
+    Column name(s) to fill. Common values include "OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF", etc.
+overwrite : bool, optional, default False
+    If True, overwrite existing values in target columns.
+verbose : bool, optional, default True
+    Whether to display progress messages.
+extreme : bool, optional, default False
+    If True, use extreme value calculations for -log10(P). Helpful when P<1e-300 (float64 datatype limits).
+Returns
+-------
+pandas.DataFrame
+    Modified summary statistics DataFrame with filled values.
+    When called via :meth:`Sumstats.fill_data()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``None``.
 
-    Less used parameters
-    ----------------
-    df : str, optional
-        Column name containing degrees of freedom for chi-square tests. Only used when CHISQ 
-    only_sig : bool, optional, default=False
-        If True, only update values for significant variants.
-    sig_level : float, optional, default=5e-8
-        Significance threshold for P-value filtering.
-    """
+Less used parameters
+----------------
+df : str, optional
+    Column name containing degrees of freedom for chi-square tests. Only used when CHISQ 
+only_sig : bool, optional, default False
+    If True, only update values for significant variants.
+sig_level : float, optional, default 5e-8
+    Significance threshold for P-value filtering.
+"""
     # Handle both DataFrame and Sumstats object
     import pandas as pd
     if isinstance(insumstats, pd.DataFrame):
@@ -128,7 +126,8 @@ def _fill_data(
 ##########################################################################################################################    
     
 def fill_p(sumstats: pd.DataFrame, log: Log, df: Optional[str] = None, only_sig: bool = False, sig_level: float = 5e-8, overwrite: bool = False, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill P column from MLOG10P, Z, or CHISQ."""
+    """Fill P column from MLOG10P, Z, or CHISQ.
+"""
     if "MLOG10P" in sumstats.columns:
         log.write("    Filling P from MLOG10P...", verbose=verbose)
         sumstats["P"] = _convert_mlog10p_to_p(sumstats["MLOG10P"])
@@ -163,7 +162,8 @@ def fill_p(sumstats: pd.DataFrame, log: Log, df: Optional[str] = None, only_sig:
     return 0, filled_count
 
 def fill_z(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill Z column from BETA/SE."""
+    """Fill Z column from BETA/SE.
+"""
     if "BETA" in sumstats.columns and "SE" in sumstats.columns:
         log.write("    Filling Z from BETA/SE...", verbose=verbose)
         sumstats["Z"] = _convert_betase_to_z(sumstats["BETA"], sumstats["SE"])
@@ -171,7 +171,8 @@ def fill_z(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count:
     return 0, filled_count
 
 def fill_chisq(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill CHISQ column from Z or P."""
+    """Fill CHISQ column from Z or P.
+"""
     if "Z" in sumstats.columns:
         log.write("    Filling CHISQ from Z...", verbose=verbose)
         sumstats["CHISQ"] = _convert_z_to_chisq(sumstats["Z"])
@@ -183,7 +184,8 @@ def fill_chisq(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_co
     return 0, filled_count
 
 def fill_or(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill OR and optionally OR_95L/OR_95U from BETA/SE."""
+    """Fill OR and optionally OR_95L/OR_95U from BETA/SE.
+"""
     if "BETA" in sumstats.columns:
         log.write("    Filling OR from BETA...", verbose=verbose)
         sumstats["OR"] = _convert_beta_to_or(sumstats["BETA"])
@@ -197,7 +199,8 @@ def fill_or(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count
         return 1, filled_count
     return 0, filled_count
 def fill_or_95l(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill OR_95L column from BETA/SE."""
+    """Fill OR_95L column from BETA/SE.
+"""
     if "BETA" in sumstats.columns and "SE" in sumstats.columns:
         log.write("    Filling OR_95L from BETA/SE...", verbose=verbose)
         sumstats["OR_95L"] = _convert_betase_to_or_95l(sumstats["BETA"], sumstats["SE"])
@@ -205,7 +208,8 @@ def fill_or_95l(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_c
     return 0, filled_count
 
 def fill_or_95u(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill OR_95U column from BETA/SE."""
+    """Fill OR_95U column from BETA/SE.
+"""
     if "BETA" in sumstats.columns and "SE" in sumstats.columns:
         log.write("    Filling OR_95U from BETA/SE...", verbose=verbose)
         sumstats["OR_95U"] = _convert_betase_to_or_95u(sumstats["BETA"], sumstats["SE"])
@@ -213,7 +217,8 @@ def fill_or_95u(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_c
     return 0, filled_count
 
 def fill_beta(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill BETA column from OR."""
+    """Fill BETA column from OR.
+"""
     if "OR" in sumstats.columns:
         log.write("    Filling BETA from OR...", verbose=verbose)
         sumstats["BETA"] = _convert_or_to_beta(sumstats["OR"])
@@ -221,7 +226,8 @@ def fill_beta(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_cou
     return 0, filled_count
 
 def fill_se(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill SE column from BETA/P, OR/OR_95U, or OR/OR_95L."""
+    """Fill SE column from BETA/P, OR/OR_95U, or OR/OR_95L.
+"""
     if "BETA" in sumstats.columns and "P" in sumstats.columns:
         log.write("    Filling SE from BETA/P...", verbose=verbose)
         sumstats["SE"] = _convert_betap_to_se(sumstats["BETA"], sumstats["P"])
@@ -240,7 +246,8 @@ def fill_se(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count
     return 0, filled_count
 
 def fill_mlog10p(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill MLOG10P column from P."""
+    """Fill MLOG10P column from P.
+"""
     if "P" in sumstats.columns:
         log.write("    Filling MLOG10P from P...", verbose=verbose)
         sumstats["MLOG10P"] = _convert_p_to_mlog10p(sumstats["P"])
@@ -251,7 +258,7 @@ def fill_extreme_mlog10p(sumstats: pd.DataFrame, df: Optional[str], log: Log, ve
     """Fill MLOG10P using extreme value methods (for very small P-values).
     
     Tries extreme value methods first, falls back to P -> MLOG10P conversion as last resort.
-    """
+"""
     # Try extreme value methods first
     if "Z" in sumstats.columns:
         log.write("    Filling MLOG10P from Z (extreme)...", verbose=verbose)
@@ -278,7 +285,8 @@ def fill_extreme_mlog10p(sumstats: pd.DataFrame, df: Optional[str], log: Log, ve
     return 0, filled_count
 
 def fill_maf(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill MAF column from EAF."""
+    """Fill MAF column from EAF.
+"""
     if "EAF" in sumstats.columns:
         log.write("    Filling MAF from EAF...", verbose=verbose)
         sumstats["MAF"] = _convert_eaf_to_maf(sumstats["EAF"])
@@ -286,7 +294,8 @@ def fill_maf(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_coun
     return 0, filled_count
 
 def fill_sig(sumstats: pd.DataFrame, log: Log, sig_level: float = 5e-8, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
-    """Fill SIGNIFICANT column from P or MLOG10P."""
+    """Fill SIGNIFICANT column from P or MLOG10P.
+"""
     if "P" in sumstats.columns:
         log.write("    Filling SIGNIFICANT from P (threshold={})...".format(sig_level), verbose=verbose)
         is_sig = sumstats["P"] < sig_level
@@ -327,8 +336,7 @@ def fill_extreme_mlog10_chisq(sumstats: pd.DataFrame, chisq: str, df: str) -> pd
 
 ####################################################################################################################
 def _try_fill_mlog10p(sumstats: pd.DataFrame, to_fill: List[str], df: Optional[str], log: Log, verbose: bool) -> Tuple[bool, List[str]]:
-    """
-    Attempt to fill MLOG10P column.
+    """Attempt to fill MLOG10P column.
     
     Strategy:
     1. Try extreme value methods first (Z, BETA/SE, CHISQ/df)
@@ -336,9 +344,9 @@ def _try_fill_mlog10p(sumstats: pd.DataFrame, to_fill: List[str], df: Optional[s
     3. Drop intermediate P column if it wasn't requested
     4. Always drop P_MANTISSA and P_EXPONENT (created by extreme methods)
     
-    Returns:
+Returns
         tuple: (success: bool, columns_to_remove: list)
-    """
+"""
     columns_to_remove = []
     
     # Try extreme method first (includes P fallback)
@@ -370,13 +378,12 @@ def _try_fill_mlog10p(sumstats: pd.DataFrame, to_fill: List[str], df: Optional[s
 
 
 def fill_iteratively(sumstats: pd.DataFrame, to_fill: List[str], log: Log, only_sig: bool, df: Optional[str], extreme: bool, verbose: bool, sig_level: float) -> pd.DataFrame:
-    """
-    Iteratively fill columns using available conversion pathways.
+    """Iteratively fill columns using available conversion pathways.
     
     This function attempts to fill target columns in multiple rounds, as newly filled
     columns may enable further conversions in subsequent rounds.
     
-    Args:
+Parameters
         sumstats: DataFrame to fill
         to_fill: Set or list of column names to fill
         log: Log object for messages
@@ -385,7 +392,7 @@ def fill_iteratively(sumstats: pd.DataFrame, to_fill: List[str], log: Log, only_
         extreme: (deprecated, kept for compatibility)
         verbose: Verbose logging
         sig_level: Significance threshold
-    """
+"""
     # Define fill functions for standard columns
     fill_functions = {
         "OR": lambda: fill_or(sumstats, log, verbose=verbose, filled_count=0),
@@ -453,7 +460,8 @@ def _log_round_results(
     log: Log, 
     verbose: bool
 ) -> None:
-    """Log the results of a filling round."""
+    """Log the results of a filling round.
+"""
     if round_filled:
         log.write("  [Round {}] Filled: {}".format(round_num, round_filled), verbose=verbose)
         if remaining:
@@ -538,21 +546,19 @@ def _convert_eaf_to_maf(eaf: Union[pd.Series, np.ndarray, float]) -> Union[pd.Se
     return map_array_func(_conv.eaf_to_maf, eaf)
 
 def rank_based_int(series: pd.Series, c: float = 3/8) -> pd.Series:
-    """
-    Perform rank-based inverse normal transformation.
+    """Perform rank-based inverse normal transformation.
     
-    Parameters
-    ----------
-    series : pd.Series
-        Input series to transform
-    c : float, default 3/8
-        Blom's constant for rank transformation
-        
-    Returns
-    -------
-    pd.Series
-        Transformed series with normal distribution
-    """
+Parameters
+----------
+series : pd.Series
+    Input series to transform
+c : float, default 3/8
+    Blom's constant for rank transformation
+Returns
+-------
+pd.Series
+    Transformed series with normal distribution
+"""
     #https://onlinelibrary.wiley.com/doi/10.1111/biom.13214
     n=sum(~series.isna())
     normalized_value = norm.ppf((series.rank()-c)/(n+1-2*c))

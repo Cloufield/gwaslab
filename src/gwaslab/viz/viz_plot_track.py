@@ -1,5 +1,4 @@
-"""
-General track plotting functions for GTF, BED, bigWig, and bigBed files.
+"""General track plotting functions for GTF, BED, bigWig, and bigBed files.
 
 This module provides functions for plotting genomic tracks from GTF (Gene Transfer Format),
 BED (Browser Extensible Data), bigWig (continuous signal), or bigBed (binary BED) files,
@@ -37,7 +36,8 @@ _MIDDLE_LABEL_ADJUST_KW = dict(
 
 
 def _adjust_middle_track_labels(texts: List[plt.Text], ax: plt.Axes) -> None:
-    """Spread overlapping middle labels horizontally; keep vertical taf offset."""
+    """Spread overlapping middle labels horizontally; keep vertical taf offset.
+"""
     if not texts:
         return
     label_y = [t.get_position()[1] for t in texts]
@@ -52,7 +52,8 @@ def _ylim_pad_data(
     pad_points: float = 2.0,
     renderer=None,
 ) -> float:
-    """Convert a vertical padding (points) to data-axis units."""
+    """Convert a vertical padding (points) to data-axis units.
+"""
     if renderer is None:
         fig.canvas.draw()
         renderer = fig.canvas.get_renderer()
@@ -73,7 +74,8 @@ def _expand_ylim_for_gene_labels(
     ymax_floor: float,
     pad_points: float = 4.0,
 ) -> None:
-    """Expand ylim so gene-name labels are fully inside the panel."""
+    """Expand ylim so gene-name labels are fully inside the panel.
+"""
     ymin, ymax = ymin_floor, ymax_floor
     if not label_texts:
         ax.set_ylim(ymin, ymax)
@@ -121,85 +123,23 @@ def plot_track(
     verbose: bool = True,
     log: Log = Log()
 ) -> Tuple[plt.Axes, List]:
-    """
-    Plot a genomic track from GTF, BED, bigWig, or bigBed file.
+    """Plot a genomic track from GTF, BED, bigWig, or bigBed file.
     
     This function creates a track visualization showing genomic features (genes, exons,
     or custom features) from GTF or BED files, or continuous signal from bigWig files.
     Features are automatically stacked to avoid overlaps, and labels are positioned intelligently.
     bigWig tracks are plotted as continuous line/area plots.
+
+Returns
+-------
+ax : matplotlib.axes.Axes
+    The axes object with track plotted.
+texts_to_adjust : list
+    List of text objects that may need adjustment (for use with adjustText).
+    Empty list for bigWig tracks.
     
-    Parameters
-    ----------
-    track_path : str
-        Path to GTF, BED, bigWig, or bigBed file. Supports compressed files (.gtf.gz, .bed.gz).
-        File format is auto-detected from extension if file_format is None.
-    region : tuple of (int, int, int)
-        Genomic region as (chromosome, start, end) in 1-based coordinates.
-        Example: (1, 1000000, 2000000) for chr1:1000000-2000000
-    ax : matplotlib.axes.Axes, optional
-        Axes object to plot on. If None, a new figure and axes will be created.
-    fig : matplotlib.figure.Figure, optional
-        Figure object for font size calculations. If None, a new figure will be created.
-        If ax is provided but fig is None, fig will be extracted from ax.
-    track_start_i : float, default=0.0
-        X-axis offset for track positioning. Used to align track with other plots.
-    region_flank_factor : float, default=0.05
-        Flanking factor for extending region boundaries when loading features.
-        Features within flanked region are shown.
-    file_format : str, optional
-        File format: 'gtf', 'gff', 'bed', 'bigwig', 'bw', or 'bigbed', 'bb'.
-        If None, auto-detected from file extension.
-    chr_dict : dict, optional
-        Dictionary mapping sumstats chromosome (int) to file chromosome (str).
-        If None, uses get_number_to_chr().
-    name_column : str, optional
-        Column name to use for feature labels. 
-        For GTF: 'gene_name', 'gene_id', or custom attribute name.
-        For BED/bigBed: 'name' (if available in BED4+ format).
-        If None, auto-detects: 'gene_name' for GTF, 'name' for BED/bigBed.
-        Ignored for bigWig files.
-    feature_type : str, optional
-        For GTF files: filter by feature type (e.g., 'gene', 'exon', 'transcript').
-        If None, uses 'gene' for GTF files. Ignored for BED/bigBed/bigWig files.
-    color : str, default="#020080"
-        Color for track features (hex color code). For bigWig, this is the line/area color.
-    highlight_positions : list of float, optional
-        List of x-axis positions to highlight (e.g., lead SNP positions).
-        Features overlapping these positions will be colored with highlight_color.
-        For bigWig, highlights are shown as vertical lines.
-    highlight_color : str, default="#FF0000"
-        Color for highlighted features (hex color code).
-    track_font_family : str, default="Arial"
-        Font family for track labels.
-    taf : list of float, default=[4, 0, 0.95, 1, 1]
-        Track annotation formatting parameters:
-        [min_stacks, y_offset, font_ratio, linewidth_ratio, text_y_offset]
-    min_track_height : int, default=4
-        Minimum number of track stacks to reserve. For bigWig, this sets the y-axis range.
-    figsize : tuple of (float, float), default=(10, 2)
-        Figure size (width, height) in inches. Only used when creating a new figure.
-        This will be merged into fig_kwargs if fig_kwargs is provided.
-    region_step : int, default=21
-        Number of x-axis ticks to display. Used for formatting position labels in MB.
-    fig_kwargs : dict, optional
-        Additional keyword arguments for matplotlib figure creation (e.g., {'dpi': 200, 'facecolor': 'white'}).
-        If None, defaults to empty dict. figsize will be merged into this if provided.
-    verbose : bool, default=True
-        Whether to show progress messages.
-    log : Log, default=Log()
-        Logger instance for messages.
-    
-    Returns
-    -------
-    ax : matplotlib.axes.Axes
-        The axes object with track plotted.
-    texts_to_adjust : list
-        List of text objects that may need adjustment (for use with adjustText).
-        Empty list for bigWig tracks.
-    
-    Examples
-    --------
+Examples
+--------
     >>> import matplotlib.pyplot as plt
     >>> from gwaslab.viz.viz_plot_track import plot_track
     >>> 
@@ -217,8 +157,8 @@ def plot_track(
     >>> ax, texts = plot_track("genes.gtf", region, ax=ax, fig=fig)
     >>> plt.show()
     
-    Notes
-    -----
+Notes
+-----
     - GTF files use 1-based, inclusive coordinates [start, end]
     - BED/bigBed files use 0-based, half-open coordinates [chromStart, chromEnd)
     - bigWig files use 0-based, half-open coordinates [start, end)
@@ -226,7 +166,7 @@ def plot_track(
     - Features are automatically stacked to avoid overlaps (GTF/BED/bigBed)
     - bigWig tracks are plotted as continuous line/area plots
     - Labels are positioned on left, middle, or right based on feature position
-    """
+"""
     # Initialize fig_kwargs
     if fig_kwargs is None:
         fig_kwargs = {}
@@ -500,7 +440,8 @@ def _process_gtf_track(
     verbose: bool,
     log: Log
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Process GTF file for track plotting."""
+    """Process GTF file for track plotting.
+"""
     log.write(f" -Processing GTF from: {gtf_path}", verbose=verbose)
     
     # Get chromosome string for querying
@@ -614,7 +555,8 @@ def _process_bed_track(
     verbose: bool,
     log: Log
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Process BED file for track plotting."""
+    """Process BED file for track plotting.
+"""
     log.write(f" -Processing BED from: {bed_path}", verbose=verbose)
     
     # Load BED file
@@ -682,12 +624,11 @@ def _process_bed_track(
 
 
 def _assign_stack(features_df: pd.DataFrame) -> Dict:
-    """
-    Assign stacking positions to features to avoid overlaps.
+    """Assign stacking positions to features to avoid overlaps.
     
     This is a simplified version of the assign_stack function from viz_plot_regional2.py.
     Features are assigned to stacks (tracks) such that overlapping features are on different stacks.
-    """
+"""
     stacks = []  # stack: list of (left, right) tuples
     stack_dict = {}  # mapping feature name to stack number
     
@@ -763,47 +704,15 @@ def _plot_bigwig_track(
     verbose: bool = True,
     log: Log = Log()
 ) -> Tuple[plt.Axes, List]:
-    """
-    Plot a bigWig track as a continuous signal line/area plot.
-    
-    Parameters
-    ----------
-    bw_path : str
-        Path to bigWig file
-    region : tuple of (int, int, int)
-        Genomic region as (chromosome, start, end) in 1-based coordinates
-    ax : matplotlib.axes.Axes, optional
-        Axes object to plot on
-    fig : matplotlib.figure.Figure, optional
-        Figure object
-    track_start_i : float, default=0.0
-        X-axis offset for track positioning
-    region_flank_factor : float, default=0.05
-        Flanking factor for extending region boundaries
-    chr_dict : dict, optional
-        Dictionary mapping sumstats chromosome (int) to file chromosome (str)
-    color : str, default="#020080"
-        Color for the signal line/area
-    highlight_positions : list of float, optional
-        List of x-axis positions to highlight with vertical lines
-    highlight_color : str, default="#FF0000"
-        Color for highlight lines
-    min_track_height : int, default=4
-        Sets the y-axis range (not used for actual height calculation)
-    figsize : tuple of (float, float), default=(10, 2)
-        Figure size
-    verbose : bool, default=True
-        Whether to show progress messages
-    log : Log, default=Log()
-        Logger instance
-    
-    Returns
-    -------
-    ax : matplotlib.axes.Axes
-        The axes object with track plotted
-    texts_to_adjust : list
-        Empty list (no text labels for bigWig)
-    """
+    """Plot a bigWig track as a continuous signal line/area plot.
+
+Returns
+-------
+ax : matplotlib.axes.Axes
+    The axes object with track plotted
+texts_to_adjust : list
+    Empty list (no text labels for bigWig)
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"
@@ -946,7 +855,8 @@ def _process_bigbed_track(
     verbose: bool,
     log: Log
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Process bigBed file for track plotting."""
+    """Process bigBed file for track plotting.
+"""
     if not PYBigWig_AVAILABLE:
         raise ImportError(
             "pyBigWig is not installed. Install it with: pip install pybigwig"

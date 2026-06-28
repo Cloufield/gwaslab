@@ -1,4 +1,5 @@
-"""Jackknife resampling statistics."""
+"""Jackknife resampling statistics.
+"""
 
 from __future__ import annotations
 
@@ -7,26 +8,28 @@ from scipy import stats
 
 
 def jackknife_correlation_se(x: np.ndarray, y: np.ndarray) -> float:
-    """
-    Jackknife standard error of Pearson correlation.
+    """Jackknife standard error of Pearson correlation.
 
-    Parameters
-    ----------
-    x : numpy.ndarray
-        First variable.
-    y : numpy.ndarray
-        Second variable, same length as ``x``.
+Parameters
+----------
+x : numpy.ndarray
+    First variable.
+y : numpy.ndarray
+    Second variable, same length as ``x``.
+Returns
+-------
+float
+    Jackknife SE of the correlation coefficient.
 
-    Returns
-    -------
-    float
-        Jackknife SE of the correlation coefficient.
-
-    Notes
-    -----
+Notes
+-----
     Implementation note: leave-one-out Pearson r with standard jackknife SE.
     Orchestration (pandas columns, logging) lives in ``viz.viz_plot_*``.
-    """
+
+References
+----------
+    Miller, R. G. (1974). The jackknife—a review. Biometrics, 30(1), 1-15.
+"""
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
     mask = np.isfinite(x) & np.isfinite(y)

@@ -1,5 +1,4 @@
-"""
-General utility modules for script execution and result management.
+"""General utility modules for script execution and result management.
 """
 
 from gwaslab.util.general.util_wrapper_log import (

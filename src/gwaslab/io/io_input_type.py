@@ -1,5 +1,4 @@
-"""
-Input type handling utilities for GWASLab functions.
+"""Input type handling utilities for GWASLab functions.
 
 Provides helpers to handle both DataFrame and Sumstats object inputs.
 """
@@ -11,19 +10,17 @@ if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
 def _get_id_column(sumstats_or_dataframe: Union['Sumstats', pd.DataFrame]) -> str:
-    """
-    Internal helper function to select the appropriate ID column (SNPID or rsID).
+    """Internal helper function to select the appropriate ID column (SNPID or rsID).
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to check for ID columns.
-    
-    Returns
-    -------
-    str
-        Column name to use: "SNPID" if available, otherwise "rsID".
-    """
+Parameters
+----------
+sumstats_or_dataframe : Sumstats or pd.DataFrame
+    Sumstats object or DataFrame to check for ID columns.
+Returns
+-------
+str
+    Column name to use: "SNPID" if available, otherwise "rsID".
+"""
     # Extract DataFrame if Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
         data = sumstats_or_dataframe

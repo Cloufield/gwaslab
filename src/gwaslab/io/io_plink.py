@@ -29,23 +29,21 @@ def _process_plink_input_files(chrlist: List[int],
                                load_bim: bool = False,
                                plink: str = "plink",
                                plink2: str = "plink2") -> Tuple[str, str, List[pd.DataFrame], str]:
-    """
-    Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
+    """Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
     
-    Parameters:
-    -----------
-    load_bim : bool, default=False
-        If True, load BIM/PVAR variant information into ref_bims list.
-        If False (default), ref_bims will be an empty list.
-        **Important**: Pass load_bim=True to populate ref_bims when using VCF or BGEN inputs.
-    
-    Returns:
-    --------
-    ref_file_prefix : prefix for either bfile or pfile.
-    plink_log : if plink was used, return the log. Otherwise, return an empty string.
-    ref_bims : if load_bim is True, return bim files as a list of pd.DataFrame. Otherwise, empty list.
-    filetype : either bfile or pfile.
-    """
+Parameters
+----------
+load_bim : bool, default False
+    If True, load BIM/PVAR variant information into ref_bims list.
+    If False (default), ref_bims will be an empty list.
+    **Important**: Pass load_bim=True to populate ref_bims when using VCF or BGEN inputs.
+Returns
+-------
+ref_file_prefix : prefix for either bfile or pfile.
+plink_log : if plink was used, return the log. Otherwise, return an empty string.
+ref_bims : if load_bim is True, return bim files as a list of pd.DataFrame. Otherwise, empty list.
+filetype : either bfile or pfile.
+"""
 
     # Step 1: Initialize list to store BIM/PVAR dataframes if load_bim is True
     ref_bims = []
@@ -503,8 +501,7 @@ def _load_pvar_single(chrom: int, bpfile_prefix: str, log: Log) -> pd.DataFrame:
 
 def _plink_chr_to_sumstats_chr(plink_chr: Union[str, int, float], 
                                 mapper: ChromosomeMapper) -> Union[str, int, None]:
-    """
-    Convert PLINK chromosome (from BIM/PVAR file) to sumstats chromosome format using ChromosomeMapper.
+    """Convert PLINK chromosome (from BIM/PVAR file) to sumstats chromosome format using ChromosomeMapper.
     
     PLINK uses numeric codes for chromosomes:
     - 1-22: Autosomes
@@ -521,23 +518,22 @@ def _plink_chr_to_sumstats_chr(plink_chr: Union[str, int, float],
     
     Note: The pseudo-autosomal region (PAR, PLINK 25) is mapped to chrX/chr23 in sumstats.
     
-    Parameters
-    ----------
-    plink_chr : str, int, or float
-        PLINK chromosome from BIM/PVAR file (typically string like "1", "23", "24", "25", "26")
-    mapper : ChromosomeMapper
-        ChromosomeMapper instance with detected sumstats format
+Parameters
+----------
+plink_chr : str, int, or float
+    PLINK chromosome from BIM/PVAR file (typically string like "1", "23", "24", "25", "26")
+mapper : ChromosomeMapper
+    ChromosomeMapper instance with detected sumstats format
+Returns
+-------
+str, int, or None
+    Chromosome in sumstats format, or None if unconvertible
     
-    Returns
-    -------
-    str, int, or None
-        Chromosome in sumstats format, or None if unconvertible
-    
-    References
-    ----------
+References
+----------
     PLINK 1.9 chromosome notation: https://www.cog-genomics.org/plink/1.9/filter#chr
     PLINK 2.0 chromosome notation: https://www.cog-genomics.org/plink/2.0/filter#chr
-    """
+"""
     # Handle None, NaN, or empty values
     if pd.isna(plink_chr) or plink_chr == "":
         return None
@@ -573,8 +569,7 @@ def _match_sumstats_with_ref_bim(sumstats: pd.DataFrame,
                                  has_allele_info: bool, 
                                  log: Log, 
                                  verbose: bool = True) -> int:
-    """
-    Match sumstats variants with reference BIM using CHR, POS, and optionally EA, NEA.
+    """Match sumstats variants with reference BIM using CHR, POS, and optionally EA, NEA.
     
     Handles PLINK chromosome notation by converting PLINK chromosomes (from BIM files) 
     to match sumstats chromosome notation using ChromosomeMapper. PLINK uses numeric codes:
@@ -587,25 +582,24 @@ def _match_sumstats_with_ref_bim(sumstats: pd.DataFrame,
     By default, sumstats only have 1-25, and XY (PLINK 25) is treated as X (23).
     MT (PLINK 26) maps to 25 in sumstats.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame
-        Summary statistics dataframe with CHR, POS, and optionally EA, NEA columns
-    ref_bim_all : pd.DataFrame
-        Reference BIM dataframe with CHR_bim, POS_bim, SNPID, EA_bim, NEA_bim columns.
-        CHR_bim is typically stored as string/category in BIM files (e.g., "1", "23", "24", "25").
-    has_allele_info : bool
-        Whether to use EA/NEA for matching (True) or just CHR/POS (False)
-    log : Log
-        Logger instance
-    verbose : bool
-        Whether to log messages
-        
-    Returns
-    -------
-    int
-        Number of matched variants
-    """
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics dataframe with CHR, POS, and optionally EA, NEA columns
+ref_bim_all : pd.DataFrame
+    Reference BIM dataframe with CHR_bim, POS_bim, SNPID, EA_bim, NEA_bim columns.
+    CHR_bim is typically stored as string/category in BIM files (e.g., "1", "23", "24", "25").
+has_allele_info : bool
+    Whether to use EA/NEA for matching (True) or just CHR/POS (False)
+log : Log
+    Logger instance
+verbose : bool
+    Whether to log messages
+Returns
+-------
+int
+    Number of matched variants
+"""
     # Initialize SNPID_bim column to store the matched BIM ID (default to original SNPID)
     sumstats["SNPID_bim"] = sumstats["SNPID"].copy()
     

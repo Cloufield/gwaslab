@@ -89,135 +89,15 @@ def _plot_trumpet(insumstats,
                 title=None,
                 title_fontsize=15,
                 log=Log()):
-    """
-    Create trumpet plot for genetic association results.
-    
-    This function generates a trumpet plot to visualize effect sizes and minor allele frequencies
-    with power curves and optional highlighting of significant variants.
-    
-    Parameters
-    ----------
-    mode : str, required
-        Analysis mode: "q" (quantitative trait) or "b" (binary trait). Default is "q"
-    n : str, optional
-        Column name for sample size for quantitative trait analysis. Used in "q" mode. Default is "N"
-    ts : list, optional
-        Power thresholds to plot. Default is [0.2,0.4,0.6,0.8]
-    anno : str or None, optional
-        Column name for variant annotation. Default is None
-    prevalence : float, optional
-        Prevalence for binary trait analysis. Used in "b" mode. Default is None
-    or_to_rr : bool, optional
-        Convert odds ratio to risk ratio. Used in "b" mode. Default is False
-    ncase : int, optional
-        Number of cases for binary trait analysis. Used in "b" mode. Default is None
-    ncontrol : int, optional
-        Number of controls for binary trait analysis.Used in "b" mode. Default is None
-    sig_level : float, optional
-        Significance threshold. Default is 5e-8
-    p_level : float, optional
-        P-value threshold for variant inclusion. Default is 5e-8
-    anno_y : float, optional
-        Annotation y-axis threshold. Default is 1
-    anno_x : float, optional
-        Annotation x-axis threshold. Default is 0.01
-    maf_range : tuple, optional
-        MAF range for power calculation. If None, auto-detected. Default is None
-    beta_range : tuple, optional
-        Beta range for power calculation. If None, auto-detected. Default is None
-    n_matrix : int, optional
-        Power curve smoothness parameter. Default is 1000
-    xscale : str, optional
-        X-axis scale: "log" or "linear". Default is "log"
-    yscale_factor : float, optional
-        Effect size scaling factor. Default is 1
-    cmap : str, optional
-        Colormap for power curves. Default is "cool"
-    ylim : tuple, optional
-        Y-axis limits. For example, [-3, 3]. If None, auto-detected. Default is None.
-    xlim : tuple, optional
-        X-axis limits. Default is None
-    markercolor : str, optional
-        Color for scatter points. Default is "#597FBD"
-    hue : str, optional
-        Column name for color grouping. Only used when you want to color variants differently. Default is None
-    highlight : list, optional
-        Variants to highlight. Default is None
-    pinpoint : list, optional
-        Variants to pinpoint. Default is None
-    pinpoint_color : str, optional
-        Color for pinpointed variants. Default is "red"
-    scatter_kwargs : dict, optional
-        Additional seaborn scatter plot arguments. Excluding x, y, size, ax,sizes, size_norm, legend, edgecolor, alpha, zorder. Default is None
-    fontsize : int, optional
-        Font size. Default is 15
-    font_family : str, optional
-        Font family. Default is "Arial"
-    size : str, optional
-        Column name for point size. Default is None
-    sizes : tuple, optional
-        Size range for points. Default is None
-    save : bool, optional
-        Save the plot. Default is False
-    save_kwargs : dict, optional
-        Arguments for saving the plot. Default is None
-    fig_kwargs : dict, optional
-        Figure creation arguments passed to plt.subplots. Default is None
-    build : str, optional
-        Reference genome build. Default is "99"
-    anno_set : list, optional
-        Annotation set. Default is None
-    anno_alias : dict, optional
-        Annotation alias mapping. Default is None
-    anno_d : dict, optional
-        Annotation dictionary. Default is None
-    anno_kwargs : dict, optional
-        Annotation arguments. Default is None
-    anno_style : str, optional
-        Annotation style. Default is "expand"
-    anno_source : str, optional
-        Annotation source. Default is "ensembl"
-    sort : str, optional
-        Sorting method for annotations. Default is "beta"
-    verbose : bool, optional
-        Verbose output. Default is True
-    
-    Returns
-    -------
-    matplotlib.figure.Figure
-        The generated trumpet plot figure
-    
-    Less used parameters
-    -------
-    ylabel : str, optional
-        Y-axis label. Default is "Effect size"
-    xlabel : str, optional
-        X-axis label. Default is "Minor allele frequency"
-    xticks : list, optional
-        X-axis tick positions. Default is None
-    xticklabels : list, optional
-        X-axis tick labels. Default is None
-    yticks : list, optional
-        Y-axis tick positions. Default is None
-    yticklabels : list, optional
-        Y-axis tick labels. Default is None
-    anno_max_iter : int, optional
-        Maximum annotation iterations. Default is 100
-    arm_scale : float, optional
-        Annotation arm scaling. Default is 1
-    repel_force : float, optional
-        Repulsion force for annotations. Default is 0.01
-    highlight_chrpos : bool, optional
-        Use chromosome position for highlighting. Default is False
-    highlight_windowkb : int, optional
-        Window size for highlighting. Default is 500
-    highlight_anno_kwargs : dict, optional
-        Annotation arguments for highlights. Default is None
-    highlight_lim : tuple, optional
-        Highlight limits. Default is None
-    highlight_lim_mode : str, optional
-        Highlight limit mode. Default is "absolute"
-    """
+    """Create trumpet plot for quantitative or binary trait associations.
+
+    Registry-aligned parameters are on ``Sumstats.plot_trumpet()``.
+
+Returns
+-------
+matplotlib.figure.Figure
+    The generated trumpet plot figure.
+"""
     
     # Extract dataframe if Sumstats object is passed
     if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
@@ -363,14 +243,12 @@ def _plot_trumpet(insumstats,
         log.write(" -N for power calculation: {}".format(n), verbose=verbose)
 
     #configure beta and maf range ###################################################################################################
-    if maf_range is None:
-        maf_min_power = np.floor( -np.log10(sumstats[maf].min())) + 1
-        maf_range=(min(np.power(10.0,-maf_min_power),np.power(10.0,-4)),0.5)
-    if beta_range is None:
-        if sumstats[beta].max()>3:
-            beta_range=(0.0001,sumstats[beta].max())
-        else:
-            beta_range=(0.0001,3)
+    if maf_range is None or beta_range is None:
+        from gwaslab.algorithm.core.power import infer_beta_range, infer_maf_range
+        if maf_range is None:
+            maf_range = infer_maf_range(sumstats[maf].min())
+        if beta_range is None:
+            beta_range = infer_beta_range(sumstats[beta].max())
     
     #configure power threshold###################################################################################################
     if ts is None:
@@ -748,76 +626,16 @@ def plot_power(ns=1000,
                 yticklabels=None,
                 verbose=True,
                 log=Log()):
-    """
-    Generate power curves for genetic association studies.
+    """Generate power curves for genetic association studies.
     
     This function creates power curves visualizing the relationship between
     effect sizes and minor allele frequencies under various parameter settings.
-    
-    Parameters
-    ----------
-    ns : int or list, optional
-        Sample size(s) for quantitative trait analysis. Default is 1000
-    mode : str, optional
-        Analysis mode: "q" (quantitative) or "b" (binary). Default is "q"
-    ts : list or None, optional
-        Power thresholds to plot. Default is [0.2, 0.4, 0.6, 0.8]
-    prevalences : float or list, optional
-        Prevalence for binary trait analysis. Default is 0.1
-    or_to_rr : bool, optional
-        Convert odds ratio to risk ratio. Default is False
-    ncases : int or list, optional
-        Number of cases for binary trait analysis. Default is 5000
-    ncontrols : int or list, optional
-        Number of controls for binary trait analysis. Default is 5000
-    sig_levels : float or list, optional
-        Significance threshold(s). Default is 5e-8
-    maf_range : tuple or None, optional
-        MAF range for power calculation. Default is (0.001, 0.5)
-    beta_range : tuple or None, optional
-        Beta range for power calculation. Default is (0.0001, 3)
-    n_matrix : int, optional
-        Power curve smoothness parameter. Default is 1000
-    xscale : str, optional
-        X-axis scale: "log" or "linear". Default is "log"
-    yscale_factor : float, optional
-        Effect size scaling factor. Default is 1
-    cmap : str, optional
-        Colormap for power curves. Default is "cool"
-    ylim : tuple or None, optional
-        Y-axis limits. Default is None
-    fontsize : int, optional
-        Font size for labels. Default is 15
-    font_family : str, optional
-        Font family for text. Default is "Arial"
-    sizes : tuple or None, optional
-        Size range for points. Default is (20, 80)
-    save : bool, optional
-        Save the plot. Default is False
-    save_kwargs : dict or None, optional
-        Arguments for saving the plot. Default is None
-    ylabel : str, optional
-        Y-axis label. Default is "Effect size"
-    xlabel : str, optional
-        X-axis label. Default is "Minor allele frequency"
-    xticks : list or None, optional
-        X-axis tick positions. Default is None
-    xticklabels : list or None, optional
-        X-axis tick labels. Default is None
-    yticks : list or None, optional
-        Y-axis tick positions. Default is None
-    yticklabels : list or None, optional
-        Y-axis tick labels. Default is None
-    verbose : bool, optional
-        Verbose output. Default is True
-    log : gwaslab.g_Log.Log, optional
-        Logger object. Default is new Log()
-    
-    Returns
-    -------
-    matplotlib.figure.Figure
-        The generated power curve plot figure
-    """
+
+Returns
+-------
+matplotlib.figure.Figure
+    The generated power curve plot figure
+"""
     
     #Checking columns#################################################################################################################
     matplotlib.rc('font', family=font_family)
@@ -1029,20 +847,38 @@ def plot_power_x(
                 yticklabels=None,
                 verbose=True,
                 log=Log()):
-    
-    #Checking columns#################################################################################################################
-    """
-    Create power cure with user-specified x axis
-    q mode:
-        N
-        MAF
-    b mode:
-        N_CASE
-        N_CONTROL
-        PREVALENCE
-    BETA
-    """
+    """Plot statistical power versus a user-chosen x-axis variable.
 
+    In quantitative trait mode (``mode="q"``), ``x`` may be ``N`` or ``MAF``.
+    In binary trait mode (``mode="b"``), ``x`` may be ``N_CASE``, ``N_CONTROL``,
+    ``PREVALENCE``, or ``BETA``.
+
+Parameters
+----------
+x : str, optional
+    X-axis variable. Defaults to ``N`` (quantitative) or ``N_CASE`` (binary).
+mode : str, default "q"
+    ``"q"`` for quantitative traits; ``"b"`` for binary traits.
+ns, mafs, betas : float or list, optional
+    Fixed or swept sample size, MAF, and effect size for power curves.
+ncases, ncontrols, prevalences : float or list, optional
+    Case/control counts and prevalence for binary-trait mode.
+sig_levels : float or list, default 5e-8
+    Significance threshold(s) for power calculation.
+ts : list, default [0.8]
+    Horizontal reference lines at these power levels.
+verbose : bool, default True
+    Print progress messages.
+log : gwaslab.Log, default Log()
+    Logging object.
+
+Returns
+-------
+matplotlib.figure.Figure or None
+    Power curve figure, or ``None`` when required inputs are missing.
+"""
+
+    #Checking columns#################################################################################################################
     log.write("Start to create power plot...", verbose=verbose)
     matplotlib.rc('font', family=font_family)
 

@@ -15,7 +15,10 @@ FREQ_COMPARISON_EPSILON = 1e-6
     start_to_msg="annotate and infer strand orientation using allele frequencies",
     finished_msg="annotating and inferring strand orientation using allele frequencies",
     start_cols=["CHR","POS","EA","NEA","EAF","STATUS"],
-    start_function=".infer_strand2()"
+    start_function=".infer_strand2()",
+    meta_section="harmonize",
+    meta_step="infer_strand",
+    on_missing_cols="skip",
 )
 def _infer_strand_with_annotation(
     sumstats: pd.DataFrame,
@@ -44,8 +47,7 @@ def _infer_strand_with_annotation(
     verbose: bool = True,
     log_run_plan: bool = True,
 ) -> pd.DataFrame:
-    """
-    Annotate summary statistics with reference allele frequency and infer strand orientation.
+    """Annotate summary statistics with reference allele frequency and infer strand orientation.
     
     This function performs a two-step process:
     1. **Annotation**: Annotates summary statistics with reference allele frequency (RAF) from a 
@@ -70,81 +72,80 @@ def _infer_strand_with_annotation(
     - Variants not found in reference: STATUS 7th digit = `8`
     - Variants not checked: STATUS 7th digit = `9`
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA, EAF, STATUS.
-    path : str or None, optional
-        Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`. 
-        The function will automatically detect the file format.
-    vcf_path : str or None, optional
-        Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
-    tsv_path : str or None, optional
-        Path to precomputed lookup TSV file. If not provided and `vcf_path` is given, 
-        a lookup table will be generated from the VCF/BCF file.
-    assign_cols : tuple or str, default=("AF",)
-        Column names to extract from reference file during annotation. The first column 
-        will be renamed to `raf` (default: "RAF") for use in strand inference.
-    mapper : ChromosomeMapper, optional
-        ChromosomeMapper instance to use for chromosome name conversion.
-        If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
-        If not provided, creates a default mapper with automatic format detection.
-    threads : int, default=6
-        Number of threads for parallel processing during annotation and lookup table generation.
-    reuse_lookup : bool, default=True
-        If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
-    convert_to_bcf : bool, default=False
-        If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be 
-        set to False if converting to BCF (INFO fields are needed for AF extraction).
-    strip_info : bool, default=True
-        If True, strip INFO fields from VCF during lookup table generation to reduce file size.
-        Set to False if INFO fields are needed for other purposes.
-    chrom : str, default="CHR"
-        Column name for chromosome in sumstats.
-    pos : str, default="POS"
-        Column name for position in sumstats.
-    ea : str, default="EA"
-        Column name for effect allele in sumstats.
-    nea : str, default="NEA"
-        Column name for non-effect allele in sumstats.
-    eaf : str, default="EAF"
-        Column name for effect allele frequency in sumstats.
-    raf : str, default="RAF"
-        Column name to store reference allele frequency (from reference file). This column 
-        will be created/updated during annotation.
-    flipped_col : str, default="ALLELE_FLIPPED"
-        Column name indicating if alleles were flipped during harmonization (True = reverse strand).
-        This column is used as a hint for strand inference but is not required.
-    strand_col : str, default="STRAND"
-        Column name to store strand orientation ('+' for forward, '-' for reverse, '?' for unknown).
-        This column will be created if it doesn't exist.
-    maf_threshold : float, default=0.40
-        Maximum minor allele frequency threshold for palindromic SNPs. Palindromic SNPs with 
-        MAF > threshold in either EAF or RAF will be excluded from strand determination and 
-        assigned STATUS 7th digit = `7`. Higher values allow more variants to be processed, 
-        but may reduce accuracy for ambiguous cases.
-    ref_maf_threshold : float, default=0.40
-        Maximum minor allele frequency threshold for reference allele frequency (RAF). Used as 
-        an additional filter for palindromic SNPs. Variants with MAF(RAF) > threshold will be 
-        excluded from strand determination.
-    daf_tolerance : float, default=0.20
-        Difference in allele frequency tolerance for indels. For indels, the function compares 
-        |EAF - RAF| (forward) and |EAF - (1 - RAF)| (reverse). If the difference is within 
-        `daf_tolerance`, the strand is assigned. If both differences are within tolerance or 
-        both exceed tolerance, the indel is marked as ambiguous (STATUS 7th digit = `4`).
-    verbose : bool, default=True
-        If True, print progress messages and warnings.
-    log : Log, default=Log()
-        Logging object for recording process information.
+Parameters
+----------
+sumstats : pd.DataFrame or Sumstats
+    Summary statistics DataFrame or Sumstats object. Must contain columns: CHR, POS, EA, NEA, EAF, STATUS.
+path : str or None, optional
+    Path to reference file (VCF/BCF or TSV). If provided, overrides `tsv_path`.
+    The function will automatically detect the file format.
+vcf_path : str or None, optional
+    Path to VCF/BCF file. If provided, overrides both `path` and `tsv_path`.
+tsv_path : str or None, optional
+    Path to precomputed lookup TSV file. If not provided and `vcf_path` is given,
+    a lookup table will be generated from the VCF/BCF file.
+assign_cols : tuple or str, default ("AF",)
+    Column names to extract from reference file during annotation. The first column
+    will be renamed to `raf` (default: "RAF") for use in strand inference.
+mapper : ChromosomeMapper, optional
+    ChromosomeMapper instance to use for chromosome name conversion.
+    If not provided and sumstats is a Sumstats object, uses sumstats.mapper.
+    If not provided, creates a default mapper with automatic format detection.
+threads : int, default 6
+    Number of threads for parallel processing during annotation and lookup table generation.
+reuse_lookup : bool, default True
+    If True, reuse existing lookup table TSV file if found. If False, regenerate from VCF/BCF.
+convert_to_bcf : bool, default False
+    If True, convert VCF to BCF format for faster processing. Note: `strip_info` will be
+    set to False if converting to BCF (INFO fields are needed for AF extraction).
+strip_info : bool, default True
+    If True, strip INFO fields from VCF during lookup table generation to reduce file size.
+    Set to False if INFO fields are needed for other purposes.
+chrom : str, default "CHR"
+    Column name for chromosome in sumstats.
+pos : str, default "POS"
+    Column name for position in sumstats.
+ea : str, default "EA"
+    Column name for effect allele in sumstats.
+nea : str, default "NEA"
+    Column name for non-effect allele in sumstats.
+eaf : str, default "EAF"
+    Column name for effect allele frequency in sumstats.
+raf : str, default "RAF"
+    Column name to store reference allele frequency (from reference file). This column
+    will be created/updated during annotation.
+flipped_col : str, default "ALLELE_FLIPPED"
+    Column name indicating if alleles were flipped during harmonization (True = reverse strand).
+    This column is used as a hint for strand inference but is not required.
+strand_col : str, default "STRAND"
+    Column name to store strand orientation ('+' for forward, '-' for reverse, '?' for unknown).
+    This column will be created if it doesn't exist.
+maf_threshold : float, default 0.40
+    Maximum minor allele frequency threshold for palindromic SNPs. Palindromic SNPs with
+    MAF > threshold in either EAF or RAF will be excluded from strand determination and
+    assigned STATUS 7th digit = `7`. Higher values allow more variants to be processed,
+    but may reduce accuracy for ambiguous cases.
+ref_maf_threshold : float, default 0.40
+    Maximum minor allele frequency threshold for reference allele frequency (RAF). Used as
+    an additional filter for palindromic SNPs. Variants with MAF(RAF) > threshold will be
+    excluded from strand determination.
+daf_tolerance : float, default 0.20
+    Difference in allele frequency tolerance for indels. For indels, the function compares
+    |EAF - RAF| (forward) and |EAF - (1 - RAF)| (reverse). If the difference is within
+    `daf_tolerance`, the strand is assigned. If both differences are within tolerance or
+    both exceed tolerance, the indel is marked as ambiguous (STATUS 7th digit = `4`).
+verbose : bool, default True
+    If True, print progress messages and warnings.
+log : Log, default Log()
+    Logging object for recording process information.
+Returns
+-------
+pd.DataFrame or Sumstats
+    If input is a DataFrame, returns updated DataFrame with RAF and STRAND columns.
+    If input is a Sumstats object, returns the Sumstats object with updated data.
     
-    Returns
-    -------
-    pd.DataFrame or Sumstats
-        If input is a DataFrame, returns updated DataFrame with RAF and STRAND columns.
-        If input is a Sumstats object, returns the Sumstats object with updated data.
-    
-    Notes
-    -----
+Notes
+-----
     - This function requires the sumstats to have been harmonized (STATUS codes present) and 
       to have EAF values for variants of interest.
     - The function uses optimized bulk lookup methods for faster processing compared to 
@@ -158,7 +159,7 @@ def _infer_strand_with_annotation(
     --------
     _annotate_sumstats : Function that performs the annotation step.
     _infer_strand : Function that performs the strand inference step.
-    """
+"""
     # Handle both DataFrame and Sumstats object inputs
     if isinstance(sumstats, pd.DataFrame):
         is_dataframe = True
@@ -255,22 +256,13 @@ def _infer_strand_with_annotation(
     
     # Update metadata and harmonization status if input was a Sumstats object
     if not is_dataframe:
-        # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = result
         try:
-            from gwaslab.info.g_meta import _append_meta_record, _update_harmonize_step
+            from gwaslab.info.g_meta import _append_meta_record
             if path is not None:
                 sumstats_obj.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(
                     sumstats_obj.meta["gwaslab"]["references"]["ref_infer"], path)
-            infer_strand_kwargs = {
-                'path': path, 'vcf_path': vcf_path, 'tsv_path': tsv_path, 'assign_cols': assign_cols,
-                'threads': threads, 'reuse_lookup': reuse_lookup,
-                'convert_to_bcf': convert_to_bcf, 'strip_info': strip_info,
-                'maf_threshold': maf_threshold, 'ref_maf_threshold': ref_maf_threshold,
-                'daf_tolerance': daf_tolerance
-            }
-            _update_harmonize_step(sumstats_obj, "infer_strand", infer_strand_kwargs, True)
-        except:
+        except Exception:
             pass
         return sumstats_obj.data
     else:
@@ -280,7 +272,8 @@ def _infer_strand_with_annotation(
     start_to_msg="infer strand orientation using allele frequencies",
     finished_msg="inferring strand orientation using allele frequencies",
     start_cols=["CHR","POS","EA","NEA","EAF"],
-    start_function=".infer_strand()"
+    start_function=".infer_strand()",
+    on_missing_cols="skip",
 )
 def _infer_strand(
     sumstats: pd.DataFrame,
@@ -299,8 +292,7 @@ def _infer_strand(
     daf_tolerance: float = 0.20,
     verbose: bool = True
 ) -> pd.DataFrame:
-    """
-    Infer strand orientation for palindromic SNPs and indels using allele frequencies.
+    """Infer strand orientation for palindromic SNPs and indels using allele frequencies.
     
     This function determines strand orientation (forward `+` or reverse `-`) for variants where 
     strand cannot be determined from alleles alone. It uses effect allele frequency (EAF) from 
@@ -337,61 +329,60 @@ def _infer_strand(
     - `8`: Variant not found in reference or MAF exceeded
     - `9`: Variant not checked (no EAF or RAF available)
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame. Must contain columns: CHR, POS, EA, NEA, EAF, RAF, 
-        ALLELE_FLIPPED, and STATUS.
-    chrom : str, default="CHR"
-        Column name for chromosome.
-    pos : str, default="POS"
-        Column name for position.
-    ea : str, default="EA"
-        Column name for effect allele.
-    nea : str, default="NEA"
-        Column name for non-effect allele.
-    eaf : str, default="EAF"
-        Column name for effect allele frequency (from sumstats).
-    raf : str, default="RAF"
-        Column name for reference allele frequency (from reference file, typically annotated 
-        by `_annotate_sumstats` or `_infer_strand_with_annotation`).
-    flipped_col : str, default="ALLELE_FLIPPED"
-        Column name indicating if alleles were flipped during harmonization. This is used 
-        as a hint but is not required for strand inference.
-    strand_col : str, default="STRAND"
-        Column name to store strand orientation ('+' for forward, '-' for reverse, '?' for unknown).
-        This column will be created if it doesn't exist.
-    status_col : str, default="STATUS"
-        Column name containing 7-digit status codes. The 7th digit will be updated to reflect 
-        strand inference results.
-    maf_threshold : float, default=0.40
-        Maximum minor allele frequency threshold for palindromic SNPs. Palindromic SNPs with 
-        MAF > threshold in EAF will be assigned STATUS 7th digit = `7` (cannot infer). 
-        Higher values allow more variants to be processed but may reduce accuracy.
-    ref_maf_threshold : float, default=0.40
-        Maximum minor allele frequency threshold for reference allele frequency (RAF). Used as 
-        an additional filter for both palindromic SNPs and indels. Variants with MAF(RAF) > 
-        threshold will be excluded from strand determination.
-    daf_tolerance : float, default=0.20
-        Difference in allele frequency tolerance for indels. For indels, compares |EAF - RAF| 
-        (forward) and |EAF - (1 - RAF)| (reverse). If the difference is within `daf_tolerance`, 
-        the strand is assigned. If both differences are within tolerance or both exceed tolerance, 
-        the indel is marked as ambiguous (STATUS 7th digit = `4`).
-    verbose : bool, default=True
-        If True, print progress messages and warnings about missing data.
-    log : Log, default=Log()
-        Logging object for recording process information.
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics DataFrame. Must contain columns: CHR, POS, EA, NEA, EAF, RAF,
+    ALLELE_FLIPPED, and STATUS.
+chrom : str, default "CHR"
+    Column name for chromosome.
+pos : str, default "POS"
+    Column name for position.
+ea : str, default "EA"
+    Column name for effect allele.
+nea : str, default "NEA"
+    Column name for non-effect allele.
+eaf : str, default "EAF"
+    Column name for effect allele frequency (from sumstats).
+raf : str, default "RAF"
+    Column name for reference allele frequency (from reference file, typically annotated
+    by `_annotate_sumstats` or `_infer_strand_with_annotation`).
+flipped_col : str, default "ALLELE_FLIPPED"
+    Column name indicating if alleles were flipped during harmonization. This is used
+    as a hint but is not required for strand inference.
+strand_col : str, default "STRAND"
+    Column name to store strand orientation ('+' for forward, '-' for reverse, '?' for unknown).
+    This column will be created if it doesn't exist.
+status_col : str, default "STATUS"
+    Column name containing 7-digit status codes. The 7th digit will be updated to reflect
+    strand inference results.
+maf_threshold : float, default 0.40
+    Maximum minor allele frequency threshold for palindromic SNPs. Palindromic SNPs with
+    MAF > threshold in EAF will be assigned STATUS 7th digit = `7` (cannot infer).
+    Higher values allow more variants to be processed but may reduce accuracy.
+ref_maf_threshold : float, default 0.40
+    Maximum minor allele frequency threshold for reference allele frequency (RAF). Used as
+    an additional filter for both palindromic SNPs and indels. Variants with MAF(RAF) >
+    threshold will be excluded from strand determination.
+daf_tolerance : float, default 0.20
+    Difference in allele frequency tolerance for indels. For indels, compares |EAF - RAF|
+    (forward) and |EAF - (1 - RAF)| (reverse). If the difference is within `daf_tolerance`,
+    the strand is assigned. If both differences are within tolerance or both exceed tolerance,
+    the indel is marked as ambiguous (STATUS 7th digit = `4`).
+verbose : bool, default True
+    If True, print progress messages and warnings about missing data.
+log : Log, default Log()
+    Logging object for recording process information.
+Returns
+-------
+pd.DataFrame
+    Updated summary statistics DataFrame with:
+    - `strand_col`: Strand orientation ('+', '-', or '?')
+    - `status_col`: Updated STATUS codes with 7th digit reflecting inference results
+    - `flipped_col`: Removed (if present) as it's no longer needed after inference
     
-    Returns
-    -------
-    pd.DataFrame
-        Updated summary statistics DataFrame with:
-        - `strand_col`: Strand orientation ('+', '-', or '?')
-        - `status_col`: Updated STATUS codes with 7th digit reflecting inference results
-        - `flipped_col`: Removed (if present) as it's no longer needed after inference
-    
-    Notes
-    -----
+Notes
+-----
     - This function requires RAF to be pre-annotated (typically by `_annotate_sumstats` or 
       `_infer_strand_with_annotation`).
     - The function only processes variants with unknown strand status (STATUS 7th digit = 8 or 9).
@@ -404,7 +395,7 @@ def _infer_strand(
     --------
     _infer_strand_with_annotation : Function that annotates RAF and then calls this function.
     _annotate_sumstats : Function that annotates RAF from reference file.
-    """
+"""
 
     # Validate required columns are present
     required_cols = [chrom, pos, ea, nea, eaf, raf, flipped_col]

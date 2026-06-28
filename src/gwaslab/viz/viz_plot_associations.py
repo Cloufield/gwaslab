@@ -32,42 +32,34 @@ def _plot_associations(associations,
                         yticklabel_kwargs=None,
                         **args               
                        ):
-    """
-    Plot associations as a heatmap using GCV2 format.
-    
-    Parameters
-    ----------
-    associations : pd.DataFrame
-        Associations DataFrame in GCV2 format (with _GCV2 suffix columns)
-    values : str, optional
-        Column name for values to plot. Default: "BETA_GCV2"
-    sort : str, optional
-        Column name to sort by. Default: "P_GCV2"
-    save : str, optional
-        File path to save the figure. Default: None
-    save_kwargs : dict, optional
-        Additional arguments for saving the figure. Default: None
-    title : str, optional
-        Title for the plot. Default: None
-    heatmap_kwargs : dict, optional
-        Additional arguments passed to seaborn.heatmap. Default: None
-    annot : bool, optional
-        Whether to annotate cells with values. Default: True
-    fmt : str, optional
-        Format string for annotations. Default: ".2f"
-    vmin, vmax : float, optional
-        Values to anchor the colormap. Default: None (auto)
-    center : float, optional
-        Value to center the colormap. Default: None
-    cbar : bool, optional
-        Whether to draw a colorbar. Default: True
-    cbar_kws : dict, optional
-        Additional arguments for colorbar. Default: None
-    xticklabel_kwargs : dict, optional
-        Additional arguments for x-axis tick labels. Default: None
-    yticklabel_kwargs : dict, optional
-        Additional arguments for y-axis tick labels. Default: None
-    """
+    """Plot trait associations as a heatmap (GCV2 format).
+
+Parameters
+----------
+associations : pandas.DataFrame or Sumstats
+    Association table with GCV2-style columns.
+values : str, default "BETA_GCV2"
+    Matrix cell values (effect sizes).
+sort : str, default "P_GCV2"
+    Column used to order variants before plotting.
+fig_kwargs : dict, optional
+    Keyword arguments for ``plt.subplots``.
+log : gwaslab.Log, default Log()
+    Logging object.
+verbose : bool, default True
+    Print progress messages.
+save : str, optional
+    Output path prefix; figure is saved when set.
+**args
+    Extra keyword arguments forwarded to ``seaborn.heatmap``.
+
+Returns
+-------
+fig : matplotlib.figure.Figure or None
+    Heatmap figure, or ``None`` when required columns are missing.
+ax : matplotlib.axes.Axes or None
+    Axes containing the heatmap.
+"""
     
     # Extract dataframe if Sumstats object is passed
     if hasattr(associations, 'data') and not isinstance(associations, pd.DataFrame):

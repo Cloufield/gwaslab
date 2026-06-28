@@ -36,9 +36,40 @@ def _plot_cs(pipcs_raw,
             log=Log(),
             verbose=True,
             **kwargs):
-        '''
-        pipcs : a DataFrame of finemapping results
-        '''
+        '''Plot fine-mapping credible sets in a regional view.
+
+Parameters
+----------
+pipcs_raw : pandas.DataFrame or Sumstats
+    Fine-mapping results with PIP and credible-set columns.
+region, locus : tuple or str, optional
+    Genomic window to display (chromosome/start/end or locus alias).
+figax : tuple, optional
+    Existing ``(fig, ax)`` to draw on; created when ``None``.
+pip : str, default "PIP"
+    Posterior inclusion probability column.
+onlycs : bool, default False
+    Show only variants assigned to a credible set.
+pos, chrom : str, default "POS", "CHR"
+    Position and chromosome column names.
+cs, cs_category : str
+    Credible set index and category column names.
+marker_size : tuple, default (45, 85)
+    Min and max marker sizes for PIP scaling.
+save : str, optional
+    Output path prefix; figure is saved when set.
+verbose : bool, default True
+    Print progress messages.
+log : gwaslab.Log, default Log()
+    Logging object.
+**kwargs
+    Additional styling options forwarded to the plot driver.
+
+Returns
+-------
+matplotlib.figure.Figure
+    The credible-set regional figure.
+'''
         # Extract dataframe if Sumstats object is passed
         if hasattr(pipcs_raw, 'data') and not isinstance(pipcs_raw, pd.DataFrame):
             pipcs_raw = pipcs_raw.data

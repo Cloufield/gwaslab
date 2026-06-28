@@ -1,5 +1,4 @@
-"""
-Report generation module for GWASLab.
+"""Report generation module for GWASLab.
 
 This module provides functions to generate comprehensive QC reports
 including basic QC, lead variant extraction, and visualization.
@@ -36,8 +35,7 @@ def generate_qc_report(
     report_title: str = "GWAS Quality Control Report",
     verbose: bool = True
 ) -> str:
-    """
-    Generate a comprehensive QC report including basic QC, harmonization (optional),
+    """Generate a comprehensive QC report including basic QC, harmonization (optional),
     lead variants, MQQ plots, regional plots, and output (optional).
     
     This function performs:
@@ -49,48 +47,41 @@ def generate_qc_report(
     6. Output to specified format using to_format() (optional, if output_kwargs provided)
     7. HTML/PDF report generation with all results
     
-    Parameters
-    ----------
-    sumstats : gwaslab.Sumstats
-        Sumstats object to analyze
-    output_path : str, optional
-        Path to save the report. Supports both HTML (.html) and PDF (.pdf) formats.
-        Default: "gwas_qc_report.html"
-    basic_check_kwargs : dict, optional
-        Keyword arguments passed to basic_check(). Default: None
-    harmonize_kwargs : dict, optional
-        Keyword arguments passed to harmonize(). If provided, harmonization will be performed
-        after basic_check. Set to {} to use default harmonization settings.
-        Default: None (no harmonization)
-    get_lead_kwargs : dict, optional
-        Keyword arguments passed to get_lead(). Default: None
-    mqq_plot_kwargs : dict, optional
-        Keyword arguments passed to plot_mqq() for MQQ plot. Default: None
-    regional_plot_kwargs : dict, optional
-        Keyword arguments passed to plot_mqq() for regional plots. Default: None
-    output_kwargs : dict, optional
-        Keyword arguments passed to to_format() for outputting sumstats.
-        Must include 'path' key. If provided, sumstats will be saved to the specified format.
-        Example: {"path": "output_sumstats", "fmt": "ldsc", "gzip": True}
-        Default: None (no output)
-    report_title : str, optional
-        Title for the HTML report. Default: "GWAS Quality Control Report"
-    verbose : bool, optional
-        Whether to print progress messages. Default: True
+Parameters
+----------
+sumstats : Sumstats
+    Sumstats object to analyze.
+output_path : str, default "gwas_qc_report.html"
+    Path to save the report (HTML or PDF when ``weasyprint`` is installed).
+basic_check_kwargs : dict, optional
+    Keyword arguments passed to ``basic_check()``.
+harmonize_kwargs : dict, optional
+    Keyword arguments passed to ``harmonize()``. When provided, harmonization runs after basic QC.
+get_lead_kwargs : dict, optional
+    Keyword arguments passed to ``get_lead()``.
+mqq_plot_kwargs : dict, optional
+    Keyword arguments passed to ``plot_mqq()`` for the genome-wide plot.
+regional_plot_kwargs : dict, optional
+    Keyword arguments passed to ``plot_region()`` for locus plots.
+output_kwargs : dict, optional
+    Keyword arguments passed to ``to_format()`` (must include ``path``).
+report_title : str, default "GWAS Quality Control Report"
+    Title shown in the HTML report.
+verbose : bool, default True
+    Print progress messages.
+Returns
+-------
+str
+    Path to the generated report file.
     
-    Returns
-    -------
-    str
-        Path to the generated report (HTML or PDF)
-    
-    Notes
-    -----
+Notes
+-----
     For PDF output, `weasyprint` must be installed.
     If PDF format is requested but weasyprint is not available, the function will
     generate HTML instead and issue a warning.
     
-    Examples
-    --------
+Examples
+--------
     >>> import gwaslab as gl
     >>> mysumstats = gl.Sumstats("sumstats.txt.gz")
     >>> # Basic report
@@ -111,7 +102,7 @@ def generate_qc_report(
     ...     output_path="my_report.html",
     ...     output_kwargs={"path": "clean_sumstats", "fmt": "ldsc", "gzip": True}
     ... )
-    """
+"""
     log = Log()
     
     if basic_check_kwargs is None:
@@ -412,39 +403,37 @@ def _generate_html_report(
     summary_dict: Optional[Dict[str, Any]] = None,
     log_text: str = ""
 ) -> str:
-    """
-    Generate HTML content for the QC report.
+    """Generate HTML content for the QC report.
     
-    Parameters
-    ----------
-    sumstats : gwaslab.Sumstats
-        Sumstats object
-    lead_variants : pd.DataFrame
-        DataFrame containing lead variants
-    mqq_plot_path : Path or None
-        Path to MQQ plot image
-    regional_plots : list
-        List of dictionaries containing regional plot information
-    report_title : str
-        Title for the report
-    output_dir : Path
-        Output directory
-    plots_dir : Path
-        Directory containing plot images
-    use_absolute_paths : bool, optional
-        Whether to use absolute paths for images (deprecated, kept for compatibility)
-    processing_steps : list, optional
-        List of processing steps performed
-    harmonization_performed : bool, optional
-        Whether harmonization was performed
-    output_files : list, optional
-        List of output file paths
-    
-    Returns
-    -------
-    str
-        HTML content as string
-    """
+Parameters
+----------
+sumstats : gwaslab.Sumstats
+    Sumstats object
+lead_variants : pd.DataFrame
+    DataFrame containing lead variants
+mqq_plot_path : Path or None
+    Path to MQQ plot image
+regional_plots : list
+    List of dictionaries containing regional plot information
+report_title : str
+    Title for the report
+output_dir : Path
+    Output directory
+plots_dir : Path
+    Directory containing plot images
+use_absolute_paths : bool, optional
+    Whether to use absolute paths for images (deprecated, kept for compatibility)
+processing_steps : list, optional
+    List of processing steps performed
+harmonization_performed : bool, optional
+    Whether harmonization was performed
+output_files : list, optional
+    List of output file paths
+Returns
+-------
+str
+    HTML content as string
+"""
     if processing_steps is None:
         processing_steps = []
     if output_files is None:

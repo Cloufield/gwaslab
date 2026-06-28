@@ -20,7 +20,8 @@ def find_efo_cache(efo: str, path: str) -> Union[str, bool]:
         finished_msg="retrieving data from GWASCatalog"
 )
 def find_efo_cache_with_child(efo: str, path: str, show_child_traits: bool) -> Union[str, bool]:
-    """Find cache file for efo and show_child_traits (legacy API)."""
+    """Find cache file for efo and show_child_traits (legacy API).
+"""
     suffix = "childTrue" if show_child_traits else "childFalse"
     for root, dirs, files in os.walk(path):
         for file in files:

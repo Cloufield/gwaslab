@@ -52,37 +52,35 @@ def _extract_with_ld_proxy(
     windowsizekb: int = 100,
     ld_threshold: float = 0.8
 ) -> pd.DataFrame:
-    """
-    Find LD proxies for SNPs in the list using a VCF reference.
+    """Find LD proxies for SNPs in the list using a VCF reference.
 
-    Parameters
-    ----------
-    snplist : list or None
-        List of SNP IDs to find proxies for.
-    common_sumstats : pandas.DataFrame or None
-        DataFrame with summary statistics for existing SNPs.
-    sumstats1 : pandas.DataFrame or None
-        DataFrame with summary statistics for SNPs to check.
-    vcf_path : str or None
-        Path to the VCF file for reference genotypes.
-    vcf_chr_dict : dict or None
-        Dictionary mapping chromosomes to VCF region strings.
-    tabix : str or None
-        Path to tabix executable.
-    log : gwaslab.g_Log.Log
-        Logging object.
-    verbose : bool
-        If True, write detailed logs.
-    windowsizekb : int
-        Size in kb for the flanking region around each SNP.
-    ld_threshold : float
-        Minimum R^2 value to consider a proxy valid.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Extracted summary statistics including matched proxies.
-    """
+Parameters
+----------
+snplist : list or None
+    List of SNP IDs to find proxies for.
+common_sumstats : pandas.DataFrame or None
+    DataFrame with summary statistics for existing SNPs.
+sumstats1 : pandas.DataFrame or None
+    DataFrame with summary statistics for SNPs to check.
+vcf_path : str or None
+    Path to the VCF file for reference genotypes.
+vcf_chr_dict : dict or None
+    Dictionary mapping chromosomes to VCF region strings.
+tabix : str or None
+    Path to tabix executable.
+log : gwaslab.g_Log.Log
+    Logging object.
+verbose : bool
+    If True, write detailed logs.
+windowsizekb : int
+    Size in kb for the flanking region around each SNP.
+ld_threshold : float
+    Minimum R^2 value to consider a proxy valid.
+Returns
+-------
+pandas.DataFrame
+    Extracted summary statistics including matched proxies.
+"""
     
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
@@ -182,33 +180,31 @@ def _extract_vcf_proxies_not_in_sumstats(
     log: Log, 
     verbose: bool
 ) -> pd.DataFrame:
-    """
-    Extract proxy variants from VCF that are not in common_sumstats.
+    """Extract proxy variants from VCF that are not in common_sumstats.
     
-    Parameters
-    ----------
-    ref_genotype : dict
-        VCF genotype data loaded from allel.read_vcf
-    vcf_proxies_df : pandas.DataFrame
-        DataFrame with SNPID and RSQ columns for VCF variants
-    chrom : int
-        Chromosome number
-    snpid : str
-        Reference SNP ID
-    ld_threshold : float
-        LD threshold
-    common_sumstats : pandas.DataFrame
-        Summary statistics
-    log : Log
-        Logging object
-    verbose : bool
-        Verbose flag
-        
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame with proxy variants from VCF not in sumstats
-    """
+Parameters
+----------
+ref_genotype : dict
+    VCF genotype data loaded from allel.read_vcf
+vcf_proxies_df : pandas.DataFrame
+    DataFrame with SNPID and RSQ columns for VCF variants
+chrom : int
+    Chromosome number
+snpid : str
+    Reference SNP ID
+ld_threshold : float
+    LD threshold
+common_sumstats : pandas.DataFrame
+    Summary statistics
+log : Log
+    Logging object
+verbose : bool
+    Verbose flag
+Returns
+-------
+pandas.DataFrame
+    DataFrame with proxy variants from VCF not in sumstats
+"""
     if ref_genotype is None or len(vcf_proxies_df) == 0:
         return pd.DataFrame()
     
@@ -273,41 +269,39 @@ def _extract_ld_proxy(
     ld_threshold: float = 0.8,
     include_all: bool = False
 ) -> pd.DataFrame:
-    """
-    Find LD proxies within the sumstats for SNPs in the list using a VCF reference.
+    """Find LD proxies within the sumstats for SNPs in the list using a VCF reference.
 
-    Parameters
-    ----------
-    snplist : list or None
-        List of full SNPIDs to find proxies for.
-    common_sumstats : Sumstats or pd.DataFrame or None
-        Sumstats object or DataFrame with summary statistics for existing SNPs.
-    vcf_path : str or None
-        Path to the VCF file for reference genotypes.
-    verbose : bool
-        If True, write detailed logs.
-    windowsizekb : int
-        Size in kb for the flanking region around each SNP.
-    ld_threshold : float
-        Minimum R^2 value to consider a proxy valid.
-    include_all : bool, default=False
-        If True, include proxy variants from VCF that are not in common_sumstats.
-        When False, only returns proxies that are already in common_sumstats.
+Parameters
+----------
+snplist : list or None
+    List of full SNPIDs to find proxies for.
+common_sumstats : Sumstats or pd.DataFrame or None
+    Sumstats object or DataFrame with summary statistics for existing SNPs.
+vcf_path : str or None
+    Path to the VCF file for reference genotypes.
+verbose : bool
+    If True, write detailed logs.
+windowsizekb : int
+    Size in kb for the flanking region around each SNP.
+ld_threshold : float
+    Minimum R^2 value to consider a proxy valid.
+include_all : bool, default False
+    If True, include proxy variants from VCF that are not in common_sumstats.
+    When False, only returns proxies that are already in common_sumstats.
+Returns
+-------
+pandas.DataFrame
+    Extracted summary statistics including matched proxies sorted by LD strength.
 
-    Returns
-    -------
-    pandas.DataFrame
-        Extracted summary statistics including matched proxies sorted by LD strength.
-
-    Less used parametrs
-    -------
-    vcf_chr_dict : dict or None
-        Dictionary mapping chromosomes to VCF region strings.
-    log : gwaslab.g_Log.Log
-        Logging object.
-    tabix : str or None
-        Path to tabix executable.
-    """
+Less used parametrs
+-------
+vcf_chr_dict : dict or None
+    Dictionary mapping chromosomes to VCF region strings.
+log : gwaslab.g_Log.Log
+    Logging object.
+tabix : str or None
+    Path to tabix executable.
+"""
     import pandas as pd
     # Handle both DataFrame and Sumstats object
     if common_sumstats is not None:

@@ -27,21 +27,20 @@ _EAF_KEYWORDS = {
 def builtin_eaf_path(build: str) -> Path:
     """Path to the packaged core HapMap3 EAF panel for a genome build.
 
-    Parameters
-    ----------
-    build : str
-        Genome build: ``"19"``, ``"38"``, or common aliases (``hg19``, ``GRCh38``, …).
+Parameters
+----------
+build : str
+    Genome build: ``"19"``, ``"38"``, or common aliases (``hg19``, ``GRCh38``, …).
+Returns
+-------
+pathlib.Path
+    ``.../data/hapmap3_EAF/PAN.hapmap3.hg{b}.EAF.core.tsv.gz`` (existence not checked).
 
-    Returns
-    -------
-    pathlib.Path
-        ``.../data/hapmap3_EAF/PAN.hapmap3.hg{b}.EAF.core.tsv.gz`` (existence not checked).
-
-    Raises
-    ------
+Raises
+------
     ValueError
         If ``build`` cannot be normalized to 19 or 38.
-    """
+"""
     b = str(build).replace("hg", "").replace("GRCh", "")
     if b not in ("19", "38"):
         raise ValueError(f"build must be '19' or '38', got {build!r}")
@@ -66,30 +65,29 @@ def resolve_ancestry_af(
 
     Any other non-keyword string is treated as a user-supplied file path and must exist.
 
-    Parameters
-    ----------
-    ancestry_af : str or None
-        Explicit path, a download keyword, or ``None`` (keyword implied from ``build``).
-    build : str or None
-        Required unless ``ancestry_af`` is an existing file path. Normalized like
-        :func:`builtin_eaf_path`.
-    _core : bool, optional
-        Internal flag. If ``True``, skip downloaded panel lookup and force builtin core.
-    log : Log, optional
-        Logger for which panel tier was chosen.
-    verbose : bool, optional
-        Whether to write resolution messages to ``log``.
+Parameters
+----------
+ancestry_af : str or None
+    Explicit path, a download keyword, or ``None`` (keyword implied from ``build``).
+build : str or None
+    Required unless ``ancestry_af`` is an existing file path. Normalized like
+    :func:`builtin_eaf_path`.
+_core : bool, optional
+    Internal flag. If ``True``, skip downloaded panel lookup and force builtin core.
+log : Log, optional
+    Logger for which panel tier was chosen.
+verbose : bool, optional
+    Whether to write resolution messages to ``log``.
+Returns
+-------
+str
+    Resolved path to a tab-separated EAF file.
 
-    Returns
-    -------
-    str
-        Resolved path to a tab-separated EAF file.
-
-    Raises
-    ------
+Raises
+------
     ValueError
         Missing ``build``, invalid build, missing custom file, or missing builtin core.
-    """
+"""
     if build is None:
         raise ValueError("build is required when ancestry_af is None or a download keyword")
 

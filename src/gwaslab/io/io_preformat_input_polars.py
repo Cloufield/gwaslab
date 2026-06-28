@@ -533,7 +533,8 @@ def isfile_casesensitive(path):
     return filename in os.listdir(directory)
 
 def _prepare_polars_skip_rows(inpath, meta_data):
-    """Merge vcf.gz meta skip count with format_comment leading ## lines."""
+    """Merge vcf.gz meta skip count with format_comment leading ## lines.
+"""
     skip = get_skip_rows(inpath)
     if meta_data and inpath:
         fc_skip = format_comment_leading_skip_count(meta_data, inpath)
@@ -542,21 +543,19 @@ def _prepare_polars_skip_rows(inpath, meta_data):
 
 
 def _filter_polars_readargs(readargs, exclude_explicit=None):
-    """
-    Filter readargs to only include valid polars read_csv/read_parquet parameters.
+    """Filter readargs to only include valid polars read_csv/read_parquet parameters.
     
-    Parameters
-    ----------
-    readargs : dict
-        Dictionary of read arguments
-    exclude_explicit : set, optional
-        Additional parameter names to exclude (e.g., 'columns', 'schema_overrides')
-    
-    Returns
-    -------
-    dict
-        Filtered readargs with only valid polars parameters
-    """
+Parameters
+----------
+readargs : dict
+    Dictionary of read arguments
+exclude_explicit : set, optional
+    Additional parameter names to exclude (e.g., 'columns', 'schema_overrides')
+Returns
+-------
+dict
+    Filtered readargs with only valid polars parameters
+"""
     # Valid polars read_csv/read_parquet parameters (non-exhaustive list)
     valid_polars_params = {
         'separator', 'has_header', 'skip_rows', 'n_rows', 'infer_schema_length',
@@ -928,23 +927,21 @@ def process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbo
 
 
 def _sort_column(sumstats,verbose=True,log=Log(),order = None):
-    '''
-    Reorder columns according to a specified order.
+    '''Reorder columns according to a specified order.
     
     Reorders the dataframe columns to match a predefined standard order, placing standard
     GWAS columns first (SNPID, rsID, CHR, POS, EA, NEA, statistics, etc.) followed by
     any additional columns not in the standard list.
 
-    Parameters
-    ----------
-    verbose : bool, optional
-        Whether to print progress. Default is True.
-
-    Returns
-    -------
-    pl.DataFrame
-        Modified sumstats with reordered columns.
-    '''
+Parameters
+----------
+verbose : bool, optional
+    Whether to print progress. Default is True.
+Returns
+-------
+pl.DataFrame
+    Modified sumstats with reordered columns.
+'''
 
     if order is None:
         order = [

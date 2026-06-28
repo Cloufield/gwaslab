@@ -23,10 +23,9 @@ def _prepare_paths(
     log: Log,
     verbose: bool
 ) -> Dict[str, str]:
-    """
-    Prepare all file paths needed for SuSieR execution.
+    """Prepare all file paths needed for SuSieR execution.
     
-    Args:
+Parameters
         row: Row from filelist DataFrame
         sumstats: Path to locus sumstats file
         study: Study name
@@ -34,10 +33,10 @@ def _prepare_paths(
         log: Log instance
         verbose: Verbose logging
     
-    Returns:
+Returns
         Dict with keys: output_prefix, pipcs_file, diagnostic_file, 
                        pipcs_basename, diagnostic_basename, working_dir
-    """
+"""
     # Determine output directory
     working_dir = output_dir if output_dir is not None else (
         os.path.dirname(sumstats) if os.path.dirname(sumstats) else "./"
@@ -107,10 +106,9 @@ def _build_r_script(
     pipcs_basename: str,
     diagnostic_basename: str
 ) -> Tuple[str, str]:
-    """
-    Build R script content for SuSieR execution.
+    """Build R script content for SuSieR execution.
     
-    Args:
+Parameters
         sumstats: Path to sumstats file
         ld_r_matrix: Path to LD matrix file
         row: Row from filelist DataFrame
@@ -125,9 +123,9 @@ def _build_r_script(
         pipcs_basename: Basename for PIPCS output file
         diagnostic_basename: Basename for diagnostic image
     
-    Returns:
+Returns
         Tuple of (rscript_content, susie_rss_call_string)
-    """
+"""
     # Determine input format based on mode
     if mode == "z":
         input_params = "z= sumstats$Z,"
@@ -204,10 +202,9 @@ def _process_susie_result(
     log: Log,
     verbose: bool
 ) -> Optional[pd.DataFrame]:
-    """
-    Process successful SuSieR execution result.
+    """Process successful SuSieR execution result.
     
-    Args:
+Parameters
         result: Execution result from R script
         result_manager: ResultManager instance
         row: Row from filelist DataFrame
@@ -217,9 +214,9 @@ def _process_susie_result(
         log: Log instance
         verbose: Verbose logging
     
-    Returns:
+Returns
         DataFrame with results, or None if processing failed
-    """
+"""
     if not result.success:
         return None
     
@@ -268,10 +265,9 @@ def _create_execution_log(
     log: Log,
     verbose: bool
 ) -> None:
-    """
-    Create log file for R script execution.
+    """Create log file for R script execution.
     
-    Args:
+Parameters
         result_manager: ResultManager instance
         result: Execution result
         rscript: R script content
@@ -282,7 +278,7 @@ def _create_execution_log(
         r_path: Path to Rscript executable
         log: Log instance
         verbose: Verbose logging
-    """
+"""
     r_log_file = _path(
         study=study,
         snpid=row['SNPID'],
@@ -340,10 +336,9 @@ def _run_susie_rss(
     timeout: Optional[float] = None,
     show_diagnostic: bool = True
 ) -> pd.DataFrame:
-    """
-    Run finemapping using SuSieR from command line using the RScriptRunner framework.
+    """Run finemapping using SuSieR from command line using the RScriptRunner framework.
     
-    Args:
+Parameters
         gls: Sumstats object
         filepath: Path to filelist containing study information
         r: Path to Rscript executable (default: "Rscript")
@@ -362,9 +357,9 @@ def _run_susie_rss(
         timeout: Timeout for R script execution in seconds (default: None)
         show_diagnostic: Display diagnostic image using matplotlib if found (default: True)
     
-    Returns:
+Returns
         DataFrame with finemapping results
-    """
+"""
     # Early return if no filepath
     if filepath is None:
         log.write(" -File path is None.")
@@ -497,15 +492,14 @@ def _run_susie_rss(
 
 
 def _get_cs_lead(pipcs: pd.DataFrame) -> pd.DataFrame:
-    """
-    Extract lead variants from credible sets.
+    """Extract lead variants from credible sets.
     
-    Args:
+Parameters
         pipcs: DataFrame with PIPCS results
     
-    Returns:
+Returns
         DataFrame with lead variants (highest PIP per credible set)
-    """
+"""
     leads = pipcs.loc[pipcs["CREDIBLE_SET_INDEX"] > 0, :]
     leads = leads.sort_values(by="PIP", ascending=False).drop_duplicates(
         subset=["STUDY", "LOCUS", "CREDIBLE_SET_INDEX"]

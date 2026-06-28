@@ -471,47 +471,45 @@ def _load_ld_map(
     ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
     **ld_map_kwargs: Any
 ) -> pd.DataFrame:
-    """
-    Load LD map file (variant annotation file for LD matrix).
+    """Load LD map file (variant annotation file for LD matrix).
     
     The LD map provides variant information (CHR, POS, EA, NEA) that corresponds to the LD matrix.
     Each row in the LD map corresponds to one row/column in the LD matrix.
     
-    Parameters
-    ----------
-    path : str
-        Path to the LD map file (text file).
-    snpid : str, optional
-        Column name for variant ID. Defaults to "rsid".
-    chrom : str, optional
-        Column name for chromosome. Defaults to "chromosome".
-    pos : str, optional
-        Column name for position. Defaults to "position".
-    ref : str, optional
-        Column name for reference allele (NEA). Defaults to "allele1".
-    alt : str, optional
-        Column name for alternative allele (EA). Defaults to "allele2".
-    ld_map_rename_dic : Optional[Union[Dict[str, str], List[str]]], optional
-        Custom column name mapping. Can be:
-        - Dict: {"SNPID": "col1", "CHR": "col2", "POS": "col3", "NEA": "col4", "EA": "col5"}
-        - List: [SNPID_col, CHR_col, POS_col, NEA_col, EA_col] (in that order)
-        Defaults to None (uses default column names).
+Parameters
+----------
+path : str
+    Path to the LD map file (text file).
+snpid : str, optional
+    Column name for variant ID. Defaults to "rsid".
+chrom : str, optional
+    Column name for chromosome. Defaults to "chromosome".
+pos : str, optional
+    Column name for position. Defaults to "position".
+ref : str, optional
+    Column name for reference allele (NEA). Defaults to "allele1".
+alt : str, optional
+    Column name for alternative allele (EA). Defaults to "allele2".
+ld_map_rename_dic : Optional[Union[Dict[str, str], List[str]]], optional
+    Custom column name mapping. Can be:
+    - Dict: {"SNPID": "col1", "CHR": "col2", "POS": "col3", "NEA": "col4", "EA": "col5"}
+    - List: [SNPID_col, CHR_col, POS_col, NEA_col, EA_col] (in that order)
+    Defaults to None (uses default column names).
     **ld_map_kwargs : Any
-        Additional arguments passed to `pd.read_csv()` (e.g., `sep`, `header`, `usecols`).
-        Default separator is whitespace (`\s+`).
+    Additional arguments passed to `pd.read_csv()` (e.g., `sep`, `header`, `usecols`).
+    Default separator is whitespace (`\s+`).
+Returns
+-------
+pd.DataFrame
+    LD map DataFrame with columns: SNPID_bim, CHR, POS, EA_bim, NEA_bim.
+    The `_INDEX_BIM` column is added automatically to store the row index in the LD matrix.
     
-    Returns
-    -------
-    pd.DataFrame
-        LD map DataFrame with columns: SNPID_bim, CHR, POS, EA_bim, NEA_bim.
-        The `_INDEX_BIM` column is added automatically to store the row index in the LD matrix.
-    
-    Notes
-    -----
+Notes
+-----
     - The LD map must have the same number of rows as the LD matrix has rows/columns.
     - Variant order in the LD map must match the order in the LD matrix.
     - See module docstring above for detailed format specification.
-    """
+"""
     
     if ld_map_rename_dic is not None:
         if type(ld_map_rename_dic) is dict:
@@ -583,9 +581,8 @@ def _merge_ld_map_with_sumstats(
     log: Log = Log(),
     suffixes: Optional[List[str]] = None
 ) -> pd.DataFrame:
-    '''
-    align sumstats with bim
-    '''
+    '''align sumstats with bim
+'''
 
     index1= "_INDEX_SUMSTATS"
     index2= "_INDEX_BIM"
@@ -647,9 +644,8 @@ def _merge_ld_map_with_sumstats_for_regional(
     suffixes: Optional[List[str]] = None,
     verbose: bool = True
 ) -> pd.DataFrame:
-    '''
-    align sumstats with bim
-    '''
+    '''align sumstats with bim
+'''
 
     index1= "_INDEX_SUMSTATS"
     index2= "_INDEX_BIM"

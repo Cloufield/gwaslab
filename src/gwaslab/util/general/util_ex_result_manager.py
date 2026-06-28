@@ -1,5 +1,4 @@
-"""
-Simplified Result Management Framework
+"""Simplified Result Management Framework
 
 Provides result tracking, preview, and log file management for script executions.
 """
@@ -30,7 +29,8 @@ ExecutionResult = Union[RExecutionResult, PythonExecutionResult, CommandExecutio
 
 @dataclass
 class ExecutionRecord:
-    """Record of a single execution with its result and metadata."""
+    """Record of a single execution with its result and metadata.
+"""
     identifier: Optional[str]
     result: ExecutionResult
     timestamp: str
@@ -39,8 +39,7 @@ class ExecutionRecord:
 
 
 class ResultManager:
-    """
-    Simplified result manager for tracking script executions, showing previews, and managing logs.
+    """Simplified result manager for tracking script executions, showing previews, and managing logs.
     
     Key Features:
     - Trace execution results and track success/failure
@@ -56,15 +55,14 @@ class ResultManager:
     >>> manager.create_r_log(result, script_content, log_file_path, ...)
     >>> manager.preview_dataframe("output.csv", n_rows=5)
     >>> manager.show_image("diagnostic.png", title="Diagnostic Plot")
-    """
+"""
     
     def __init__(self, log: Optional[Log] = None):
-        """
-        Initialize ResultManager.
+        """Initialize ResultManager.
         
-        Args:
+Parameters
             log: Log instance for logging (default: None, creates new Log)
-        """
+"""
         self.log = log if log is not None else Log()
         self.records: List[ExecutionRecord] = []
     
@@ -76,19 +74,18 @@ class ResultManager:
         read_outputs: bool = False,
         expected_files: Optional[List[str]] = None
     ) -> ExecutionRecord:
-        """
-        Trace an execution result (record it and optionally read outputs).
+        """Trace an execution result (record it and optionally read outputs).
         
-        Args:
+Parameters
             result: ExecutionResult from script execution
             identifier: Optional identifier (e.g., locus ID, study name)
             parameters: Optional parameters used for this execution
             read_outputs: Whether to read output files immediately (default: False)
             expected_files: List of files to read if read_outputs=True
         
-        Returns:
+Returns
             ExecutionRecord containing the result and metadata
-        """
+"""
         record = ExecutionRecord(
             identifier=identifier,
             result=result,
@@ -124,7 +121,8 @@ class ResultManager:
         result: ExecutionResult,
         expected_files: List[str]
     ) -> Dict[str, Any]:
-        """Read output files from a result."""
+        """Read output files from a result.
+"""
         outputs = {}
         
         for file_name in expected_files:
@@ -155,18 +153,17 @@ class ResultManager:
         n_rows: int = 5,
         show_info: bool = True
     ) -> Optional[pd.DataFrame]:
-        """
-        Show a preview of a DataFrame from an output file.
+        """Show a preview of a DataFrame from an output file.
         
-        Args:
+Parameters
             file_name: Name of the output file (as in result.output_files)
             result: ExecutionResult to read from (if None, uses last successful result)
             n_rows: Number of rows to show in preview (default: 5)
             show_info: Whether to show DataFrame info (default: True)
         
-        Returns:
+Returns
             DataFrame if found, None otherwise
-        """
+"""
         # Find result to use
         if result is None:
             # Use last successful result
@@ -230,18 +227,17 @@ class ResultManager:
         title: Optional[str] = None,
         figsize: tuple = (10, 6)
     ) -> bool:
-        """
-        Display an image file using matplotlib.
+        """Display an image file using matplotlib.
         
-        Args:
+Parameters
             file_name: Name of the image file (as in result.output_files)
             result: ExecutionResult to read from (if None, uses last successful result)
             title: Optional title for the plot
             figsize: Figure size tuple (default: (10, 6))
         
-        Returns:
+Returns
             True if image was displayed, False otherwise
-        """
+"""
         if not MATPLOTLIB_AVAILABLE:
             self.log.warning("  -matplotlib not available, cannot display image", verbose=True)
             return False
@@ -293,10 +289,9 @@ class ResultManager:
         package_name: Optional[str] = None,
         verbose: bool = True
     ) -> str:
-        """
-        Create a log file for R script execution.
+        """Create a log file for R script execution.
         
-        Args:
+Parameters
             result: ExecutionResult from R script execution
             script_content: Content of the R script
             log_file_path: Path to save the log file
@@ -306,9 +301,9 @@ class ResultManager:
             package_name: R package name for version info (e.g., "susieR")
             verbose: Whether to log verbosely (default: True)
         
-        Returns:
+Returns
             Path to the created log file
-        """
+"""
         return create_r_log(
             result=result,
             script_content=script_content,
@@ -332,10 +327,9 @@ class ResultManager:
         package_name: Optional[str] = None,
         verbose: bool = True
     ) -> str:
-        """
-        Create a log file for Python script execution.
+        """Create a log file for Python script execution.
         
-        Args:
+Parameters
             result: ExecutionResult from Python script execution
             script_content: Content of the Python script
             log_file_path: Path to save the log file
@@ -345,9 +339,9 @@ class ResultManager:
             package_name: Python package name for version info
             verbose: Whether to log verbosely (default: True)
         
-        Returns:
+Returns
             Path to the created log file
-        """
+"""
         return create_python_log(
             result=result,
             script_content=script_content,
@@ -370,10 +364,9 @@ class ResultManager:
         tool_path: Optional[str] = None,
         verbose: bool = True
     ) -> str:
-        """
-        Create a log file for command-line execution.
+        """Create a log file for command-line execution.
         
-        Args:
+Parameters
             result: ExecutionResult from command execution
             command: Command that was executed
             log_file_path: Path to save the log file
@@ -382,9 +375,9 @@ class ResultManager:
             tool_path: Path to the tool executable
             verbose: Whether to log verbosely (default: True)
         
-        Returns:
+Returns
             Path to the created log file
-        """
+"""
         return create_command_log(
             result=result,
             command=command,
@@ -397,12 +390,11 @@ class ResultManager:
         )
     
     def get_statistics(self) -> Dict[str, Any]:
-        """
-        Get execution statistics.
+        """Get execution statistics.
         
-        Returns:
+Returns
             Dict with execution statistics
-        """
+"""
         if not self.records:
             return {
                 "total_executions": 0,
@@ -429,13 +421,16 @@ class ResultManager:
         }
     
     def get_failed_executions(self) -> List[ExecutionRecord]:
-        """Get all failed execution records."""
+        """Get all failed execution records.
+"""
         return [r for r in self.records if not r.result.success]
     
     def get_successful_executions(self) -> List[ExecutionRecord]:
-        """Get all successful execution records."""
+        """Get all successful execution records.
+"""
         return [r for r in self.records if r.result.success]
     
     def clear(self) -> None:
-        """Clear all stored records."""
+        """Clear all stored records.
+"""
         self.records.clear()

@@ -40,23 +40,21 @@ if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
 def check_na_columns(sumstats: pd.DataFrame, coltocheck: Optional[List[str]] = None, log: Log = Log(), verbose: bool = True) -> pd.DataFrame:
-    """
-    Check for columns with all NA values and drop them.
+    """Check for columns with all NA values and drop them.
     
-    Parameters
-    ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame.
-    log : Log object
-        Logging object for output messages.
-    verbose : bool
-        If True, write detailed messages.
-    
-    Returns
-    -------
-    pd.DataFrame
-        Modified DataFrame with all-NA columns removed.
-    """
+Parameters
+----------
+sumstats : pd.DataFrame
+    Summary statistics DataFrame.
+log : Log object
+    Logging object for output messages.
+verbose : bool
+    If True, write detailed messages.
+Returns
+-------
+pd.DataFrame
+    Modified DataFrame with all-NA columns removed.
+"""
     if coltocheck is None:
         coltocheck = []
     log.write(f" -Checking if any columns are empty...", verbose=verbose)
@@ -186,7 +184,9 @@ def check_range(sumstats: pd.DataFrame, var_range: Optional[Tuple[Optional[float
 @with_logging(
         start_to_msg="perform sanity check for statistics",
         finished_msg="sanity check for statistics",
-        start_function=".check_sanity()"
+        start_function=".check_sanity()",
+        meta_step="sanity",
+        on_missing_cols="skip",
 )
 def _sanity_check_stats(sumstats_obj: Union['Sumstats', pd.DataFrame],
                      coltocheck: Optional[List[str]] = None,
@@ -214,72 +214,75 @@ def _sanity_check_stats(sumstats_obj: Union['Sumstats', pd.DataFrame],
                      float_tolerance: float = 1e-7,
                      verbose: bool = True,
                      log: Log = Log()) -> pd.DataFrame:
-    '''
-    Check whether numerical summary statistics fall within valid ranges.
+    '''Check whether numerical summary statistics fall within valid ranges.
 
     This function validates commonly used GWAS fields (sample sizes, allele
     frequencies, effect sizes, test statistics, etc.) against expected numeric
     ranges. Columns not present in the input are ignored.
 
-    Parameters
-    ----------
-    n : tuple of (float, float), optional
-        Valid range for sample size (N). Default from qc_researved_header_json: (0, 2147483647).
-    ncase : tuple of (float, float), optional
-        Valid range for number of cases (N_CASE). Default from qc_researved_header_json: (0, 2147483647).
-    ncontrol : tuple of (float, float), optional
-        Valid range for number of controls (N_CONTROL). Default from qc_researved_header_json: (0, 2147483647).
-    eaf : tuple of (float, float), optional
-        Valid range for effect allele frequency (EAF). Default from qc_researved_header_json: (0, 1).
-    mac : tuple of (float, float), optional
-        Valid range for minor allele count (MAC). Default: (0, 2**31-1).
-    maf : tuple of (float, float), optional
-        Valid range for minor allele frequency (MAF). Default from qc_researved_header_json: (0, 0.5).
-    chisq : tuple of (float, float), optional
-        Valid range for chi-square statistics (CHISQ). Default from qc_researved_header_json: (0, inf).
-    z : tuple of (float, float), optional
-        Valid range for z-scores (Z). Default from qc_researved_header_json: (-9999, 9999).
-    t : tuple of (float, float), optional
-        Valid range for t-statistics (T). Default from qc_researved_header_json: (-99999, 99999).
-    f : tuple of (float, float), optional
-        Valid range for F-statistics (F). Default from qc_researved_header_json: (0, inf).
-    p : tuple of (float, float), optional
-        Valid range for p-values (P). Default from qc_researved_header_json: (0, 1).
-    mlog10p : tuple of (float, float), optional
-        Valid range for negative log10 p-values (MLOG10P). Default from qc_researved_header_json: (0, 99999).
-    beta : tuple of (float, float), optional
-        Valid range for effect size estimates (BETA). Default from qc_researved_header_json: (-100, 100).
-    se : tuple of (float, float), optional
-        Valid range for standard errors (SE). Default from qc_researved_header_json: (0, inf).
-    OR : tuple of (float, float), optional
-        Valid range for odds ratios (OR). Default from qc_researved_header_json: (0, 100).
-    OR_95L : tuple of (float, float), optional
-        Valid range for lower bound of 95% CI for OR. Default from qc_researved_header_json: (0, inf).
-    OR_95U : tuple of (float, float), optional
-        Valid range for upper bound of 95% CI for OR. Default from qc_researved_header_json: (0, inf).
-    HR : tuple of (float, float), optional
-        Valid range for hazard ratios (HR). Default from qc_researved_header_json: (0, 100).
-    HR_95L : tuple of (float, float), optional
-        Valid range for lower bound of 95% CI for HR. Default from qc_researved_header_json: (0, inf).
-    HR_95U : tuple of (float, float), optional
-        Valid range for upper bound of 95% CI for HR. Default from qc_researved_header_json: (0, inf).
-    info : tuple of (float, float), optional
-        Valid range for imputation info score (INFO). Default from qc_researved_header_json: (0, 2).
-    float_tolerance : float, default 1e-7
-        Numerical tolerance applied when comparing floating-point values.
-    verbose : bool, default True
-        If True, print progress and warnings.
+Parameters
+----------
+n : tuple of (float, float), optional
+    Valid range for sample size (N). Default from qc_researved_header_json: (0, 2147483647).
+ncase : tuple of (float, float), optional
+    Valid range for number of cases (N_CASE). Default from qc_researved_header_json: (0, 2147483647).
+ncontrol : tuple of (float, float), optional
+    Valid range for number of controls (N_CONTROL). Default from qc_researved_header_json: (0, 2147483647).
+eaf : tuple of (float, float), optional
+    Valid range for effect allele frequency (EAF). Default from qc_researved_header_json: (0, 1).
+mac : tuple of (float, float), optional
+    Valid range for minor allele count (MAC). Default: (0, 2**31-1).
+maf : tuple of (float, float), optional
+    Valid range for minor allele frequency (MAF). Default from qc_researved_header_json: (0, 0.5).
+chisq : tuple of (float, float), optional
+    Valid range for chi-square statistics (CHISQ). Default from qc_researved_header_json: (0, inf).
+z : tuple of (float, float), optional
+    Valid range for z-scores (Z). Default from qc_researved_header_json: (-9999, 9999).
+t : tuple of (float, float), optional
+    Valid range for t-statistics (T). Default from qc_researved_header_json: (-99999, 99999).
+f : tuple of (float, float), optional
+    Valid range for F-statistics (F). Default from qc_researved_header_json: (0, inf).
+p : tuple of (float, float), optional
+    Valid range for p-values (P). Default from qc_researved_header_json: (0, 1).
+mlog10p : tuple of (float, float), optional
+    Valid range for negative log10 p-values (MLOG10P). Default from qc_researved_header_json: (0, 99999).
+beta : tuple of (float, float), optional
+    Valid range for effect size estimates (BETA). Default from qc_researved_header_json: (-100, 100).
+se : tuple of (float, float), optional
+    Valid range for standard errors (SE). Default from qc_researved_header_json: (0, inf).
+OR : tuple of (float, float), optional
+    Valid range for odds ratios (OR). Default from qc_researved_header_json: (0, 100).
+OR_95L : tuple of (float, float), optional
+    Valid range for lower bound of 95% CI for OR. Default from qc_researved_header_json: (0, inf).
+OR_95U : tuple of (float, float), optional
+    Valid range for upper bound of 95% CI for OR. Default from qc_researved_header_json: (0, inf).
+HR : tuple of (float, float), optional
+    Valid range for hazard ratios (HR). Default from qc_researved_header_json: (0, 100).
+HR_95L : tuple of (float, float), optional
+    Valid range for lower bound of 95% CI for HR. Default from qc_researved_header_json: (0, inf).
+HR_95U : tuple of (float, float), optional
+    Valid range for upper bound of 95% CI for HR. Default from qc_researved_header_json: (0, inf).
+info : tuple of (float, float), optional
+    Valid range for imputation info score (INFO). Default from qc_researved_header_json: (0, 2).
+float_tolerance : float, default 1e-7
+    Numerical tolerance applied when comparing floating-point values.
+verbose : bool, default True
+    If True, print progress and warnings.
 
-    Note:
-    Default sanity check ranges are loaded from qc_researved_header_json (single source of truth).
-    All range parameters default to None and are automatically loaded from the JSON file if not provided.
-    Users can override any range by explicitly passing a tuple value. 
+Returns
+-------
+pandas.DataFrame
+    Filtered sumstats with out-of-range variants removed.
 
-    Returns:
-        pd.DataFrame: Modified sumstats with invalid variants removed.
-        When called via :meth:`Sumstats.check_sanity()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Notes
+-----
+    Default sanity-check ranges load from ``qc_researved_header_json`` when a
+    range parameter is ``None``. Override any field by passing an explicit
+    ``(low, high)`` tuple.
+
+    When called via :meth:`Sumstats.check_sanity`, updates ``self.data`` in
+    place and the method returns ``self``.
+'''
     # Load default ranges from JSON file (single source of truth)
     default_ranges = get_default_sanity_ranges()
     
@@ -408,32 +411,32 @@ def _sanity_check_stats(sumstats_obj: Union['Sumstats', pd.DataFrame],
 @with_logging(
         start_to_msg="check data consistency across columns",
         finished_msg="checking data consistency across columns",
-        start_function=".check_data_consistency()"
+        start_function=".check_data_consistency()",
+        meta_step="consistency",
+        on_missing_cols="skip",
 )
 def _check_data_consistency(sumstats_obj: Union['Sumstats', pd.DataFrame], beta: str = "BETA", se: str = "SE", p: str = "P", mlog10p: str = "MLOG10P", rtol: float = 1e-3, atol: float = 1e-3, equal_nan: bool = True, verbose: bool = True, log: Log = Log()) -> pd.DataFrame:
-    '''
-    Check consistency between related statistical values. Minor inconsistencies are likely due to rounding.
+    '''Check consistency between related statistical values. Minor inconsistencies are likely due to rounding.
 
-    Parameters
-    ----------
-    sumstats_obj : Sumstats
-        Sumstats object containing the data to check.
-    rtol : float, default 1e-05
-        Relative tolerance for comparisons (fractional).
-    atol : float, default 1e-08
-        Absolute tolerance for comparisons (absolute threshold).
-    equal_nan : bool, default False
-        If True, treat NaN values as equal during consistency checks.
-    verbose : bool, default False
-        If True, print progress or warning messages.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics table including annotations for detected inconsistencies.
-        When called via :meth:`Sumstats.check_data_consistency()`, updates the Sumstats object in place
-        (modifies ``self.data``) and the method returns ``self``.
-    '''
+Parameters
+----------
+sumstats_obj : Sumstats
+    Sumstats object containing the data to check.
+rtol : float, default 1e-05
+    Relative tolerance for comparisons (fractional).
+atol : float, default 1e-08
+    Absolute tolerance for comparisons (absolute threshold).
+equal_nan : bool, default False
+    If True, treat NaN values as equal during consistency checks.
+verbose : bool, default False
+    If True, print progress or warning messages.
+Returns
+-------
+pandas.DataFrame
+    Summary statistics table including annotations for detected inconsistencies.
+    When called via :meth:`Sumstats.check_data_consistency()`, updates the Sumstats object in place
+    (modifies ``self.data``) and the method returns ``self``.
+'''
     sumstats = sumstats_obj.data
 
     log.write(" -Tolerance: {} (Relative) and {} (Absolute)".format(rtol, atol),verbose=verbose)

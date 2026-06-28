@@ -1,8 +1,6 @@
-'''
-(c) 2014 Brendan Bulik-Sullivan and Hilary Finucane
+'''(c) 2014 Brendan Bulik-Sullivan and Hilary Finucane
 
 This module contains functions for parsing various ldsc-defined file formats.
-
 '''
 
 from __future__ import division
@@ -15,7 +13,8 @@ def xrange(*args):
     return range(*args)
 
 def series_eq(x, y):
-    '''Compare series, return False if lengths not equal.'''
+    '''Compare series, return False if lengths not equal.
+'''
     return len(x) == len(y) and (x == y).all()
 
 
@@ -24,7 +23,8 @@ def read_csv(fh, **kwargs):
 
 
 def sub_chr(s, chrom):
-    '''Substitute chr for @, else append chr to the end of str.'''
+    '''Substitute chr for @, else append chr to the end of str.
+'''
     if '@' not in s:
         s += '@'
 
@@ -32,7 +32,8 @@ def sub_chr(s, chrom):
 
 
 def get_present_chrs(fh, num):
-    '''Checks which chromosomes exist, assuming that the file base will be appended by a dot in any suffix.'''
+    '''Checks which chromosomes exist, assuming that the file base will be appended by a dot in any suffix.
+'''
     chrs = []
     for chrom in xrange(1,num):
         if glob.glob(sub_chr(fh, chrom) + '.*'):
@@ -41,7 +42,8 @@ def get_present_chrs(fh, num):
 
 
 def which_compression(fh):
-    '''Given a file prefix, figure out what sort of compression to use.'''
+    '''Given a file prefix, figure out what sort of compression to use.
+'''
     if os.access(fh + '.bz2', 4):
         suffix = '.bz2'
         compression = 'bz2'
@@ -58,7 +60,8 @@ def which_compression(fh):
 
 
 def get_compression(fh):
-    '''Which sort of compression should we use with read_csv?'''
+    '''Which sort of compression should we use with read_csv?
+'''
     if fh.endswith('gz'):
         compression = 'gzip'
     elif fh.endswith('bz2'):
@@ -70,7 +73,8 @@ def get_compression(fh):
 
 
 def read_cts(fh, match_snps):
-    '''Reads files for --cts-bin.'''
+    '''Reads files for --cts-bin.
+'''
     compression = get_compression(fh)
     cts = read_csv(fh, compression=compression, header=None, names=['SNP', 'ANNOT'])
     if not series_eq(cts.SNP, match_snps):
@@ -80,7 +84,8 @@ def read_cts(fh, match_snps):
 
 
 def sumstats(fh, alleles=False, dropna=True):
-    '''Parses .sumstats files. See docs/file_formats_sumstats.txt.'''
+    '''Parses .sumstats files. See docs/file_formats_sumstats.txt.
+'''
     dtype_dict = {'SNP': str,   'Z': float, 'N': float, 'A1': str, 'A2': str}
     compression = get_compression(fh)
     usecols = ['SNP', 'Z', 'N']
@@ -99,7 +104,8 @@ def sumstats(fh, alleles=False, dropna=True):
 
 
 def ldscore_fromlist(flist, num=None):
-    '''Sideways concatenation of a list of LD Score files.'''
+    '''Sideways concatenation of a list of LD Score files.
+'''
     ldscore_array = []
     for i, fh in enumerate(flist):
         y = ldscore(fh, num)
@@ -117,7 +123,8 @@ def ldscore_fromlist(flist, num=None):
 
 
 def l2_parser(fh, compression):
-    '''Parse LD Score files'''
+    '''Parse LD Score files
+'''
     x = read_csv(fh, header=0, compression=compression)
     if 'MAF' in x.columns and 'CM' in x.columns:  # for backwards compatibility w/ v<1.0.0
         x = x.drop(['MAF', 'CM'], axis=1)
@@ -125,7 +132,8 @@ def l2_parser(fh, compression):
 
 
 def annot_parser(fh, compression, frqfile_full=None, compression_frq=None):
-    '''Parse annot files'''
+    '''Parse annot files
+'''
     df_annot = read_csv(fh, header=0, compression=compression).drop(['SNP','CHR', 'BP', 'CM'], axis=1, errors='ignore').astype(float)
     if frqfile_full is not None:
         df_frq = frq_parser(frqfile_full, compression_frq)
@@ -134,7 +142,8 @@ def annot_parser(fh, compression, frqfile_full=None, compression_frq=None):
 
 
 def frq_parser(fh, compression):
-    '''Parse frequency files.'''
+    '''Parse frequency files.
+'''
     df = read_csv(fh, header=0, compression=compression)
     if 'MAF' in df.columns:
         df.rename(columns={'MAF': 'FRQ'}, inplace=True)
@@ -142,7 +151,8 @@ def frq_parser(fh, compression):
 
 
 def ldscore(fh, num=None):
-    '''Parse .l2.ldscore files, split across num chromosomes. See docs/file_formats_ld.txt.'''
+    '''Parse .l2.ldscore files, split across num chromosomes. See docs/file_formats_ld.txt.
+'''
     suffix = '.l2.ldscore'
     if num is not None:  # num files, e.g., one per chromosome
         chrs = get_present_chrs(fh, num+1)
@@ -160,7 +170,8 @@ def ldscore(fh, num=None):
 
 
 def M(fh, num=None, N=2, common=False):
-    '''Parses .l{N}.M files, split across num chromosomes. See docs/file_formats_ld.txt.'''
+    '''Parses .l{N}.M files, split across num chromosomes. See docs/file_formats_ld.txt.
+'''
     parsefunc = lambda y: [float(z) for z in open(y, 'r').readline().split()]
     suffix = '.l' + str(N) + '.M'
     if common:
@@ -175,17 +186,16 @@ def M(fh, num=None, N=2, common=False):
 
 
 def M_fromlist(flist, num=None, N=2, common=False):
-    '''Read a list of .M* files and concatenate sideways.'''
+    '''Read a list of .M* files and concatenate sideways.
+'''
     return np.hstack([M(fh, num, N, common) for fh in flist])
 
 
 def annot(fh_list, num=None, frqfile=None):
-    '''
-    Parses .annot files and returns an overlap matrix. See docs/file_formats_ld.txt.
+    '''Parses .annot files and returns an overlap matrix. See docs/file_formats_ld.txt.
     If num is not None, parses .annot files split across [num] chromosomes (e.g., the
     output of parallelizing ldsc.py --l2 across chromosomes).
-
-    '''
+'''
     annot_suffix = ['.annot' for fh in fh_list]
     annot_compression = []
     if num is not None:  # 22 files, one for each chromosome
@@ -275,7 +285,8 @@ def __ID_List_Factory__(colnames, keepcol, fname_end, header=None, usecols=None)
                 self.IDList = self.df.iloc[:, [self.__keepcol__]].astype('object')
 
         def loj(self, externalDf):
-            '''Returns indices of those elements of self.IDList that appear in exernalDf.'''
+            '''Returns indices of those elements of self.IDList that appear in exernalDf.
+'''
             r = externalDf.columns[0]
             l = self.IDList.columns[0]
             merge_df = externalDf.iloc[:, [0]]

@@ -1,5 +1,4 @@
-"""
-GWASLab-native track bundle dataclasses for AlphaGenome (and other) predicted tracks.
+"""GWASLab-native track bundle dataclasses for AlphaGenome (and other) predicted tracks.
 
 The gwaslab-alphagenome wrapper converts API output into these types; GWASLab plots them.
 """
@@ -17,7 +16,8 @@ RegionTuple = Tuple[int, int, int]
 
 @dataclass
 class TrackBundle:
-    """1D predicted signal track(s)."""
+    """1D predicted signal track(s).
+"""
 
     values: np.ndarray
     metadata: pd.DataFrame
@@ -42,7 +42,8 @@ class TrackBundle:
 
 @dataclass
 class OverlayBundle:
-    """REF/ALT paired tracks from variant effect prediction."""
+    """REF/ALT paired tracks from variant effect prediction.
+"""
 
     tracks: Dict[str, TrackBundle]
     region: RegionTuple
@@ -59,7 +60,8 @@ class OverlayBundle:
 
 @dataclass
 class ContactBundle:
-    """2D contact map track(s)."""
+    """2D contact map track(s).
+"""
 
     values: np.ndarray
     metadata: pd.DataFrame
@@ -84,7 +86,8 @@ class ContactBundle:
 
 @dataclass
 class JunctionBundle:
-    """Splice junction sashimi data."""
+    """Splice junction sashimi data.
+"""
 
     junctions: pd.DataFrame
     values: np.ndarray
@@ -112,7 +115,8 @@ def bundle_num_axes(bundle: Bundle) -> int:
 
 
 def x_positions(bundle: TrackBundle) -> np.ndarray:
-    """Genomic x coordinates (bp) for each bin center."""
+    """Genomic x coordinates (bp) for each bin center.
+"""
     start = bundle.region[1]
     n = bundle.values.shape[0]
     return np.arange(n) * bundle.resolution + start + bundle.resolution / 2.0

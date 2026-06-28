@@ -24,7 +24,8 @@ REQUIRED_COLUMNS = [
 
 
 def _parse_frame(value):
-    """Parse frame column, converting '.' to 0."""
+    """Parse frame column, converting '.' to 0.
+"""
     if value == "." or value is None:
         return 0
     try:
@@ -40,43 +41,36 @@ def read_gtf(
     expand_attribute_column=True,
     infer_biotype_column=False,
 ):
-    """
-    Fast GTF file reader using Polars.
+    """Fast GTF file reader using Polars.
 
     Returns a pandas DataFrame for compatibility.
     
-    Parameters
-    ----------
-    filepath_or_buffer : str or buffer
-        Path to GTF file (may be gzip compressed) or buffer object
-    
-    usecols : list of str or None
-        Restrict which columns are loaded. If None, load all columns.
-        Common columns: seqname, start, end, strand, feature, 
-        gene_biotype, gene_id, gene_name
-    
-    features : set of str or None
-        Drop rows which aren't one of the features in the supplied set
-        (e.g., {'gene', 'transcript', 'exon'})
-    
-    chrom : str or None
-        Filter by chromosome/seqname early for speed. If None, load all chromosomes.
-        Can be chromosome number (e.g., "1", "23" for X) or name (e.g., "X", "chr1").
-        For X chromosome, can use "X", "chrX", or "23".
-        For Y chromosome, can use "Y", "chrY", or "24".
-        For MT chromosome, can use "MT", "chrMT", "M", "chrM", or "25".
-    
-    expand_attribute_column : bool
-        Expand the 'attribute' column into separate columns (default: True)
-    
-    infer_biotype_column : bool
-        Infer biotype from 'source' column if gene_biotype/transcript_biotype missing
-    
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame containing parsed GTF data
-    """
+Parameters
+----------
+filepath_or_buffer : str or buffer
+    Path to GTF file (may be gzip compressed) or buffer object
+usecols : list of str or None
+    Restrict which columns are loaded. If None, load all columns.
+    Common columns: seqname, start, end, strand, feature,
+    gene_biotype, gene_id, gene_name
+features : set of str or None
+    Drop rows which aren't one of the features in the supplied set
+    (e.g., {'gene', 'transcript', 'exon'})
+chrom : str or None
+    Filter by chromosome/seqname early for speed. If None, load all chromosomes.
+    Can be chromosome number (e.g., "1", "23" for X) or name (e.g., "X", "chr1").
+    For X chromosome, can use "X", "chrX", or "23".
+    For Y chromosome, can use "Y", "chrY", or "24".
+    For MT chromosome, can use "MT", "chrMT", "M", "chrM", or "25".
+expand_attribute_column : bool
+    Expand the 'attribute' column into separate columns (default: True)
+infer_biotype_column : bool
+    Infer biotype from 'source' column if gene_biotype/transcript_biotype missing
+Returns
+-------
+pandas.DataFrame
+    DataFrame containing parsed GTF data
+"""
     import re
     
     if isinstance(filepath_or_buffer, str) and not exists(filepath_or_buffer):
@@ -315,30 +309,28 @@ _GTF_CACHE = {}
 _GTF_PATH_CACHE = {}
 
 def get_gtf(chrom, build="19", source="ensembl", if_return_path=False):
-    """
-    Get GTF data for a specific chromosome.
+    """Get GTF data for a specific chromosome.
     
     Optimized to filter by chromosome early during file reading for speed.
     Results are cached for faster subsequent access.
     
-    Parameters
-    ----------
-    chrom : str or int
-        Chromosome number or name (e.g., "1", "X", 23)
-    build : str
-        Genome build ("19" or "38")
-    source : str
-        Data source ("ensembl" or "refseq")
-    if_return_path : bool, optional
-        If True, return both the GTF data and the actual file path as a tuple.
-        Default is False.
-    
-    Returns
-    -------
-    pandas.DataFrame or tuple
-        If if_return_path is False: GTF data for the specified chromosome
-        If if_return_path is True: tuple of (GTF data, file path)
-    """
+Parameters
+----------
+chrom : str or int
+    Chromosome number or name (e.g., "1", "X", 23)
+build : str
+    Genome build ("19" or "38")
+source : str
+    Data source ("ensembl" or "refseq")
+if_return_path : bool, optional
+    If True, return both the GTF data and the actual file path as a tuple.
+    Default is False.
+Returns
+-------
+pandas.DataFrame or tuple
+    If if_return_path is False: GTF data for the specified chromosome
+    If if_return_path is True: tuple of (GTF data, file path)
+"""
     cache_key = f"{build}_{source}_{chrom}"
     
     if cache_key in _GTF_CACHE:

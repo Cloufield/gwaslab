@@ -1,5 +1,4 @@
-"""
-Panel class for storing panel information for stacked plots.
+"""Panel class for storing panel information for stacked plots.
 
 This module provides a Panel class that stores configuration information
 for individual panels in a stacked figure, which can be used with plot_panels
@@ -27,39 +26,37 @@ _AG_PANEL_TYPES = frozenset({"ag_tracks", "ag_overlay", "ag_contact", "ag_sashim
 
 
 class Panel:
-    """
-    A class to store panel configuration information for stacked plots.
+    """A class to store panel configuration information for stacked plots.
     
     This class stores the panel type and all parameters needed to create
     a panel in a stacked figure. Panels can be of different types such as
     "track" (for genomic tracks) or "arc" (for BEDPE arc plots).
     
-    Parameters
-    ----------
-    panel_type : str
-        Type of panel to create. Supported types:
-        - "track": For genomic tracks (GTF, BED, bigWig, bigBed files)
-        - "arc": For BEDPE arc plots
-        - "ld_block": For LD block plots (45° rotated inverted triangle)
-        - "region": For regional plots with LD information and gene track (requires 2 axes)
-        - "chromatin": For chromatin state tracks (Roadmap 15-state model)
-        - "pipcs": For PIP (Posterior Inclusion Probability) and Credible Sets plots
+Parameters
+----------
+panel_type : str
+    Type of panel to create. Supported types:
+    - "track": For genomic tracks (GTF, BED, bigWig, bigBed files)
+    - "arc": For BEDPE arc plots
+    - "ld_block": For LD block plots (45° rotated inverted triangle)
+    - "region": For regional plots with LD information and gene track (requires 2 axes)
+    - "chromatin": For chromatin state tracks (Roadmap 15-state model)
+    - "pipcs": For PIP (Posterior Inclusion Probability) and Credible Sets plots
     **kwargs
-        All keyword arguments specific to the panel type. These will be
-        processed through the parameter manager (similar to Sumstats.plot_* methods)
-        to merge defaults, filter allowed parameters, and validate arguments before
-        being stored. The processed parameters will be passed to the appropriate
-        plotting function when plot_panels is called.
-    
-    Attributes
-    ----------
+    All keyword arguments specific to the panel type. These will be
+    processed through the parameter manager (similar to Sumstats.plot_* methods)
+    to merge defaults, filter allowed parameters, and validate arguments before
+    being stored. The processed parameters will be passed to the appropriate
+    plotting function when plot_panels is called.
+Attributes
+----------
     panel_type : str
         The type of panel (e.g., "track", "arc")
     kwargs : dict
         Dictionary storing all panel-specific parameters
     
-    Examples
-    --------
+Examples
+--------
     >>> import gwaslab as gl
     >>> 
     >>> # Create a track panel
@@ -113,24 +110,11 @@ class Panel:
     >>> 
     >>> # Plot panels together
     >>> gl.plot_panels([panel1, panel2, panel3, panel4, panel5, panel6])
-    """
+"""
     
     def __init__(self, panel_type: str, verbose: bool = True, log: Optional[Log] = None, **kwargs):
-        """
-        Initialize a Panel object.
-        
-        Parameters
-        ----------
-        panel_type : str
-            Type of panel ("track", "arc", etc.)
-        verbose : bool, default=True
-            Whether to show verbose messages during parameter processing
-        log : Log, optional
-            Logger instance. If None, creates a new Log instance.
-        **kwargs
-            Panel-specific parameters. These will be processed through the
-            parameter manager before being stored.
-        """
+        """Initialize a Panel object.
+"""
         if not isinstance(panel_type, str):
             raise TypeError(f"panel_type must be a string, got {type(panel_type)}")
         
@@ -147,6 +131,7 @@ class Panel:
             "ld_block": ("plot_ld_block", plot_ld_block, None),
             "region": ("plot_region", _mqqplot, "r"),
             "pipcs": ("plot_pipcs", _plot_cs, None),
+            "chromatin": ("plot_chromatin", _plot_chromatin_state, None),
             "ag_tracks": ("plot_ag_tracks", plot_ag_tracks, None),
             "ag_overlay": ("plot_ag_overlay", plot_ag_overlay, None),
             "ag_contact": ("plot_ag_contact", plot_ag_contact, None),
@@ -183,82 +168,61 @@ class Panel:
             self.kwargs = kwargs.copy()
     
     def __repr__(self) -> str:
-        """String representation of the Panel."""
+        """String representation of the Panel.
+"""
         kwargs_str = ", ".join(f"{k}={v!r}" for k, v in list(self.kwargs.items())[:3])
         if len(self.kwargs) > 3:
             kwargs_str += f", ... ({len(self.kwargs) - 3} more)"
         return f"Panel(panel_type='{self.panel_type}', {kwargs_str})"
     
     def __str__(self) -> str:
-        """Human-readable string representation."""
+        """Human-readable string representation.
+"""
         return f"Panel(type='{self.panel_type}', params={len(self.kwargs)} kwargs)"
     
     def get_type(self) -> str:
-        """
-        Get the panel type.
+        """Get the panel type.
         
-        Returns
-        -------
+Returns
+-------
         str
             The panel type
-        """
+"""
         return self.panel_type
     
     def get_kwargs(self) -> Dict[str, Any]:
-        """
-        Get all stored keyword arguments.
+        """Get all stored keyword arguments.
         
-        Returns
-        -------
+Returns
+-------
         dict
             Dictionary of all panel parameters
-        """
+"""
         return self.kwargs.copy()
     
     def update_kwargs(self, **kwargs):
-        """
-        Update stored keyword arguments.
-        
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments to update or add
-        """
+        """Update stored keyword arguments.
+"""
         self.kwargs.update(kwargs)
     
     def set_kwarg(self, key: str, value: Any):
-        """
-        Set a single keyword argument.
-        
-        Parameters
-        ----------
-        key : str
-            Parameter name
-        value : Any
-            Parameter value
-        """
+        """Set a single keyword argument.
+"""
         self.kwargs[key] = value
     
     def get_kwarg(self, key: str, default: Any = None) -> Any:
-        """
-        Get a single keyword argument.
-        
-        Parameters
-        ----------
-        key : str
-            Parameter name
-        default : Any, optional
-            Default value if key is not found
-        
-        Returns
-        -------
+        """Get a single keyword argument.
+
+Returns
+-------
         Any
             Parameter value or default
-        """
+"""
         return self.kwargs.get(key, default)
 
     def is_deferred(self) -> bool:
-        """True when panel waits on ``ag_spec`` extraction (no ``bundle`` yet)."""
+        """True when panel waits on ``ag_spec`` extraction (no ``bundle`` yet).
+"""
         return (
             self.panel_type in _AG_PANEL_TYPES
             and self.get_kwarg("ag_spec") is not None
@@ -266,16 +230,16 @@ class Panel:
         )
 
     def materialize(self, bundle) -> None:
-        """Attach a fetched bundle and clear ``ag_spec``."""
+        """Attach a fetched bundle and clear ``ag_spec``.
+"""
         self.set_kwarg("bundle", bundle)
         self.kwargs.pop("ag_spec", None)
 
     def get_subplot_count(self) -> int:
-        """
-        Number of matplotlib axes this panel requires.
+        """Number of matplotlib axes this panel requires.
 
         Deferred ``ag_*`` panels default to 1 until materialized.
-        """
+"""
         if self.panel_type == "ld_block":
             return 2
         if self.panel_type == "region":

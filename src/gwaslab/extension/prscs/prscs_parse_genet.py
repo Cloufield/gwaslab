@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Parse the reference panel, summary statistics, and validation set.
-
+"""Parse the reference panel, summary statistics, and validation set.
 """
 
 import os
@@ -30,10 +28,9 @@ def parse_bim(bim_file, chrom):
 
 
 def parse_sumstats(ref_dict, vld_dict, sst_file, n_subj, log):
-    """
-    Parse sumstats using original PRScs logic with set-based matching.
+    """Parse sumstats using original PRScs logic with set-based matching.
     This matches the original PRScs behavior exactly.
-    """
+"""
     import tempfile
     
     # Convert DataFrame to file-like format if needed

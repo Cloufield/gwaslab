@@ -26,6 +26,19 @@ nav:
        - "License" : LICENSE.md
     - Start: 
        - Tutorial: tutorial_v4.md
+    - API Reference:
+       - Overview: api/index.md
+       - "Package functions": api/package.md
+       - "Reference & utilities": api/reference.md
+       - "I/O helpers": api/io.md
+       - Plotting: api/plotting.md
+       - Sumstats:
+          - Overview: api/sumstats/index.md
+          - Core: api/sumstats/core.md
+          - Fix: api/sumstats/fix.md
+          - Filter: api/sumstats/filter.md
+          - Plot: api/sumstats/plot.md
+          - Downstream: api/sumstats/downstream.md
     - CLI:
        - "Command Line Interface": CLI.md
        - "CLI Workflow Examples": CLIWorkflowExamples.md
@@ -46,6 +59,9 @@ nav:
        - "Brisbane Plot": BrisbanePlot.md
        - "Miami Plot": MiamiPlot.md
        - "Trumpet Plot (testing)": TrumpetPlot.md
+       - "Phenogram Plot": PhenogramPlot.md
+       - "Lead Overlap Plot": LeadOverlapPlot.md
+       - "Sankey Plot": SankeyPlot.md
        - "Effect Size Comparison": EffectSize.md
        - "Allele Frequency Comparison": AlleleFrequency.md
        - "Genetic Correlation Heatmap" : GeneticCorrelation.md
@@ -90,6 +106,9 @@ nav:
        - "Miami plot": visualization_miami2.md
        - "Stacked MQQ plot": visualization_stacked_mqq.md
        - "Brisbane plot" : visualization_brisbane.md
+       - "Phenogram plot" : visualization_phenogram.md
+       - "Lead overlap plot" : visualization_lead_overlap.md
+       - "Sankey plot" : visualization_sankey.md
        - "Correlation heatmap" : visualization_plot_genetic_correlation.md
        - "Download reference": Download_reference.md
        
@@ -119,4 +138,21 @@ extra_javascript:
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          inventories:
+            - https://docs.python.org/3/objects.inv
+          options:
+            force_inspection: true
+            preload_modules: [gwaslab]
+            docstring_style: numpy
+            docstring_section_style: table
+            show_symbol_type_heading: true
+            show_root_heading: true
+            inherited_members: false
+            show_source: false
+            separate_signature: true
+            show_signature_annotations: true
 

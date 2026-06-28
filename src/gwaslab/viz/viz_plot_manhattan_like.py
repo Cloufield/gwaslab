@@ -283,31 +283,15 @@ def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(), verbose=True):
 
 
 def _adjust_spacing_for_ax3_labels(fig, ax3, ax_pos, ax_ld_block, log=Log(), verbose=True):
-    """
-    Adjust spacing between ax3 and ax_pos based on ax3 x-axis tick label positions.
+    """Adjust spacing between ax3 and ax_pos based on ax3 x-axis tick label positions.
     
     Calculates the space needed for ax3's rotated tick labels and adjusts
     the positions of ax_pos and ax_ld_block accordingly.
-    
-    Parameters
-    ----------
-    fig : Figure
-        Matplotlib figure object.
-    ax3 : Axes
-        Axes with x-axis labels (gene track).
-    ax_pos : Axes
-        Position bar axes (needs to be moved down if needed).
-    ax_ld_block : Axes
-        LD block axes (needs to be moved down to maintain relative position).
-    log : Log
-        Log object for logging.
-    verbose : bool
-        Whether to log messages.
-    
-    Returns
-    -------
-    None
-    """
+
+Returns
+-------
+None
+"""
     if ax_pos is None or ax_ld_block is None:
         return
     

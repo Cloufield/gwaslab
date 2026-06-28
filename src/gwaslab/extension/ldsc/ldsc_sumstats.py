@@ -1,5 +1,4 @@
-'''
-(c) 2014 Brendan Bulik-Sullivan and Hilary Finucane
+'''(c) 2014 Brendan Bulik-Sullivan and Hilary Finucane
 
 This module deals with getting all the data needed for LD Score regression from files
 into memory and checking that the input makes sense. There is no math here. LD Score
@@ -59,7 +58,8 @@ def _splitp(fstr):
 
 
 def _select_and_log(x, ii, log, msg):
-    '''Fiter down to rows that are True in ii. Log # of SNPs removed.'''
+    '''Fiter down to rows that are True in ii. Log # of SNPs removed.
+'''
     new_len = ii.sum()
     if new_len == 0:
         raise ValueError(msg.format(N=0))
@@ -70,7 +70,8 @@ def _select_and_log(x, ii, log, msg):
 
 
 def smart_merge(x, y):
-    '''Check if SNP columns are equal. If so, save time by using concat instead of merge.'''
+    '''Check if SNP columns are equal. If so, save time by using concat instead of merge.
+'''
     if len(x) == len(y) and (x.index == y.index).all() and (x.SNP == y.SNP).all():
         x = x.reset_index(drop=True)
         y = y.reset_index(drop=True).drop('SNP', 1)
@@ -81,7 +82,8 @@ def smart_merge(x, y):
 
 
 def _read_ref_ld(args, log):
-    '''Read reference LD Scores.'''
+    '''Read reference LD Scores.
+'''
     ref_ld = _read_chr_split_files(args.ref_ld_chr, args.ref_ld, log,
                                    'reference panel LD Score', ps.ldscore_fromlist)
     log.log(
@@ -90,7 +92,8 @@ def _read_ref_ld(args, log):
 
 
 def _read_annot(args, log):
-    '''Read annot matrix.'''
+    '''Read annot matrix.
+'''
     try:
         if args.ref_ld is not None:
             overlap_matrix, M_tot = _read_chr_split_files(args.ref_ld_chr, args.ref_ld, log,
@@ -106,7 +109,8 @@ def _read_annot(args, log):
 
 
 def _read_M(args, log, n_annot):
-    '''Read M (--M, --M-file, etc).'''
+    '''Read M (--M, --M-file, etc).
+'''
     if args.M:
         try:
             M_annot = [float(x) for x in _splitp(args.M)]
@@ -130,7 +134,8 @@ def _read_M(args, log, n_annot):
 
 
 def _read_w_ld(args, log):
-    '''Read regression SNP LD.'''
+    '''Read regression SNP LD.
+'''
     if (args.w_ld and ',' in args.w_ld) or (args.w_ld_chr and ',' in args.w_ld_chr):
         raise ValueError(
             '--w-ld must point to a single fileset (no commas allowed).')
@@ -145,7 +150,8 @@ def _read_w_ld(args, log):
 
 
 def _read_chr_split_files(chr_arg, not_chr_arg, log, noun, parsefunc, **kwargs):
-    '''Read files split across 22 chromosomes (annot, ref_ld, w_ld).'''
+    '''Read files split across 22 chromosomes (annot, ref_ld, w_ld).
+'''
     try:
         if not_chr_arg:
             log.log('  -Reading {N} from {F} ... ({p})'.format(N=noun, F=not_chr_arg, p=parsefunc.__name__))
@@ -162,7 +168,8 @@ def _read_chr_split_files(chr_arg, not_chr_arg, log, noun, parsefunc, **kwargs):
 
 
 def _read_sumstats(args, log, fh, alleles=False, dropna=False):
-    '''Parse summary statistics.'''
+    '''Parse summary statistics.
+'''
     #log.log('  -Reading summary statistics from {S} ...'.format(S=fh))
     #sumstats = ps.sumstats(fh, alleles=alleles, dropna=dropna)
     log_msg = '  -Read summary statistics for {N} SNPs.'
@@ -178,7 +185,8 @@ def _read_sumstats(args, log, fh, alleles=False, dropna=False):
 
 
 def _check_ld_condnum(args, log, ref_ld):
-    '''Check condition number of LD Score matrix.'''
+    '''Check condition number of LD Score matrix.
+'''
     if len(ref_ld.shape) >= 2:
         cond_num = int(np.linalg.cond(ref_ld))
         if cond_num > 100000:
@@ -193,7 +201,8 @@ def _check_ld_condnum(args, log, ref_ld):
 
 
 def _check_variance(log, M_annot, ref_ld):
-    '''Remove zero-variance LD Scores.'''
+    '''Remove zero-variance LD Scores.
+'''
     ii = ref_ld.iloc[:, 1:].var() == 0  # NB there is a SNP column here
     if ii.all():
         raise ValueError('All LD Scores have zero variance.')
@@ -214,25 +223,29 @@ def _warn_length(log, sumstats):
 
 
 def _print_cov(ldscore_reg, ofh, log):
-    '''Prints covariance matrix of slopes.'''
+    '''Prints covariance matrix of slopes.
+'''
     log.log(
         '  -Printing covariance matrix of the estimates to {F}.'.format(F=ofh))
     np.savetxt(ofh, ldscore_reg.coef_cov)
 
 
 def _print_delete_values(ldscore_reg, ofh, log):
-    '''Prints block jackknife delete-k values'''
+    '''Prints block jackknife delete-k values
+'''
     log.log('  -Printing block jackknife delete values to {F}.'.format(F=ofh))
     np.savetxt(ofh, ldscore_reg.tot_delete_values)
 
 def _print_part_delete_values(ldscore_reg, ofh, log):
-    '''Prints partitioned block jackknife delete-k values'''
+    '''Prints partitioned block jackknife delete-k values
+'''
     log.log('  -Printing partitioned block jackknife delete values to {F}.'.format(F=ofh))
     np.savetxt(ofh, ldscore_reg.part_delete_values)
 
 
 def _merge_and_log(ld, sumstats, noun, log):
-    '''Wrap smart merge with log messages about # of SNPs.'''
+    '''Wrap smart merge with log messages about # of SNPs.
+'''
     sumstats = smart_merge(ld, sumstats)
     msg = '  -After merging with {F}, {N} SNPs remain.'
     if len(sumstats) == 0:
@@ -260,7 +273,8 @@ def _read_ld_sumstats(sumstats, args, log, fh, alleles=False, dropna=True):
     return M_annot, w_ld_cname, ref_ld_cnames, sumstats, novar_cols
 
 def cell_type_specific(sumstats, args, log):
-    '''Cell type specific analysis'''
+    '''Cell type specific analysis
+'''
     args = copy.deepcopy(args)
     if args.intercept_h2 is not None:
         args.intercept_h2 = float(args.intercept_h2)
@@ -321,7 +335,8 @@ def cell_type_specific(sumstats, args, log):
     return df_results
 
 def estimate_h2(sumstats, args, log):
-    '''Estimate h2 and partitioned h2.'''
+    '''Estimate h2 and partitioned h2.
+'''
     args = copy.deepcopy(args)
     if args.samp_prev is not None and args.pop_prev is not None:
         args.samp_prev, args.pop_prev = map(
@@ -386,7 +401,8 @@ def estimate_h2(sumstats, args, log):
 
 
 def estimate_rg(sumstats, other_sumstats, args, log):
-    '''Estimate rg between trait 1 and a list of other traits.'''
+    '''Estimate rg between trait 1 and a list of other traits.
+'''
     args = copy.deepcopy(args)
     
     rg_paths, rg_files = _parse_rg(args.rg)
@@ -473,7 +489,8 @@ def _read_other_sumstats(args, log, p2, sumstats, ref_ld_cnames):
 
 
 def _get_rg_table(rg_paths, RG, args):
-    '''Print a table of genetic correlations.'''
+    '''Print a table of genetic correlations.
+'''
     # fix error caused by behaviour change for map
     t = lambda attr: lambda obj: getattr(obj, attr, 'NA')
     x = pd.DataFrame()
@@ -544,7 +561,8 @@ def _print_gencor(args, log, rghat, ref_ld_cnames, i, rg_paths, print_hsq1):
 
 
 def _merge_sumstats_sumstats(args, sumstats1, sumstats2, log):
-    '''Merge two sets of summary statistics.'''
+    '''Merge two sets of summary statistics.
+'''
     sumstats1.rename(columns={'N': 'N1', 'Z': 'Z1'}, inplace=True)
     sumstats2.rename(
         columns={'A1': 'A1x', 'A2': 'A2x', 'N': 'N2', 'Z': 'Z2'}, inplace=True)
@@ -553,13 +571,15 @@ def _merge_sumstats_sumstats(args, sumstats1, sumstats2, log):
 
 
 def _filter_alleles(alleles):
-    '''Remove bad variants (mismatched alleles, non-SNPs, strand ambiguous).'''
+    '''Remove bad variants (mismatched alleles, non-SNPs, strand ambiguous).
+'''
     ii = alleles.apply(lambda y: y in MATCH_ALLELES)
     return ii
 
 
 def _align_alleles(z, alleles):
-    '''Align Z1 and Z2 to same choice of ref allele (allowing for strand flip).'''
+    '''Align Z1 and Z2 to same choice of ref allele (allowing for strand flip).
+'''
     try:
         z *= (-1) ** alleles.apply(lambda y: FLIP_ALLELES[y])
     except KeyError as e:
@@ -570,7 +590,8 @@ def _align_alleles(z, alleles):
 
 
 def _rg(sumstats, args, log, M_annot, ref_ld_cnames, w_ld_cname, i):
-    '''Run the regressions.'''
+    '''Run the regressions.
+'''
     n_snp = len(sumstats)
     s = lambda x: np.array(x).reshape((n_snp, 1))
     
@@ -593,7 +614,8 @@ def _rg(sumstats, args, log, M_annot, ref_ld_cnames, w_ld_cname, i):
 
 
 def _parse_rg(rg):
-    '''Parse args.rg.'''
+    '''Parse args.rg.
+'''
     rg_paths = _splitp(rg)
     rg_files = [x.split('/')[-1] for x in rg_paths]
     if len(rg_paths) < 2:
@@ -604,14 +626,16 @@ def _parse_rg(rg):
 
 
 def _print_rg_delete_values(rg, fh, log):
-    '''Print block jackknife delete values.'''
+    '''Print block jackknife delete values.
+'''
     _print_delete_values(rg.hsq1, fh + '.hsq1.delete', log)
     _print_delete_values(rg.hsq2, fh + '.hsq2.delete', log)
     _print_delete_values(rg.gencov, fh + '.gencov.delete', log)
 
 
 def _print_rg_cov(rghat, fh, log):
-    '''Print covariance matrix of estimates.'''
+    '''Print covariance matrix of estimates.
+'''
     _print_cov(rghat.hsq1, fh + '.hsq1.cov', log)
     _print_cov(rghat.hsq2, fh + '.hsq2.cov', log)
     _print_cov(rghat.gencov, fh + '.gencov.cov', log)

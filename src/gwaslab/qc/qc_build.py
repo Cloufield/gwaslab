@@ -13,33 +13,120 @@ from gwaslab.bd.bd_build import BUILD_MAPPINGS, BUILD_DISPLAY_NAMES
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
+
+def _build_to_assembly(species: str, build_code: str) -> str:
+    """Map normalized two-digit build code to SSF genome_assembly display string.
+"""
+    if build_code in ("99", "Unknown", "unknown", ""):
+        return "Unknown"
+    species_lower = species.lower() if species else "homo sapiens"
+    display = BUILD_DISPLAY_NAMES.get((species_lower, build_code))
+    if display is not None:
+        return display
+    for alias in ("human", "homo sapiens"):
+        display = BUILD_DISPLAY_NAMES.get((alias, build_code))
+        if display is not None:
+            return display
+    return "Unknown"
+
+
+def _apply_build_status(
+    sumstats: pd.DataFrame,
+    processed_build: str,
+    status: str = "STATUS",
+) -> None:
+    """Write build digits 1-2 into STATUS column when build is known.
+"""
+    if status not in sumstats.columns:
+        return
+    if len(processed_build) == 2 and processed_build != "99":
+        if processed_build[0].isdigit() and processed_build[1].isdigit():
+            sumstats[status] = vchange_status(sumstats[status], 1, "139", int(processed_build[0]) * 3)
+            sumstats[status] = vchange_status(sumstats[status], 2, "89", int(processed_build[1]) * 3)
+
+
+def _sync_build(
+    sumstats_obj: "Sumstats",
+    build: Union[str, int],
+    *,
+    update_status: bool = True,
+    status: str = "STATUS",
+    source: str = "manual",
+    confidence: Optional[str] = None,
+    log: Log = Log(),
+    verbose: bool = False,
+) -> str:
+    """Single entry point to synchronize build across _build, meta, SSF genome_assembly, and STATUS.
+
+Parameters
+----------
+sumstats_obj : Sumstats
+    Target object whose build fields are updated in place.
+build : str or int
+    Raw or normalized build identifier.
+update_status : bool, default True
+    If True and STATUS column exists, update digits 1-2.
+status : str, default "STATUS"
+    Status column name.
+source : str, default "manual"
+    Provenance label stored in meta (e.g. manual, infer, load).
+confidence : str or None
+    Optional confidence level (high, low, unknown) for inferred builds.
+    log, verbose
+    Logging controls passed to _process_build.
+Returns
+-------
+str
+    Normalized two-digit build code ("99" when unknown).
+"""
+    if "gwaslab" not in sumstats_obj.meta:
+        sumstats_obj.meta["gwaslab"] = {}
+    species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens")
+    processed_build = _process_build(build, log=log, verbose=verbose, species=species)
+
+    if update_status and hasattr(sumstats_obj, "data") and sumstats_obj.data is not None:
+        _apply_build_status(sumstats_obj.data, processed_build, status=status)
+
+    sumstats_obj._build = processed_build
+    sumstats_obj.meta["gwaslab"]["genome_build"] = processed_build
+    sumstats_obj.meta["genome_assembly"] = _build_to_assembly(species, processed_build)
+    sumstats_obj.meta["gwaslab"]["genome_build_source"] = source
+    if confidence is not None:
+        sumstats_obj.meta["gwaslab"]["genome_build_confidence"] = confidence
+    elif processed_build == "99":
+        sumstats_obj.meta["gwaslab"]["genome_build_confidence"] = "unknown"
+
+    if hasattr(sumstats_obj, "mapper") and sumstats_obj.mapper is not None:
+        sumstats_obj.mapper.build = processed_build
+        sumstats_obj.mapper._build_nc_mappings()
+
+    return processed_build
+
 def check_species_compatibility(species: Optional[str], required_species: Union[str, List[str]], operation_name: str, log: Optional[Log] = None, verbose: bool = True) -> bool:
-    """
-    Check if the current species is compatible with a species-specific operation.
+    """Check if the current species is compatible with a species-specific operation.
     
-    Parameters
-    ----------
-    species : str
-        Current species name (case-insensitive)
-    required_species : str or list
-        Required species name(s) for the operation. Can be a single string or list of strings.
-    operation_name : str
-        Name of the operation (for error messages)
-    log : Log, optional
-        Logging object. If None, errors will be raised without logging.
-    verbose : bool, default True
-        Whether to print log messages
+Parameters
+----------
+species : str
+    Current species name (case-insensitive)
+required_species : str or list
+    Required species name(s) for the operation. Can be a single string or list of strings.
+operation_name : str
+    Name of the operation (for error messages)
+log : Log, optional
+    Logging object. If None, errors will be raised without logging.
+verbose : bool, default True
+    Whether to print log messages
+Returns
+-------
+bool
+    True if species is compatible, False otherwise
     
-    Returns
-    -------
-    bool
-        True if species is compatible, False otherwise
-    
-    Raises
-    ------
+Raises
+------
     ValueError
         If species is not compatible with the required species
-    """
+"""
     if species is None:
         species = "homo sapiens"
     
@@ -105,25 +192,23 @@ def _process_build(build: str,
                    log: Log = Log(), 
                    verbose: bool = True,
                    species: str = "homo sapiens") -> str:
-    """
-    Process and normalize genome build identifier based on species.
+    """Process and normalize genome build identifier based on species.
     
-    Parameters
-    ----------
-    build : str
-        Genome build identifier (can be various formats)
-    log : Log, optional
-        Logging object
-    verbose : bool, default True
-        Whether to print log messages
-    species : str, default "homo sapiens"
-        Species name (case-insensitive)
-    
-    Returns
-    -------
-    str
-        Normalized build identifier, or "99" if unknown
-    """
+Parameters
+----------
+build : str
+    Genome build identifier (can be various formats)
+log : Log, optional
+    Logging object
+verbose : bool, default True
+    Whether to print log messages
+species : str, default "homo sapiens"
+    Species name (case-insensitive)
+Returns
+-------
+str
+    Normalized build identifier, or "99" if unknown
+"""
     species_lower = species.lower()
     build_str = str(build).lower()
     
@@ -155,31 +240,29 @@ def _set_build(
     log: Log = Log(),
     species: Optional[str] = None
 ) -> Tuple[pd.DataFrame, str]:
-    """
-    Set genome build in sumstats status column.
+    """Set genome build in sumstats status column.
     
-    Parameters
-    ----------
-    sumstats_or_dataframe : pd.DataFrame or Sumstats object
-        Sumstats data or object
-    build : str, default "99"
-        Genome build identifier
-    status : str, default "STATUS"
-        Status column name
-    verbose : bool, default True
-        Whether to print log messages
-    log : Log, optional
-        Logging object
-    species : str, optional
-        Species name. If None, will try to extract from Sumstats object metadata.
-    
-    Returns
-    -------
-    tuple
-        (sumstats DataFrame, processed_build)
-        When called via :meth:`Sumstats.set_build()`, updates the Sumstats object in place
-        (modifies ``self.data`` and ``self.build``) and the method returns ``None``.
-    """
+Parameters
+----------
+sumstats_or_dataframe : pd.DataFrame or Sumstats object
+    Sumstats data or object
+build : str, default "99"
+    Genome build identifier
+status : str, default "STATUS"
+    Status column name
+verbose : bool, default True
+    Whether to print log messages
+log : Log, optional
+    Logging object
+species : str, optional
+    Species name. If None, will try to extract from Sumstats object metadata.
+Returns
+-------
+tuple
+    (sumstats DataFrame, processed_build)
+    When called via :meth:`Sumstats.set_build()`, updates the Sumstats object in place
+    (modifies ``self.data`` and ``self.build``) and the method returns ``None``.
+"""
     import pandas as pd
     
     # Handle both DataFrame and Sumstats object
@@ -197,16 +280,20 @@ def _set_build(
             except (AttributeError, KeyError):
                 species = "homo sapiens"
     
-    # Process build with species information
     processed_build = _process_build(build, log=log, verbose=verbose, species=species)
-    
-    # Update status column (all builds are now two-digit numeric strings)
-    if len(processed_build) == 2 and processed_build != "99":
-        # All builds are now two-digit numeric strings (e.g., "19", "10", "06", "09")
-        if processed_build[0].isdigit() and processed_build[1].isdigit():
-            sumstats[status] = vchange_status(sumstats[status], 1, "139", int(processed_build[0]) * 3)
-            sumstats[status] = vchange_status(sumstats[status], 2, "89", int(processed_build[1]) * 3)
-    
+    _apply_build_status(sumstats, processed_build, status=status)
+
+    if not isinstance(sumstats_or_dataframe, pd.DataFrame):
+        _sync_build(
+            sumstats_or_dataframe,
+            processed_build,
+            update_status=False,
+            status=status,
+            source="set_build",
+            log=log,
+            verbose=verbose,
+        )
+
     return sumstats, processed_build
 
 def _check_build(
@@ -217,34 +304,32 @@ def _check_build(
     log: Log = Log(),
     species: Optional[str] = None
 ) -> bool:
-    """
-    Check if sumstats build matches target build.
+    """Check if sumstats build matches target build.
     
-    Parameters
-    ----------
-    target_build : str
-        Target genome build identifier
-    build : str, default "99"
-        Current sumstats build identifier
-    status : str, default "STATUS"
-        Status column name (unused, kept for compatibility)
-    verbose : bool, default True
-        Whether to print log messages
-    log : Log, optional
-        Logging object
-    species : str, optional
-        Species name. If None, defaults to "homo sapiens".
+Parameters
+----------
+target_build : str
+    Target genome build identifier
+build : str, default "99"
+    Current sumstats build identifier
+status : str, default "STATUS"
+    Status column name (unused, kept for compatibility)
+verbose : bool, default True
+    Whether to print log messages
+log : Log, optional
+    Logging object
+species : str, optional
+    Species name. If None, defaults to "homo sapiens".
+Returns
+-------
+bool
+    True if builds match
     
-    Returns
-    -------
-    bool
-        True if builds match
-    
-    Raises
-    ------
+Raises
+------
     ValueError
         If builds are unknown or don't match
-    """
+"""
     if species is None:
         species = "homo sapiens"
     
