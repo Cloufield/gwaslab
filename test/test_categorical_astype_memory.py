@@ -292,6 +292,30 @@ class TestCategoricalStrHelpers(unittest.TestCase):
         self.assertIsInstance(upper.dtype, pd.CategoricalDtype)
         self.assertTrue(set(upper.cat.categories) <= {"A", "C", "G", "T"})
 
+    def test_categorical_str_upper_merges_case_collisions(self):
+        ser = pd.Categorical(["a", "A", "c"])
+        upper = categorical_str_upper(ser)
+        self.assertIsInstance(upper.dtype, pd.CategoricalDtype)
+        self.assertTrue(set(upper.cat.categories) <= {"A", "C"})
+        self.assertEqual(list(upper), ["A", "A", "C"])
+
+    def test_categorical_str_upper_indel_collision(self):
+        ser = pd.Categorical(["At", "at"])
+        upper = categorical_str_upper(ser)
+        self.assertIsInstance(upper.dtype, pd.CategoricalDtype)
+        self.assertEqual(list(upper.cat.categories), ["AT"])
+        self.assertEqual(list(upper), ["AT", "AT"])
+
+    def test_fix_allele_mixed_case_categorical(self):
+        df = pd.DataFrame(
+            {
+                "EA": pd.Categorical(["a", "A", "At", "G"]),
+                "NEA": pd.Categorical(["g", "T", "A", "C"]),
+                "STATUS": pd.array([9909999, 9909999, 9909999, 9909999], dtype="Int64"),
+            }
+        )
+        _fix_allele(df, remove=False, verbose=False, log=Log())
+
     def test_categorical_str_contains_on_categories(self):
         ser = pd.Categorical(["A", "C", "XY", "T"])
         bad = categorical_str_contains(ser, "[^ATCG]", na=True, regex=True)

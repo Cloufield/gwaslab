@@ -1234,6 +1234,7 @@ pandas.DataFrame
     ea_upper_after = categorical_str_upper(sumstats[ea])
     nea_upper_after = categorical_str_upper(sumstats[nea])
     categories = set(ea_upper_after) | set(nea_upper_after) | set("N")
+    categories = {x for x in categories if pd.notna(x)}
     sumstats[ea] = pd.Categorical(ea_upper_after, categories=categories) 
     sumstats[nea] = pd.Categorical(nea_upper_after, categories=categories) 
     
@@ -1370,6 +1371,7 @@ pandas.DataFrame
     
     # Performance optimization: Compute categories more efficiently by combining sets in one operation
     categories = set(sumstats[ea]) | set(sumstats[nea]) | set(normalized_pd[ea]) | set(normalized_pd[nea])
+    categories = {x for x in categories if pd.notna(x)}
     sumstats[ea] = pd.Categorical(sumstats[ea], categories=categories) 
     sumstats[nea] = pd.Categorical(sumstats[nea], categories=categories) 
     sumstats.loc[variants_to_check,[pos,nea,ea,status]] = normalized_pd.values

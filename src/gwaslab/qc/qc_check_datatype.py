@@ -44,11 +44,28 @@ def categorical_str_len(series: pd.Series | pd.Categorical) -> pd.Series:
 
 
 def categorical_str_upper(series: pd.Series | pd.Categorical) -> pd.Series:
-    """Uppercase strings via category rename when possible."""
+    """Uppercase strings via category rename when possible.
+
+    When mixed-case labels collapse to the same uppercase string (e.g. ``'a'`` and
+    ``'A'``), categories are merged and row codes remapped instead of using
+    ``rename_categories``, which requires unique labels.
+    """
     series = _allele_series(series)
     if isinstance(series.dtype, pd.CategoricalDtype):
-        upper_cats = series.cat.categories.astype("string").str.upper()
-        return series.cat.rename_categories(upper_cats)
+        cats = series.cat.categories.astype("string")
+        upper_cats = cats.str.upper()
+        upper_unique = pd.unique(upper_cats)
+        upper_to_code = {str(u): i for i, u in enumerate(upper_unique)}
+        cat_code_map = np.array([upper_to_code[str(u)] for u in upper_cats], dtype=np.int64)
+
+        codes = series.cat.codes
+        new_codes = np.full(len(codes), -1, dtype=codes.dtype)
+        valid = codes >= 0
+        new_codes[valid] = cat_code_map[codes[valid]]
+        return pd.Series(
+            pd.Categorical.from_codes(new_codes, categories=upper_unique),
+            index=series.index,
+        )
     return categorical_safe_str(series).str.upper()
 
 
