@@ -13,6 +13,7 @@ from datetime import datetime
 from datetime import date
 from gwaslab.info.g_Log import Log
 from gwaslab.info.g_version import gwaslab_info
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 from gwaslab.io.io_preformat_input import _print_format_info
 
@@ -814,9 +815,13 @@ def _bgzip_tabix_md5sum(path, fmt, bgzip, md5sum, tabix, tabix_indexargs, log, v
 
 
 def _check_indel(sumstats,log,verbose):
-    is_snp = (sumstats["EA"].str.len() == sumstats["NEA"].str.len())
-    is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
-    is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
+    ea = categorical_safe_str(sumstats["EA"])
+    nea = categorical_safe_str(sumstats["NEA"])
+    ea_len = ea.str.len()
+    nea_len = nea.str.len()
+    is_snp = (ea_len == nea_len)
+    is_insert = (ea_len > 1) & (nea_len == 1)
+    is_delete = (ea_len == 1) & (nea_len > 1)
     
     log.write(" -Number of SNPs :",sum(is_snp))
     log.write(" -Number of Insertions :",sum(is_insert)) 
@@ -858,11 +863,11 @@ def _adjust_position(sumstats, fmt,is_snp, is_insert, is_delete, log, verbose):
     
     # Pre-compute common values to avoid repeated operations
     pos = sumstats["POS"]
-    nea_len = sumstats["NEA"].str.len()
-    nea_str = sumstats["NEA"].astype("string")
-    ea_str = sumstats["EA"].astype("string")
-    ea_slice = sumstats["EA"].str.slice(start=1)
-    nea_slice = sumstats["NEA"].str.slice(start=1)
+    nea_str = categorical_safe_str(sumstats["NEA"])
+    ea_str = categorical_safe_str(sumstats["EA"])
+    nea_len = nea_str.str.len()
+    ea_slice = ea_str.str.slice(start=1)
+    nea_slice = nea_str.str.slice(start=1)
     
     # Initialize START and END columns
     sumstats["START"] = pd.NA

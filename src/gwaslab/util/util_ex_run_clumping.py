@@ -204,7 +204,7 @@ Examples
     if len(ref_bim) > 0:
         ref_bim_all = pd.concat(ref_bim, ignore_index=True)
         # Convert CHR_bim to match sumstats CHR type (might be int or category)
-        ref_bim_all["CHR_bim"] = ref_bim_all["CHR_bim"].astype(str).astype(int)
+        ref_bim_all["CHR_bim"] = ref_bim_all["CHR_bim"].astype("string").astype(int)
         log.write(" -Total variants in reference BIM: {}...".format(len(ref_bim_all)),verbose=verbose)
     else:
         ref_bim_all = pd.DataFrame()

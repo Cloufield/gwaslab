@@ -693,7 +693,7 @@ Notes
             ends = chrom_data[end_col].astype(int).tolist()
             
             if rest_col is not None and rest_col in chrom_data.columns:
-                rests = chrom_data[rest_col].astype(str).tolist()
+                rests = chrom_data[rest_col].astype("string").tolist()
                 bb.addEntries(chroms_list, starts, ends=ends, rest=rests, validate=validate)
             else:
                 bb.addEntries(chroms_list, starts, ends=ends, validate=validate)

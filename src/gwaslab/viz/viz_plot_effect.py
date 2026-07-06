@@ -200,7 +200,7 @@ matplotlib.figure.Figure
     ax1.errorbar(y=to_plot[y], x=to_plot[x], xerr=to_plot[se], **err_kwargs)
     ax1.axvline(x=0, linestyle="dashed", c="grey")
     y_ticks = to_plot[y].values
-    y_labels = to_plot[y_name].astype(str).tolist()
+    y_labels = to_plot[y_name].astype("string").tolist()
     if len(y_ticks) != len(y_labels):
         raise ValueError(
             "Tick/label length mismatch ({} ticks vs {} labels). "

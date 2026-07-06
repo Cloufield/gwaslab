@@ -9,6 +9,7 @@ All functions use integer arithmetic for optimal performance.
 from typing import Union, Tuple, Optional, List
 import pandas as pd
 import re
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 # Constants
 STATUS_CODE_LENGTH = 7
@@ -44,7 +45,7 @@ pd.Series
         elif status.dtype.name == 'category':
             # Convert categorical to string first, then to nullable integer
             # Check if there are NaN values
-            status_str = status.astype(str)
+            status_str = categorical_safe_str(status)
             has_na = status_str.isin(['nan', 'NaN', '<NA>', 'None']).any() or status.isna().any()
             if has_na:
                 return status_str.replace(['nan', 'NaN', '<NA>', 'None'], pd.NA).astype('Int64')
@@ -103,7 +104,7 @@ pd.DataFrame
 """
     if status_col in sumstats.columns:
         if sumstats[status_col].dtype.name == 'category':
-            sumstats[status_col] = sumstats[status_col].astype(str).astype('Int64')
+            sumstats[status_col] = categorical_safe_str(sumstats[status_col]).astype('Int64')
         elif sumstats[status_col].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
             sumstats[status_col] = sumstats[status_col].astype('Int64')
         else:
@@ -502,7 +503,7 @@ Examples
         status_int = status
     else:
         # Handle Categorical or other dtypes
-        status_str = status.astype(str)
+        status_str = categorical_safe_str(status)
         
         # Try to convert to integer, fall back to string matching if fails
         try:
@@ -529,7 +530,7 @@ Examples
         return result
     
     # Fall back to string matching for complex patterns
-    status_str = status_int.astype(str).str.zfill(STATUS_CODE_LENGTH)
+    status_str = status_int.astype("string").str.zfill(STATUS_CODE_LENGTH)
     pat = f"^{pattern}$"
     return status_str.str.match(pat, na=na)
 

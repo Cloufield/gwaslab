@@ -621,6 +621,29 @@ class TestBannedArguments(unittest.TestCase):
         """Regional ld_link_thr matches signature and viz_aux_params.txt."""
         defaults = self.pm.defaults('plot_mqq', 'r')
         self.assertEqual(defaults['ld_link_thr'], 0.8)
+
+    def test_plot_mqq_r_keeps_region_and_vcf_path(self):
+        """plot_mqq(mode='r') must not strip locus or LD reference kwargs."""
+        allowed = self.pm.allowed("plot_mqq", "r") or set()
+        self.assertIn("region", allowed)
+        self.assertIn("vcf_path", allowed)
+
+        override = {
+            "region": (7, 156538803, 157538803),
+            "vcf_path": "/tmp/ref.vcf.gz",
+        }
+        merged = self.pm.merge("plot_mqq", override, mode="r")
+        filtered = self.pm.filter(
+            _mqqplot,
+            merged,
+            key="plot_mqq",
+            mode="r",
+            log=Log(),
+            verbose=False,
+            user_keys=set(override.keys()),
+        )
+        self.assertEqual(filtered.get("region"), override["region"])
+        self.assertEqual(filtered.get("vcf_path"), override["vcf_path"])
     
     def test_banned_arg_passes_through_with_default(self):
         """Test that banned args with defaults pass through filter."""

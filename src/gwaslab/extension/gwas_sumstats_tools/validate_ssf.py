@@ -9,6 +9,7 @@ import re
 import gzip
 
 from gwaslab.info.g_Log import Log
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 
 # SSF format requirements - matching original schema
@@ -274,7 +275,7 @@ def _validate_chromosomes(
             chr_df = pd.read_csv(filename, sep='\t', usecols=['chromosome'], 
                                low_memory=False, dtype=str)
         
-        unique_chr = set(chr_df['chromosome'].astype(str).unique())
+        unique_chr = set(categorical_safe_str(chr_df['chromosome']).unique())
         autosomes_chromosomes = set(map(str, range(1, 23)))
         optional_chromosomes = set(map(str, range(23, 26)))
         
@@ -431,7 +432,7 @@ def _validate_dataframe(
     
     # Validate effect_allele and other_allele (nucleotides)
     if "effect_allele" in df.columns:
-        invalid_ea = df[~df["effect_allele"].astype(str).str.match(r'^(LONG_STRING|[ACTGactg]+)$', na=False)]
+        invalid_ea = df[~categorical_safe_str(df["effect_allele"]).str.match(r'^(LONG_STRING|[ACTGactg]+)$', na=False)]
         if len(invalid_ea) > 0:
             errors.append({
                 'error_type': 'data',
@@ -439,7 +440,7 @@ def _validate_dataframe(
             })
     
     if "other_allele" in df.columns:
-        invalid_oa = df[~df["other_allele"].astype(str).str.match(r'^(LONG_STRING|[ACTGactg]+)$', na=False)]
+        invalid_oa = df[~categorical_safe_str(df["other_allele"]).str.match(r'^(LONG_STRING|[ACTGactg]+)$', na=False)]
         if len(invalid_oa) > 0:
             errors.append({
                 'error_type': 'data',
@@ -517,7 +518,7 @@ def _validate_dataframe(
     
     # Validate rsid pattern if present (strict - no empty strings)
     if "rsid" in df.columns:
-        invalid_rsid = df[~df["rsid"].astype(str).str.match(r'^rs[0-9]+$', na=False)]
+        invalid_rsid = df[~categorical_safe_str(df["rsid"]).str.match(r'^rs[0-9]+$', na=False)]
         if len(invalid_rsid) > 0:
             errors.append({
                 'error_type': 'data',
@@ -538,7 +539,7 @@ def _pval_to_mantissa_and_exponent(df: pd.DataFrame, p_value_field: str) -> pd.D
         return df
     
     # Convert p-value to string for splitting
-    pval_str = df[p_value_field].astype(str)
+    pval_str = categorical_safe_str(df[p_value_field])
     
     # Split on 'e' or 'E' (scientific notation)
     split_result = pval_str.str.split(r'e|E', n=1, expand=True, regex=True)

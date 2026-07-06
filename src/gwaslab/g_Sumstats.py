@@ -1,6 +1,7 @@
 import copy
 import gc
 import time
+import warnings
 from typing import TYPE_CHECKING, Optional, Union, Dict, Any, List, Tuple, Callable
 import numpy as np
 import pandas as pd
@@ -1072,6 +1073,11 @@ Examples
         return self
     @add_doc(_parallelize_rsid_to_chrpos)
     def rsid_to_chrpos(self,**kwargs):
+        warnings.warn(
+            "Sumstats.rsid_to_chrpos is deprecated since 4.3.0. Use Sumstats.rsid_to_chrpos2 instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _parallelize_rsid_to_chrpos(self,log=self.log,**kwargs)
         return self

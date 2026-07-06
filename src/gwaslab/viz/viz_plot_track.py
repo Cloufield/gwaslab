@@ -481,7 +481,7 @@ def _process_gtf_track(
     
     # Extract name
     if name_column in gtf_region.columns:
-        gtf_region["name"] = gtf_region[name_column].fillna("").astype(str)
+        gtf_region["name"] = gtf_region[name_column].fillna("").astype("string")
         # Use index for empty names
         empty_mask = gtf_region["name"] == ""
         gtf_region.loc[empty_mask, "name"] = "feature_" + gtf_region.loc[empty_mask].index.astype(str)
@@ -525,12 +525,12 @@ def _process_gtf_track(
                 exon_name_col = name_column
             
             if exon_name_col in gtf_exons.columns:
-                gtf_exons["name"] = gtf_exons[exon_name_col].fillna("").astype(str)
+                gtf_exons["name"] = gtf_exons[exon_name_col].fillna("").astype("string")
                 # Use index for empty names
                 empty_mask = gtf_exons["name"] == ""
                 gtf_exons.loc[empty_mask, "name"] = "feature_" + gtf_exons.loc[empty_mask].index.astype(str)
             elif "gene_id" in gtf_exons.columns:
-                gtf_exons["name"] = gtf_exons["gene_id"].fillna("").astype(str)
+                gtf_exons["name"] = gtf_exons["gene_id"].fillna("").astype("string")
                 empty_mask = gtf_exons["name"] == ""
                 gtf_exons.loc[empty_mask, "name"] = "feature_" + gtf_exons.loc[empty_mask].index.astype(str)
             else:
@@ -602,7 +602,7 @@ def _process_bed_track(
     
     # Extract name
     if name_column and name_column in bed_region.columns:
-        bed_region["name"] = bed_region[name_column].fillna("").astype(str)
+        bed_region["name"] = bed_region[name_column].fillna("").astype("string")
         # Use index for empty names
         empty_mask = bed_region["name"] == ""
         bed_region.loc[empty_mask, "name"] = "feature_" + bed_region.loc[empty_mask].index.astype(str)
@@ -937,7 +937,7 @@ def _process_bigbed_track(
     
     # Extract name
     if name_column and name_column in bb_region.columns:
-        bb_region["name"] = bb_region[name_column].fillna("").astype(str)
+        bb_region["name"] = bb_region[name_column].fillna("").astype("string")
         empty_mask = bb_region["name"] == ""
         bb_region.loc[empty_mask, "name"] = "feature_" + bb_region.loc[empty_mask].index.astype(str)
     else:

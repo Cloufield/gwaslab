@@ -6,6 +6,7 @@ import matplotlib
 from matplotlib.patches import ConnectionPatch
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from gwaslab.info.g_Log import Log
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
@@ -583,12 +584,12 @@ def _annotate_ld_block_left_side(
         # Get annotation text from anno_col if provided, otherwise use chr:pos
         if anno_col is not None and anno_col in region_sumstats_sorted.columns:
             # Use specified column for annotation
-            annotation_texts = region_sumstats_sorted[anno_col].astype(str).values.tolist()
+            annotation_texts = categorical_safe_str(region_sumstats_sorted[anno_col]).values.tolist()
         else:
             # Use chr:pos format
             chromosomes = []
             if "CHR" in region_sumstats_sorted.columns and pos_col in region_sumstats_sorted.columns:
-                chromosomes = region_sumstats_sorted["CHR"].astype(str).values.tolist()
+                chromosomes = categorical_safe_str(region_sumstats_sorted["CHR"]).values.tolist()
             elif region is not None:
                 chromosomes = [str(region[0])] * len(region_sumstats_sorted)
             else:

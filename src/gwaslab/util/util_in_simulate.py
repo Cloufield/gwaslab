@@ -151,7 +151,7 @@ pl.DataFrame
         if isinstance(snpid_data[0], (bytes, np.bytes_)):
             snpid_data = np.char.decode(snpid_data.astype("S"), "utf-8")
         else:
-            snpid_data = snpid_data.astype(str)
+            snpid_data = np.asarray(snpid_data, dtype=object)
         # Replace missing IDs ('.' or None) with None
         snpid_data = np.where((snpid_data == '.') | (snpid_data == 'None') | (snpid_data == ''), None, snpid_data)
     
@@ -160,7 +160,7 @@ pl.DataFrame
     if isinstance(ref_data[0], (bytes, np.bytes_)):
         ref_data = np.char.decode(ref_data.astype("S"), "utf-8")
     else:
-        ref_data = ref_data.astype(str)
+        ref_data = np.asarray(ref_data, dtype=object)
     
     alt_data = vcf_data["variants/ALT"]
     # ALT can be 2D array (multiple ALT alleles per variant)
@@ -170,7 +170,7 @@ pl.DataFrame
     if isinstance(alt_data[0], (bytes, np.bytes_)):
         alt_data = np.char.decode(alt_data.astype("S"), "utf-8")
     else:
-        alt_data = alt_data.astype(str)
+        alt_data = np.asarray(alt_data, dtype=object)
     
     # Extract EAF from INFO field (AF) if available, otherwise compute from genotypes
     # Note: scikit-allel automatically extracts standard INFO fields like AF as variants/AF,
@@ -376,7 +376,7 @@ tuple
     if isinstance(vcf_ref[0], (bytes, np.bytes_)):
         vcf_ref = np.char.decode(vcf_ref.astype("S"), "utf-8")
     else:
-        vcf_ref = vcf_ref.astype(str)
+        vcf_ref = np.asarray(vcf_ref, dtype=object)
     
     vcf_alt = vcf_data["variants/ALT"]
     if vcf_alt.ndim == 2:
@@ -384,7 +384,7 @@ tuple
     if isinstance(vcf_alt[0], (bytes, np.bytes_)):
         vcf_alt = np.char.decode(vcf_alt.astype("S"), "utf-8")
     else:
-        vcf_alt = vcf_alt.astype(str)
+        vcf_alt = np.asarray(vcf_alt, dtype=object)
     
     # Match variants by position only (vectorized using np.isin)
     # Since VCF ALT = EA and VCF REF = NEA (by definition), we only need to match positions

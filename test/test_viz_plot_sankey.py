@@ -14,10 +14,13 @@ import pandas as pd
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "src")
 SCRIPTS_DIR = os.path.join(ROOT, "scripts")
+FIXTURES_DIR = os.path.join(ROOT, "test", "fixtures")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 if SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, SCRIPTS_DIR)
+if FIXTURES_DIR not in sys.path:
+    sys.path.insert(0, FIXTURES_DIR)
 
 import gwaslab as gl
 from gwaslab.g_Sumstats import Sumstats

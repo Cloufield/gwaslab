@@ -562,7 +562,7 @@ Returns
         sample = series.head(min(sample_size, len(series)))
         
         # Check for NCBI RefSeq IDs
-        sample_str = sample.astype(str).str.strip()
+        sample_str = sample.astype("string").str.strip()
         # Convert compiled pattern to string for pandas str.match
         nc_pattern_str = self._NCBI_PATTERN.pattern
         if sample_str.str.match(nc_pattern_str, case=False, na=False).any():

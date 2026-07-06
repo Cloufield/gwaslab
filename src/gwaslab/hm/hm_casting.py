@@ -8,6 +8,7 @@ from gwaslab.info.g_vchange_status import vchange_status
 from gwaslab.info.g_vchange_status import ensure_status_int
 from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import _fill_data
 from itertools import combinations
@@ -81,16 +82,16 @@ def _merge_mold_with_sumstats_by_chrpos(
     # Check for both suffixed and unsuffixed column names (mold may already have suffixes)
     if all(col in mold.columns for col in [ea1, nea1]):
         # Use suffixed columns (already renamed)
-        ea1_str = mold[ea1].astype(str).replace('nan', '')
-        nea1_str = mold[nea1].astype(str).replace('nan', '')
+        ea1_str = categorical_safe_str(mold[ea1]).replace('nan', '')
+        nea1_str = categorical_safe_str(mold[nea1]).replace('nan', '')
         mold["_ASET"] = pd.Series([
             ":".join(sorted([e, n])) if e and n else ""
             for e, n in zip(ea1_str, nea1_str)
         ], index=mold.index)
     elif all(col in mold.columns for col in ["EA", "NEA"]):
         # Use unsuffixed columns (not yet renamed)
-        ea1_str = mold["EA"].astype(str).replace('nan', '')
-        nea1_str = mold["NEA"].astype(str).replace('nan', '')
+        ea1_str = categorical_safe_str(mold["EA"]).replace('nan', '')
+        nea1_str = categorical_safe_str(mold["NEA"]).replace('nan', '')
         mold["_ASET"] = pd.Series([
             ":".join(sorted([e, n])) if e and n else ""
             for e, n in zip(ea1_str, nea1_str)
@@ -100,8 +101,8 @@ def _merge_mold_with_sumstats_by_chrpos(
     
     # Create allele set for sumstats (sumstats2) - always use unsuffixed columns
     if all(col in sumstats.columns for col in ["EA", "NEA"]):
-        ea2_str = sumstats["EA"].astype(str).replace('nan', '')
-        nea2_str = sumstats["NEA"].astype(str).replace('nan', '')
+        ea2_str = categorical_safe_str(sumstats["EA"]).replace('nan', '')
+        nea2_str = categorical_safe_str(sumstats["NEA"]).replace('nan', '')
         sumstats["_ASET"] = pd.Series([
             ":".join(sorted([e, n])) if e and n else ""
             for e, n in zip(ea2_str, nea2_str)
@@ -119,10 +120,10 @@ def _merge_mold_with_sumstats_by_chrpos(
         is_temp_na = mold_sumstats["EA_1"].isna()
         log.write(" -Detected {} variants not in the template...".format(sum(is_temp_na)), verbose=verbose)
         
-        mold_sumstats["EA_1"] = mold_sumstats["EA_1"].astype("string")
-        mold_sumstats["NEA_1"] = mold_sumstats["NEA_1"].astype("string")
-        mold_sumstats["EA"] = mold_sumstats["EA"].astype("string")
-        mold_sumstats["NEA"] = mold_sumstats["NEA"].astype("string")
+        mold_sumstats["EA_1"] = categorical_safe_str(mold_sumstats["EA_1"])
+        mold_sumstats["NEA_1"] = categorical_safe_str(mold_sumstats["NEA_1"])
+        mold_sumstats["EA"] = categorical_safe_str(mold_sumstats["EA"])
+        mold_sumstats["NEA"] = categorical_safe_str(mold_sumstats["NEA"])
 
         # for variants not in template, copy snp info
         mold_sumstats.loc[is_temp_na, ["SNPID","EA_1","NEA_1","STATUS_1"]] = mold_sumstats.loc[is_temp_na, ["_SNPID_RIGHT","EA","NEA","STATUS"]].values

@@ -20,6 +20,10 @@ from gwaslab.bd.bd_common_data import NA_STRINGS
 from gwaslab.bd.bd_sex_chromosomes import Chromosomes
 
 from gwaslab.qc.qc_check_datatype import check_datatype
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
+from gwaslab.qc.qc_check_datatype import categorical_str_len
+from gwaslab.qc.qc_check_datatype import categorical_str_upper
+from gwaslab.qc.qc_check_datatype import categorical_str_contains
 from gwaslab.qc.qc_pattern import RSID_PATTERN, SNPID_PATTERN_EXTRACT, CHR_PATTERN_EXTRACT, FLAGS, SNPID_SEP_PATTERN, CHR_PREFIX_PATTERN, SNPID_PATTERN_STRIP
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_build import _process_build
@@ -144,7 +148,7 @@ pd.DataFrame
 
         # Ensure STATUS is integer (not Categorical) before assignment
         if sumstats[status].dtype.name == 'category':
-            sumstats[status] = sumstats[status].astype(str).astype(int).astype('Int64')
+            sumstats[status] = categorical_safe_str(sumstats[status]).astype('Int64')
         
         # change STATUS code
         sumstats.loc[ is_chrposrefalt,status] = vchange_status(sumstats.loc[ is_chrposrefalt,status],3 ,"975" ,"630")
@@ -316,14 +320,14 @@ pd.DataFrame
                 log.write(" -Flipped : CHR:POS:NEA:EA -> CHR:POS:EA:NEA ", verbose=verbose)
                 extracted = sumstats.loc[to_fix, snpid].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
                 # Convert to regular pandas Series to avoid PyArrow type issues
-                sumstats.loc[to_fix, ea] = extracted["NEA"].astype("string")
-                sumstats.loc[to_fix, nea] = extracted["EA"].astype("string")
+                sumstats.loc[to_fix, ea] = categorical_safe_str(extracted["NEA"])
+                sumstats.loc[to_fix, nea] = categorical_safe_str(extracted["EA"])
             else:
                 log.write(" -Chr:pos:a1:a2...a1->EA , a2->NEA ", verbose=verbose)
                 extracted = sumstats.loc[to_fix, snpid].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
                 # Convert to regular pandas Series to avoid PyArrow type issues
-                sumstats.loc[to_fix, ea] = extracted["EA"].astype("string")
-                sumstats.loc[to_fix, nea] = extracted["NEA"].astype("string")
+                sumstats.loc[to_fix, ea] = categorical_safe_str(extracted["EA"])
+                sumstats.loc[to_fix, nea] = categorical_safe_str(extracted["NEA"])
     
     #        #to_change_status = sumstats[status].str.match(r"\w\w\w[45]\w\w\w")
     #        #sumstats.loc[to_fix&to_change_status,status] = vchange_status(sumstats.loc[to_fix&to_change_status,status],4,"2")  
@@ -380,7 +384,7 @@ pd.DataFrame
                 if to_part_fix.sum() > 0:
                     sumstats.loc[to_part_fix,snpid] = sumstats.loc[to_part_fix,chrom].astype("string") + ":"+sumstats.loc[to_part_fix,pos].astype("string")
                 if to_full_fix.sum() > 0:
-                    sumstats.loc[to_full_fix,snpid] = sumstats.loc[to_full_fix,chrom].astype("string") + ":"+sumstats.loc[to_full_fix,pos].astype("string") +":"+ sumstats.loc[to_full_fix,nea].astype("string") +":"+ sumstats.loc[to_full_fix,ea].astype("string")
+                    sumstats.loc[to_full_fix,snpid] = sumstats.loc[to_full_fix,chrom].astype("string") + ":"+sumstats.loc[to_full_fix,pos].astype("string") +":"+ categorical_safe_str(sumstats.loc[to_full_fix,nea]) +":"+ categorical_safe_str(sumstats.loc[to_full_fix,ea])
                 log.log_formula("SNPID", "from CHR:POS", source_columns=["CHR", "POS"], verbose=verbose)
                 log.log_formula("SNPID", "from CHR:POS:NEA:EA", source_columns=["CHR", "POS", "EA", "NEA"], verbose=verbose)
                 sumstats.loc[(to_full_fix),status] = vchange_status(sumstats.loc[(to_full_fix),status],3,"975","630") 
@@ -452,8 +456,8 @@ pd.DataFrame
     sumstats.loc[is_chrposrefalt, snpid] = (
         extracted["CHR"].astype("string") + ":" +
         extracted["POS"].astype("string") + ":" +
-        extracted["NEA"].astype("string") + ":" +
-        extracted["EA"].astype("string")
+        categorical_safe_str(extracted["NEA"]) + ":" +
+        categorical_safe_str(extracted["EA"])
     )
 
     return sumstats
@@ -736,7 +740,7 @@ verbose : bool
     
     # Check which fixable values in sumstats are sex chromosomes (using set for O(1) lookup)
     # Note: sumstats already contains the extracted values at these indices
-    fixable_chr_values = sumstats.loc[fixable_indices, chrom].astype(str)
+    fixable_chr_values = categorical_safe_str(sumstats.loc[fixable_indices, chrom])
     sex_chr_mask = fixable_chr_values.isin(xymt_set)
     
     # Early return if no sex chromosomes found
@@ -771,7 +775,7 @@ verbose : bool
         # Use vectorized string operations for case-insensitive mapping
         # Convert to lowercase, map to numeric values, then assign back
         # All values should map successfully since they're all identified sex chromosomes
-        sex_chr_values_lower = sumstats.loc[sex_chr_indices, chrom].astype(str).str.lower()
+        sex_chr_values_lower = categorical_safe_str(sumstats.loc[sex_chr_indices, chrom]).str.lower()
         sumstats.loc[sex_chr_indices, chrom] = sex_chr_values_lower.map(convert_num_to_xymt)
 
 
@@ -1155,8 +1159,8 @@ pandas.DataFrame
 
     log.log_operation("Converted all bases to string datatype and UPPERCASE", verbose=verbose)
     # Performance optimization: Compute uppercase once and reuse for categories
-    ea_upper = sumstats[ea].str.upper()
-    nea_upper = sumstats[nea].str.upper()
+    ea_upper = categorical_str_upper(sumstats[ea])
+    nea_upper = categorical_str_upper(sumstats[nea])
     categories = set(ea_upper) | set(nea_upper) | set("N")
     categories = {x for x in categories if pd.notna(x)}
     sumstats[ea] = pd.Categorical(ea_upper, categories=categories) 
@@ -1164,8 +1168,8 @@ pandas.DataFrame
     all_var_num = len(sumstats)
     
     ## check ATCG
-    bad_ea = sumstats[ea].str.contains("[^ATCG]", na=True, regex=True)
-    bad_nea = sumstats[nea].str.contains("[^ATCG]", na=True, regex=True)
+    bad_ea = categorical_str_contains(sumstats[ea], "[^ATCG]", na=True, regex=True)
+    bad_nea = categorical_str_contains(sumstats[nea], "[^ATCG]", na=True, regex=True)
     good_ea = ~bad_ea
     good_nea = ~bad_nea
     
@@ -1227,15 +1231,15 @@ pandas.DataFrame
         if exclude_num > 0:
             log.write(" -Detected "+str(exclude_num)+" variants with alleles that contain bases other than A/C/T/G .", verbose=verbose) 
     # Performance optimization: Compute uppercase once and reuse for categories
-    ea_upper_after = sumstats[ea].str.upper()
-    nea_upper_after = sumstats[nea].str.upper()
+    ea_upper_after = categorical_str_upper(sumstats[ea])
+    nea_upper_after = categorical_str_upper(sumstats[nea])
     categories = set(ea_upper_after) | set(nea_upper_after) | set("N")
     sumstats[ea] = pd.Categorical(ea_upper_after, categories=categories) 
     sumstats[nea] = pd.Categorical(nea_upper_after, categories=categories) 
     
     # Performance optimization: Compute lengths once and reuse
-    ea_len = sumstats[ea].str.len()
-    nea_len = sumstats[nea].str.len()
+    ea_len = categorical_str_len(sumstats[ea])
+    nea_len = categorical_str_len(sumstats[nea])
     is_snp = (ea_len == 1) & (nea_len == 1)
     is_indel = (ea_len != nea_len)
     is_not_normalized = (ea_len > 1) & (nea_len > 1)
@@ -1387,8 +1391,8 @@ def fastnormalizeallele(insumstats: pd.DataFrame, pos: str = "POS", nea: str = "
     log.write(" -Chunk size:{}".format(chunk), verbose=verbose)
     log.write(" -Processing in chunks:",end="", verbose=verbose)
     # Performance optimization: Convert to string once before loop instead of every iteration
-    insumstats[nea] = insumstats[nea].astype("string")
-    insumstats[ea] = insumstats[ea].astype("string")
+    insumstats[nea] = categorical_safe_str(insumstats[nea])
+    insumstats[ea] = categorical_safe_str(insumstats[ea])
     # Performance optimization: Use list to collect indices, then concatenate once (O(n) instead of O(n²))
     changed_index_list = []
     num_chunks = len(insumstats) // chunk + 1
@@ -1414,8 +1418,8 @@ def normalizae_chunk(sumstats: pd.DataFrame, pos: str = "POS", nea: str = "NEA",
     
     # Pre-compute boolean masks and lengths
     is_same = sumstats[nea] == sumstats[ea]
-    nea_len = sumstats[nea].str.len()
-    ea_len = sumstats[ea].str.len()
+    nea_len = categorical_str_len(sumstats[nea])
+    ea_len = categorical_str_len(sumstats[ea])
     is_normalized = ((nea_len == 1) | (ea_len == 1)) & (~is_same)
     
     # Early exit if all are already normalized
@@ -1514,7 +1518,7 @@ pd.Series
     # Use vectorized string operations with translate for maximum performance
     # Create translation table once and apply to all values
     translation_table = str.maketrans("+-", "-+")
-    return series.astype(str).apply(lambda x: x.translate(translation_table) if pd.notna(x) else x)
+    return categorical_safe_str(series).apply(lambda x: x.translate(translation_table) if pd.notna(x) else x)
 
 def flip_by_swap(sumstats: pd.DataFrame, matched_index: pd.Series, log: Log, verbose: bool) -> pd.DataFrame:
     """Swap NEA and EA columns for matched variants.
@@ -1698,24 +1702,30 @@ pandas.DataFrame
             reverse_complement_ea = matched_subset['EA'].apply(get_reverse_complementary_allele)
             
             # Convert to strings once to avoid categorical dtype conflicts when assigning
-            reverse_complement_nea = reverse_complement_nea.astype(str)
-            reverse_complement_ea = reverse_complement_ea.astype(str)
-            
-            # Update categories to include reverse complement values
-            # Convert full columns to strings once (reused for both unique extraction and categorical conversion)
-            ea_str = sumstats['EA'].astype(str)
-            nea_str = sumstats['NEA'].astype(str)
-            
-            # Get unique values efficiently using .unique() (faster than set conversion from Series)
-            # Combine all unique values and filter invalid ones
-            categories = set(ea_str.unique()) | set(nea_str.unique()) | set(reverse_complement_nea.unique()) | set(reverse_complement_ea.unique())
+            reverse_complement_nea = categorical_safe_str(reverse_complement_nea)
+            reverse_complement_ea = categorical_safe_str(reverse_complement_ea)
+
+            # Extend categories from index metadata (avoid full-column string materialization)
+            if isinstance(sumstats['EA'].dtype, pd.CategoricalDtype):
+                existing_cats = set(sumstats['EA'].cat.categories) | set(sumstats['NEA'].cat.categories)
+            else:
+                existing_cats = set(sumstats['EA'].dropna().unique()) | set(sumstats['NEA'].dropna().unique())
+
+            categories = (
+                existing_cats
+                | set(reverse_complement_nea.unique())
+                | set(reverse_complement_ea.unique())
+            )
             categories = {c for c in categories if pd.notna(c) and c not in ('nan', '<NA>', 'None')}
-            
-            # Convert to categorical with updated categories (reusing already-converted strings)
-            sumstats['EA'] = pd.Categorical(ea_str, categories=categories)
-            sumstats['NEA'] = pd.Categorical(nea_str, categories=categories)
-            
-            # Assign the reverse complement values (already strings, pandas handles categorical conversion)
+
+            for col in ('EA', 'NEA'):
+                if isinstance(sumstats[col].dtype, pd.CategoricalDtype):
+                    new_cats = [c for c in categories if c not in sumstats[col].cat.categories]
+                    if new_cats:
+                        sumstats[col] = sumstats[col].cat.add_categories(new_cats)
+                else:
+                    sumstats[col] = pd.Categorical(sumstats[col], categories=sorted(categories))
+
             sumstats.loc[matched_index, 'NEA'] = reverse_complement_nea
             sumstats.loc[matched_index, 'EA'] = reverse_complement_ea
             sumstats.loc[matched_index, status] = vchange_status(sumstats.loc[matched_index, status], 6, "4", "2")

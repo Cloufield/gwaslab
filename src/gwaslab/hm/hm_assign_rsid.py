@@ -35,6 +35,7 @@ import gzip
 from multiprocessing import Pool
 from gwaslab.io.io_vcf import is_vcf_file
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.util.util_in_reference_run import (
     collect_reference_file_info,
     detect_compute_profile,
@@ -773,7 +774,7 @@ def _extract_lookup_table_from_vcf_bcf_old(
     # Convert CHR back using inverse dictionary
     if inv_chr_dict is not None:
         log.write(" -Converting CHR back to original sumstats notation...", verbose=verbose)
-        df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
+        df["CHR"] = categorical_safe_str(df["CHR"]).map(inv_chr_dict).astype("category")
 
     # Write final output
     df.to_csv(out_lookup, sep="\t", index=False, compression="infer")
@@ -1822,18 +1823,21 @@ def _expand_multiallelic_fast(df, ea_col, nea_col):
     A,T,G → 3 biallelic rows.
 """
 
+    ea_series = categorical_safe_str(df[ea_col])
+    nea_series = categorical_safe_str(df[nea_col])
+
     # Detect if any multiallelic rows exist
-    if not df[ea_col].str.contains(",").any():
+    if not ea_series.str.contains(",").any():
         return df  # nothing to do
 
     # ------------------------------
     # Split EA (ALT) column
     # ------------------------------
-    ea_split = df[ea_col].str.split(",", expand=True)
+    ea_split = ea_series.str.split(",", expand=True)
 
     # Pre-split NEA/REF only if necessary
-    if df[nea_col].str.contains(",").any():
-        nea_split = df[nea_col].str.split(",", expand=True)
+    if nea_series.str.contains(",").any():
+        nea_split = nea_series.str.split(",", expand=True)
     else:
         # Avoid unnecessary expansion → more memory efficient
         nea_split = None

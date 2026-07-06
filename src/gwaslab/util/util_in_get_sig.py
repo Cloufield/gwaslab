@@ -372,7 +372,7 @@ annotation_name : str, optional
                 expand_attribute_column=True
             )
             # Ensure seqname is string for consistent matching
-            self._genes_df['seqname'] = self._genes_df['seqname'].astype(str)
+            self._genes_df['seqname'] = self._genes_df['seqname'].astype("string")
             self._indexed = True
     
     def _ensure_indexed(self):
@@ -610,7 +610,7 @@ Returns
         # Convert gene coordinates to numpy arrays for vectorized operations
         gene_starts = chr_genes['start'].values
         gene_ends = chr_genes['end'].values
-        gene_names_arr = chr_genes[gene_col].fillna('').astype(str).str.strip().values
+        gene_names_arr = chr_genes[gene_col].fillna('').astype("string").str.strip().values
         
         # Vectorized check for positions within genes
         # Create a 2D array: positions (rows) x genes (columns)

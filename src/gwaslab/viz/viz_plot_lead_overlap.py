@@ -7,6 +7,7 @@ import pandas as pd
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
@@ -363,11 +364,11 @@ def _summarize_locus(
     show_genes: bool,
 ) -> Dict[str, Any]:
     locus_df = pd.DataFrame(rows)
-    study_set = set(locus_df["STUDY"].astype(str))
+    study_set = set(categorical_safe_str(locus_df["STUDY"]))
     membership = [label in study_set for label in labels]
     genes = []
     if show_genes and "GENE" in locus_df.columns:
-        for value in locus_df["GENE"].dropna().astype(str):
+        for value in categorical_safe_str(locus_df["GENE"].dropna()):
             if value and value != "Unknown":
                 genes.extend([gene.strip() for gene in value.split(",") if gene.strip()])
     gene_label = ",".join(dict.fromkeys(genes)) if genes else pd.NA
@@ -377,7 +378,7 @@ def _summarize_locus(
     for label in labels:
         study_rows = locus_df.loc[locus_df["STUDY"] == label]
         if snp_col is not None and len(study_rows) > 0:
-            lead_snps[label] = ",".join(study_rows[snp_col].dropna().astype(str).tolist())
+            lead_snps[label] = ",".join(categorical_safe_str(study_rows[snp_col].dropna()).tolist())
         else:
             lead_snps[label] = ""
 
@@ -439,7 +440,7 @@ def _build_upset_set_list(overlap_df: pd.DataFrame, sort_by: str) -> pd.DataFram
         # membership pattern.
         genes = []
         if "GENE" in group.columns:
-            for value in group["GENE"].dropna().astype(str):
+            for value in categorical_safe_str(group["GENE"].dropna()):
                 if value and value != "Unknown":
                     genes.extend([gene.strip() for gene in value.split(",") if gene.strip()])
         rows.append(
@@ -448,7 +449,7 @@ def _build_upset_set_list(overlap_df: pd.DataFrame, sort_by: str) -> pd.DataFram
                 "STUDIES": group["STUDIES"].iloc[0] if "STUDIES" in group.columns else "",
                 "COUNT": len(group),
                 "GENE": ",".join(dict.fromkeys(genes)) if genes else pd.NA,
-                "LOCUS_IDS": ",".join(group["LOCUS_ID"].astype(str)) if "LOCUS_ID" in group.columns else "",
+                "LOCUS_IDS": ",".join(categorical_safe_str(group["LOCUS_ID"]).tolist()) if "LOCUS_ID" in group.columns else "",
                 "N_STUDIES": str(membership_key).count("1"),
             }
         )

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_plink_version
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 
@@ -293,10 +294,10 @@ Returns
                 ld_map["POS"] = ld_map["POS"].astype(int)
         
         # Convert alleles to string for reliable comparison
-        common_variants["EA"] = common_variants["EA"].astype("string")
-        common_variants["NEA"] = common_variants["NEA"].astype("string")
-        ld_map["EA_bim"] = ld_map["EA_bim"].astype("string")
-        ld_map["NEA_bim"] = ld_map["NEA_bim"].astype("string")
+        common_variants["EA"] = categorical_safe_str(common_variants["EA"])
+        common_variants["NEA"] = categorical_safe_str(common_variants["NEA"])
+        ld_map["EA_bim"] = categorical_safe_str(ld_map["EA_bim"])
+        ld_map["NEA_bim"] = categorical_safe_str(ld_map["NEA_bim"])
         
         # Merge on CHR and POS (inner join - only keeps matching positions)
         combined = pd.merge(common_variants, ld_map, on=["CHR", "POS"], how="inner", suffixes=("", "_ref"))

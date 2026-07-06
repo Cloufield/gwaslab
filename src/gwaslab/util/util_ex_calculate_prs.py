@@ -8,6 +8,7 @@ from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.io.io_plink import _process_plink_input_files, _load_bim_single, _load_pvar_single
 from gwaslab.extension import _checking_plink_version
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
@@ -168,8 +169,8 @@ def _match_snpid_with_bim(
 
         # merge by pos
         chr_sumstats_bim = pd.merge(chr_sumstats, single_bim, on="_TEMP_ID", how="inner")
-        chr_sumstats_bim["EA"] = chr_sumstats_bim["EA"].astype("string")
-        chr_sumstats_bim["NEA"] = chr_sumstats_bim["NEA"].astype("string")
+        chr_sumstats_bim["EA"] = categorical_safe_str(chr_sumstats_bim["EA"])
+        chr_sumstats_bim["NEA"] = categorical_safe_str(chr_sumstats_bim["NEA"])
         
         # effect allele in NEA_bim or EA_bim
         if "NEA" in chr_sumstats.columns:

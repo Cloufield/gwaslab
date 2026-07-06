@@ -28,6 +28,8 @@ from gwaslab.util.util_in_reference_run import (
 )
 from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
+from gwaslab.qc.qc_check_datatype import categorical_str_len
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chr_to_number
@@ -377,7 +379,7 @@ Notes
     # Step 3: Preprocess rsIDs - extract numeric part
     # ============================================================================
     # Strip first 2 characters and convert to numeric (simple and fast)
-    rsid_processed = sumstats[rsid].astype(str).str[2:]
+    rsid_processed = categorical_safe_str(sumstats[rsid]).str[2:]
     sumstats["rsn"] = pd.to_numeric(rsid_processed, errors="coerce").astype("Int64")
     
     # Log processing parameters
@@ -614,8 +616,8 @@ Notes
     _chrom = _chrom.values
     chrom = np.searchsorted(chrom_order, _chrom) # Replace each value in '_chrom' with its corresponding index in chrom_order
  
-    max_len_nea = _nea.str.len().max()
-    max_len_ea = _ea.str.len().max()
+    max_len_nea = categorical_str_len(_nea).max()
+    max_len_ea = categorical_str_len(_ea).max()
 
     ########################################## mask for variants with out of range POS
     mask_outlier = pos > records_len[chrom]
@@ -840,8 +842,8 @@ np.ndarray
 
     # Pre-compute maximum padding needed across both groups to avoid padding twice
     # This is more efficient than padding the record separately for each call
-    max_len_nea_all = sumstats[nea].str.len().max()
-    max_len_ea_all = sumstats[ea].str.len().max()
+    max_len_nea_all = categorical_str_len(sumstats[nea]).max()
+    max_len_ea_all = categorical_str_len(sumstats[ea]).max()
     max_padding_needed = max(max_len_nea_all, max_len_ea_all)
     
     # Pad the record once based on maximum needed padding
@@ -858,7 +860,9 @@ np.ndarray
     # and then we perform the check on the records having long NEA and EA strings. In this way we can speed up the process (since the 
     # arrays are smaller) and save memory.
     max_len = 4 # this is a chosen value, we could compute it using some stats about the length and count of NEA and EA strings
-    condition = (sumstats[nea].str.len() <= max_len) & (sumstats[ea].str.len() <= max_len)
+    ea_len = categorical_str_len(sumstats[ea])
+    nea_len = categorical_str_len(sumstats[nea])
+    condition = (nea_len <= max_len) & (ea_len <= max_len)
 
     log.write(f"   -Checking records for ( len(NEA) <= {max_len} and len(EA) <= {max_len} )", verbose=verbose)
     sumstats_cond = sumstats[condition]
@@ -1062,7 +1066,7 @@ Notes
     if checked_any_records or not remove:
         status_dtype = sumstats[status].dtype
         if status_dtype.name == 'category':
-            status_int = sumstats[status].astype(str).astype('int64')
+            status_int = categorical_safe_str(sumstats[status]).astype('int64')
             sumstats[status] = status_int.astype('Int64')
         elif status_dtype not in ['int64', 'Int64', 'int32', 'Int32']:
             status_int = sumstats[status].astype('int64')
@@ -1696,7 +1700,10 @@ def get_reverse_complementary_allele(a: str) -> str:
 def is_palindromic(sumstats: pd.DataFrame, a1: str = "EA", a2: str = "NEA") -> pd.Series:
     from gwaslab.algorithm.allele.palindrome import is_palindromic_alleles
     return pd.Series(
-        is_palindromic_alleles(sumstats[a1].to_numpy(), sumstats[a2].to_numpy()),
+        is_palindromic_alleles(
+            categorical_safe_str(sumstats[a1]).to_numpy(),
+            categorical_safe_str(sumstats[a2]).to_numpy(),
+        ),
         index=sumstats.index,
     )
 

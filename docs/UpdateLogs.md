@@ -2,6 +2,7 @@
 
 # v4.2.0 
 
+- **Memory / dtypes (#222):** category-aware string helpers (`categorical_str_len`, `categorical_str_upper`, `categorical_str_contains`) and CI tracemalloc guards to prevent OOM when materializing categorical EA/NEA; see `docs/audit/dtype_memory_audit.md`
 - **Config / download consistency:** local registry (`config.json`) defaults to `~/.gwaslab/config.json` with automatic migration from legacy package-local config; `GWASLAB_DATA_DIR` / `GWASLAB_CONFIG` env overrides; persisted user settings in `~/.gwaslab/settings.json`
 - **Shared download layer:** `bd_io.stream_download()` (atomic `.part` rename) used by reference and GWAS Catalog sumstats downloads; fixed `md5sum` verification in `download_ref()`
 - **API / CLI:** `download_ref()` returns local path; exported `set_default_directory()` / `get_default_directory()` / `check_and_download()`; `gwaslab config set`; `gwaslab init` creates dirs, migrates config, optionally sets `data_directory`, then scans; `gwaslab list ref --source` / `--kind`; `gwaslab ref add|remove`; `gwaslab init --recursive`

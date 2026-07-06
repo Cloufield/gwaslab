@@ -6,6 +6,7 @@ from gwaslab.info.g_vchange_status import ensure_status_int
 from .hm_assign_rsid import _annotate_sumstats
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+from gwaslab.qc.qc_check_datatype import categorical_str_len
 
 # Epsilon for floating point precision in frequency comparisons
 # Used to handle floating point precision issues when comparing MAF values at threshold
@@ -431,8 +432,8 @@ Notes
     both_alleles_valid = ea_valid & nea_valid
     
     # Identify SNPs (single-character alleles) vs indels (multi-character)
-    ea_len = ea_series.str.len()
-    nea_len = nea_series.str.len()
+    ea_len = categorical_str_len(ea_series)
+    nea_len = categorical_str_len(nea_series)
     both_single_char = (ea_len == 1) & (nea_len == 1)
     valid_snp_mask = both_alleles_valid & both_single_char
     

@@ -8,6 +8,59 @@ from gwaslab.qc.qc_reserved_headers import dtype_dict
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
+
+def categorical_safe_str(series: pd.Series) -> pd.Series:
+    """Convert a pandas Series to StringDtype (project default for string conversion).
+
+    Prefer this over ``Series.astype(str)`` on any sumstats column, especially categorical
+    EA/NEA/REF/ALT where ``astype(str)`` can OOM (#222: ``n_rows * max_category_length``).
+
+    ``astype("string")`` materializes per-row strings without padding every row to
+    ``max_category_length``. Use before ``.str`` ops, concatenation, or numpy string conversion.
+
+    Passing data through ``Sumstats()`` can normalize category index dtype and mask #222
+    in minimal repros; validate fixes with raw categorical EA/NEA.
+    """
+    return series.astype("string")
+
+
+def _allele_series(series: pd.Series | pd.Categorical) -> pd.Series:
+    if isinstance(series, pd.Categorical):
+        return pd.Series(series)
+    return series
+
+
+def categorical_str_len(series: pd.Series | pd.Categorical) -> pd.Series:
+    """Per-row string lengths without materializing ``n_rows × max_category_length``.
+
+    On categorical columns, lengths are computed from ``cat.categories`` and mapped via
+    codes. On other dtypes, falls back to ``categorical_safe_str`` + ``.str.len()``.
+    """
+    series = _allele_series(series)
+    if isinstance(series.dtype, pd.CategoricalDtype):
+        cat_lens = series.cat.categories.astype("string").str.len()
+        return pd.Series(cat_lens.to_numpy()[series.cat.codes], index=series.index)
+    return categorical_safe_str(series).str.len()
+
+
+def categorical_str_upper(series: pd.Series | pd.Categorical) -> pd.Series:
+    """Uppercase strings via category rename when possible."""
+    series = _allele_series(series)
+    if isinstance(series.dtype, pd.CategoricalDtype):
+        upper_cats = series.cat.categories.astype("string").str.upper()
+        return series.cat.rename_categories(upper_cats)
+    return categorical_safe_str(series).str.upper()
+
+
+def categorical_str_contains(series: pd.Series | pd.Categorical, pat: str, **kwargs: Any) -> pd.Series:
+    """Regex/string contains mapped from category index when possible."""
+    series = _allele_series(series)
+    if isinstance(series.dtype, pd.CategoricalDtype):
+        hits = series.cat.categories.astype("string").str.contains(pat, **kwargs)
+        return pd.Series(hits.to_numpy()[series.cat.codes], index=series.index)
+    return categorical_safe_str(series).str.contains(pat, **kwargs)
+
+
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype
 

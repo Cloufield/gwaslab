@@ -302,13 +302,9 @@ import json
 
 
 def _parse_plot_mode(plot_spec):
-    """Parse plot specification into (plot, mode) tuple.
-    
-Parameters
-        plot_spec: str like "plot:mode" or "plot", or tuple/list [plot, mode]
-    
-Returns
-        tuple: (plot_name, mode_name) where mode_name is "*" for wildcard or None
+    """Parse plot specification into (plot, mode) tuple for ``plots`` allowlists.
+
+    Bare plot names (no ``:mode``) apply to all modes via the ``*`` wildcard.
 """
     if isinstance(plot_spec, str):
         if ":" in plot_spec:
@@ -321,6 +317,28 @@ Returns
             return (plot_spec[0], plot_spec[1])
         elif len(plot_spec) == 1:
             return (plot_spec[0], "*")
+    return None
+
+
+def _parse_no_plot_mode(plot_spec):
+    """Parse plot specification for ``no_plots`` exclusions.
+
+    Bare plot names ban only the base plot (``mode=None``). Use ``plot:*`` to ban
+    every mode of that plot.
+"""
+    if isinstance(plot_spec, str):
+        if ":" in plot_spec:
+            plot_name, mode_name = plot_spec.split(":", 1)
+            if mode_name == "*":
+                return (plot_name, "*")
+            return (plot_name, mode_name)
+        else:
+            return (plot_spec, None)
+    elif isinstance(plot_spec, (list, tuple)):
+        if len(plot_spec) == 2:
+            return (plot_spec[0], plot_spec[1])
+        elif len(plot_spec) == 1:
+            return (plot_spec[0], None)
     return None
 
 
@@ -727,7 +745,7 @@ Returns
         
         if no_plots:
             for p in no_plots:
-                parsed = _parse_plot_mode(p)
+                parsed = _parse_no_plot_mode(p)
                 if parsed:
                     entry["no_plots"].add(parsed)
 

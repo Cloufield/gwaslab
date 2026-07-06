@@ -23,6 +23,7 @@ from gwaslab.bd.bd_common_data import NA_STRINGS
 
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_build import _set_build
 from gwaslab.qc.qc_decorator import with_logging
@@ -83,7 +84,7 @@ def check_range(sumstats: pd.DataFrame, var_range: Optional[Tuple[Optional[float
             log.write(" -Checking STATUS and converting STATUS to Int64....", verbose=verbose) 
             # Convert STATUS to integer (remove Categorical if present)
             if sumstats[header].dtype.name == 'category':
-                sumstats[header] = sumstats[header].astype(str).astype(int)
+                sumstats[header] = categorical_safe_str(sumstats[header]).astype('Int64')
             elif sumstats[header].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
                 sumstats[header] = sumstats[header].astype(int)
             sumstats[header] = sumstats[header].astype('Int64')
@@ -96,7 +97,7 @@ def check_range(sumstats: pd.DataFrame, var_range: Optional[Tuple[Optional[float
         if dtype in ["Int64","Int32","int","int32","in64"]:
             # Remove commas for string representations of numbers before conversion
             if sumstats[header].dtype == 'object':
-                sumstats[header] = sumstats[header].astype(str).str.replace(',', '')
+                sumstats[header] = categorical_safe_str(sumstats[header]).str.replace(',', '')
             sumstats[header] = np.floor(pd.to_numeric(sumstats[header], errors='coerce')).astype(dtype)
             is_valid = (sumstats[header]>=var_range[0]) & (sumstats[header]<=var_range[1])
             range_str = "{} <= {} <= {}".format(var_range[0], header, var_range[1])

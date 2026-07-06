@@ -13,6 +13,7 @@ from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import quick_convert_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.qc.qc_reserved_headers import _check_overlap_with_reserved_keys
 from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
 from gwaslab.info.g_Log import Log
@@ -478,7 +479,7 @@ def _ensure_snpid_column(*, sumstats=None, log=None, verbose=False):
             chr_str = sumstats["CHR"].astype("string")
             pos_str = sumstats["POS"].astype("string")
             if "EA" in sumstats_cols and "NEA" in sumstats_cols:
-                sumstats["SNPID"] = chr_str + ":" + pos_str + ":" + sumstats["NEA"].astype("string") + ":" + sumstats["EA"].astype("string")
+                sumstats["SNPID"] = chr_str + ":" + pos_str + ":" + categorical_safe_str(sumstats["NEA"]) + ":" + categorical_safe_str(sumstats["EA"])
             else:
                 sumstats["SNPID"] = chr_str + ":" + pos_str
             log.write(" -No rsID/SNPID found; created SNPID from CHR:POS[:NEA:EA]", verbose=verbose)
@@ -941,7 +942,7 @@ def _process_status(sumstats,build,status, log,verbose):
 
     # Convert STATUS to integer if it's string (for backward compatibility)
     if sumstats["STATUS"].dtype == 'object' or sumstats["STATUS"].dtype.name == 'category':
-        sumstats["STATUS"] = sumstats["STATUS"].astype(str).astype(int)
+        sumstats["STATUS"] = categorical_safe_str(sumstats["STATUS"]).astype('Int64')
     elif sumstats["STATUS"].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
         sumstats["STATUS"] = sumstats["STATUS"].astype(int)
     

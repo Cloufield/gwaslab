@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 from gwaslab.extension import _checking_plink_version
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.io.io_plink import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
@@ -595,8 +596,8 @@ def _merge_ld_map_with_sumstats(
     
     log.write("   -Variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
     # convert category to string
-    locus_sumstats["EA"] = locus_sumstats["EA"].astype("string")
-    locus_sumstats["NEA"] = locus_sumstats["NEA"].astype("string")
+    locus_sumstats["EA"] = categorical_safe_str(locus_sumstats["EA"])
+    locus_sumstats["NEA"] = categorical_safe_str(locus_sumstats["NEA"])
     
     # matching by SNPID
     # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)
@@ -656,8 +657,8 @@ def _merge_ld_map_with_sumstats_for_regional(
             suffixes=[""]
     
     # convert category to string
-    locus_sumstats["EA"] = locus_sumstats["EA"].astype("string")
-    locus_sumstats["NEA"] = locus_sumstats["NEA"].astype("string")
+    locus_sumstats["EA"] = categorical_safe_str(locus_sumstats["EA"])
+    locus_sumstats["NEA"] = categorical_safe_str(locus_sumstats["NEA"])
     
     # matching by SNPID
     # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)

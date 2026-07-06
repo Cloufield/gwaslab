@@ -109,7 +109,7 @@ def _resolve_stage(
     if preset in SANKEY_PRESETS:
         pass
     elif name in df.columns:
-        series = df[name].astype(str).replace({"nan": np.nan, "None": np.nan})
+        series = df[name].astype("string").replace({"nan": np.nan, "None": np.nan})
         return series, name
     else:
         available = ", ".join(sorted(df.columns))
@@ -152,7 +152,7 @@ def _resolve_stage(
             f"STATUS preset requires column '{col}'. Pass column_map={{'STATUS': '<status_col>'}} "
             f"or add the column first."
         )
-    series = df[col].astype(str).replace({"nan": np.nan, "None": np.nan})
+    series = df[col].astype("string").replace({"nan": np.nan, "None": np.nan})
     return series, name
 
 

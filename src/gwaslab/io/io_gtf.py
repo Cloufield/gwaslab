@@ -120,7 +120,7 @@ pandas.DataFrame
     df_pd_temp["seqname"] = mapper.to_numeric(df_pd_temp["seqname"])
     # Update the Polars DataFrame
     df = df.with_columns(
-        pl.Series("seqname", df_pd_temp["seqname"].astype(str))
+        pl.Series("seqname", df_pd_temp["seqname"].astype("string"))
     )
     
     # Early chromosome filtering for speed (before processing attributes)
@@ -285,7 +285,7 @@ pandas.DataFrame
     if len(result) > 0 and "seqname" in result.columns:
         mapper = ChromosomeMapper()
         mapper.detect_sumstats_format(result["seqname"])
-        result["seqname"] = mapper.to_string(result["seqname"]).astype(str)
+        result["seqname"] = mapper.to_string(result["seqname"]).astype("string")
     return result
 
 
@@ -402,7 +402,7 @@ pandas.DataFrame or tuple
             # Convert seqname back to chromosome number using ChromosomeMapper
             mapper_back = ChromosomeMapper(species="homo sapiens", build=build)
             mapper_back.detect_sumstats_format(gtf["seqname"])
-            gtf["seqname"] = mapper_back.to_string(gtf["seqname"]).astype(str)
+            gtf["seqname"] = mapper_back.to_string(gtf["seqname"]).astype("string")
         if build == "38":
             data_path = check_and_download("refseq_hg38_gtf")
             # Filter by chromosome early for speed
@@ -423,7 +423,7 @@ pandas.DataFrame or tuple
             # Convert seqname back to chromosome number using ChromosomeMapper
             mapper_back = ChromosomeMapper(species="homo sapiens", build=build)
             mapper_back.detect_sumstats_format(gtf["seqname"])
-            gtf["seqname"] = mapper_back.to_string(gtf["seqname"]).astype(str)
+            gtf["seqname"] = mapper_back.to_string(gtf["seqname"]).astype("string")
     if gtf is None:
         gtf = pd.DataFrame(
             columns=[

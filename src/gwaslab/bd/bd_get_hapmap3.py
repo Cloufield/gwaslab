@@ -6,6 +6,7 @@ from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 from pathlib import Path
 from gwaslab.util.util_in_filter_value import _get_hapmap_full_polars
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
@@ -71,10 +72,10 @@ pandas.DataFrame
     def _match_alleles(output_df, ea_col, nea_col, how_join):
         """Check if alleles match between sumstats and hapmap3.
 """
-        ea_str = output_df[ea_col].astype("string")
-        nea_str = output_df[nea_col].astype("string")
-        a1_str = output_df["A1"].astype("string")
-        a2_str = output_df["A2"].astype("string")
+        ea_str = categorical_safe_str(output_df[ea_col])
+        nea_str = categorical_safe_str(output_df[nea_col])
+        a1_str = categorical_safe_str(output_df["A1"])
+        a2_str = categorical_safe_str(output_df["A2"])
         
         is_matched = ((ea_str == a1_str) & (nea_str == a2_str)) | ((ea_str == a2_str) & (nea_str == a1_str))
         if how_join == "right":

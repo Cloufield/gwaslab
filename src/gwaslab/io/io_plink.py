@@ -659,7 +659,7 @@ int
             )
         else:
             # Sumstats uses string, convert BIM CHR to string
-            ref_bim_filtered["_CHR_bim_sumstats"] = ref_bim_filtered["_CHR_bim_sumstats"].astype(str)
+            ref_bim_filtered["_CHR_bim_sumstats"] = ref_bim_filtered["_CHR_bim_sumstats"].astype("string")
     
     # Create set of (CHR, POS) tuples from sumstats for fast lookup
     # Sumstats CHR is already standardized, so use it directly

@@ -20,6 +20,7 @@ from gwaslab.util.util_in_filter_value import _filter_values
 from gwaslab.util.util_in_filter_value import _filter_palindromic
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_in_filter_value import _exclude_sexchr
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 
 class ARGS():
@@ -886,7 +887,7 @@ pd.DataFrame
     if allele1_col and allele2_col:
         valid_snps = {'AT', 'TA', 'CG', 'GC', 'AC', 'CA', 'AG', 'GA', 'TC', 'CT', 'TG', 'GT'}
         # Create allele pair string
-        allele_pair = (sumstats[allele1_col].astype(str) + sumstats[allele2_col].astype(str)).str.upper()
+        allele_pair = (categorical_safe_str(sumstats[allele1_col]) + categorical_safe_str(sumstats[allele2_col])).str.upper()
         valid_alleles = allele_pair.isin(valid_snps)
         sumstats = sumstats.loc[valid_alleles].copy()
         log.write(" -After allele filtering (strand-unambiguous): {} SNPs remain".format(len(sumstats)), verbose=verbose)

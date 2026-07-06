@@ -11,6 +11,8 @@ from gwaslab.info.g_vchange_status import vchange_status
 from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
+from gwaslab.qc.qc_check_datatype import categorical_str_len
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.qc.qc_normalize_args import _normalize_region
 from gwaslab.bd.bd_common_data import get_high_ld, get_par
@@ -331,7 +333,7 @@ pandas.DataFrame
             for col in str_columns:
                 if col in sumstats_copy.columns:
                     # Convert to string, handling NaN values
-                    sumstats_copy[col] = sumstats_copy[col].astype(str).replace('nan', '')
+                    sumstats_copy[col] = categorical_safe_str(sumstats_copy[col]).replace('nan', '')
             
             # Create namespace with all columns accessible
             env = {col: sumstats_copy[col] for col in sumstats_copy.columns}
@@ -1270,7 +1272,7 @@ pandas.DataFrame
     if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
     and returns ``None`` if ``inplace=True``.
 """
-    is_indel = (sumstats[ea].str.len()!=sumstats[nea].str.len()) 
+    is_indel = (categorical_str_len(sumstats[ea]) != categorical_str_len(sumstats[nea]))
     
     log.write(" -Identified indels: {}".format(sum(is_indel)),verbose=verbose)
     if mode=="in":
@@ -1300,7 +1302,9 @@ pandas.DataFrame
     if ``inplace=False``, or updates the Sumstats object in place (modifies ``self.data``)
     and returns ``None`` if ``inplace=True``.
 """
-    is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
+    ea_len = categorical_str_len(sumstats[ea])
+    nea_len = categorical_str_len(sumstats[nea])
+    is_snp = (ea_len == 1) & (nea_len == 1)
     
     log.write(" -Identified SNPs: {}".format(sum(is_snp)),verbose=verbose)
     if mode=="in":

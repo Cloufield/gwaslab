@@ -11,6 +11,7 @@ from gwaslab.bd.bd_common_data import get_chain
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from typing import Optional
 from gwaslab.qc.qc_build import _process_build
+from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.qc.qc_fix_sumstats import _fix_chr, _fix_pos
 
 try:
@@ -274,7 +275,7 @@ Notes
         # Normalize lifted chromosomes for comparison (only for non-NA values)
         # Use vectorized normalization for better performance
         # First filter out NA and -1 values, then normalize
-        valid_mask = sumstats[out_chrom_col].notna() & (sumstats[out_chrom_col].astype(str) != '-1')
+        valid_mask = sumstats[out_chrom_col].notna() & (categorical_safe_str(sumstats[out_chrom_col]) != '-1')
         lifted_chrom_normalized = pd.Series(index=sumstats.index, dtype=object)
         if valid_mask.any():
             lifted_chrom_normalized.loc[valid_mask] = _normalize_chrom_name_vectorized(sumstats.loc[valid_mask, out_chrom_col], mapper=mapper)

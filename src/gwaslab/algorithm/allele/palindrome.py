@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 
 
 def is_palindromic_pair(ea: str, nea: str) -> bool:
@@ -41,15 +42,13 @@ Returns
 numpy.ndarray
     Boolean array indicating palindromic pairs.
 """
-    ea = np.asarray(effect_allele, dtype=str)
-    nea = np.asarray(other_allele, dtype=str)
-    ea_u = np.char.upper(ea)
-    nea_u = np.char.upper(nea)
+    ea_u = pd.Series(effect_allele, copy=False).str.upper()
+    nea_u = pd.Series(other_allele, copy=False).str.upper()
     gc = (ea_u == "G") & (nea_u == "C")
     cg = (ea_u == "C") & (nea_u == "G")
     at = (ea_u == "A") & (nea_u == "T")
     ta = (ea_u == "T") & (nea_u == "A")
-    return gc | cg | at | ta
+    return (gc | cg | at | ta).to_numpy()
 
 
 def is_indel_pair(ref: str, alt: str) -> bool:
