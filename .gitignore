@@ -1,0 +1,76 @@
+# Python / packaging
+__pycache__/
+*.egg-info/
+build/
+dist/
+
+# Testing
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+**/Untitled*.ipynb
+
+# Local temp
+eaf_tmp/
+
+# Downloaded sample data (see examples/0_sample_data/download_*.sh)
+examples/0_sample_data/*.txt.gz
+examples/0_sample_data/*.bed.gz
+examples/0_sample_data/*.png
+
+# GWAS Catalog API cache
+GWASCatalog_v2_*.json
+
+# Example / CLI outputs
+examples/**/output/
+examples/7_visualization/CalculatedLD_*
+examples/7_visualization/*_merged.tsv
+examples/7_visualization/stacked_panels.png
+examples/7_visualization/images/
+examples/7_visualization/test.gsf
+examples/7_visualization/[0-9]*
+
+# Development artifacts
+examples/_development/**/*.png
+examples/_development/*_pst_eff_*
+examples/_development/mcmc*_pst_eff_*
+examples/_development/forest_plot/meta_data.txt
+examples/_development/sankey/sankey_demo_fixtures.py
+examples/_development/panels/
+examples/bug/
+
+# Test outputs (keep fixed_id.tsv)
+test/output/*
+!test/output/fixed_id.tsv
+
+# PLINK clumping intermediates
+test/ref/*.pgen
+test/ref/*.psam
+test/ref/*.pvar
+test/ref/*.pvar.zst
+test/ref/*.bed
+test/ref/*.bim
+test/ref/*.fam
+test/ref/*.log
+
+# Bedpe simulation debug outputs
+test/simulation/bedpe/test_*.png
+test/simulation/bedpe/test_sim.bedpe.gz
+
+# One-off debug scripts
+test/debug_*.py
+test/fix_*.py
+
+# WIP / local-only
+src/gwaslab/extension/prscs/README.md
+examples/5_internal_utility/example_simulate_sumstats.py
+examples/5_internal_utility/example_simulate_sumstats_quickstart.py
+test/PRSCS_DIFFERENCES_ANALYSIS.md
+docs/images/notebooks/visualization_region_panel_alphagenome_img_0.png
+examples/7_visualization/test_visualization_regional.ipynb
+examples/7_visualization/visualization_phenogram.ipynb
+examples/_development/prscs.ipynb
