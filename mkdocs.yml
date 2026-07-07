@@ -109,6 +109,7 @@ nav:
        - "Phenogram plot" : visualization_phenogram.md
        - "Lead overlap plot" : visualization_lead_overlap.md
        - "Sankey plot" : visualization_sankey.md
+       - "Variant set plot" : visualization_variant_set.md
        - "Correlation heatmap" : visualization_plot_genetic_correlation.md
        - "Download reference": Download_reference.md
        

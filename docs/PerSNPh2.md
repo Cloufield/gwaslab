@@ -70,8 +70,10 @@ Where:
 - $Var(\beta_i \times X_i) = 2 \times \beta_i^2 \times **EAF**_i \times (1 - **EAF**_i)$
 - $Var(Y)$ depends on the `vary` parameter:
 
-  - If `vary` is a number: $Var(Y) = \text{vary}$
-  - If `vary="se"`: $Var(Y) = Var(\beta_i \times X_i) + **SE**_i^2 \times 2 \times **N** \times **EAF**_i \times (1 - **EAF**_i)$
+  - If `vary` is a number: $Var(Y) = \text{vary}$ (default `1` assumes unit Var(Y), e.g. standardized trait or SD-scaled **BETA**; cf. TwoSampleMR SD-unit branch)
+  - If `vary="se"`: Shim et al. (2015) S1 eq. (4):
+
+    $$ R^2_i = \frac{2 \beta_i^2 \cdot \text{EAF}_i \cdot (1 - \text{EAF}_i)}{2 \beta_i^2 \cdot \text{EAF}_i \cdot (1 - \text{EAF}_i) + \text{SE}_i^2 \cdot 2 \cdot N \cdot \text{EAF}_i \cdot (1 - \text{EAF}_i)} $$
 
 **F-statistic** (when `N` is available):
 
@@ -89,7 +91,7 @@ Where $k$ is the number of parameters (default: 1).
 
 !!! quote "Reference for quantitative traits"
 
-    Shim, H., Chasman, D. I., Smith, J. D., Mora, S., Ridker, P. M., Nickerson, D. A., ... & Stephens, M. (2015). A multivariate genome-wide association analysis of 10 LDL subfractions, and their response to statin treatment, in 1868 Caucasians. *PloS one*, 10(4), e0120758.
+    Shim, H., et al. (2015). A multivariate genome-wide association analysis of 10 LDL subfractions, and their response to statin treatment, in 1868 Caucasians. *PLoS ONE*, 10(4), e0120758. [S1 Text](http://journals.plos.org/plosone/article/asset?id=info%3Adoi%2F10.1371%2Fjournal.pone.0120758.s001) defines Var(βX) = 2β²MAF(1−MAF). Full PVE with SE and N is S1 eq. (4) (`vary="se"`). Default `vary=1` assumes Var(Y) = 1 and is not eq. (4).
 
 ### Binary Traits (`mode="b"`)
 
@@ -103,9 +105,9 @@ The calculation involves:
 
 !!! quote "Reference for binary traits"
 
-    Equation 10 in Lee, S. H., Goddard, M. E., Wray, N. R., & Visscher, P. M. (2012). A better coefficient of determination for genetic profile analysis. *Genetic epidemiology*, 36(3), 214-224.
-    
-    Implementation adopted from [TwoSampleMR](https://rdrr.io/github/MRCIEU/TwoSampleMR/src/R/add_rsq.r).
+    Implementation matches [TwoSampleMR `get_r_from_lor()`](https://mrcieu.github.io/TwoSampleMR/reference/get_r_from_lor.html) ([source](https://github.com/MRCIEU/TwoSampleMR/blob/master/R/add_rsq.r)): V_G = β²·p(1−p), V_E = π²/3, R² = V_G / (V_G + V_E) with β = log(OR) and population allele frequency p.
+
+    Lee, S. H., Goddard, M. E., Wray, N. R., & Visscher, P. M. (2012). A better coefficient of determination for genetic profile analysis. *Genetic epidemiology*, 36(3), 214-224. [doi:10.1002/gepi.21614](https://doi.org/10.1002/gepi.21614) — liability-scale R² framework (polygenic profile context).
 
 ### Examples
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from math import sqrt
-from typing import Optional, Tuple, List, Union
+from typing import Literal, Optional, Tuple, List, Union
 from allel import read_vcf, GenotypeArray
 from scipy.special import erfc
 import scipy.stats as ss
@@ -782,37 +782,36 @@ tuple
             k = min(int(n_causal), n_candidates)
             if k < int(n_causal):
                 log.warning(f" -Requested {n_causal} causal variants but only {n_candidates} candidates available, selecting {k}", verbose=verbose)
-            selected_candidate_idx = rng.choice(n_candidates, size=k, replace=False)
-            idx = causal_candidate_indices[selected_candidate_idx]
+            if k == 0:
+                idx = np.array([], dtype=int)
+            else:
+                selected_candidate_idx = rng.choice(n_candidates, size=k, replace=False)
+                idx = causal_candidate_indices[selected_candidate_idx]
         elif mode == "polygenic":
-            # Polygenic mode: Select m * pi variants (each variant is causal with probability pi)
-            k = max(1, int(round(n_candidates * float(pi))))
-            if k > n_candidates:
-                k = n_candidates
-                log.warning(f" -Requested {int(round(n_candidates * float(pi)))} causal variants but only {n_candidates} candidates available, selecting {k}", verbose=verbose)
-            selected_candidate_idx = rng.choice(n_candidates, size=k, replace=False)
-            idx = causal_candidate_indices[selected_candidate_idx]
+            # Polygenic mode: independent Bernoulli(pi) per eligible variant
+            bernoulli_mask = rng.random(n_candidates) < float(pi)
+            idx = causal_candidate_indices[bernoulli_mask]
+            if len(idx) == 0:
+                idx = rng.choice(n_candidates, size=1, replace=False)
+                idx = causal_candidate_indices[idx]
+                log.warning(
+                    " -Polygenic draw yielded 0 causals; forced 1 causal variant",
+                    verbose=verbose,
+                )
         else:
             raise ValueError("mode must be 'polygenic' or 'sparse'")
         
         # Step 4: Sample causal effect sizes with MAF-dependent architecture
-        if alpha > 0.0:
-            # MAF-dependent architecture: β_j^raw ~ N(0, [2p_j(1-p_j)]^(-alpha))
-            # where p_j is the effect allele frequency (EAF)
-            # This means rarer variants have larger effect sizes on average
-            # Use EAF (p_j) to match the standardization formula
-            p_causal = eaf_values[idx]
-            # Variance formula: [2p_j(1-p_j)]^(-alpha) where p_j is EAF
-            # For alpha > 0, rarer variants (smaller p) have larger variance
-            variance_scale = np.power(2.0 * p_causal * (1.0 - p_causal), -alpha)
-            variance_scale = np.clip(variance_scale, 1e-10, 1e10)  # Avoid extreme values (numerical stability)
-            beta_true[idx] = rng.normal(0.0, np.sqrt(variance_scale), size=len(idx))
-        else:
-            # MAF-independent architecture: β_j ~ N(0, effect_sd^2)
-            # All causal variants have the same effect size variance regardless of frequency
-            beta_true[idx] = rng.normal(0.0, float(effect_sd), size=len(idx))
-        
-        is_causal[idx] = True
+        if len(idx) > 0:
+            if alpha > 0.0:
+                # MAF-dependent architecture: β_j^raw ~ N(0, [2p_j(1-p_j)]^(-alpha))
+                p_causal = eaf_values[idx]
+                variance_scale = np.power(2.0 * p_causal * (1.0 - p_causal), -alpha)
+                variance_scale = np.clip(variance_scale, 1e-10, 1e10)
+                beta_true[idx] = rng.normal(0.0, np.sqrt(variance_scale), size=len(idx))
+            else:
+                beta_true[idx] = rng.normal(0.0, float(effect_sd), size=len(idx))
+            is_causal[idx] = True
     
     log.write(f" -Selected {is_causal.sum()} causal variants", verbose=verbose)
     
@@ -938,6 +937,662 @@ def _extract_causal_snp_ids(
     return causal_snp_ids
 
 
+def _compute_V_g_block(X: np.ndarray, beta_block: np.ndarray, n_samples: int) -> float:
+    """Raw genetic variance contribution for one block: (1/n) ||X beta||^2."""
+    if X.shape[0] == 0 or X.shape[1] == 0:
+        return 0.0
+    X_beta = X @ beta_block
+    return float(np.dot(X_beta, X_beta) / float(n_samples))
+
+
+def _binary_liability_mu_scale(n_case: int, n_ctrl: int) -> float:
+    """Simplified probit liability attenuation on the linear predictor scale."""
+    from scipy.stats import norm
+
+    K = float(n_case) / float(n_case + n_ctrl)
+    K = np.clip(K, 1e-6, 1.0 - 1e-6)
+    z_p = norm.ppf(K)
+    denom = norm.pdf(z_p)
+    if denom <= 0:
+        return 1.0
+    return float(np.sqrt((K * (1.0 - K)) / denom))
+
+
+def _simulate_z_from_panel(
+    X: np.ndarray,
+    beta: np.ndarray,
+    N_eff: np.ndarray,
+    *,
+    lambda_gc: float = 1.0,
+    sigma_strat: float = 0.0,
+    rng: np.random.Generator,
+    log: Optional[Log] = None,
+    verbose: bool = True,
+    mu_scale: float = 1.0,
+) -> np.ndarray:
+    """Simulate Z-scores for matched variants using the X^T X LD model."""
+    if log is None:
+        log = Log()
+
+    n_samples = X.shape[0]
+    N_eff = np.clip(N_eff, 1.0, None)
+
+    X_beta = X @ beta
+    R_beta = (X.T @ X_beta) / float(n_samples)
+    mu_causal = np.sqrt(N_eff) * R_beta * float(mu_scale)
+
+    u = rng.standard_normal(n_samples)
+    epsilon_0 = (X.T @ u) / np.sqrt(float(n_samples))
+    epsilon = lambda_gc * epsilon_0
+
+    b_strat = np.zeros_like(mu_causal, dtype=np.float64)
+    if sigma_strat > 0.0:
+        v = rng.standard_normal(n_samples)
+        b_strat = sigma_strat * (X.T @ v) / np.sqrt(float(n_samples))
+
+    z = mu_causal + b_strat + epsilon
+    return np.where(np.isfinite(z), z, 0.0).astype(np.float64)
+
+
+def _calibrate_beta_to_h2(
+    beta: np.ndarray,
+    X: np.ndarray,
+    matched_indices: np.ndarray,
+    h2: float,
+    log: Optional[Log] = None,
+    verbose: bool = True,
+) -> Tuple[np.ndarray, float, float]:
+    """Rescale beta so (1/n)||X beta||^2 matches target h2 on matched variants."""
+    if log is None:
+        log = Log()
+    n_samples = X.shape[0]
+    beta_m = beta[matched_indices]
+    V_g_raw = _compute_V_g_block(X, beta_m, n_samples)
+    if V_g_raw <= 0:
+        log.warning(" -Non-positive genetic variance; skipping h2 calibration", verbose=verbose)
+        return beta, V_g_raw, 1.0
+    scale = np.sqrt(h2 / V_g_raw)
+    beta_scaled = beta.copy()
+    beta_scaled[matched_indices] = beta_m * scale
+    return beta_scaled, V_g_raw, float(scale)
+
+
+def _global_block_index_bounds(
+    chr_indices: np.ndarray,
+    start_i: int,
+    end_i: int,
+    df_height: int,
+) -> Tuple[int, int]:
+    """Map block-local indices to global dataframe row bounds."""
+    global_start = int(chr_indices[start_i])
+    if end_i < len(chr_indices):
+        global_end = int(chr_indices[end_i])
+    else:
+        global_end = min(
+            int(chr_indices[-1] + 1) if len(chr_indices) > 0 else global_start,
+            df_height,
+        )
+    return global_start, global_end
+
+
+def _accumulate_V_g_raw_for_chromosomes(
+    vcf_path: str,
+    df: pl.DataFrame,
+    beta_raw: np.ndarray,
+    chromosomes: List[Union[int, str]],
+    chr_to_indices: dict,
+    pos: np.ndarray,
+    window_bp: int,
+    vcf_chr_dict: Optional[dict],
+    tabix: Optional[bool],
+    mapper: ChromosomeMapper,
+    log: Optional[Log] = None,
+    verbose: bool = False,
+) -> Tuple[float, int]:
+    """Sum raw genetic variance across all chromosome blocks (for h2 calibration)."""
+    if log is None:
+        log = Log()
+
+    V_g_raw_total = 0.0
+    n_blocks_processed = 0
+
+    for chr_val in chromosomes:
+        if chr_val not in chr_to_indices:
+            continue
+
+        chr_indices = np.array(chr_to_indices[chr_val])
+        chr_pos = pos[chr_indices]
+        blocks = _make_blocks_by_bp(chr_pos, int(window_bp))
+
+        for start_i, end_i in blocks:
+            global_start, global_end = _global_block_index_bounds(
+                chr_indices, start_i, end_i, df.height
+            )
+            X, _, matched_indices = _get_standardized_genotypes_for_block(
+                vcf_path=vcf_path,
+                variant_df=df,
+                start_idx=global_start,
+                end_idx=global_end,
+                region=None,
+                vcf_chr_dict=vcf_chr_dict,
+                tabix=tabix,
+                mapper=mapper,
+                log=log,
+                verbose=verbose,
+            )
+            if X.shape[0] == 0 or X.shape[1] == 0:
+                continue
+
+            global_matched = global_start + matched_indices
+            beta_block = beta_raw[global_matched]
+            V_g_raw_total += _compute_V_g_block(X, beta_block, X.shape[0])
+            n_blocks_processed += 1
+
+    return V_g_raw_total, n_blocks_processed
+
+
+def _chr_sort_key(x: Union[int, str]) -> Tuple[int, Union[int, str]]:
+    """Natural sort key for chromosome identifiers."""
+    x_str = str(x).lstrip("chrCHR")
+    try:
+        return (0, int(x_str))
+    except ValueError:
+        return (1, x_str)
+
+
+def _autodetect_chromosomes_from_vcf(
+    vcf_path: str,
+    mapper: ChromosomeMapper,
+    vcf_chr_dict: Optional[dict],
+    log: Optional[Log] = None,
+    verbose: bool = True,
+) -> List[Union[int, str]]:
+    """List chromosomes from VCF header contigs (no variant scan)."""
+    if log is None:
+        log = Log()
+
+    contigs = mapper._extract_contigs_from_file(vcf_path)
+    if not contigs:
+        raise ValueError("Could not detect chromosomes from VCF header contigs.")
+
+    if vcf_chr_dict:
+        reverse_dict = {v: k for k, v in vcf_chr_dict.items()}
+        contigs = [reverse_dict.get(c, c) for c in contigs]
+
+    unique_chrs = sorted({str(c) for c in contigs}, key=_chr_sort_key)
+    log.write(
+        f" -Auto-detected {len(unique_chrs)} chromosomes from VCF header: {unique_chrs[:5]}..."
+        if len(unique_chrs) > 5
+        else f" -Auto-detected {len(unique_chrs)} chromosomes from VCF header: {unique_chrs}",
+        verbose=verbose,
+    )
+    return unique_chrs
+
+
+def _thin_variants_df(
+    df: pl.DataFrame,
+    thin: float,
+    rng: np.random.Generator,
+    log: Optional[Log] = None,
+    verbose: bool = True,
+) -> pl.DataFrame:
+    """Randomly keep a fraction of variants."""
+    if log is None:
+        log = Log()
+    if thin <= 0.0 or thin >= 1.0:
+        raise ValueError(f"thin must be between 0 and 1 (exclusive), got {thin}")
+
+    m = df.height
+    n_keep = max(1, int(m * thin))
+    log.write(
+        f" -Thinning variants: keeping {n_keep} out of {m} variants (thin={thin:.4f})",
+        verbose=verbose,
+    )
+    keep_indices = np.sort(rng.choice(m, size=n_keep, replace=False))
+    df = df[keep_indices]
+    log.write(f" -After thinning: {df.height} variants remaining", verbose=verbose)
+    return df
+
+
+def _load_global_variants_streaming(
+    vcf_path: str,
+    chromosomes: List[Union[int, str]],
+    *,
+    maf_min: float,
+    maf_max: float,
+    eaf_min: float,
+    eaf_max: float,
+    exclude_rare: bool,
+    rare_maf_threshold: float,
+    thin: Optional[float],
+    vcf_chr_dict: Optional[dict],
+    tabix: Optional[bool],
+    mapper: ChromosomeMapper,
+    rng: np.random.Generator,
+    log: Optional[Log] = None,
+    verbose: bool = True,
+) -> pl.DataFrame:
+    """Load variant metadata per chromosome with filter/thin applied incrementally."""
+    if log is None:
+        log = Log()
+
+    all_dfs: List[pl.DataFrame] = []
+    for chr_val in chromosomes:
+        log.write(f"   -Loading chromosome {chr_val}...", verbose=verbose)
+        try:
+            df_chr = _read_vcf_variants(
+                vcf_path=vcf_path,
+                region=(chr_val, 1, 500_000_000),
+                vcf_chr_dict=vcf_chr_dict,
+                tabix=tabix,
+                mapper=mapper,
+                log=log,
+                verbose=False,
+            )
+        except ValueError:
+            continue
+        if df_chr.height == 0:
+            continue
+
+        df_chr = df_chr.filter(pl.col("CHR").cast(pl.Utf8) == str(chr_val))
+        if df_chr.height == 0:
+            continue
+
+        df_chr = _filter_variants(
+            df=df_chr,
+            maf_min=maf_min,
+            maf_max=maf_max,
+            eaf_min=eaf_min,
+            eaf_max=eaf_max,
+            exclude_rare=exclude_rare,
+            rare_maf_threshold=rare_maf_threshold,
+            log=log,
+            verbose=False,
+        )
+        if thin is not None:
+            df_chr = _thin_variants_df(df_chr, thin, rng, log=log, verbose=False)
+
+        all_dfs.append(df_chr)
+        log.write(f"     -Kept {df_chr.height} variants from chromosome {chr_val}", verbose=verbose)
+
+    if len(all_dfs) == 0:
+        raise ValueError(f"No variants found for chromosomes: {chromosomes}")
+
+    df = pl.concat(all_dfs).sort(["CHR", "POS"])
+    log.write(f" -Loaded variants from {len(chromosomes)} chromosomes", verbose=verbose)
+    log.write(f" -Total variants loaded: {df.height}", verbose=verbose)
+    return df
+
+
+def _get_standardized_genotypes_for_chromosome(
+    vcf_path: str,
+    variant_df: pl.DataFrame,
+    start_idx: int,
+    end_idx: int,
+    vcf_chr_dict: Optional[dict] = None,
+    tabix: Optional[bool] = None,
+    mapper: Optional[ChromosomeMapper] = None,
+    log: Optional[Log] = None,
+    verbose: bool = False,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Load standardized genotypes for a contiguous chromosome slice in variant_df."""
+    return _get_standardized_genotypes_for_block(
+        vcf_path=vcf_path,
+        variant_df=variant_df,
+        start_idx=start_idx,
+        end_idx=end_idx,
+        region=None,
+        vcf_chr_dict=vcf_chr_dict,
+        tabix=tabix,
+        mapper=mapper,
+        log=log,
+        verbose=verbose,
+    )
+
+
+def _accumulate_V_g_from_causal_snps(
+    vcf_path: str,
+    df: pl.DataFrame,
+    beta_raw: np.ndarray,
+    is_causal: np.ndarray,
+    vcf_chr_dict: Optional[dict],
+    tabix: Optional[bool],
+    mapper: ChromosomeMapper,
+    log: Optional[Log] = None,
+    verbose: bool = False,
+) -> Tuple[float, int]:
+    """Sum raw genetic variance using only causal SNP genotypes (sparse mode)."""
+    if log is None:
+        log = Log()
+
+    causal_indices = np.where(is_causal)[0]
+    if len(causal_indices) == 0:
+        return 0.0, 0
+
+    chr_array = df["CHR"].to_numpy()
+    pos_array = df["POS"].to_numpy().astype(np.int64)
+    chr_to_causals: dict = {}
+    for idx in causal_indices:
+        chr_val = chr_array[idx]
+        if chr_val not in chr_to_causals:
+            chr_to_causals[chr_val] = []
+        chr_to_causals[chr_val].append(int(idx))
+
+    V_g_raw_total = 0.0
+    n_causal_matched = 0
+    n_samples = 0
+
+    for chr_val, idx_list in chr_to_causals.items():
+        idx_arr = np.array(idx_list, dtype=int)
+        start_pos = int(pos_array[idx_arr].min())
+        end_pos = int(pos_array[idx_arr].max())
+
+        sub_df = df[idx_arr.tolist()]
+        X, _, matched_local = _get_standardized_genotypes_for_block(
+            vcf_path=vcf_path,
+            variant_df=sub_df,
+            start_idx=0,
+            end_idx=sub_df.height,
+            region=(chr_val, start_pos, end_pos),
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            log=log,
+            verbose=verbose,
+        )
+        if X.shape[0] == 0 or X.shape[1] == 0:
+            continue
+
+        n_samples = X.shape[0]
+        global_matched = idx_arr[matched_local]
+        beta_causal = beta_raw[global_matched]
+        V_g_raw_total += _compute_V_g_block(X, beta_causal, n_samples)
+        n_causal_matched += len(global_matched)
+
+    return V_g_raw_total, n_causal_matched
+
+
+def _merge_causal_ld_windows(
+    df: pl.DataFrame,
+    is_causal: np.ndarray,
+    ld_window_bp: int,
+) -> List[Tuple[str, int, int]]:
+    """Merge overlapping LD windows around causal variants."""
+    causal_indices = np.where(is_causal)[0]
+    if len(causal_indices) == 0:
+        return []
+
+    chr_array = df["CHR"].to_numpy()
+    pos_array = df["POS"].to_numpy().astype(np.int64)
+
+    by_chr: dict = {}
+    for idx in causal_indices:
+        chr_key = str(chr_array[idx])
+        pos = int(pos_array[idx])
+        start = max(1, pos - int(ld_window_bp))
+        end = pos + int(ld_window_bp)
+        by_chr.setdefault(chr_key, []).append((start, end))
+
+    merged: List[Tuple[str, int, int]] = []
+    for chr_key, intervals in by_chr.items():
+        intervals.sort()
+        cur_start, cur_end = intervals[0]
+        for start, end in intervals[1:]:
+            if start <= cur_end:
+                cur_end = max(cur_end, end)
+            else:
+                merged.append((chr_key, cur_start, cur_end))
+                cur_start, cur_end = start, end
+        merged.append((chr_key, cur_start, cur_end))
+
+    merged.sort(key=lambda x: _chr_sort_key(x[0]))
+    return merged
+
+
+def _build_panel_mask(
+    df: pl.DataFrame,
+    windows: List[Tuple[str, int, int]],
+) -> np.ndarray:
+    """Boolean mask for variants inside any causal LD window."""
+    if len(windows) == 0:
+        return np.zeros(df.height, dtype=bool)
+
+    condition = None
+    for chr_val, start, end in windows:
+        chr_cond = (
+            (pl.col("CHR").cast(pl.Utf8) == str(chr_val))
+            & (pl.col("POS") >= int(start))
+            & (pl.col("POS") <= int(end))
+        )
+        condition = chr_cond if condition is None else (condition | chr_cond)
+
+    return df.select(condition).to_series().to_numpy()
+
+
+def _simulate_z_iid_far(
+    df: pl.DataFrame,
+    beta_true: np.ndarray,
+    N_eff: np.ndarray,
+    is_causal: np.ndarray,
+    vcf_path: str,
+    ld_window_bp: int,
+    lambda_gc: float,
+    sigma_strat: float,
+    mu_scale: float,
+    vcf_chr_dict: Optional[dict],
+    tabix: Optional[bool],
+    mapper: ChromosomeMapper,
+    rng: np.random.Generator,
+    log: Optional[Log] = None,
+    verbose: bool = True,
+) -> np.ndarray:
+    """Sparse fast path: i.i.d. null Z genome-wide, LD panel near causals only."""
+    if log is None:
+        log = Log()
+
+    m = df.height
+    z = np.zeros(m, dtype=float)
+    windows = _merge_causal_ld_windows(df, is_causal, ld_window_bp)
+    panel_mask = _build_panel_mask(df, windows)
+    n_null = int((~panel_mask).sum())
+
+    if n_null > 0:
+        z[~panel_mask] = rng.standard_normal(n_null) * float(lambda_gc)
+        if sigma_strat > 0.0:
+            z[~panel_mask] += rng.standard_normal(n_null) * float(sigma_strat)
+
+    log.write(
+        f" -iid_far: {n_null} null variants, {int(panel_mask.sum())} panel variants in {len(windows)} LD windows",
+        verbose=verbose,
+    )
+
+    n_ref_logged = False
+    for chr_val, start, end in windows:
+        sub_df = (
+            df.with_row_index("_row_idx")
+            .filter(
+                (pl.col("CHR").cast(pl.Utf8) == str(chr_val))
+                & (pl.col("POS") >= int(start))
+                & (pl.col("POS") <= int(end))
+            )
+            .sort("POS")
+        )
+        if sub_df.height == 0:
+            continue
+
+        global_indices = sub_df["_row_idx"].to_numpy().astype(int)
+        sub_variants = sub_df.drop("_row_idx")
+
+        X, _, matched_local = _get_standardized_genotypes_for_block(
+            vcf_path=vcf_path,
+            variant_df=sub_variants,
+            start_idx=0,
+            end_idx=sub_variants.height,
+            region=(chr_val, start, end),
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            log=log,
+            verbose=False,
+        )
+        if X.shape[0] == 0 or X.shape[1] == 0:
+            continue
+
+        if not n_ref_logged:
+            log.write(f" -Reference panel samples (n_ref): {X.shape[0]}", verbose=verbose)
+            n_ref_logged = True
+
+        global_matched = global_indices[matched_local]
+        z_block = _simulate_z_from_panel(
+            X,
+            beta_true[global_matched],
+            N_eff[global_matched],
+            lambda_gc=lambda_gc,
+            sigma_strat=sigma_strat,
+            rng=rng,
+            log=log,
+            verbose=False,
+            mu_scale=mu_scale,
+        )
+        z[global_matched] = z_block
+
+    return z
+
+
+def _simulate_z_ld_panel_per_chromosome(
+    df: pl.DataFrame,
+    beta_true: np.ndarray,
+    N_eff: np.ndarray,
+    chromosomes: List[Union[int, str]],
+    chr_to_indices: dict,
+    pos: np.ndarray,
+    vcf_path: str,
+    vcf_chr_dict: Optional[dict],
+    tabix: Optional[bool],
+    mapper: ChromosomeMapper,
+    lambda_gc: float,
+    sigma_strat: float,
+    mu_scale: float,
+    rng: np.random.Generator,
+    log: Optional[Log] = None,
+    verbose: bool = True,
+) -> np.ndarray:
+    """Generate Z-scores with one genotype load per chromosome (ld_panel path)."""
+    if log is None:
+        log = Log()
+
+    m = df.height
+    z = np.zeros(m, dtype=float)
+    n_ref_logged = False
+
+    for chr_val in chromosomes:
+        if chr_val not in chr_to_indices:
+            continue
+
+        chr_indices = np.array(chr_to_indices[chr_val], dtype=int)
+        global_start = int(chr_indices[0])
+        global_end = int(chr_indices[-1]) + 1
+
+        X, _, matched_local = _get_standardized_genotypes_for_chromosome(
+            vcf_path=vcf_path,
+            variant_df=df,
+            start_idx=global_start,
+            end_idx=global_end,
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            log=log,
+            verbose=False,
+        )
+        if X.shape[0] == 0 or X.shape[1] == 0:
+            continue
+
+        if not n_ref_logged:
+            log.write(f" -Reference panel samples (n_ref): {X.shape[0]}", verbose=verbose)
+            n_ref_logged = True
+
+        global_matched = global_start + matched_local
+        z_chr = _simulate_z_from_panel(
+            X,
+            beta_true[global_matched],
+            N_eff[global_matched],
+            lambda_gc=lambda_gc,
+            sigma_strat=sigma_strat,
+            rng=rng,
+            log=log,
+            verbose=False,
+            mu_scale=mu_scale,
+        )
+        z[global_matched] = z_chr
+        log.write(
+            f" -Processed chromosome {chr_val}: {len(matched_local)} matched variants",
+            verbose=verbose,
+        )
+
+    return z
+
+
+def _accumulate_V_g_ld_panel_per_chromosome(
+    vcf_path: str,
+    df: pl.DataFrame,
+    beta_raw: np.ndarray,
+    chromosomes: List[Union[int, str]],
+    chr_to_indices: dict,
+    vcf_chr_dict: Optional[dict],
+    tabix: Optional[bool],
+    mapper: ChromosomeMapper,
+    log: Optional[Log] = None,
+    verbose: bool = False,
+) -> Tuple[float, int]:
+    """Accumulate raw genetic variance with one genotype load per chromosome."""
+    if log is None:
+        log = Log()
+
+    V_g_raw_total = 0.0
+    n_chr_processed = 0
+
+    for chr_val in chromosomes:
+        if chr_val not in chr_to_indices:
+            continue
+
+        chr_indices = np.array(chr_to_indices[chr_val], dtype=int)
+        global_start = int(chr_indices[0])
+        global_end = int(chr_indices[-1]) + 1
+
+        X, _, matched_local = _get_standardized_genotypes_for_chromosome(
+            vcf_path=vcf_path,
+            variant_df=df,
+            start_idx=global_start,
+            end_idx=global_end,
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            log=log,
+            verbose=verbose,
+        )
+        if X.shape[0] == 0 or X.shape[1] == 0:
+            continue
+
+        global_matched = global_start + matched_local
+        beta_chr = beta_raw[global_matched]
+        V_g_raw_total += _compute_V_g_block(X, beta_chr, X.shape[0])
+        n_chr_processed += 1
+
+    return V_g_raw_total, n_chr_processed
+
+
+def _resolve_null_mode(
+    mode: str,
+    null_mode: Optional[Literal["ld_panel", "iid_far"]],
+) -> Literal["ld_panel", "iid_far"]:
+    """Default sparse simulations to iid_far unless explicitly overridden."""
+    if null_mode is not None:
+        return null_mode
+    if mode == "sparse":
+        return "iid_far"
+    return "ld_panel"
+
+
 # =============================================================================
 # Main functions
 # =============================================================================
@@ -957,6 +1612,8 @@ def simulate_sumstats_region(
     n_causal: int =1,                      # number of causals if sparse
     effect_sd: float = 0.05,                 # SD of causal effects (standardized units, used if alpha=0)
     alpha: float = 0,                       # MAF dependence parameter (0 = MAF-independent, uses effect_sd)
+    h2: Optional[float] = None,              # optional target heritability (region calibration)
+    trait_model: Literal["linear", "liability"] = "linear",
     # variant filtering
     maf_min: float = 0.01,                    # minimum MAF for variants (0.0 = no filter)
     maf_max: float = 0.5,                    # maximum MAF for variants (0.5 = no filter)
@@ -964,14 +1621,14 @@ def simulate_sumstats_region(
     eaf_max: float = 1.0,                    # maximum EAF for variants (1.0 = no filter)
     exclude_rare: bool = False,              # if True, exclude rare variants (MAF < 0.01)
     rare_maf_threshold: float = 0.01,        # MAF threshold for rare variants
-    thin: Optional[float] = 0.5,            # fraction of variants to keep after filtering (None = keep all, simulates incomplete coverage)
+    thin: Optional[float] = None,            # fraction of variants to keep after filtering (None = keep all)
     # causal variant selection filters
     causal_maf_min: Optional[float] = None,  # minimum MAF for causal variants (None = no filter)
     causal_maf_max: Optional[float] = None,  # maximum MAF for causal variants (None = no filter)
     causal_eaf_min: Optional[float] = None,  # minimum EAF for causal variants (None = no filter)
     causal_eaf_max: Optional[float] = None,  # maximum EAF for causal variants (None = no filter)
     # realism knobs
-    n_drop_rate: float = 0.15,               # fraction of SNPs with reduced N
+    n_drop_rate: float = 0.0,               # fraction of SNPs with reduced N
     n_drop_min: float = 0.5,                 # minimum N multiplier for dropped SNPs
     use_info: bool = True,                   # if INFO column exists, use it
     info_mean: float = 0.95,                 # if simulating INFO
@@ -979,8 +1636,8 @@ def simulate_sumstats_region(
     info_min: float = 0.3,
     info_max: float = 1.0,
     # confounding / inflation parameters
-    lambda_gc: float = 1.01,              # cryptic relatedness / global inflation (λ)
-    sigma_strat: float = 0.05,            # population stratification (σ_strat)
+    lambda_gc: float = 1.0,              # cryptic relatedness / global inflation (λ)
+    sigma_strat: float = 0.0,            # population stratification (σ_strat)
     # deterministic
     seed: int = 1,
     # explicit causals (optional)
@@ -1073,7 +1730,7 @@ causal_eaf_min : float, optional
     Minimum EAF for variants eligible to be selected as causal (None = no filter)
 causal_eaf_max : float, optional
     Maximum EAF for variants eligible to be selected as causal (None = no filter)
-n_drop_rate : float, default 0.15
+n_drop_rate : float, default 0.0
     Fraction of SNPs with reduced sample size (simulates missingness/QC issues)
 n_drop_min : float, default 0.5
     Minimum N multiplier for dropped SNPs (N is multiplied by random factor in [n_drop_min, 1.0])
@@ -1088,13 +1745,13 @@ info_min : float, default 0.3
     Minimum INFO score (clipped to this value)
 info_max : float, default 1.0
     Maximum INFO score (clipped to this value)
-lambda_gc : float, default 1.01
+lambda_gc : float, default 1.0
     Cryptic relatedness / global inflation parameter (λ).
     Scales the noise term: ε = λ * ε_0 where ε_0 ~ N(0, R).
     - lambda_gc = 1.0: No inflation (default)
     - lambda_gc > 1.0: Genomic control inflation (e.g., 1.0-1.1 mild, 1.1-1.3 noticeable)
     - Captures global effects of relatedness/unmodeled covariance in GWAS residuals
-sigma_strat : float, default 0.05
+sigma_strat : float, default 0.0
     Population stratification parameter (σ_strat).
     Adds LD-correlated bias: b_strat ~ N(0, σ_strat^2 R).
     - sigma_strat = 0.0: No stratification (default)
@@ -1463,68 +2120,65 @@ Notes
     if X.shape[0] == 0 or X.shape[1] == 0:
         # No matched variants found in VCF, set all Z-scores to 0
         z[:] = 0.0
+        n_ref = 0
+        n_matched = 0
     else:
-        n_samples = X.shape[0]  # Number of samples in reference panel
-        n_variants_matched = X.shape[1]  # Number of variants matched between sumstats and VCF
-        
-        # matched_indices are indices within [0, m) indicating which variants were matched
-        # Extract beta and N_eff only for matched variants
+        n_ref = X.shape[0]  # reference panel sample size
+        n_matched = X.shape[1]
+        log.write(f" -Reference panel samples (n_ref): {n_ref}", verbose=verbose)
+        log.write(f" -Matched variants in panel: {n_matched}/{m}", verbose=verbose)
+
         beta_matched = beta_true[matched_indices]
         N_eff_matched = N_eff[matched_indices]
-        N_eff_matched = np.clip(N_eff_matched, 1.0, None)
-        
-        # Compute mean term: μ_causal = sqrt(N_eff) * (1/n) X^T (X β)
-        log.write(" -Computing causal mean: μ_causal = sqrt(N_eff) * (1/n) X^T (X β)", verbose=verbose)
-        # Step 1: Compute X β (effect of causal variants on phenotypes)
-        X_beta = X @ beta_matched
-        # Step 2: Compute (1/n) X^T (X β) ≈ R β (LD-weighted sum of effects)
-        R_beta = (X.T @ X_beta) / float(n_samples)
-        # Step 3: Scale by sqrt(N_eff) to account for sample size
-        sqrt_N_eff = np.sqrt(N_eff_matched)
-        mu_causal = sqrt_N_eff * R_beta
-        
-        # Generate standard LD-noise: ε_0 ~ N(0, R)
-        # NOTE: Scaling must be 1/sqrt(n), NOT 1/n, so that Var(ε_0) = (1/n) X^T X = R
-        # This ensures the noise has the correct correlation structure matching the LD matrix
-        log.write(" -Generating standard LD-noise: ε_0 = (1/sqrt(n)) X^T u, u ~ N(0, I_n)", verbose=verbose)
-        u = rng.standard_normal(n_samples)
-        epsilon_0 = (X.T @ u) / np.sqrt(float(n_samples))
-        
-        # Apply cryptic relatedness / global inflation: ε = λ * ε_0
-        # This scales the noise variance: Cov(ε) = λ * R
-        # If λ > 1, creates genomic control inflation (QQ plot inflates)
-        log.write(f" -Applying cryptic relatedness inflation: ε = λ * ε_0 (λ = {lambda_gc:.4f})", verbose=verbose)
-        epsilon = lambda_gc * epsilon_0
-        
-        # Generate population stratification bias: b_strat ~ N(0, σ_strat^2 R)
-        # This creates LD-correlated bias that mimics population structure
-        # Creates genome-wide shifts and correlated "hills" of signal across LD blocks
-        b_strat = np.zeros(n_variants_matched, dtype=np.float64)
-        if sigma_strat > 0.0:
-            log.write(f" -Generating population stratification bias: b_strat = σ_strat * (1/sqrt(n)) X^T v (σ_strat = {sigma_strat:.4f})", verbose=verbose)
-            v = rng.standard_normal(n_samples)
-            b_strat = sigma_strat * (X.T @ v) / np.sqrt(float(n_samples))
-        else:
-            log.write(" -Skipping population stratification bias (σ_strat = 0.0)", verbose=verbose)
-        
-        # Z-scores: z = μ_causal + b_strat + ε
-        # μ_causal: signal from causal variants (spread via LD)
-        # b_strat: LD-correlated bias from population stratification
-        # ε: scaled noise (correlated due to LD, inflated by λ)
-        log.write(" -Computing final Z-scores: z = μ_causal + b_strat + ε", verbose=verbose)
-        z_matched = mu_causal + b_strat + epsilon
-        
-        # Validate: replace any NaN/Inf values with 0 (shouldn't happen, but safety check)
-        z_matched = np.where(np.isfinite(z_matched), z_matched, 0.0).astype(np.float64)
-        
-        # Store Z-scores in global array (only for matched variants)
+        V_g_raw = None
+        scale_factor = 1.0
+
+        if h2 is not None:
+            beta_true, V_g_raw, scale_factor = _calibrate_beta_to_h2(
+                beta_true, X, matched_indices, h2, log=log, verbose=verbose
+            )
+            beta_matched = beta_true[matched_indices]
+            log.write(
+                f" -Region h2 calibration: V_g_raw={V_g_raw:.6f}, scale={scale_factor:.6f}, target h2={h2:.4f}",
+                verbose=verbose,
+            )
+
+        mu_scale = 1.0
+        if trait == "binary" and trait_model == "liability":
+            if n_case is None or n_ctrl is None:
+                raise ValueError("trait_model='liability' with trait='binary' requires n_case and n_ctrl.")
+            mu_scale = _binary_liability_mu_scale(int(n_case), int(n_ctrl))
+            log.write(f" -Binary liability mu_scale: {mu_scale:.4f}", verbose=verbose)
+        elif trait == "binary" and trait_model == "linear":
+            log.write(
+                " -Binary trait uses linear Z with case-control N_eff (trait_model='linear')",
+                verbose=verbose,
+            )
+
+        log.write(" -Simulating Z-scores using X^T X method", verbose=verbose)
+        z_matched = _simulate_z_from_panel(
+            X,
+            beta_matched,
+            N_eff_matched,
+            lambda_gc=lambda_gc,
+            sigma_strat=sigma_strat,
+            rng=rng,
+            log=log,
+            verbose=verbose,
+            mu_scale=mu_scale,
+        )
+
         z[matched_indices] = z_matched
-        
-        # Set unmatched variants to 0 (variants in sumstats but not found in VCF)
+
         all_indices = np.arange(m)
         unmatched = np.setdiff1d(all_indices, matched_indices)
         if len(unmatched) > 0:
             z[unmatched] = 0.0
+
+    log.write(
+        f" -Simulation summary: n_variants={m}, n_causal={int(is_causal.sum())}",
+        verbose=verbose,
+    )
     
     # -------------------------------------------------------------------------
     # Step 5: Convert Z-scores to summary statistics (SE, BETA, P, MLOG10P)
@@ -1630,6 +2284,7 @@ def simulate_sumstats_global(
     n_causal: Optional[int] = None,          # number of causals if sparse (per chromosome if None)
     h2: float = 0.1,                          # target heritability
     alpha: float = 0.2,                       # MAF dependence parameter (0 = MAF-independent)
+    trait_model: Literal["linear", "liability"] = "linear",
     # variant filtering
     maf_min: float = 0.01,                    # minimum MAF for variants
     maf_max: float = 0.5,                    # maximum MAF for variants
@@ -1637,6 +2292,7 @@ def simulate_sumstats_global(
     eaf_max: float = 1.0,                    # maximum EAF for variants
     exclude_rare: bool = False,              # if True, exclude rare variants (MAF < 0.01)
     rare_maf_threshold: float = 0.01,        # MAF threshold for rare variants
+    thin: Optional[float] = None,            # fraction of variants to keep (None = all)
     # causal variant selection filters
     causal_maf_min: Optional[float] = None,  # minimum MAF for causal variants
     causal_maf_max: Optional[float] = None,  # maximum MAF for causal variants
@@ -1644,14 +2300,19 @@ def simulate_sumstats_global(
     causal_eaf_max: Optional[float] = None,  # maximum EAF for causal variants
     # block-wise processing
     window_bp: int = 1_000_000,              # window size in basepairs for block-wise simulation (1Mb default)
+    block_overlap_bp: int = 0,               # reserved; noise is block-local at boundaries today
+    null_mode: Optional[Literal["ld_panel", "iid_far"]] = None,  # sparse default: iid_far
+    ld_window_bp: Optional[int] = None,      # LD panel radius around causals (default: window_bp)
     # realism knobs
-    n_drop_rate: float = 0.15,               # fraction of SNPs with reduced N
+    n_drop_rate: float = 0.0,               # fraction of SNPs with reduced N
     n_drop_min: float = 0.5,                 # minimum N multiplier for dropped SNPs
     use_info: bool = True,                   # if INFO column exists, use it
     info_mean: float = 0.95,                 # if simulating INFO
     info_sd: float = 0.05,
     info_min: float = 0.3,
     info_max: float = 1.0,
+    lambda_gc: float = 1.0,                  # cryptic relatedness inflation
+    sigma_strat: float = 0.0,                # population stratification bias
     # deterministic
     seed: int = 1,
     # VCF reading options
@@ -1687,6 +2348,13 @@ n_ctrl : int, optional
     Number of controls for binary trait (required if trait="binary")
 window_bp : int, default 1000000
     Window size in basepairs for block-wise simulation (1Mb default)
+null_mode : str, optional
+    ``"ld_panel"`` uses reference-panel LD genome-wide (or per chromosome).
+    ``"iid_far"`` uses i.i.d. null Z outside causal LD windows (fast sparse path).
+    Default: ``"iid_far"`` when ``mode="sparse"``, else ``"ld_panel"``.
+ld_window_bp : int, optional
+    Base-pair radius around each causal for the LD panel when ``null_mode="iid_far"``.
+    Defaults to ``window_bp``.
 mode : str, default "polygenic"
     "polygenic" or "sparse" genetic architecture
 pi : float, default 2e-3
@@ -1720,7 +2388,7 @@ causal_eaf_min : float, optional
     Minimum EAF for variants eligible to be selected as causal
 causal_eaf_max : float, optional
     Maximum EAF for variants eligible to be selected as causal
-n_drop_rate : float, default 0.15
+n_drop_rate : float, default 0.0
     Fraction of SNPs with reduced sample size
 n_drop_min : float, default 0.5
     Minimum N multiplier for dropped SNPs
@@ -1784,6 +2452,12 @@ Notes
     log.write(f" -VCF path: {vcf_path}", verbose=verbose)
     log.write(f" -Target heritability: {h2:.4f}", verbose=verbose)
     log.write(f" -MAF dependence (alpha): {alpha:.4f}", verbose=verbose)
+
+    effective_null_mode = _resolve_null_mode(mode, null_mode)
+    effective_ld_window_bp = int(window_bp if ld_window_bp is None else ld_window_bp)
+    log.write(f" -Null mode: {effective_null_mode}", verbose=verbose)
+    if effective_null_mode == "iid_far":
+        log.write(f" -LD window for panel SNPs: {effective_ld_window_bp} bp", verbose=verbose)
     
     # Initialize mapper
     mapper = ChromosomeMapper(log=log, verbose=verbose)
@@ -1793,95 +2467,41 @@ Notes
     # Phase 1: Load variants and select causals
     # -------------------------------------------------------------------------
     log.write("Phase 1: Loading variants and selecting causal variants...", verbose=verbose)
-    
-    # Determine chromosomes to process
+
+    if tabix is None:
+        tabix = which("tabix")
+
+    if vcf_chr_dict is None:
+        vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
+
     if chromosomes is None:
-        # Auto-detect chromosomes: need to load all variants first
-        log.write(" -Auto-detecting chromosomes: loading all variants from VCF...", verbose=verbose)
-        df = _read_vcf_variants(
+        chromosomes = _autodetect_chromosomes_from_vcf(
             vcf_path=vcf_path,
-            region=None,  # Read all variants
-            vcf_chr_dict=vcf_chr_dict,
-            tabix=tabix,
             mapper=mapper,
+            vcf_chr_dict=vcf_chr_dict,
             log=log,
-            verbose=verbose
+            verbose=verbose,
         )
-        
-        if df.height == 0:
-            raise ValueError("No variants found in VCF")
-        
-        # Auto-detect chromosomes from loaded variants
-        unique_chrs = df["CHR"].unique().to_list()
-        # Sort chromosomes naturally
-        def chr_sort_key(x):
-            x_str = str(x).lstrip('chrCHR')
-            try:
-                return (0, int(x_str))  # Numeric chromosomes first
-            except ValueError:
-                return (1, x_str)  # Non-numeric (e.g., X, Y, MT) after
-        
-        chromosomes = sorted(unique_chrs, key=chr_sort_key)
-        log.write(f" -Found {len(chromosomes)} chromosomes: {chromosomes[:5]}..." if len(chromosomes) > 5 else f" -Found {len(chromosomes)} chromosomes: {chromosomes}", verbose=verbose)
-    else:
-        # Load only specified chromosomes (more efficient)
-        log.write(f" -Loading variants for {len(chromosomes)} specified chromosomes...", verbose=verbose)
-        chr_str_list = [str(c) for c in chromosomes]
-        
-        # Load each chromosome separately and combine
-        # For tabix-indexed VCFs, this is efficient as it only loads the specified chromosome
-        all_dfs = []
-        for chr_val in chromosomes:
-            log.write(f"   -Loading chromosome {chr_val}...", verbose=verbose)
-            # Load chromosome by using a very large end position
-            # For tabix-indexed VCFs, this efficiently loads only the specified chromosome
-            # For non-indexed VCFs, it will still scan but is better than loading everything
-            # Using 500Mb as upper bound (largest human chromosome is ~250Mb)
-            df_chr = _read_vcf_variants(
-                vcf_path=vcf_path,
-                region=(chr_val, 1, 500_000_000),  # Load whole chromosome (large upper bound)
-                vcf_chr_dict=vcf_chr_dict,
-                tabix=tabix,
-                mapper=mapper,
-                log=log,
-                verbose=False  # Less verbose for each chromosome
-            )
-            
-            # Filter to exact chromosome match (handle string/numeric differences)
-            # This ensures we only get variants from the requested chromosome
-            if df_chr.height > 0:
-                df_chr = df_chr.filter(pl.col("CHR").cast(pl.Utf8) == str(chr_val))
-                if df_chr.height > 0:
-                    all_dfs.append(df_chr)
-                    log.write(f"     -Loaded {df_chr.height} variants from chromosome {chr_val}", verbose=verbose)
-        
-        if len(all_dfs) == 0:
-            raise ValueError(f"No variants found for specified chromosomes: {chromosomes}")
-        
-        # Combine all chromosomes using Polars (much faster)
-        df = pl.concat(all_dfs)
-        log.write(f" -Loaded variants from {len(chromosomes)} chromosomes", verbose=verbose)
-    
-    # Sort by CHR and POS (Polars is much faster)
-    df = df.sort(["CHR", "POS"])
-    
-    m = df.height
-    log.write(f" -Total variants loaded: {m}", verbose=verbose)
-    
-    # Apply variant filters
-    df = _filter_variants(
-        df=df,
+
+    df = _load_global_variants_streaming(
+        vcf_path=vcf_path,
+        chromosomes=chromosomes,
         maf_min=maf_min,
         maf_max=maf_max,
         eaf_min=eaf_min,
         eaf_max=eaf_max,
         exclude_rare=exclude_rare,
         rare_maf_threshold=rare_maf_threshold,
+        thin=thin,
+        vcf_chr_dict=vcf_chr_dict,
+        tabix=tabix,
+        mapper=mapper,
+        rng=rng,
         log=log,
-        verbose=verbose
+        verbose=verbose,
     )
+
     m = df.height
-    
     # Setup N and N_eff
     N, N_eff = _setup_sample_sizes(
         m=m,
@@ -1933,83 +2553,51 @@ Notes
     )
     
     # -------------------------------------------------------------------------
-    # Phase 2: Compute raw genetic variance across all blocks
+    # Phase 2: Compute raw genetic variance for heritability calibration
     # -------------------------------------------------------------------------
     log.write("Phase 2: Computing raw genetic variance for heritability calibration...", verbose=verbose)
-    
+
     pos = df["POS"].to_numpy().astype(np.int64)
     chr_array = df["CHR"].to_numpy()
-    
-    # Group variants by chromosome
+
     chr_to_indices = {}
     for i, chr_val in enumerate(chr_array):
         if chr_val not in chr_to_indices:
             chr_to_indices[chr_val] = []
         chr_to_indices[chr_val].append(i)
-    
-    V_g_raw_total = 0.0
-    n_blocks_processed = 0
-    
-    for chr_val in chromosomes:
-        if chr_val not in chr_to_indices:
-            continue
-        
-        chr_indices = np.array(chr_to_indices[chr_val])
-        chr_pos = pos[chr_indices]
-        
-        # Create blocks for this chromosome
-        blocks = _make_blocks_by_bp(chr_pos, int(window_bp))
-    
-    for block_idx, (start_i, end_i) in enumerate(blocks):
-            # Map block indices to global indices
-            # Note: end_i can be equal to len(chr_pos) (half-open interval [start, end))
-            global_start = chr_indices[start_i]
-            if end_i < len(chr_indices):
-                global_end = chr_indices[end_i]
-            else:
-                # end_i equals length, meaning we want all variants from start_i to end of chromosome
-                # Use one past the last variant index for this chromosome (exclusive end)
-                # Cap at len(df) to avoid out-of-bounds
-                global_end = min(chr_indices[-1] + 1 if len(chr_indices) > 0 else global_start, df.height)
-            
-            # Get standardized genotypes for this block
-            X, p_block, matched_indices = _get_standardized_genotypes_for_block(
+
+    if mode == "sparse":
+        V_g_raw_total, n_blocks_processed = _accumulate_V_g_from_causal_snps(
             vcf_path=vcf_path,
-            variant_df=df,
-                start_idx=global_start,
-                end_idx=global_end,
-                region=None,
+            df=df,
+            beta_raw=beta_raw,
+            is_causal=is_causal,
             vcf_chr_dict=vcf_chr_dict,
             tabix=tabix,
             mapper=mapper,
             log=log,
-                verbose=False
-            )
-            
-            if X.shape[0] == 0 or X.shape[1] == 0:
-                continue
-            
-            n_samples = X.shape[0]
-            n_variants_block = X.shape[1]
-            
-            # Get beta_raw for matched variants
-            # Map matched_indices (local to block, 0-based within block slice) to global indices
-            # matched_indices are indices within the block slice [global_start, global_end)
-            global_matched = global_start + matched_indices
-            beta_block = beta_raw[global_matched]
-            
-            # Compute V_g^raw = (1/n) (Xβ)^T (Xβ)
-            X_beta = X @ beta_block
-            V_g_block = np.dot(X_beta, X_beta) / float(n_samples)
-            
-            V_g_raw_total += V_g_block
-            n_blocks_processed += 1
+            verbose=verbose,
+        )
+        log.write(f" -Processed {n_blocks_processed} causal SNPs for h2 calibration", verbose=verbose)
+    else:
+        V_g_raw_total, n_blocks_processed = _accumulate_V_g_ld_panel_per_chromosome(
+            vcf_path=vcf_path,
+            df=df,
+            beta_raw=beta_raw,
+            chromosomes=chromosomes,
+            chr_to_indices=chr_to_indices,
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            log=log,
+            verbose=verbose,
+        )
+        log.write(f" -Processed {n_blocks_processed} chromosomes for h2 calibration", verbose=verbose)
     
     if n_blocks_processed == 0:
-        raise ValueError("No blocks could be processed for genetic variance calculation")
+        raise ValueError("No variants could be processed for genetic variance calculation")
     
     log.write(f" -Raw genetic variance: {V_g_raw_total:.6f}", verbose=verbose)
-    log.write(f" -Processed {n_blocks_processed} blocks", verbose=verbose)
     
     # Compute rescaling factor
     if V_g_raw_total <= 0:
@@ -2019,88 +2607,79 @@ Notes
         scale_factor = np.sqrt(h2 / V_g_raw_total)
     
     log.write(f" -Rescaling factor: {scale_factor:.6f}", verbose=verbose)
+    log.write(
+        f" -Target h2: {h2:.4f}; achieved h2 (approx): {scale_factor ** 2 * V_g_raw_total:.4f}",
+        verbose=verbose,
+    )
     
     # Rescale effects
     beta_true = beta_raw * scale_factor
+
+    mu_scale = 1.0
+    if trait == "binary" and trait_model == "liability":
+        if n_case is None or n_ctrl is None:
+            raise ValueError("trait_model='liability' with trait='binary' requires n_case and n_ctrl.")
+        mu_scale = _binary_liability_mu_scale(int(n_case), int(n_ctrl))
+        log.write(f" -Binary liability mu_scale: {mu_scale:.4f}", verbose=verbose)
+    elif trait == "binary" and trait_model == "linear":
+        log.write(
+            " -Binary trait uses linear Z with case-control N_eff (trait_model='linear')",
+            verbose=verbose,
+        )
+
+    if block_overlap_bp > 0:
+        log.warning(
+            " -block_overlap_bp is not yet implemented; noise remains block-local at boundaries",
+            verbose=verbose,
+        )
     
     # -------------------------------------------------------------------------
     # Phase 3: Generate Z-scores using efficient X^T X approach
     # -------------------------------------------------------------------------
     log.write("Phase 3: Generating Z-scores...", verbose=verbose)
-    
-    z = np.zeros(m, dtype=float)
-    
-    for chr_val in chromosomes:
-        if chr_val not in chr_to_indices:
-            continue
-        
-        chr_indices = np.array(chr_to_indices[chr_val])
-        chr_pos = pos[chr_indices]
-        
-        blocks = _make_blocks_by_bp(chr_pos, int(window_bp))
-        
-        log.write(f" -Processing chromosome {chr_val}: {len(blocks)} blocks", verbose=verbose)
-        
-        for block_idx, (start_i, end_i) in enumerate(blocks):
-            # Map block indices to global indices
-            # Note: end_i can be equal to len(chr_pos) (half-open interval [start, end))
-            global_start = chr_indices[start_i]
-            if end_i < len(chr_indices):
-                global_end = chr_indices[end_i]
-            else:
-                # end_i equals length, meaning we want all variants from start_i to end of chromosome
-                # Use one past the last variant index for this chromosome (exclusive end)
-                # Cap at len(df) to avoid out-of-bounds
-                global_end = min(chr_indices[-1] + 1 if len(chr_indices) > 0 else global_start, df.height)
-            
-            # Get standardized genotypes
-            X, p_block, matched_indices = _get_standardized_genotypes_for_block(
-                vcf_path=vcf_path,
-                variant_df=df,
-                start_idx=global_start,
-                end_idx=global_end,
-                region=None,
-                vcf_chr_dict=vcf_chr_dict,
-                tabix=tabix,
-                mapper=mapper,
-                log=log,
-                verbose=False
-            )
-            
-            if X.shape[0] == 0 or X.shape[1] == 0:
-                continue
-            
-            n_samples = X.shape[0]
-            n_variants_block = X.shape[1]
-            
-            # Map matched indices to global
-            # matched_indices are indices within the block slice [global_start, global_end)
-            global_matched = global_start + matched_indices
-            
-            # Get rescaled effects and N_eff for this block
-            beta_block = beta_true[global_matched]
-            N_eff_block = N_eff[global_matched]
-            N_eff_block = np.clip(N_eff_block, 1.0, None)
-            
-            # Compute mean: μ = sqrt(N_eff) * (1/n) X^T (Xβ)
-            X_beta = X @ beta_block
-            R_beta = (X.T @ X_beta) / float(n_samples)
-            sqrt_N_eff = np.sqrt(N_eff_block)
-            mu = sqrt_N_eff * R_beta
-            
-            # Generate noise: ε = (1/sqrt(n)) X^T u, where u ~ N(0, I_n)
-            # NOTE: scaling must be 1/sqrt(n), NOT 1/n, so that Var(ε) = (1/n) X^T X = R
-            u = rng.standard_normal(n_samples)
-            epsilon = (X.T @ u) / np.sqrt(float(n_samples))
-            
-            # Z-scores: z = μ + ε
-            z_block = mu + epsilon
-            
-            # Validate
-            z_block = np.where(np.isfinite(z_block), z_block, 0.0)
-            
-            # Store in global array
-            z[global_matched] = z_block
+
+    if effective_null_mode == "iid_far":
+        z = _simulate_z_iid_far(
+            df=df,
+            beta_true=beta_true,
+            N_eff=N_eff,
+            is_causal=is_causal,
+            vcf_path=vcf_path,
+            ld_window_bp=effective_ld_window_bp,
+            lambda_gc=lambda_gc,
+            sigma_strat=sigma_strat,
+            mu_scale=mu_scale,
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            rng=rng,
+            log=log,
+            verbose=verbose,
+        )
+    else:
+        z = _simulate_z_ld_panel_per_chromosome(
+            df=df,
+            beta_true=beta_true,
+            N_eff=N_eff,
+            chromosomes=chromosomes,
+            chr_to_indices=chr_to_indices,
+            pos=pos,
+            vcf_path=vcf_path,
+            vcf_chr_dict=vcf_chr_dict,
+            tabix=tabix,
+            mapper=mapper,
+            lambda_gc=lambda_gc,
+            sigma_strat=sigma_strat,
+            mu_scale=mu_scale,
+            rng=rng,
+            log=log,
+            verbose=verbose,
+        )
+
+    log.write(
+        f" -Simulation summary: n_variants={m}, n_causal={int(is_causal.sum())}, n_matched={int(np.count_nonzero(z))}",
+        verbose=verbose,
+    )
     
     # -------------------------------------------------------------------------
     # Phase 4: Convert to summary statistics

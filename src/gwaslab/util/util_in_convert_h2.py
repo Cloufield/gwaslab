@@ -78,6 +78,17 @@ pandas.DataFrame
     - SNPR2: Per-SNP R² (proportion of variance explained)
     - ADJUESTED_SNPR2: Adjusted R² (if adjuested=True)
     - F: F-statistic for instrument strength (if N column exists)
+
+Notes
+-----
+    Quantitative (``mode="q"``):
+
+    - ``vary`` numeric (default 1): ``per_snp_r2_quantitative`` — numerator
+      from Shim 2015 S1; Var(Y) user-supplied (``vary=1`` assumes unit Var(Y)).
+    - ``vary="se"``: ``per_snp_r2_from_se`` — Shim 2015 S1 eq. (4).
+
+    Binary (``mode="b"``): liability-scale R² via TwoSampleMR
+    ``get_r_from_lor()`` (V_G = β²·p(1−p), V_E = π²/3).
 """
     # Handle both DataFrame and Sumstats object
     if isinstance(sumstats_or_dataframe, pd.DataFrame):
@@ -93,13 +104,11 @@ pandas.DataFrame
 
     if mode=="q":
         if beta in sumstats.columns and af in sumstats.columns:
-            #Shim, H., Chasman, D. I., Smith, J. D., Mora, S., Ridker, P. M., Nickerson, D. A., ... & Stephens, M. (2015). A multivariate genome-wide association analysis of 10 LDL subfractions, and their response to statin treatment, in 1868 Caucasians. PloS one, 10(4), e0120758.
-            # y = beta * x + e
-            # Var(y) = beta**2*Var(x) + Var(e) 
-            # Var(x) = 2*MAF*(1-MAF)
-            # Var(beta * X) = beta**2 * Var(x) 
-            # Var(e) = betase**2 * 2 * N * MAF * (1-MAF)
-            # r2 = Var(beta * X) / Var(y)
+            # Shim et al. (2015) PLoS ONE S1: Var(beta*X) = 2*beta^2*MAF*(1-MAF).
+            # vary=1: SNPR2 = Var(beta*X)/Var(Y) with user Var(Y); not Shim S1 eq. (4).
+            # vary="se": Shim S1 eq. (4) via per_snp_r2_from_se (SE, N, EAF).
+            # y = beta * x + e; Var(y) = beta^2*Var(x) + sigma^2
+            # Var(x) = 2*MAF*(1-MAF); Var(e) = se^2 * 2 * N * MAF * (1-MAF)
 
             log.write(" -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...", verbose=verbose)
             sumstats["_VAR(BETAX)"] = 2*(sumstats[beta]**2)*sumstats[af]*(1-sumstats[af])
@@ -128,10 +137,11 @@ pandas.DataFrame
         if prevalence not in sumstats.columns:
             sumstats["_PREVALENCE"] = prevalence                    
         
-        # equation 10 in Lee, S. H., Goddard, M. E., Wray, N. R., & Visscher, P. M. (2012). A better coefficient of determination for genetic profile analysis. Genetic epidemiology, 36(3), 214-224.
-        # code : TwoSampleMR https://rdrr.io/github/MRCIEU/TwoSampleMR/src/R/add_rsq.r
+        # Binary per-SNP liability R² — matches TwoSampleMR get_r_from_lor() (add_rsq.r).
+        # Lee et al. 2012 Genet Epidemiol: liability-scale R² framework.
+        # https://github.com/MRCIEU/TwoSampleMR/blob/master/R/add_rsq.r
 
-        ve = (np.pi**2)/3 #3.29
+        ve = (np.pi**2)/3  # logistic latent-scale residual variance (~3.29)
         sumstats["_POPAF"] = sumstats.apply(
             lambda x: get_population_allele_frequency(af = x[af], prop=x["_NCASE"] / (x["_NCASE"]+x["_NCONTROL"]), odds_ratio=np.exp(x[beta]), prevalence=x["_PREVALENCE"]),axis=1)
         sumstats["_VG"] = (sumstats[beta]**2)* sumstats["_POPAF"]*(1- sumstats["_POPAF"])

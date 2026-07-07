@@ -83,6 +83,8 @@ def per_snp_r2_quantitative(
 ) -> np.ndarray:
     """Per-SNP R-squared for quantitative traits.
 
+    SNPR2 = 2·β²·EAF·(1−EAF) / Var(Y).
+
 Parameters
 ----------
 beta : numpy.ndarray
@@ -96,10 +98,18 @@ Returns
 numpy.ndarray
     Per-variant R-squared values.
 
+Notes
+-----
+    When ``phenotypic_variance=1`` (default via ``vary=1`` in orchestration),
+    assumes unit Var(Y), appropriate for standardized traits or SD-scaled
+    betas (cf. TwoSampleMR SD-unit branch). This is not Shim S1 eq. (4); use
+    :func:`per_snp_r2_from_se` for the full PVE estimate with SE and N.
+
 References
 ----------
-    Shim, H., et al. (2015). A multivariate genome-wide association analysis of
-    10 LDL subfractions. PLoS ONE, 10(4), e0120758.
+    Shim, H., et al. (2015). PLoS ONE, 10(4), e0120758, S1 Text
+    (Var(βX) = 2β²MAF(1−MAF)).
+    https://journals.plos.org/plosone/article/asset?id=info%3Adoi%2F10.1371%2Fjournal.pone.0120758.s001
 """
     beta = np.asarray(beta, dtype=float)
     eaf = np.asarray(eaf, dtype=float)
@@ -115,6 +125,8 @@ def per_snp_r2_from_se(
 ) -> np.ndarray:
     """Estimate per-SNP R-squared using SE, N, and EAF.
 
+    SNPR2 = 2β²·EAF(1−EAF) / [2β²·EAF(1−EAF) + SE²·2N·EAF(1−EAF)].
+
 Parameters
 ----------
 beta : numpy.ndarray
@@ -129,6 +141,15 @@ Returns
 -------
 numpy.ndarray
     Per-variant R-squared values.
+
+Notes
+-----
+    Matches Shim et al. (2015) PLoS ONE S1 eq. (4) when ``vary="se"``.
+
+References
+----------
+    Shim, H., et al. (2015). PLoS ONE, 10(4), e0120758, S1 Text eq. (4).
+    https://journals.plos.org/plosone/article/asset?id=info%3Adoi%2F10.1371%2Fjournal.pone.0120758.s001
 """
     beta = np.asarray(beta, dtype=float)
     se = np.asarray(se, dtype=float)
@@ -166,6 +187,19 @@ Notes
 -----
     Used for binary-trait per-SNP R-squared. Orchestration in
     ``util.util_in_convert_h2._get_per_snp_r2``.
+
+    Binary per-SNP liability R² (``mode="b"``) uses
+    V_G = β²·p(1−p), V_E = π²/3, SNPR2 = V_G / (V_G + V_E) with β = log(OR)
+    and p from this function. Matches TwoSampleMR ``get_r_from_lor()``.
+    Lee et al. (2012) Genet Epidemiol provides the liability-scale R²
+    framework; the per-SNP closed form follows the MR community implementation.
+
+References
+----------
+    TwoSampleMR ``get_population_allele_frequency`` / ``get_r_from_lor``:
+    https://github.com/MRCIEU/TwoSampleMR/blob/master/R/add_rsq.r
+    Lee, S. H., Goddard, M. E., Wray, N. R., & Visscher, P. M. (2012).
+    Genetic epidemiology, 36(3), 214-224. doi:10.1002/gepi.21614
 """
     a_coef = odds_ratio - 1.0
     b_coef = (af + prop) * (1.0 - odds_ratio) - 1.0
