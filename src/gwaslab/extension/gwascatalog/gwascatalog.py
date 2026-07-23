@@ -562,12 +562,13 @@ Returns
 """
         self.log.write(f"--- Starting search for all associations related to '{trait_name}' ---", verbose=self.verbose)
         
-        params = {}
-        if sort_by_pvalue:
-            params["sort"] = "p_value"
-            params["direction"] = "asc"
-        
-        items = self._get_all_pages("/v2/associations", params={**params, "efo_trait": trait_name}, page_size=40)
+        items = self._get_all_pages(
+            "/v2/associations",
+            params={"efo_trait": trait_name},
+            page_size=40,
+        )
+        if sort_by_pvalue and items:
+            items = self._sort_association_items_by_pvalue(items)
         
         self.log.write(f"--- Finished fetching. Found {len(items)} total associations. ---", verbose=self.verbose)
         return items
@@ -635,6 +636,41 @@ Returns
                 df['risk_allele_base'] = split_allele[1]
         
         return df
+    
+    def _sort_associations_df_by_pvalue(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Sort associations by p-value locally (stable tie-break on association_id).
+
+        Avoids GWAS Catalog API ``sort=p_value`` with pagination, which can drop or
+        duplicate associations when many rows share the same p-value.
+        """
+        if not isinstance(df, pd.DataFrame) or len(df) == 0:
+            return df
+        pcol = next((c for c in ["p_value", "pvalue", "p"] if c in df.columns), None)
+        if pcol is None:
+            return df
+        out = df.copy()
+        out[pcol] = pd.to_numeric(out[pcol], errors="coerce")
+        sort_cols = [pcol]
+        if "association_id" in out.columns:
+            sort_cols.append("association_id")
+        return out.sort_values(by=sort_cols, ascending=True, na_position="last").reset_index(drop=True)
+    
+    def _sort_association_items_by_pvalue(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Sort raw association dicts by p-value locally."""
+        def _sort_key(item: Dict[str, Any]) -> tuple:
+            p = item.get("p_value")
+            try:
+                pval = float(p) if p is not None else float("inf")
+            except (TypeError, ValueError):
+                pval = float("inf")
+            aid = item.get("association_id")
+            try:
+                aid_val = int(aid) if aid is not None else 0
+            except (TypeError, ValueError):
+                aid_val = 0
+            return (pval, aid_val)
+        
+        return sorted(items, key=_sort_key)
     
     def _variants_to_dataframe(self, variants: List[Dict[str, Any]]) -> pd.DataFrame:
         """Convert variants list to pandas DataFrame.
@@ -774,26 +810,29 @@ Returns
                     pass
         
         try:
-            # Get associations from API v2: use efo_id for EFO or MONDO identifiers, efo_trait for names
+            # Bulk download without API sort: sort=p_value + pagination can drop/duplicate rows.
             if efo.startswith("EFO_") or efo.startswith("MONDO_"):
-                associations_df = self.get_associations(efo_id=efo, get_all=True, sort="p_value", direction="asc", show_child_traits=show_child_traits)
+                associations_df = self.get_associations(
+                    efo_id=efo, get_all=True, show_child_traits=show_child_traits
+                )
             else:
-                associations_df = self.get_associations(efo_trait=efo, get_all=True, sort="p_value", direction="asc", show_child_traits=show_child_traits)
+                associations_df = self.get_associations(
+                    efo_trait=efo, get_all=True, show_child_traits=show_child_traits
+                )
             
-            # Fallback: API v2 can return 500 when sort/direction/size/page are sent. Retry with efo_id/efo_trait + show_child_traits only.
+            if isinstance(associations_df, pd.DataFrame) and len(associations_df) > 0:
+                associations_df = self._sort_associations_df_by_pvalue(associations_df)
+            
+            # Fallback: retry first page only if bulk pagination returned nothing.
             if not isinstance(associations_df, pd.DataFrame) or len(associations_df) == 0:
-                self.log.write(" -Retrying with efo_id/efo_trait and show_child_traits only (server may have returned 500)...", verbose=verbose)
+                self.log.write(" -Retrying with efo_id/efo_trait and show_child_traits only (bulk request returned no rows)...", verbose=verbose)
                 params = {"efo_id": efo, "show_child_traits": show_child_traits} if (efo.startswith("EFO_") or efo.startswith("MONDO_")) else {"efo_trait": efo, "show_child_traits": show_child_traits}
                 data = self._make_request("/v2/associations", params=params)
                 if data and "_embedded" in data and "associations" in data["_embedded"]:
                     items = data["_embedded"]["associations"]
-                    associations_df = self._associations_to_dataframe(items)
-                    if len(associations_df) > 0:
-                        for pcol in ["p_value", "pvalue", "p"]:
-                            if pcol in associations_df.columns:
-                                associations_df[pcol] = pd.to_numeric(associations_df[pcol], errors="coerce")
-                                associations_df = associations_df.sort_values(by=pcol, ascending=True).reset_index(drop=True)
-                                break
+                    associations_df = self._sort_associations_df_by_pvalue(
+                        self._associations_to_dataframe(items)
+                    )
                 else:
                     associations_df = pd.DataFrame()
             
