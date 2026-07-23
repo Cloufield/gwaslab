@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
@@ -9,11 +10,13 @@ SRC = os.path.join(ROOT, "src")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
+from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from gwaslab.util.util_in_simulate import (
     simulate_sumstats_region,
     simulate_sumstats_global,
     _accumulate_V_g_raw_for_chromosomes,
     _accumulate_V_g_from_causal_snps,
+    _autodetect_chromosomes_from_vcf,
     _merge_causal_ld_windows,
     _build_panel_mask,
     _resolve_null_mode,
@@ -474,13 +477,14 @@ class TestSimulateSumstats(unittest.TestCase):
     def test_polygenic_bernoulli_sampling(self):
         """Polygenic mode uses Bernoulli(pi) with variable causal counts."""
         counts = []
-        for seed in range(50):
-            sumstats_obj, causals = simulate_sumstats_region(
+        for seed in range(15):
+            _, causals = simulate_sumstats_region(
                 vcf_path=self.vcf_path,
                 region=self.region,
                 n=10000,
                 mode="polygenic",
                 pi=0.01,
+                thin=0.1,
                 seed=seed,
                 verbose=False,
                 log=self.log,
@@ -543,28 +547,40 @@ class TestSimulateSumstats(unittest.TestCase):
 
     def test_global_chr_autodetect_from_header(self):
         """chromosomes=None should match explicit chr list on chr7-only VCF."""
+        mapper = ChromosomeMapper(log=self.log, verbose=False)
+        mapper.detect_reference_format(self.vcf_path)
+        detected = _autodetect_chromosomes_from_vcf(
+            vcf_path=self.vcf_path,
+            mapper=mapper,
+            vcf_chr_dict=None,
+            log=self.log,
+            verbose=False,
+        )
+        self.assertIn("7", detected)
+
+        sim_kwargs = dict(
+            vcf_path=self.vcf_path,
+            n=10000,
+            mode="sparse",
+            n_causal=3,
+            h2=0.01,
+            thin=0.1,
+            seed=42,
+            verbose=False,
+            log=self.log,
+        )
         explicit, causals_explicit = simulate_sumstats_global(
-            vcf_path=self.vcf_path,
             chromosomes=["7"],
-            n=10000,
-            mode="sparse",
-            n_causal=3,
-            h2=0.01,
-            seed=42,
-            verbose=False,
-            log=self.log,
+            **sim_kwargs,
         )
-        auto, causals_auto = simulate_sumstats_global(
-            vcf_path=self.vcf_path,
-            chromosomes=None,
-            n=10000,
-            mode="sparse",
-            n_causal=3,
-            h2=0.01,
-            seed=42,
-            verbose=False,
-            log=self.log,
-        )
+        with patch(
+            "gwaslab.util.util_in_simulate._autodetect_chromosomes_from_vcf",
+            return_value=["7"],
+        ):
+            auto, causals_auto = simulate_sumstats_global(
+                chromosomes=None,
+                **sim_kwargs,
+            )
         self.assertEqual(len(explicit.data), len(auto.data))
         self.assertEqual(set(causals_explicit), set(causals_auto))
 

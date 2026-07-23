@@ -1,5 +1,8 @@
 """Simple test runner for the repository.
 
+Per-test durations are written to test/test_timings.log (plain text, one line
+per test). The file is overwritten on each run; console output is unchanged.
+
 Options:
 - --start-dir: directory containing tests (default: test/)
 - --pattern: discovery glob for test files (default: test_*.py)
@@ -16,6 +19,8 @@ import sys
 import unittest
 import argparse
 import random
+
+from timing_log import TimedTextTestRunner, get_timing_log
 
 
 def _iter_tests(suite):
@@ -95,7 +100,13 @@ def main(argv=None):
         sys.path.insert(0, src)
 
     suite = _build_suite(args.start_dir, args.pattern, k=args.k, shuffle=args.shuffle, seed=args.seed)
-    result = unittest.TextTestRunner(verbosity=args.verbosity, failfast=args.failfast, buffer=args.buffer).run(suite)
+    get_timing_log().start_run("run_all_tests")
+    result = TimedTextTestRunner(
+        verbosity=args.verbosity,
+        failfast=args.failfast,
+        buffer=args.buffer,
+    ).run(suite)
+    get_timing_log().finish_run()
     sys.exit(0 if result.wasSuccessful() else 1)
 
 

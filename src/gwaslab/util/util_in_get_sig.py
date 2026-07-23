@@ -868,7 +868,11 @@ def _get_known_variants_from_gwascatalog(
     use_cache: bool = True,
     cache_dir: str = "./",
     verbose: bool = True, 
-    log: Log = Log()
+    log: Log = Log(),
+    size: int = 200,
+    sort: Optional[str] = None,
+    direction: Optional[str] = None,
+    catalog_kwargs: Optional[Dict[str, Any]] = None,
 ) -> pd.DataFrame:
     """Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
     
@@ -903,7 +907,8 @@ pd.DataFrame
     # Delegate to the client method which handles all GWAS Catalog API logic
     knownsig = client.get_known_variants_for_trait(
         efo=efo, sig_level=sig_level, show_child_traits=show_child_traits,
-        use_cache=use_cache, cache_dir=cache_dir, verbose=verbose
+        use_cache=use_cache, cache_dir=cache_dir, verbose=verbose,
+        size=size, sort=sort, direction=direction, catalog_kwargs=catalog_kwargs,
     )
     
     if len(knownsig) == 0:
@@ -959,6 +964,10 @@ def _get_novel(
     gwascatalog_source: str = "NCBI",
     output_known: bool = False,
     show_child_traits: bool = True,
+    size: int = 200,
+    sort: Optional[str] = None,
+    direction: Optional[str] = None,
+    catalog_kwargs: Optional[Dict[str, Any]] = None,
     verbose: bool = True
 ) -> pd.DataFrame:
     """Identify novel variants by comparing against known variant databases.
@@ -988,6 +997,14 @@ windowsizekb_for_novel : int, default 1000
     Distance threshold (kb) to define novelty
 show_child_traits : bool, default True
     If True, include child traits in GWAS Catalog results when querying by efo
+size : int, default 200
+    Page size for GWAS Catalog v2 bulk download when using ``efo``
+sort : str, optional
+    GWAS Catalog API sort field (default ``None``: omit API sort, sort locally by p-value)
+direction : str, optional
+    Sort direction when ``sort`` is set (``"asc"`` or ``"desc"``)
+catalog_kwargs : dict, optional
+    Extra GWAS Catalog ``/v2/associations`` query parameters (e.g., ``extended_geneset=True``)
 Returns
 -------
 pandas.DataFrame or tuple
@@ -1001,6 +1018,10 @@ Notes
     When build is hg19/GRCh37, coordinates are first lifted over to hg38, then the same
     steps are run. GWAS catalog and novelty checks use hg38; returned coordinates are
     in hg38 in that case.
+
+    GWAS Catalog bulk downloads (``efo=``) default to no API-side sort; associations
+    are sorted locally by p-value. Setting ``sort`` forwards it to the API and may
+    drop associations on large traits (see ``examples/bug/GWAS_Catalog_sort_pagination_bug_report.md``).
 
     The function performs multiple steps:
     1. Optional liftover from hg19 to hg38 when build is hg19
@@ -1089,7 +1110,11 @@ Notes
                 use_cache=use_cache,
                 cache_dir=cache_dir,
                 verbose=verbose,
-                log=log
+                log=log,
+                size=size,
+                sort=sort,
+                direction=direction,
+                catalog_kwargs=catalog_kwargs,
             )
         else:            
             knownsig=pd.DataFrame()
@@ -1104,7 +1129,11 @@ Notes
                     use_cache=use_cache,
                     cache_dir=cache_dir,
                     verbose=verbose,
-                    log=log
+                    log=log,
+                    size=size,
+                    sort=sort,
+                    direction=direction,
+                    catalog_kwargs=catalog_kwargs,
                 )
                 if len(knownsig_single) > 0:
                     knownsig_single["EFOID"] = single_efo

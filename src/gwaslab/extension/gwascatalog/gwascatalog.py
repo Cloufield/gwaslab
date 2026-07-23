@@ -18,11 +18,60 @@ from typing import Optional, Dict, List, Any, Union
 from gwaslab.info.g_Log import Log
 
 
-def _v2_cache_path(cache_dir: str, efo: str, sig_level: float, show_child_traits: bool) -> str:
+_CATALOG_KWARGS_RESERVED = frozenset({"page", "efo_id", "efo_trait", "rs_id"})
+_GET_ASSOCIATIONS_QUERY_KEYS = frozenset({
+    "sort", "direction", "show_child_traits", "extended_geneset", "accession_id", "size",
+})
+
+
+def _merge_catalog_query_params(
+    size: int = 200,
+    sort: Optional[str] = None,
+    direction: Optional[str] = None,
+    catalog_kwargs: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Merge explicit pagination/sort args with optional extra API query params."""
+    extra = dict(catalog_kwargs or {})
+    reserved = _CATALOG_KWARGS_RESERVED & extra.keys()
+    if reserved:
+        raise ValueError(
+            "catalog_kwargs must not include reserved keys for bulk trait download: "
+            + ", ".join(sorted(reserved))
+        )
+    merged = {**extra, "size": size}
+    if sort is not None:
+        merged["sort"] = sort
+        if direction is not None:
+            merged["direction"] = direction
+    return merged
+
+
+def _v2_cache_path(
+    cache_dir: str,
+    efo: str,
+    sig_level: float,
+    show_child_traits: bool,
+    size: int = 200,
+    sort: Optional[str] = None,
+    direction: Optional[str] = None,
+    catalog_kwargs: Optional[Dict[str, Any]] = None,
+) -> str:
     """Path for API v2 known-variants cache file, consistent with legacy JSON naming.
 """
     datestring = datetime.now().strftime("%Y%m%d")
-    suffix = hashlib.md5("{}_{}".format(sig_level, show_child_traits).encode("utf-8")).hexdigest()[:8]
+    cache_key = json.dumps(
+        {
+            "sig_level": sig_level,
+            "show_child_traits": show_child_traits,
+            "size": size,
+            "sort": sort,
+            "direction": direction,
+            "catalog_kwargs": catalog_kwargs or {},
+        },
+        sort_keys=True,
+        default=str,
+    )
+    suffix = hashlib.md5(cache_key.encode("utf-8")).hexdigest()[:8]
     name = "GWASCatalog_v2_{}_associationsByTraitSummary_text_{}_{}.json".format(efo, datestring, suffix)
     return os.path.join(cache_dir, name)
 
@@ -302,7 +351,8 @@ Returns
         extended_geneset: Optional[bool] = None,
         page: Optional[int] = None,
         size: Optional[int] = None,
-        get_all: bool = False
+        get_all: bool = False,
+        extra_params: Optional[Dict[str, Any]] = None,
     ) -> Union[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
         """Retrieve GWAS associations from the catalog.
         
@@ -356,9 +406,13 @@ Returns
             params["show_child_traits"] = show_child_traits
         if extended_geneset is not None:
             params["extended_geneset"] = extended_geneset
+        if extra_params:
+            for key, val in extra_params.items():
+                if val is not None:
+                    params[key] = val
             
         if get_all:
-            items = self._get_all_pages(endpoint, params=params)
+            items = self._get_all_pages(endpoint, params=params, page_size=size or 200)
             return self._associations_to_dataframe(items) if items else pd.DataFrame()
         else:
             if page is not None:
@@ -766,7 +820,11 @@ Returns
         show_child_traits: bool = True,
         use_cache: bool = True,
         cache_dir: str = "./",
-        verbose: bool = True
+        verbose: bool = True,
+        size: int = 200,
+        sort: Optional[str] = None,
+        direction: Optional[str] = None,
+        catalog_kwargs: Optional[Dict[str, Any]] = None,
     ) -> pd.DataFrame:
         """Retrieve known variants from GWAS Catalog API v2 for a given EFO trait.
         
@@ -790,6 +848,15 @@ cache_dir : str
     Directory for cache files; v2 cache uses ``GWASCatalog_v2_{efo}_associationsByTraitSummary_text_{date}_{suffix}.json`` (default: "./")
 verbose : bool
     Whether to print log messages (default: True)
+size : int
+    Page size for paginated bulk download (default: 200)
+sort : str, optional
+    API sort field (e.g., ``"p_value"``). Default ``None`` omits API sort and sorts locally.
+direction : str, optional
+    Sort direction when ``sort`` is set: ``"asc"`` or ``"desc"``
+catalog_kwargs : dict, optional
+    Extra ``/v2/associations`` query parameters (e.g., ``extended_geneset=True``).
+    Must not include ``page``, ``efo_id``, ``efo_trait``, or ``rs_id``.
 Returns
 -------
         pd.DataFrame
@@ -797,9 +864,29 @@ Returns
             REPORT_GENENAME, PUBMEDID, AUTHOR, STUDY
 """
         self.log.write(" -Querying GWAS Catalog API v2 for trait: {}...".format(efo), verbose=verbose)
+
+        query_params = _merge_catalog_query_params(
+            size=size, sort=sort, direction=direction, catalog_kwargs=catalog_kwargs
+        )
+        api_sort = query_params.get("sort")
+        page_size = int(query_params.get("size", 200))
+        cache_path_kwargs = dict(
+            size=page_size,
+            sort=api_sort,
+            direction=query_params.get("direction"),
+            catalog_kwargs=catalog_kwargs,
+        )
+
+        if api_sort is not None:
+            self.log.warning(
+                "GWAS Catalog API sort={!r} may drop or duplicate associations during pagination "
+                "on large traits; prefer sort=None (default) for complete bulk downloads. "
+                "See examples/bug/GWAS_Catalog_sort_pagination_bug_report.md".format(api_sort),
+                verbose=verbose,
+            )
         
         if use_cache:
-            p = _v2_cache_path(cache_dir, efo, sig_level, show_child_traits)
+            p = _v2_cache_path(cache_dir, efo, sig_level, show_child_traits, **cache_path_kwargs)
             if os.path.isfile(p):
                 try:
                     df = pd.read_json(p, orient="split")
@@ -810,17 +897,34 @@ Returns
                     pass
         
         try:
-            # Bulk download without API sort: sort=p_value + pagination can drop/duplicate rows.
+            assoc_query = {
+                k: query_params[k]
+                for k in _GET_ASSOCIATIONS_QUERY_KEYS
+                if k in query_params
+            }
+            assoc_query["show_child_traits"] = show_child_traits
+            extra_params = {
+                k: v for k, v in query_params.items()
+                if k not in _GET_ASSOCIATIONS_QUERY_KEYS
+            }
+
+            # Bulk download without API sort by default: sort=p_value + pagination can drop/duplicate rows.
             if efo.startswith("EFO_") or efo.startswith("MONDO_"):
                 associations_df = self.get_associations(
-                    efo_id=efo, get_all=True, show_child_traits=show_child_traits
+                    efo_id=efo,
+                    get_all=True,
+                    extra_params=extra_params or None,
+                    **assoc_query,
                 )
             else:
                 associations_df = self.get_associations(
-                    efo_trait=efo, get_all=True, show_child_traits=show_child_traits
+                    efo_trait=efo,
+                    get_all=True,
+                    extra_params=extra_params or None,
+                    **assoc_query,
                 )
             
-            if isinstance(associations_df, pd.DataFrame) and len(associations_df) > 0:
+            if api_sort is None and isinstance(associations_df, pd.DataFrame) and len(associations_df) > 0:
                 associations_df = self._sort_associations_df_by_pvalue(associations_df)
             
             # Fallback: retry first page only if bulk pagination returned nothing.
@@ -857,7 +961,10 @@ Returns
                 if use_cache:
                     try:
                         os.makedirs(cache_dir, exist_ok=True)
-                        pd.DataFrame().to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split")
+                        pd.DataFrame().to_json(
+                            _v2_cache_path(cache_dir, efo, sig_level, show_child_traits, **cache_path_kwargs),
+                            orient="split",
+                        )
                     except Exception:
                         pass
                 return pd.DataFrame()
@@ -887,7 +994,10 @@ Returns
                 if use_cache:
                     try:
                         os.makedirs(cache_dir, exist_ok=True)
-                        pd.DataFrame().to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split")
+                        pd.DataFrame().to_json(
+                            _v2_cache_path(cache_dir, efo, sig_level, show_child_traits, **cache_path_kwargs),
+                            orient="split",
+                        )
                     except Exception:
                         pass
                 return pd.DataFrame()
@@ -1092,7 +1202,10 @@ Returns
                 if use_cache:
                     try:
                         os.makedirs(cache_dir, exist_ok=True)
-                        pd.DataFrame().to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split")
+                        pd.DataFrame().to_json(
+                            _v2_cache_path(cache_dir, efo, sig_level, show_child_traits, **cache_path_kwargs),
+                            orient="split",
+                        )
                     except Exception:
                         pass
                 return pd.DataFrame()
@@ -1102,7 +1215,11 @@ Returns
             if use_cache:
                 try:
                     os.makedirs(cache_dir, exist_ok=True)
-                    result_df.to_json(_v2_cache_path(cache_dir, efo, sig_level, show_child_traits), orient="split", date_format="iso")
+                    result_df.to_json(
+                        _v2_cache_path(cache_dir, efo, sig_level, show_child_traits, **cache_path_kwargs),
+                        orient="split",
+                        date_format="iso",
+                    )
                 except Exception:
                     pass
             return result_df

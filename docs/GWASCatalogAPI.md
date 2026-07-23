@@ -112,7 +112,11 @@ known_variants = client.get_known_variants_for_trait(
     show_child_traits=True,
     use_cache=True,
     cache_dir="./",
-    verbose=True
+    verbose=True,
+    size=200,
+    sort=None,
+    direction=None,
+    catalog_kwargs={"extended_geneset": True},
 )
 ```
 
@@ -124,6 +128,10 @@ known_variants = client.get_known_variants_for_trait(
 - `use_cache` (bool): Use cached GWAS Catalog data when available (default: True)
 - `cache_dir` (str): Directory for cache files (default: "./")
 - `verbose` (bool): Whether to print log messages (default: True)
+- `size` (int): Page size for paginated bulk download (default: 200)
+- `sort` (str, optional): API sort field (default: `None` — omit API sort, sort locally by p-value)
+- `direction` (str, optional): Sort direction when `sort` is set (`"asc"` or `"desc"`)
+- `catalog_kwargs` (dict, optional): Extra `/v2/associations` query parameters (e.g., `extended_geneset=True`). Must not include `page`, `efo_id`, `efo_trait`, or `rs_id`.
 
 **Returns:**
 

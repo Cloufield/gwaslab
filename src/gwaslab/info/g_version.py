@@ -21,7 +21,7 @@ def gwaslab_info() -> Dict[str, str]:
 """
     dic: Dict[str, str] = {
        "version":"4.2.0",
-       "release_date":"20260609"
+       "release_date":"20260723"
     }
     return dic   
 

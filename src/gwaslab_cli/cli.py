@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from gwaslab.util.util_in_filter_value import _exclude, _extract
+from gwaslab.util.util_in_fill_data import FILL_DATA_TARGETS
 
 from gwaslab_cli.cli_banner import emit_cli_mode_banner
 from gwaslab_cli.pair import run_pair
@@ -34,6 +35,40 @@ from gwaslab_cli.handlers import (
     run_ref_remove,
     run_report,
 )
+
+
+def _normalize_fill_columns(cols: List[str]) -> List[str]:
+    """Normalize fill column names to uppercase reserved headers."""
+    return [c.upper() for c in cols]
+
+
+def _validate_fill_columns(cols: List[str], parser: argparse.ArgumentParser) -> List[str]:
+    """Validate and normalize --fill column names."""
+    normalized = _normalize_fill_columns(cols)
+    invalid = [c for c in normalized if c not in FILL_DATA_TARGETS]
+    if invalid:
+        valid = ", ".join(sorted(FILL_DATA_TARGETS))
+        parser.error(
+            f"Invalid --fill column(s): {', '.join(invalid)}. "
+            f"Valid values: {valid}"
+        )
+    return normalized
+
+
+def _apply_cli_fill(s, args, parser: argparse.ArgumentParser) -> None:
+    """Run Sumstats.fill_data() when --fill is requested."""
+    if not args.fill:
+        return
+    cols = _validate_fill_columns(args.fill, parser)
+    s.fill_data(
+        to_fill=cols,
+        overwrite=args.fill_overwrite,
+        extreme=args.fill_extreme,
+        only_sig=args.fill_only_sig,
+        sig_level=args.sig_level,
+        df=args.fill_df,
+        verbose=not args.quiet,
+    )
 
 
 def _apply_cli_fix_steps(s, args) -> bool:
@@ -240,16 +275,17 @@ def main(argv: Optional[list] = None) -> None:
             "Processing order (when multiple flags are given):\n"
             "  1. Optional fixes --fix-chr / --fix-pos / --fix-chr-pos / --fix-chr-pos-allele / --fix-allele / --fix-id\n"
             "  2. QC            --qc / --remove / --remove-dup / --normalize\n"
-            "  3. Filter region --filter-region CHR START END (auto fix_chr+fix_pos if QC not run)\n"
-            "  4. Variant filters --extract/--exclude lists, --extract-bed/--exclude-bed, --chr, --maf/--max-maf/--mac, ...\n"
-            "  5. Harmonize     --harmonize [--ref-seq ...]\n"
-            "  6. Assign rsID   --assign-rsid  (auto fix_chr+fix_pos if QC not run)\n"
-            "  7. rsID→CHR:POS  --rsid-to-chrpos\n"
-            "  8. Infer build   --infer-build\n"
-            "  9. Liftover      --liftover FROM TO  (auto fix_chr+fix_pos if QC not run)\n"
-            " 10. Plot          --plot TYPE         (auto fix_chr+fix_pos if QC not run; writes to --output, then exits)\n"
-            " 11. Get            --get lead|novel|proxy (writes to --output, then exits)\n"
-            " 12. Save          --output FILE [--to-fmt FORMAT]"
+            "  3. Fill stats     --fill COL [COL ...] / --fill-overwrite / --fill-extreme / --fill-only-sig\n"
+            "  4. Filter region --filter-region CHR START END (auto fix_chr+fix_pos if QC not run)\n"
+            "  5. Variant filters --extract/--exclude lists, --extract-bed/--exclude-bed, --chr, --maf/--max-maf/--mac, ...\n"
+            "  6. Harmonize     --harmonize [--ref-seq ...]\n"
+            "  7. Assign rsID   --assign-rsid  (auto fix_chr+fix_pos if QC not run)\n"
+            "  8. rsID→CHR:POS  --rsid-to-chrpos\n"
+            "  9. Infer build   --infer-build\n"
+            " 10. Liftover      --liftover FROM TO  (auto fix_chr+fix_pos if QC not run)\n"
+            " 11. Plot          --plot TYPE         (auto fix_chr+fix_pos if QC not run; writes to --output, then exits)\n"
+            " 12. Get            --get lead|novel|proxy (writes to --output, then exits)\n"
+            " 13. Save          --output FILE [--to-fmt FORMAT]"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
@@ -261,6 +297,7 @@ Examples:
   gwaslab --input sumstats.tsv --filter-region 7 126253550 128253550 --output chr7_region.tsv.gz
   gwaslab --input sumstats.tsv --infer-build --liftover 19 38 --output lifted_hg38.tsv
   gwaslab --input sumstats.tsv --output converted.ldsc --to-fmt ldsc
+  gwaslab --input sumstats.tsv --fill P --output with_p.ldsc --to-fmt ldsc
 
   # Plot
   gwaslab --input sumstats.tsv --plot manhattan --output manhattan.png
@@ -429,6 +466,39 @@ Examples:
     parser.add_argument("--remove", action="store_true", help="Remove bad quality variants")
     parser.add_argument("--remove-dup", action="store_true", help="Remove duplicated variants")
     parser.add_argument("--normalize", action="store_true", help="Normalize indels")
+
+    # Statistics fill (fill_data)
+    parser.add_argument(
+        "--fill",
+        nargs="+",
+        metavar="COL",
+        help=(
+            "Derive missing stat columns via fill_data() "
+            "(e.g. P from MLOG10P, MAF from EAF). "
+            "Valid: OR, OR_95L, OR_95U, BETA, SE, P, Z, CHISQ, MLOG10P, MAF, SIG"
+        ),
+    )
+    parser.add_argument(
+        "--fill-overwrite",
+        action="store_true",
+        help="Overwrite existing values in --fill target columns",
+    )
+    parser.add_argument(
+        "--fill-extreme",
+        action="store_true",
+        help="Use extreme-value MLOG10P calculation (for P < 1e-300)",
+    )
+    parser.add_argument(
+        "--fill-only-sig",
+        action="store_true",
+        help="Only fill significant variants (uses --sig-level threshold)",
+    )
+    parser.add_argument(
+        "--fill-df",
+        metavar="COL",
+        default=None,
+        help="Column with degrees of freedom when filling CHISQ",
+    )
 
     # Harmonization options
     parser.add_argument("--ref-seq", help="Reference FASTA file")
@@ -819,6 +889,8 @@ Examples:
         )
         ran_basic_check = True
         coords_ready = True
+
+    _apply_cli_fill(s, args, parser)
 
     if args.filter_region:
         ensure_coords_ready()

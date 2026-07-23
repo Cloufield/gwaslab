@@ -1022,6 +1022,125 @@ class TestCLIFullWorkflowCoverage(unittest.TestCase):
             output_file = self.output_path + ".gwaslab.tsv"
         # May or may not work depending on actual format, but should not crash
 
+    def _write_temp_tsv(self, df, name="input.tsv"):
+        path = os.path.join(self.temp_dir, name)
+        df.to_csv(path, sep="\t", index=False)
+        return path
+
+    def _resolve_output_gwaslab(self):
+        output_file = self.output_path + ".gwaslab.tsv.gz"
+        if not os.path.exists(output_file):
+            output_file = self.output_path + ".gwaslab.tsv"
+        return output_file
+
+    def test_fill_p_from_mlog10p(self):
+        """--fill P derives P from MLOG10P when P column is missing."""
+        import pandas as pd
+        import numpy as np
+
+        mlog10p_vals = [8.0, 10.0, 5.5]
+        df = pd.DataFrame({
+            "SNPID": ["rs1", "rs2", "rs3"],
+            "CHR": [1, 1, 2],
+            "POS": [100, 200, 300],
+            "EA": ["A", "G", "C"],
+            "NEA": ["G", "A", "T"],
+            "MLOG10P": mlog10p_vals,
+        })
+        input_path = self._write_temp_tsv(df)
+
+        argv = [
+            "--input", input_path,
+            "--fill", "P",
+            "--out", self.output_path,
+            "--to-fmt", "gwaslab",
+            "--no-gzip",
+            "--quiet",
+        ]
+        try:
+            main(argv)
+        except SystemExit:
+            pass
+
+        output_file = self._resolve_output_gwaslab()
+        self.assertTrue(os.path.exists(output_file), f"Expected file not found: {output_file}")
+        s = Sumstats(output_file, fmt="gwaslab", verbose=False)
+        self.assertIn("P", s.data.columns)
+        expected = np.power(10.0, -np.array(mlog10p_vals))
+        np.testing.assert_allclose(s.data["P"].astype(float), expected, rtol=1e-4)
+
+    def test_fill_maf_before_maf_filter(self):
+        """--fill MAF then --maf filter works when only EAF is present."""
+        import pandas as pd
+
+        df = pd.DataFrame({
+            "SNPID": ["rs1", "rs2", "rs3"],
+            "CHR": [1, 1, 1],
+            "POS": [100, 200, 300],
+            "EA": ["A", "G", "C"],
+            "NEA": ["G", "A", "T"],
+            "EAF": [0.02, 0.10, 0.50],
+        })
+        input_path = self._write_temp_tsv(df)
+
+        argv = [
+            "--input", input_path,
+            "--fill", "MAF",
+            "--maf", "0.05",
+            "--out", self.output_path,
+            "--to-fmt", "gwaslab",
+            "--no-gzip",
+            "--quiet",
+        ]
+        try:
+            main(argv)
+        except SystemExit:
+            pass
+
+        output_file = self._resolve_output_gwaslab()
+        self.assertTrue(os.path.exists(output_file))
+        s = Sumstats(output_file, fmt="gwaslab", verbose=False)
+        # EAF 0.02 -> MAF 0.02 (kept), 0.10 -> MAF 0.10 (kept), 0.50 -> MAF 0.50 (dropped)
+        self.assertEqual(len(s.data), 2)
+        self.assertTrue((s.data["MAF"] >= 0.05).all())
+
+    def test_fill_overwrite(self):
+        """--fill-overwrite recomputes P from MLOG10P."""
+        import pandas as pd
+        import numpy as np
+
+        mlog10p = 10.0
+        df = pd.DataFrame({
+            "SNPID": ["rs1"],
+            "CHR": [1],
+            "POS": [100],
+            "EA": ["A"],
+            "NEA": ["G"],
+            "MLOG10P": [mlog10p],
+            "P": [0.5],
+        })
+        input_path = self._write_temp_tsv(df)
+
+        argv = [
+            "--input", input_path,
+            "--fill", "P",
+            "--fill-overwrite",
+            "--out", self.output_path,
+            "--to-fmt", "gwaslab",
+            "--no-gzip",
+            "--quiet",
+        ]
+        try:
+            main(argv)
+        except SystemExit:
+            pass
+
+        output_file = self._resolve_output_gwaslab()
+        s = Sumstats(output_file, fmt="gwaslab", verbose=False)
+        expected_p = 10.0 ** (-mlog10p)
+        self.assertAlmostEqual(float(s.data["P"].iloc[0]), expected_p, places=12)
+        self.assertNotAlmostEqual(float(s.data["P"].iloc[0]), 0.5, places=6)
+
 
 if __name__ == "__main__":
     unittest.main()

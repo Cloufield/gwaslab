@@ -733,3 +733,21 @@ def test_report_subcommand_writes_html(tmp_path: Path, monkeypatch: pytest.Monke
     assert outp.is_file()
     head = outp.read_text(encoding="utf-8")[:200].lower()
     assert "<!doctype html>" in head or "<html" in head
+
+
+def test_fill_invalid_column_exits(capsys: pytest.CaptureFixture[str]) -> None:
+    from gwaslab_cli.cli import main as cli_main
+
+    with pytest.raises(SystemExit) as exc:
+        cli_main(
+            [
+                "--input",
+                str(RAW),
+                "--fill",
+                "NOTACOL",
+                "--quiet",
+            ]
+        )
+    assert exc.value.code == 2
+    err = capsys.readouterr().err
+    assert "Invalid --fill column" in err or "NOTACOL" in err

@@ -9,6 +9,8 @@ dist/
 .coverage.*
 htmlcov/
 .pytest_cache/
+test/test_timings.log
+test/test_timings.log.*
 
 # Jupyter
 .ipynb_checkpoints/

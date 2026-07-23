@@ -1,6 +1,6 @@
 # Update Logs
 
-# v4.2.0 
+# v4.2.0 20260723
 
 - **Memory / dtypes (#222):** category-aware string helpers (`categorical_str_len`, `categorical_str_upper`, `categorical_str_contains`) and CI tracemalloc guards to prevent OOM when materializing categorical EA/NEA; see `docs/audit/dtype_memory_audit.md`
 - **Config / download consistency:** local registry (`config.json`) defaults to `~/.gwaslab/config.json` with automatic migration from legacy package-local config; `GWASLAB_DATA_DIR` / `GWASLAB_CONFIG` env overrides; persisted user settings in `~/.gwaslab/settings.json`
@@ -24,6 +24,8 @@
 - Fixed `detect_sumstats_format()` misclassifying PLINK2 `.glm.*` output as VCF when the header starts with `#CHROM`; VCF fast-path now requires VCF column signatures (`QUAL`/`FILTER`/`INFO`/`FORMAT`) or `##fileformat=VCF`
 - I/O: shared `format_comment` handling in `io_read_tabular.py`; pandas and Polars preformat loaders apply the same skip logic for header preview and data read
 - Tests: PLINK2 load/detection regression coverage in `test_preformat_input.py` and `test_sumstats_format_detection.py`
+- **GWAS Catalog API v2:** bulk trait downloads in `get_known_variants_for_trait()` no longer pass `sort=p_value` to the API (sorted pagination can drop or duplicate associations); results are sorted locally by p-value instead. `get_novel(efo=...)` and `get_known_variants_for_trait()` now accept `size`, optional `sort`/`direction`, and `catalog_kwargs` for other API query params. Repro notes in `examples/bug/GWAS_Catalog_sort_pagination_bug_report.md`
+- **CLI `--fill`:** derive missing statistics columns via `fill_data()` (e.g. `--fill P` from MLOG10P before LDSC export); modifiers `--fill-overwrite`, `--fill-extreme`, `--fill-only-sig`, `--fill-df`; runs after QC and before variant filters
 
 # v4.1.9 20260609
 

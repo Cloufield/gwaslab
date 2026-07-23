@@ -293,6 +293,36 @@ gwaslab --input sumstats.tsv --fmt auto --qc --remove --remove-dup --normalize -
 | `--remove-dup` | Remove duplicated or multi-allelic variants |
 | `--normalize` | Normalize indels (e.g., ATA:AA -> AT:A) |
 
+### Statistics fill (`--fill`)
+
+Derive missing statistical columns using [`fill_data()`](Conversion.md) — the same conversions available in the Python API. Runs **after QC** and **before** region/variant filters.
+
+```bash
+# MLOG10P → P before LDSC export
+gwaslab --input sumstats.tsv --fill P --out out.ldsc --to-fmt ldsc
+
+# EAF → MAF before MAF filtering
+gwaslab --input sumstats.tsv --qc --fill MAF --maf 0.01 --out filtered.tsv --to-fmt gwaslab
+
+# Extreme MLOG10P from Z/BETA/SE (P < 1e-300)
+gwaslab --input sumstats.tsv --fill MLOG10P --fill-extreme --out out.tsv --to-fmt gwaslab
+
+# Overwrite existing P values
+gwaslab --input sumstats.tsv --fill P --fill-overwrite --out out.tsv
+```
+
+**Fill options:**
+
+| Option | Description |
+|--------|-------------|
+| `--fill COL [COL ...]` | Target column(s) to derive. Valid: `OR`, `OR_95L`, `OR_95U`, `BETA`, `SE`, `P`, `Z`, `CHISQ`, `MLOG10P`, `MAF`, `SIG` (case-insensitive) |
+| `--fill-overwrite` | Overwrite existing values in target columns (default: skip columns that already exist) |
+| `--fill-extreme` | Use log-space MLOG10P calculation for extreme P values |
+| `--fill-only-sig` | Only fill significant variants (uses `--sig-level`) |
+| `--fill-df COL` | Column with degrees of freedom when filling `CHISQ` |
+
+Note: `SIG` creates a `SIGNIFICANT` boolean column. See [Statistics conversion](Conversion.md) for conversion priority and formulas.
+
 ### Optional coordinate and ID fixes
 
 Run individual `Sumstats.fix_*()` steps without full `--qc`. These run **before** QC when combined in one command. Use them to normalize columns before export or downstream steps.
@@ -775,16 +805,17 @@ When multiple flags are provided in a single command, GWASLab executes operation
 
 1. **Optional fixes**: `--fix-chr`, `--fix-pos`, `--fix-chr-pos`, `--fix-chr-pos-allele`, `--fix-allele`, `--fix-id`
 2. **QC**: `--qc`, `--remove`, `--remove-dup`, `--normalize`
-3. **Region filter**: `--filter-region`
-4. **Variant filters**: `--extract`, `--exclude`, `--extract-bed`, `--exclude-bed`, `--chr`, `--maf`, `--max-maf`, `--mac`, `--snps-only`, `--min-info`
-5. **Harmonization**: `--harmonize` (and related `--ref-*` options)
-6. **rsID assignment**: `--assign-rsid`
-7. **rsID to CHR:POS conversion**: `--rsid-to-chrpos`
-8. **Build inference**: `--infer-build`
-9. **Liftover**: `--liftover`
-10. **Plotting**: `--plot`
-11. **Association extraction**: `--get`
-12. **Final export**: `to_format` output (`--out` / `--output` with `--to-fmt`)
+3. **Fill statistics**: `--fill`, `--fill-overwrite`, `--fill-extreme`, `--fill-only-sig`, `--fill-df`
+4. **Region filter**: `--filter-region`
+5. **Variant filters**: `--extract`, `--exclude`, `--extract-bed`, `--exclude-bed`, `--chr`, `--maf`, `--max-maf`, `--mac`, `--snps-only`, `--min-info`
+6. **Harmonization**: `--harmonize` (and related `--ref-*` options)
+7. **rsID assignment**: `--assign-rsid`
+8. **rsID to CHR:POS conversion**: `--rsid-to-chrpos`
+9. **Build inference**: `--infer-build`
+10. **Liftover**: `--liftover`
+11. **Plotting**: `--plot`
+12. **Association extraction**: `--get`
+13. **Final export**: `to_format` output (`--out` / `--output` with `--to-fmt`)
 
 ### Early-Exit Rules
 

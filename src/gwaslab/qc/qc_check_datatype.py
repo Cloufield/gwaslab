@@ -73,8 +73,21 @@ def categorical_str_contains(series: pd.Series | pd.Categorical, pat: str, **kwa
     """Regex/string contains mapped from category index when possible."""
     series = _allele_series(series)
     if isinstance(series.dtype, pd.CategoricalDtype):
-        hits = series.cat.categories.astype("string").str.contains(pat, **kwargs)
-        return pd.Series(hits.to_numpy()[series.cat.codes], index=series.index)
+        hits_arr = series.cat.categories.astype("string").str.contains(pat, **kwargs).to_numpy()
+        codes = series.cat.codes
+        valid = codes >= 0
+        na_flag = kwargs.get("na", np.nan)
+        if na_flag is True or na_flag is False:
+            out = np.empty(len(codes), dtype=bool)
+            out[valid] = hits_arr[codes[valid]]
+            if (~valid).any():
+                out[~valid] = na_flag
+            return pd.Series(out, index=series.index)
+        out = np.empty(len(codes), dtype=object)
+        out[valid] = hits_arr[codes[valid]]
+        if (~valid).any():
+            out[~valid] = pd.NA
+        return pd.Series(out, index=series.index)
     return categorical_safe_str(series).str.contains(pat, **kwargs)
 
 

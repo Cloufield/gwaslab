@@ -15,6 +15,11 @@ from gwaslab.algorithm.core import conversions as _conv
 if TYPE_CHECKING:
     from gwaslab.g_Sumstats import Sumstats
 
+FILL_DATA_TARGETS = frozenset({
+    "OR", "OR_95L", "OR_95U", "BETA", "SE", "P", "Z",
+    "CHISQ", "MLOG10P", "MAF", "SIG",
+})
+
 def _fill_data( 
     insumstats: Union['Sumstats', pd.DataFrame],
     to_fill: Optional[Union[str, List[str]]] = None,
@@ -82,8 +87,7 @@ sig_level : float, optional, default 5e-8
     check_datatype(sumstats, verbose=verbose, log=log)
     
     # Filter out columns that already exist (unless overwrite=True)
-    valid_targets = {"OR", "OR_95L", "OR_95U", "BETA", "SE", "P", "Z", "CHISQ", "MLOG10P", "MAF", "SIG"}
-    to_fill = [col for col in to_fill if col in valid_targets]
+    to_fill = [col for col in to_fill if col in FILL_DATA_TARGETS]
     
     if not to_fill:
         log.write(" -No valid columns to fill.", verbose=verbose)

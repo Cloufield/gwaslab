@@ -32,7 +32,7 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = ["mkdocstrings-python>=1.0"]
-dev = ["pytest>=7"]
+dev = ["pytest>=7", "pytest-xdist>=3"]
 
 [project.urls]
 Homepage = "https://cloufield.github.io/gwaslab/"

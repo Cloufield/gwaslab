@@ -24,6 +24,10 @@ mysumstats.get_novel(
     gwascatalog_source="NCBI",
     output_known=False,
     show_child_traits=True,
+    size=200,
+    sort=None,
+    direction=None,
+    catalog_kwargs=None,
     verbose=True
 )
 ```
@@ -68,6 +72,10 @@ When **`build="19"`** (hg19/GRCh37), coordinates are first lifted over to hg38, 
 | `gwascatalog_source` | `"NCBI"` or `"EBI"` | Source for GWAS catalog data | `"NCBI"` |
 | `output_known` | `boolean` | If True, additionally output the reported variants | `False` |
 | `show_child_traits` | `boolean` | If True, include child traits in GWAS Catalog results when querying by efo | `True` |
+| `size` | `int` | Page size for GWAS Catalog v2 bulk download when using `efo` | `200` |
+| `sort` | `string` or `None` | GWAS Catalog API sort field (e.g. `"p_value"`). Default `None` omits API sort and sorts locally | `None` |
+| `direction` | `string` or `None` | Sort direction when `sort` is set: `"asc"` or `"desc"` | `None` |
+| `catalog_kwargs` | `dict` or `None` | Extra GWAS Catalog `/v2/associations` query params (e.g. `extended_geneset=True`). Must not include `page`, `efo_id`, `efo_trait`, or `rs_id` | `None` |
 | `verbose` | `boolean` | If True, print logs | `True` |
 
 ## Return Value
@@ -99,6 +107,9 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
 
 !!! note "GWAS Catalog Trait Associations"
     By default (`show_child_traits=True`), associations include the specified EFO trait(s) and their child traits. Set `show_child_traits=False` to restrict results to the specified trait(s) only.
+
+!!! note "GWAS Catalog bulk download (v4.2.0+)"
+    From **v4.2.0**, GWASLab bulk-downloads trait associations **without** passing `sort=p_value` to the GWAS Catalog API v2 by default, then sorts locally by p-value. You can override pagination with `size` (default `200`) and optional `sort` / `direction`; if `sort` is set, GWASLab forwards it to the API and **does not** sort locally — on large traits this may drop or duplicate associations (upstream API issue). Use `catalog_kwargs` for other API flags (e.g. `extended_geneset=True`). In **versions before v4.2.0**, bulk downloads always used `sort=p_value&direction=asc`; re-run on v4.2.0+ with `use_cache=False` (or delete stale v2 cache files) for a complete reference set. See `examples/bug/GWAS_Catalog_sort_pagination_bug_report.md`.
 
 ## Examples
 

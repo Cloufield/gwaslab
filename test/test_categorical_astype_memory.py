@@ -322,6 +322,12 @@ class TestCategoricalStrHelpers(unittest.TestCase):
         self.assertTrue(bad.iloc[2])
         self.assertFalse(bad.iloc[0])
 
+    def test_categorical_str_contains_missing_category_na_true(self):
+        ser = pd.Series(pd.Categorical(["A", np.nan], categories=["A"]))
+        bad = categorical_str_contains(ser, "[^ATCG]", na=True, regex=True)
+        self.assertFalse(bad.iloc[0])
+        self.assertTrue(bad.iloc[1])
+
 
 class TestNoUnsafeAstypeStrOnAlleles(unittest.TestCase):
     """CI guard: ban full-column .astype(str) on reserved allele headers."""
