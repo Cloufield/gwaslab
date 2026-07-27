@@ -5,6 +5,7 @@ from os.path import exists
 from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_download import check_and_download
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
+from gwaslab.io.io_compress import PANDAS_GZIP_COMPRESSION
 
 # GTF/GFF file suffix definitions
 GTF_GFF_SUFFIXES = ('.gtf.gz', '.gff.gz', '.gtf', '.gff')
@@ -477,7 +478,13 @@ def gtf_to_protein_coding(gtfpath, log=Log(), verbose=True):
             " - Extracted records are saved to : {} ".format(protein_coding_path),
             verbose=verbose,
         )
-        gtf_raw.to_csv(protein_coding_path, header=None, index=None, sep="\t")
+        gtf_raw.to_csv(
+            protein_coding_path,
+            header=None,
+            index=None,
+            sep="\t",
+            compression=PANDAS_GZIP_COMPRESSION,
+        )
     return protein_coding_path
 
 def gtf_to_all_gene(gtfpath, log=Log(), verbose=True):
@@ -498,5 +505,11 @@ def gtf_to_all_gene(gtfpath, log=Log(), verbose=True):
             " - Extracted records are saved to : {} ".format(all_gene_path),
             verbose=verbose,
         )
-        gtf_raw.to_csv(all_gene_path, header=None, index=None, sep="\t")
+        gtf_raw.to_csv(
+            all_gene_path,
+            header=None,
+            index=None,
+            sep="\t",
+            compression=PANDAS_GZIP_COMPRESSION,
+        )
     return all_gene_path

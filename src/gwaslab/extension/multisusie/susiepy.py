@@ -77,7 +77,7 @@ def multisusie(
     variant_ids = None
     ):
 
-    """Top-level function for running MultiSuSiE with individual level data
+    r"""Top-level function for running MultiSuSiE with individual level data
 
     This function takes genotype and phenotype matrices and runs MultiSuSiE on them
 

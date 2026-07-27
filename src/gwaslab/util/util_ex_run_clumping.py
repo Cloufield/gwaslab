@@ -231,9 +231,9 @@ Examples
         # checking # variants
         try:
             if filetype=="bfile":
-                bim = pd.read_csv(bfile_to_use + ".bim",usecols=[1],header=None,sep="\s+")[1]
+                bim = pd.read_csv(bfile_to_use + ".bim",usecols=[1],header=None,sep=r"\s+")[1]
             else:
-                bim = pd.read_csv(bfile_to_use + ".pvar",usecols=[2],header=None,comment="#",sep="\s+")[2]
+                bim = pd.read_csv(bfile_to_use + ".pvar",usecols=[2],header=None,comment="#",sep=r"\s+")[2]
             
             snplist = sumstats.loc[sumstats["CHR"]==i,"SNPID"]
             
@@ -345,7 +345,7 @@ Examples
             # Try to read clumping results
             try:
                 if os.path.exists(clump_result_file):
-                    clumped = pd.read_csv(clump_result_file,sep="\s+")
+                    clumped = pd.read_csv(clump_result_file,sep=r"\s+")
                     results = pd.concat([results,clumped],ignore_index=True)
                 else:
                     log.write(" -Clumping result file not found for CHR {}: {}".format(i, clump_result_file),verbose=verbose)

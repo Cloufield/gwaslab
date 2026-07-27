@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import yaml
 import hashlib
 import copy
@@ -16,6 +17,7 @@ from gwaslab.info.g_version import gwaslab_info
 from gwaslab.qc.qc_check_datatype import categorical_safe_str
 
 from gwaslab.io.io_preformat_input import _print_format_info
+from gwaslab.io.io_compress import PANDAS_GZIP_COMPRESSION
 
 from gwaslab.bd.bd_common_data import get_format_inverse_for_export
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -26,6 +28,11 @@ from gwaslab.bd.bd_sex_chromosomes import Chromosomes
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_in_filter_value import _exclude
 from gwaslab.util.util_in_filter_value import _extract
+from gwaslab.algorithm.core.conversions import mantissa_exponent_to_p_format_str
+from gwaslab.algorithm.core.conversions import mlog10p_to_p_format_str
+
+_FLOAT_DTYPES = frozenset({"Float32", "Float64", "float64", "float32", "float16", "float"})
+
 # to vcf
 # to fmt
     ## vcf
@@ -115,9 +122,18 @@ meta : dict, optional
 ssfmeta : bool, default False
     Emit GWAS-SSF metadata JSON alongside the sumstats file.
 md5sum : bool, default False
-    Write an MD5 checksum file.
+    Write an MD5 checksum file. Hashes the **compressed** output file on disk
+    (``.tsv.gz`` / ``.csv.gz``), not decompressed TSV content. The digest
+    identifies the gwaslab-produced artifact; it will not match ``md5sum`` on
+    the same TSV compressed manually with the ``gzip`` command, because Python
+    and GNU gzip write different gzip headers even at the same level.
 gzip : bool, default True
-    Gzip-compress tabular output.
+    Gzip-compress tabular output (``.tsv.gz`` / ``.csv.gz``). Uses gzip
+    **compression level 6** (same default as the ``gzip`` command), not
+    pandas' inferred level 9. Decompressed content matches the same plain file
+    compressed with ``gzip -6``; compressed file size is equivalent within ~1%.
+    Override via ``to_csvargs={"compression": {"method": "gzip",
+    "compresslevel": N}}``.
 bgzip : bool, default False
     BGzip-compress output (requires ``tabix`` indexing).
 tabix : bool, default False
@@ -246,6 +262,8 @@ None
                 'HR_95L': '{:.4f}',
                 'INFO': '{:.4f}',
                 'P': '{:.4e}',
+                'P_MANTISSA': '{:.6g}',
+                'P_EXPONENT': '{:.0f}',
                 'MLOG10P': '{:.4f}',
                 'DAF': '{:.4f}'}
         
@@ -254,8 +272,14 @@ None
                 formats[col]=f
         
         for col, f in formats.items():
-            if col in output.columns: 
-                if str(output[col].dtype) in ["Float32","Float64","float64","float32","float16","float"]:
+            if col in output.columns:
+                if col == "P" and (
+                    "MLOG10P" in output.columns
+                    or {"P_MANTISSA", "P_EXPONENT"}.issubset(output.columns)
+                ):
+                    if str(output[col].dtype) in _FLOAT_DTYPES:
+                        output[col] = _format_p_column(output, f, onetime_log, verbose)
+                elif str(output[col].dtype) in _FLOAT_DTYPES:
                     output[col] = output[col].map(f.format)
         
         onetime_log.write(" -Float statistics formats:",verbose=verbose)  
@@ -400,6 +424,55 @@ None
                     
         except Exception as e:
             log.warning(f"Error during SSF validation: {e}", verbose=verbose)
+
+
+def _recover_underflowed_p_string(row, fmt, has_mlog10p, has_decomp):
+    """Return scientific-notation P when P==0 but MLOG10P or P_MANTISSA/P_EXPONENT is available."""
+    p = row["P"]
+    if p != 0 or pd.isna(p):
+        return None
+
+    if has_mlog10p:
+        mlog10p = row["MLOG10P"]
+        if pd.notna(mlog10p) and np.isfinite(mlog10p) and mlog10p > 0:
+            return mlog10p_to_p_format_str(float(mlog10p), fmt)
+        return None
+
+    if has_decomp:
+        mantissa, exponent = row["P_MANTISSA"], row["P_EXPONENT"]
+        if pd.notna(mantissa) and pd.notna(exponent):
+            return mantissa_exponent_to_p_format_str(float(mantissa), float(exponent), fmt)
+
+    return None
+
+
+def _format_p_column(output, fmt, log, verbose):
+    """Format P for tabular export, recovering underflowed zeros from MLOG10P."""
+    p = output["P"]
+    formatted = p.map(fmt.format).astype(object)
+
+    zero_mask = (p == 0) & p.notna()
+    if not zero_mask.any():
+        return formatted
+
+    has_mlog10p = "MLOG10P" in output.columns
+    has_decomp = {"P_MANTISSA", "P_EXPONENT"}.issubset(output.columns)
+    recovered = output.loc[zero_mask].apply(
+        _recover_underflowed_p_string,
+        axis=1,
+        fmt=fmt,
+        has_mlog10p=has_mlog10p,
+        has_decomp=has_decomp,
+    )
+    n = recovered.notna().sum()
+    if n:
+        formatted.loc[recovered.notna().index] = recovered.dropna()
+        log.write(
+            "  - Recovered P string for {} variant(s) where P underflowed to 0".format(n),
+            verbose=verbose,
+        )
+
+    return formatted
 
 
 ###################################################################################################################################################
@@ -618,7 +691,9 @@ def tofmt(sumstats,
 ####################################################################################################################
 def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose, gzip):
     if tab_fmt=="tsv" or tab_fmt=="csv":
-        # pandas automatically detects compression when path ends with .gz
+        # Match CLI `gzip` default (level 6); pandas .gz infer uses Python level 9.
+        if gzip and "compression" not in to_csvargs:
+            to_csvargs["compression"] = PANDAS_GZIP_COMPRESSION
         if "@" in path:
             chr_header = rename_dictionary["CHR"]
             log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)

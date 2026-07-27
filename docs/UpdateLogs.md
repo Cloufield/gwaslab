@@ -1,5 +1,17 @@
 # Update Logs
 
+# v4.2.1 20260727
+
+- **`to_format()` tabular gzip:** explicit gzip **compression level 6** in `_write_tabular` (matches GNU `gzip` default; ~2× faster than previous pandas `.gz` infer / level 9). Override via `to_csvargs={"compression": ...}`.
+- **Documentation:** [Format.md](Format.md#gzip-compression-and-md5-checksums) and [CLI.md](CLI.md) — level 6 behavior; `md5sum` / SSF `data_file_md5sum` hash the compressed `.gz` artifact (not expected to match manual `gzip` MD5 due to gzip header differences); decompressed content equivalent to `gzip -6`.
+- **Tests:** `test_io_to_formats.py` — `compresslevel=6` default and user `compression` override.
+- **I/O gzip consistency:** `io_vcf`, `io_load_ld`, `io_gtf`, and `io_fasta` gzip writes now use shared level **6** via [`io_compress.py`](../src/gwaslab/io/io_compress.py) (`PANDAS_GZIP_COMPRESSION` / `GZIP_COMPRESSLEVEL`).
+- **Python 3.12+ string literals:** removed `SyntaxWarning: invalid escape sequence` across IO, LDSC, QC, viz, and extension modules — regex/`sep` and matplotlib `$\mathregular{...}$` labels use raw strings (`r"..."` / `rf"..."`); docstrings with regex/LaTeX examples use `r"""..."""`; no runtime or rendering change (parity-checked).
+- **`io_read_ldsc`:** shared `_LDSC_VALUE_RE` / `_SFILE_RE` compiled patterns instead of repeated inline `re.compile(...)`.
+- **`compare_effect()`:** dynamic p-value mathtext uses `rf"..."` while preserving legacy spacing in `\times  10^{...}` fragments.
+- **`util_ex_plink_filter`:** parity-preserving fix for `--make-just-fam \\ ` (was invalid `\ ` escape).
+- **Tests:** `test/fixtures/escape_fix_samples/` and `test_escape_sequence_fix_patterns.py` — compile, pandas/regex parity, and matplotlib bbox checks before production edits; `python -W error::SyntaxWarning -m compileall src/gwaslab` is clean.
+
 # v4.2.0 20260723
 
 - **Memory / dtypes (#222):** category-aware string helpers (`categorical_str_len`, `categorical_str_upper`, `categorical_str_contains`) and CI tracemalloc guards to prevent OOM when materializing categorical EA/NEA; see `docs/audit/dtype_memory_audit.md`

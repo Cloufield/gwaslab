@@ -5,6 +5,7 @@ Uses pysam FastxFile for fast FASTA reading (3-4x faster than previous implement
 """
 
 import gzip
+from gwaslab.io.io_compress import GZIP_COMPRESSLEVEL
 import numpy as np
 import pandas as pd
 from typing import Iterator, TextIO, Union, Dict, Tuple, Optional
@@ -567,9 +568,9 @@ Examples
             "Output will be standard gzip format, not BGZF.",
             UserWarning
         )
-        handle = gzip.open(path, f"{mode}t")
+        handle = gzip.open(path, f"{mode}t", compresslevel=GZIP_COMPRESSLEVEL)
     elif path_lower.endswith(".gz"):
-        handle = gzip.open(path, f"{mode}t")
+        handle = gzip.open(path, f"{mode}t", compresslevel=GZIP_COMPRESSLEVEL)
     else:
         handle = open(path, mode)
     

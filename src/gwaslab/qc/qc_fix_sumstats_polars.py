@@ -121,7 +121,7 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
     #matched_index = status_match(sumstats[status],6,[4,5]) #
     #matched_index = sumstats[status].str[5].str.match(r"4|5")
 
-    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w\w[45]\w")
+    matched_index = pl.col(status).cast(pl.String).str.contains(r"^\w\w\w\w\w[45]\w")
 
     if len(sumstats.filter(matched_index))>0:
         log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x...{}".format(_get_version()), verbose=verbose) 
@@ -141,7 +141,7 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip ref####################
     pattern = r"\w\w\w\w\w[35]\w"  
     #matched_index = status_match(sumstats[status],6,[3,5]) #sumstats[status].str.match(pattern)
-    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w\w[35]\w")
+    matched_index = pl.col(status).cast(pl.String).str.contains(r"^\w\w\w\w\w[35]\w")
     if len(sumstats.filter(matched_index))>0:
         log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: ALT->EA , REF->NEA ...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(len(sumstats.filter(matched_index))) +" variants...", verbose=verbose) 
@@ -159,7 +159,7 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip ref for undistingushable indels####################
     pattern = r"\w\w\w\w[123][67]6"  
     #matched_index = status_match(sumstats[status],6,[1,2,3])|status_match(sumstats[status],6,[6,7])|status_match(sumstats[status],7,6) #sumstats[status].str.match(pattern)
-    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w[123][67]6")
+    matched_index = pl.col(status).cast(pl.String).str.contains(r"^\w\w\w\w[123][67]6")
     if len(sumstats.filter(matched_index))>0:
         log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: ALT->EA , REF->NEA...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(len(sumstats.filter(matched_index))) +" variants...", verbose=verbose) 
@@ -177,7 +177,7 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip statistics for reverse strand panlindromic variants####################
     pattern = r"\w\w\w\w\w[012]5"  
     #matched_index = status_match(sumstats[status],6,[0,1,2]) | status_match(sumstats[status],7,[5])#sumstats[status].str.match(pattern)
-    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w\w[012]5")
+    matched_index = pl.col(status).cast(pl.String).str.contains(r"^\w\w\w\w\w[012]5")
     if len(sumstats.filter(matched_index))>0:
         log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(len(sumstats.filter(matched_index))) +" variants...", verbose=verbose) 

@@ -15,6 +15,7 @@ from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.qc.qc_check_datatype import categorical_safe_str
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.io.io_plink import _process_plink_input_files
+from gwaslab.io.io_compress import PANDAS_GZIP_COMPRESSION
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 from gwaslab.util.util_ex_calculate_ldmatrix import _export_snplist_and_locus_sumstats
@@ -367,7 +368,7 @@ def _load_ld_matrix(
 ####################################################################################################
 # LD Map Format Specification
 ####################################################################################################
-"""
+r"""
 LD Map Format in GWASLab
 ========================
 
@@ -472,7 +473,7 @@ def _load_ld_map(
     ld_map_rename_dic: Optional[Union[Dict[str, str], List[str]]] = None,
     **ld_map_kwargs: Any
 ) -> pd.DataFrame:
-    """Load LD map file (variant annotation file for LD matrix).
+    r"""Load LD map file (variant annotation file for LD matrix).
     
     The LD map provides variant information (CHR, POS, EA, NEA) that corresponds to the LD matrix.
     Each row in the LD map corresponds to one row/column in the LD matrix.
@@ -539,7 +540,7 @@ Notes
         ld_map_kwargs["usecols"]=[chrom, pos, ref, alt, snpid]
     #rsid    chromosome      position        allele1 allele2
     if "sep" not in ld_map_kwargs:
-        ld_map_kwargs["sep"] = "\s+"
+        ld_map_kwargs["sep"] = r"\s+"
     
     ld_map = pd.read_csv(path,**ld_map_kwargs)
     ld_map = ld_map.rename(columns=ld_map_rename_dic_to_use, errors='ignore')
@@ -571,7 +572,13 @@ def _extract_variants(
     output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
     output_path = "{}.ld.gz".format(output_prefix)
     
-    pd.DataFrame(reduced_r_matrix).to_csv(output_path,sep="\t",index=None,header=None)
+    pd.DataFrame(reduced_r_matrix).to_csv(
+        output_path,
+        sep="\t",
+        index=None,
+        header=None,
+        compression=PANDAS_GZIP_COMPRESSION,
+    )
     #reduced_r_matrix.to_csv("{}.ld.gz".format(output_prefix),se="\t")
     return output_path
 

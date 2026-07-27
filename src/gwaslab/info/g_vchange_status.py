@@ -149,7 +149,7 @@ int or Series
 
 
 def _parse_pattern_for_digit_constraints(pattern: str) -> Optional[List[Tuple[int, List[int]]]]:
-    """Parse regex pattern to extract digit position constraints.
+    r"""Parse regex pattern to extract digit position constraints.
     
 Parameters
 ----------
@@ -464,7 +464,7 @@ Examples
 # ============================================================================
 
 def match_status(status: Union[int, pd.Series, List[int]], pattern: str, na: bool = False) -> Union[bool, pd.Series]:
-    """Match status codes against a regex pattern using integer arithmetic.
+    r"""Match status codes against a regex pattern using integer arithmetic.
     
     For simple digit-based patterns, uses fast integer arithmetic.
     For complex patterns, falls back to string matching.

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import scipy.stats as stats
 from scipy.special import erfcinv
@@ -143,6 +145,93 @@ numpy.ndarray
     Two-sided P-values.
 """
     return stats.chi2.sf(np.asarray(chisq, dtype=np.float64), 1)
+
+
+def log10_p_to_mantissa_exponent(log10_p: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Split log10(P) into mantissa and exponent (P = mantissa * 10**exponent).
+
+Parameters
+----------
+log10_p : numpy.ndarray
+    Base-10 logarithm of P-values.
+Returns
+-------
+tuple[numpy.ndarray, numpy.ndarray]
+    Mantissa in [1, 10) and integer-scaled exponent (floor of log10_p).
+"""
+    log10_p = np.asarray(log10_p, dtype=np.float64)
+    exponent = np.floor(log10_p)
+    mantissa = np.power(10.0, log10_p - exponent)
+    return mantissa, exponent
+
+
+def _parse_e_precision(fmt: str) -> int:
+    """Extract fractional precision from a float format string like ``'{:.4e}'``."""
+    match = re.search(r"\.(\d+)e", fmt, re.IGNORECASE)
+    return int(match.group(1)) if match else 4
+
+
+def mantissa_exponent_to_p_format_str(
+    mantissa: float,
+    exponent: float,
+    fmt: str = "{:.4e}",
+) -> str:
+    """Format P as a scientific-notation string from mantissa and exponent.
+
+    ``P = mantissa * 10**exponent`` with mantissa in [1, 10).
+
+Parameters
+----------
+mantissa : float
+    Significand in [1, 10).
+exponent : float
+    Base-10 exponent (integer-valued in practice).
+fmt : str, optional
+    Float format string used to infer fractional precision (e.g. ``'{:.4e}'``).
+Returns
+-------
+str
+    P formatted as ``mantissa e±exp`` (e.g. ``1.2345e-300``).
+    """
+    prec = _parse_e_precision(fmt)
+    return f"{float(mantissa):.{prec}f}e{int(exponent):+03d}"
+
+
+def mlog10p_to_p_format_str(mlog10p: float, fmt: str = "{:.4e}") -> str:
+    """Format P as scientific notation from -log10(P) without float64 underflow.
+
+Parameters
+----------
+mlog10p : float
+    Minus log10 P-value.
+fmt : str, optional
+    Float format string used to infer fractional precision (e.g. ``'{:.4e}'``).
+Returns
+-------
+str
+    P formatted as ``mantissa e±exp`` without float64 underflow.
+    """
+    mantissa, exponent = mlog10p_to_mantissa_exponent(
+        np.atleast_1d(np.asarray(mlog10p, dtype=np.float64))
+    )
+    return mantissa_exponent_to_p_format_str(
+        float(np.ravel(mantissa)[0]), float(np.ravel(exponent)[0]), fmt
+    )
+
+
+def mlog10p_to_mantissa_exponent(mlog10p: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Split -log10(P) into mantissa and exponent without float64 underflow.
+
+Parameters
+----------
+mlog10p : numpy.ndarray
+    Minus log10 P-values.
+Returns
+-------
+tuple[numpy.ndarray, numpy.ndarray]
+    Mantissa and exponent such that P = mantissa * 10**exponent.
+"""
+    return log10_p_to_mantissa_exponent(-np.asarray(mlog10p, dtype=np.float64))
 
 
 def mlog10p_to_p(mlog10p: np.ndarray) -> np.ndarray:

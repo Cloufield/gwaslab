@@ -12,6 +12,10 @@ if SRC not in sys.path:
 import pandas as pd
 
 from gwaslab.g_Sumstats import Sumstats
+from gwaslab.io.io_to_formats import _write_tabular
+from gwaslab.io.io_compress import PANDAS_GZIP_COMPRESSION
+from gwaslab.info.g_Log import Log
+from gwaslab.algorithm.core.conversions import mlog10p_to_p_format_str
 
 
 def make_sumstats_indels():
@@ -62,6 +66,43 @@ def make_sumstats_indels():
         "N": 12000,
     })
     return pd.DataFrame(rows)
+
+
+def make_p_export_sumstats(include_mlog10p=True):
+    row_underflow = {
+        "CHR": 1,
+        "POS": 100,
+        "EA": "A",
+        "NEA": "G",
+        "SNPID": "rs_underflow",
+        "P": 0.0,
+    }
+    row_recoverable = {
+        "CHR": 1,
+        "POS": 200,
+        "EA": "G",
+        "NEA": "A",
+        "SNPID": "rs_recoverable",
+        "P": 0.0,
+    }
+    row_normal = {
+        "CHR": 1,
+        "POS": 300,
+        "EA": "C",
+        "NEA": "T",
+        "SNPID": "rs_normal",
+        "P": 1e-5,
+    }
+    if include_mlog10p:
+        row_underflow["MLOG10P"] = 350.0
+        row_recoverable["MLOG10P"] = 10.0
+        row_normal["MLOG10P"] = 5.0
+    return pd.DataFrame([row_underflow, row_recoverable, row_normal])
+
+
+def read_p_values_from_tsv(path):
+    df = pd.read_csv(path, sep="\t", dtype={"P": str})
+    return dict(zip(df["SNPID"], df["P"]))
 
 
 class TestIOToFormats(unittest.TestCase):
@@ -167,6 +208,121 @@ class TestIOToFormats(unittest.TestCase):
         out_path = prefix + ".ssf.tsv.gz"
         self.assertTrue(os.path.exists(out_path))
         self.assertGreater(os.path.getsize(out_path), 0)
+
+    def test_write_tabular_gzip_uses_compresslevel_6(self):
+        df = make_sumstats_indels()
+        captured = {}
+
+        def fake_to_csv(self, path, index=False, **kwargs):
+            captured["path"] = path
+            captured["kwargs"] = kwargs
+
+        old_to_csv = pd.DataFrame.to_csv
+        pd.DataFrame.to_csv = fake_to_csv
+        try:
+            to_csvargs = {}
+            _write_tabular(
+                df,
+                {"CHR": "CHR"},
+                os.path.join(self.tmpdir, "out.ssf.tsv.gz"),
+                "tsv",
+                to_csvargs,
+                {},
+                Log(),
+                False,
+                gzip=True,
+            )
+            self.assertEqual(
+                captured["kwargs"]["compression"],
+                PANDAS_GZIP_COMPRESSION,
+            )
+        finally:
+            pd.DataFrame.to_csv = old_to_csv
+
+    def test_write_tabular_respects_user_compression(self):
+        df = make_sumstats_indels()
+        captured = {}
+
+        def fake_to_csv(self, path, index=False, **kwargs):
+            captured["kwargs"] = kwargs
+
+        old_to_csv = pd.DataFrame.to_csv
+        pd.DataFrame.to_csv = fake_to_csv
+        try:
+            user_compression = {"method": "gzip", "compresslevel": 1}
+            to_csvargs = {"compression": user_compression}
+            _write_tabular(
+                df,
+                {"CHR": "CHR"},
+                os.path.join(self.tmpdir, "out.ssf.tsv.gz"),
+                "tsv",
+                to_csvargs,
+                {},
+                Log(),
+                False,
+                gzip=True,
+            )
+            self.assertIs(captured["kwargs"]["compression"], user_compression)
+        finally:
+            pd.DataFrame.to_csv = old_to_csv
+
+
+class TestPExportUnderflow(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix="tmp_io_p_underflow_")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def _export_p_values(self, df, **to_format_kwargs):
+        gl = Sumstats(
+            sumstats=df,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            snpid="SNPID",
+            p="P",
+            verbose=False,
+        )
+        prefix = os.path.join(self.tmpdir, "out_p")
+        gl.to_format(prefix, fmt="gwaslab", gzip=False, verbose=False, **to_format_kwargs)
+        return read_p_values_from_tsv(prefix + ".gwaslab.tsv")
+
+    def test_p_underflow_export_from_mlog10p(self):
+        p_values = self._export_p_values(make_p_export_sumstats())
+        self.assertEqual(p_values["rs_underflow"], "1.0000e-350")
+        self.assertNotEqual(p_values["rs_underflow"], "0.0000e+00")
+
+    def test_p_recoverable_mlog10p_export(self):
+        p_values = self._export_p_values(make_p_export_sumstats())
+        self.assertEqual(p_values["rs_recoverable"], "1.0000e-10")
+
+    def test_p_normal_export_unchanged(self):
+        p_values = self._export_p_values(make_p_export_sumstats())
+        self.assertEqual(p_values["rs_normal"], "1.0000e-05")
+
+    def test_p_zero_without_mlog10p_stays_zero(self):
+        p_values = self._export_p_values(make_p_export_sumstats(include_mlog10p=False))
+        self.assertEqual(p_values["rs_underflow"], "0.0000e+00")
+        self.assertEqual(p_values["rs_recoverable"], "0.0000e+00")
+
+    def test_p_custom_float_format_from_mlog10p(self):
+        df = pd.DataFrame({
+            "CHR": [1],
+            "POS": [100],
+            "EA": ["A"],
+            "NEA": ["G"],
+            "SNPID": ["rs_custom"],
+            "P": [0.0],
+            "MLOG10P": [50.0],
+        })
+        p_values = self._export_p_values(
+            df,
+            float_formats={"P": "{:.2e}"},
+        )
+        self.assertEqual(p_values["rs_custom"], "1.00e-50")
+        self.assertEqual(p_values["rs_custom"], mlog10p_to_p_format_str(50.0, "{:.2e}"))
 
 
 if __name__ == "__main__":

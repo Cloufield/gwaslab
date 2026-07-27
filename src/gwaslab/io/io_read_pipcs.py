@@ -31,7 +31,7 @@ def _read_pipcs(data_or_dataframe,
 
         dirname = os.path.dirname(output_prefix)
         files = os.listdir(dirname)
-        target_file_name = os.path.basename(output_prefix).replace('@','([\w:_]+)')
+        target_file_name = os.path.basename(output_prefix).replace('@', r'([\w:_]+)')
         for file in files:
             if re.search(target_file_name, file) is not None:
                 pipcs_path_list.append(dirname+"/"+file)

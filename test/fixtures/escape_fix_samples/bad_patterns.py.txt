@@ -1,0 +1,29 @@
+# Reference only — NOT imported. Rename to .py to see SyntaxWarnings on Python 3.12+.
+# Each block mirrors a real gwaslab line.
+
+# --- Category A: regex / sep ---
+import re
+
+SEP_BAD = "\s+"
+REGEX_BAD = re.compile("[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA")
+REPLACE_BAD = "file@name".replace("@", "(\w+)")
+
+# --- Category B: matplotlib LaTeX ---
+YLABEL_BAD = "$\mathregular{-log_{10}(P)}$"
+LEGEND_BAD = "$\mathregular{{ P < {} x 10^{{{}}} }}$ in:".format(5, -8)
+
+# --- Category C: docstring (module-level) ---
+DOC_BAD = """
+Default separator is whitespace (`\s+`).
+LaTeX example: $\sigma^2_k$
+Regex example: r'\w\w\w\w\w[35]\w'
+"""
+
+# --- Category D: shell script ---
+PLINK_SCRIPT_BAD = """
+plink2 \
+{} \
+--make-just-bim \
+--make-just-fam \ 
+--out {}
+"""

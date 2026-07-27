@@ -53,6 +53,53 @@ class TestFillData(unittest.TestCase):
         self.assertIn("P", result.columns)
         np.testing.assert_allclose(result["P"], 10**(-mlog10p), rtol=1e-10)
         print("✓ Test PASSED")
+
+    def test_fill_p_mantissa_exponent_from_mlog10p(self):
+        """Test filling P_MANTISSA/P_EXPONENT from MLOG10P."""
+        cases = [
+            (10.0, 1.0, -10.0),
+            (10.5, 10 ** 0.5, -11.0),
+            (350.0, 1.0, -350.0),
+            (0.0, 1.0, 0.0),
+        ]
+        for mlog10p_val, exp_mantissa, exp_exponent in cases:
+            sumstats = pd.DataFrame({
+                "SNPID": ["rs1"],
+                "CHR": [1],
+                "POS": [100],
+                "EA": ["A"],
+                "NEA": ["G"],
+                "MLOG10P": [mlog10p_val],
+            })
+            result = _fill_data(
+                sumstats,
+                to_fill=["P_MANTISSA", "P_EXPONENT"],
+                verbose=False,
+                log=self.log,
+            )
+            self.assertIn("P_MANTISSA", result.columns)
+            self.assertIn("P_EXPONENT", result.columns)
+            self.assertAlmostEqual(result["P_MANTISSA"].iloc[0], exp_mantissa, places=10)
+            self.assertAlmostEqual(result["P_EXPONENT"].iloc[0], exp_exponent, places=10)
+            if mlog10p_val <= 308:
+                reconstructed = result["P_MANTISSA"].iloc[0] * (10 ** result["P_EXPONENT"].iloc[0])
+                np.testing.assert_allclose(reconstructed, 10 ** (-mlog10p_val), rtol=1e-10)
+
+    def test_fill_p_mantissa_exponent_atomic_pair(self):
+        """Requesting only P_MANTISSA still fills both columns."""
+        sumstats = pd.DataFrame({
+            "SNPID": ["rs1"],
+            "CHR": [1],
+            "POS": [100],
+            "EA": ["A"],
+            "NEA": ["G"],
+            "MLOG10P": [8.0],
+        })
+        result = _fill_data(sumstats, to_fill=["P_MANTISSA"], verbose=False, log=self.log)
+        self.assertIn("P_MANTISSA", result.columns)
+        self.assertIn("P_EXPONENT", result.columns)
+        self.assertAlmostEqual(result["P_MANTISSA"].iloc[0], 1.0, places=10)
+        self.assertAlmostEqual(result["P_EXPONENT"].iloc[0], -8.0, places=10)
     
     def test_fill_p_from_z(self):
         """Test filling P from Z."""

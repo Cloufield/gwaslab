@@ -53,4 +53,13 @@ gwaslab \
     --to-fmt  gwaslab
 
 echo ""
+echo "=== [4] MLOG10P → P_MANTISSA/P_EXPONENT (extreme-safe) ==="
+gwaslab \
+    --input   "$ML10P_ONLY" \
+    --fill    P_MANTISSA P_EXPONENT \
+    --no-gzip \
+    --output  "output/10_p_decomp.gwaslab.tsv" \
+    --to-fmt  gwaslab
+
+echo ""
 echo "Done. Output files written under output/"

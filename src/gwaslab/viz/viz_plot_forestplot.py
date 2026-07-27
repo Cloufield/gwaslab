@@ -69,7 +69,7 @@ Examples
     # Load data
     if isinstance(data, str):
         log.write(f" -Loading data from file: {data}", verbose=verbose)
-        meta_df_all = pd.read_csv(data, sep="\s+")
+        meta_df_all = pd.read_csv(data, sep=r"\s+")
     elif isinstance(data, pd.DataFrame):
         if data.empty:
             log.warning("Input DataFrame is empty!")
@@ -241,7 +241,7 @@ Examples
 
 
 def _format_pvalue_mathtext(p: float) -> str:
-    """Return p-value fragment for use inside ``$\mathregular{...}$`` (no outer $).
+    r"""Return p-value fragment for use inside ``$\mathregular{...}$`` (no outer $).
 """
     if p <= 1e-300:
         return r"p < 1 \times 10^{-300}"

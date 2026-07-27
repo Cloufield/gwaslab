@@ -12,7 +12,7 @@ Returns
     plink2 \
     {} \
     --make-just-bim \
-    --make-just-fam \ 
+    --make-just-fam \\ 
     --out {}
     '''.format(filter_flag, out_prefix)
 

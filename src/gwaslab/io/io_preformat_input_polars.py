@@ -884,7 +884,7 @@ def process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbo
         inpath_chr_num_list=[]
         
         # create a regex pattern for matching
-        pat = os.path.basename(inpath).replace("@","(\w+)")
+        pat = os.path.basename(inpath).replace("@", r"(\w+)")
         
         # get dir
         dirname = os.path.dirname(inpath)

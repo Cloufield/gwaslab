@@ -5,7 +5,8 @@ GWASLab can convert equivalent statistics, including:
 | Target stats               | Original stats              | Implementation                                                                                                                                                                                                                                     |
 |----------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **MLOG10P**                    | **P**                           | `sumstats["MLOG10P"] = -np.log10(sumstats["P"])`                                                                                                                                                                                                   |
-| **P**                          | **MLOG10P**                     | `sumstats["P"] = np.power(10,-sumstats["MLOG10P"])`                                                                                                                                                                                                |
+| **P**                          | **MLOG10P**                     | `sumstats["P"] = np.power(10,-sumstats["MLOG10P"])` (underflows to 0 when MLOG10P > ~308)                                                                                                                                                          |
+| **P_MANTISSA**/**P_EXPONENT**  | **MLOG10P**                     | `P = P_MANTISSA × 10**P_EXPONENT` from `log10(P) = -MLOG10P` (exact for extreme values)                                                                                                                                                           |
 | **P**                          | **Z**                           | `sumstats["P"] = ss.chi2.sf(sumstats["Z"]**2, 1)` (equivalent to two-sided normal test)                                                                                                                                                            |
 | **P**                          | **CHISQ**                       | `sumstats["P"] = ss.chi2.sf(sumstats["CHISQ"], 1)`                                                                                                                                                                                                 |
 | **OR**<br />**OR_95L**<br />**OR_95U** | **BETA**<br />**SE**                | `sumstats["OR"]   = np.exp(sumstats["BETA"])`, <br /> `sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])`, <br /> `sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])`                  |
@@ -89,7 +90,7 @@ mysumstats.fill_data(
 
 | Option      | DataType          | Description                                                                                                 | Default   |
 |-------------|-------------------|-------------------------------------------------------------------------------------------------------------|-----------|
-| `to_fill`   | `str` or `list`   | Column name(s) to fill. Valid values: `"OR"`, `"OR_95L"`, `"OR_95U"`, `"BETA"`, `"SE"`, `"P"`, `"Z"`, `"CHISQ"`, `"MLOG10P"`, `"MAF"`, `"SIG"`. Note: `"SIG"` creates a `"SIGNIFICANT"` column (boolean) based on **P** or **MLOG10P** threshold | `None`    |
+| `to_fill`   | `str` or `list`   | Column name(s) to fill. Valid values: `"OR"`, `"OR_95L"`, `"OR_95U"`, `"BETA"`, `"SE"`, `"P"`, `"Z"`, `"CHISQ"`, `"MLOG10P"`, `"MAF"`, `"SIG"`, `"P_MANTISSA"`, `"P_EXPONENT"`. Requesting either mantissa or exponent fills both. Note: `"SIG"` creates a `"SIGNIFICANT"` column (boolean) based on **P** or **MLOG10P** threshold | `None`    |
 | `df`        | `str`             | Column name containing degrees of freedom for chi-square tests (only used when filling **CHISQ**)              | `None`    |
 | `overwrite` | `boolean`         | If True, overwrite existing values in target columns                                                       | `False`   |
 | `verbose`   | `boolean`         | If True, display progress messages                                                                          | `True`    |
@@ -102,6 +103,7 @@ mysumstats.fill_data(
 GWASLab uses the following priority order when multiple source columns are available:
 
 - **For P**: **MLOG10P** → **Z** → **CHISQ**
+- **For P_MANTISSA/P_EXPONENT**: **MLOG10P** → **P** → **Z** → **CHISQ** (both columns filled together)
 - **For MLOG10P**: **P** → **Z** → **CHISQ** (or **BETA**/**SE** if `extreme=True`)
 - **For BETA/SE**: **OR**/**OR_95L**/**OR_95U**
 - **For OR/OR_95L/OR_95U**: **BETA**/**SE**

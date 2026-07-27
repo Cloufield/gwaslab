@@ -2354,6 +2354,8 @@
             "BETA": "BETA",
             "SE": "SE",
             "P": "P",
+            "P_MANTISSA": "P_MANTISSA",
+            "P_EXPONENT": "P_EXPONENT",
             "MLOG10P": "MLOG10P",
             "INFO": "INFO",
             "OR": "OR",

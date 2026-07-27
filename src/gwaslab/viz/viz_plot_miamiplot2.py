@@ -378,8 +378,8 @@ def plot_miami2(
     ax1.tick_params(axis='x', which='major', pad=xtick_label_pad, labelsize = xtick_label_size)
     plt.setp(ax1.get_xticklabels(),  ha='center',va="center")
 
-    ax1.set_ylabel("$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
-    ax5.set_ylabel("$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
+    ax1.set_ylabel(r"$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
+    ax5.set_ylabel(r"$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
     
     ax1.set_title(titles[0],y=titles_pad_adjusted[0],family=font_family)
     ax5.set_title(titles[1],y=titles_pad_adjusted[1],family=font_family)

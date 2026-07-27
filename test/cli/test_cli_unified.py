@@ -1141,6 +1141,42 @@ class TestCLIFullWorkflowCoverage(unittest.TestCase):
         self.assertAlmostEqual(float(s.data["P"].iloc[0]), expected_p, places=12)
         self.assertNotAlmostEqual(float(s.data["P"].iloc[0]), 0.5, places=6)
 
+    def test_fill_p_mantissa_exponent_from_mlog10p(self):
+        """--fill P_MANTISSA P_EXPONENT derives decomposition from MLOG10P."""
+        import pandas as pd
+
+        df = pd.DataFrame({
+            "SNPID": ["rs1", "rs2"],
+            "CHR": [1, 1],
+            "POS": [100, 200],
+            "EA": ["A", "G"],
+            "NEA": ["G", "A"],
+            "MLOG10P": [10.0, 350.0],
+        })
+        input_path = self._write_temp_tsv(df)
+
+        argv = [
+            "--input", input_path,
+            "--fill", "P_MANTISSA", "P_EXPONENT",
+            "--out", self.output_path,
+            "--to-fmt", "gwaslab",
+            "--no-gzip",
+            "--quiet",
+        ]
+        try:
+            main(argv)
+        except SystemExit:
+            pass
+
+        output_file = self._resolve_output_gwaslab()
+        s = Sumstats(output_file, fmt="gwaslab", verbose=False)
+        self.assertIn("P_MANTISSA", s.data.columns)
+        self.assertIn("P_EXPONENT", s.data.columns)
+        self.assertAlmostEqual(float(s.data["P_MANTISSA"].iloc[0]), 1.0, places=10)
+        self.assertAlmostEqual(float(s.data["P_EXPONENT"].iloc[0]), -10.0, places=10)
+        self.assertAlmostEqual(float(s.data["P_MANTISSA"].iloc[1]), 1.0, places=10)
+        self.assertAlmostEqual(float(s.data["P_EXPONENT"].iloc[1]), -350.0, places=10)
+
 
 if __name__ == "__main__":
     unittest.main()

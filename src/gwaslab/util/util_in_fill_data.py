@@ -17,8 +17,10 @@ if TYPE_CHECKING:
 
 FILL_DATA_TARGETS = frozenset({
     "OR", "OR_95L", "OR_95U", "BETA", "SE", "P", "Z",
-    "CHISQ", "MLOG10P", "MAF", "SIG",
+    "CHISQ", "MLOG10P", "MAF", "SIG", "P_MANTISSA", "P_EXPONENT",
 })
+
+_P_DECOMP_TARGETS = frozenset({"P_MANTISSA", "P_EXPONENT"})
 
 def _fill_data( 
     insumstats: Union['Sumstats', pd.DataFrame],
@@ -164,6 +166,62 @@ def fill_p(sumstats: pd.DataFrame, log: Log, df: Optional[str] = None, only_sig:
         return 1, filled_count + 1
     
     return 0, filled_count
+
+
+def _assign_mantissa_exponent(
+    sumstats: pd.DataFrame,
+    log10_p: Union[pd.Series, np.ndarray],
+) -> None:
+    """Write P_MANTISSA and P_EXPONENT from log10(P) arrays."""
+    if isinstance(log10_p, pd.Series):
+        mantissa, exponent = _conv.log10_p_to_mantissa_exponent(log10_p.to_numpy())
+        sumstats["P_MANTISSA"] = pd.Series(mantissa, index=log10_p.index)
+        sumstats["P_EXPONENT"] = pd.Series(exponent, index=log10_p.index)
+    else:
+        mantissa, exponent = _conv.log10_p_to_mantissa_exponent(log10_p)
+        sumstats["P_MANTISSA"] = mantissa
+        sumstats["P_EXPONENT"] = exponent
+
+
+def fill_p_mantissa_exponent(
+    sumstats: pd.DataFrame,
+    log: Log,
+    df: Optional[str] = None,
+    verbose: bool = True,
+    filled_count: int = 0,
+) -> Tuple[int, int]:
+    """Fill P_MANTISSA and P_EXPONENT from MLOG10P, P, Z, or CHISQ."""
+    log10_p: Optional[Union[pd.Series, np.ndarray]] = None
+
+    if "MLOG10P" in sumstats.columns:
+        log.write("    Filling P_MANTISSA/P_EXPONENT from MLOG10P...", verbose=verbose)
+        log10_p = -sumstats["MLOG10P"].astype(np.float64)
+    elif "P" in sumstats.columns:
+        log.write("    Filling P_MANTISSA/P_EXPONENT from P...", verbose=verbose)
+        p = sumstats["P"].astype(np.float64)
+        if (p <= 0).any():
+            log.write(
+                "    Warning: P contains zero or negative values; prefer MLOG10P for extreme hits.",
+                verbose=verbose,
+            )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            log10_p = np.log10(p)
+    elif "Z" in sumstats.columns:
+        log.write("    Filling P_MANTISSA/P_EXPONENT from Z...", verbose=verbose)
+        log10_p = -_convert_z_to_mlog10p(sumstats["Z"])
+    elif "CHISQ" in sumstats.columns:
+        log.write("    Filling P_MANTISSA/P_EXPONENT from CHISQ...", verbose=verbose)
+        if df is not None and df in sumstats.columns:
+            log_pvalue = ss.chi2.logsf(sumstats["CHISQ"], sumstats[df].astype("int"))
+        else:
+            log_pvalue = ss.chi2.logsf(sumstats["CHISQ"], 1)
+        log10_p = log_pvalue / np.log(10)
+    else:
+        return 0, filled_count
+
+    _assign_mantissa_exponent(sumstats, log10_p)
+    return 1, filled_count + 2
+
 
 def fill_z(sumstats: pd.DataFrame, log: Log, verbose: bool = True, filled_count: int = 0) -> Tuple[int, int]:
     """Fill Z column from BETA/SE.
@@ -315,27 +373,18 @@ def fill_sig(sumstats: pd.DataFrame, log: Log, sig_level: float = 5e-8, verbose:
 
 ####################################################################################################################
 def fill_extreme_mlog10(sumstats: pd.DataFrame, z: str) -> pd.DataFrame:
-    # Use helper function for conversion, then extract mantissa and exponent
     mlog10p = _convert_z_to_mlog10p(sumstats[z])
     log10_pvalue = -mlog10p
-    mantissa = 10**(log10_pvalue % 1)
-    exponent = log10_pvalue // 1
+    _assign_mantissa_exponent(sumstats, log10_pvalue)
     sumstats["MLOG10P"] = mlog10p
-    sumstats["P_MANTISSA"] = mantissa
-    sumstats["P_EXPONENT"] = exponent
     return sumstats
 
 def fill_extreme_mlog10_chisq(sumstats: pd.DataFrame, chisq: str, df: str) -> pd.DataFrame:
     #https://stackoverflow.com/a/46416222/199475
     log_pvalue = ss.chi2.logsf(sumstats[chisq], sumstats[df])
-
     log10_pvalue = log_pvalue/np.log(10)
-    
-    mantissa = 10**(log10_pvalue %1)
-    exponent = log10_pvalue // 1
+    _assign_mantissa_exponent(sumstats, log10_pvalue)
     sumstats["MLOG10P"] = -log10_pvalue
-    sumstats["P_MANTISSA"]= mantissa
-    sumstats["P_EXPONENT"]= exponent
     return sumstats
 
 ####################################################################################################################
@@ -357,9 +406,8 @@ Returns
     status, _ = fill_extreme_mlog10p(sumstats, df, log, verbose=verbose, filled_count=0)
     
     if status == 1:
-        # Extreme method succeeded - always drop P_MANTISSA and P_EXPONENT
-        # (they're created by extreme methods but not needed after MLOG10P is filled)
-        columns_to_remove.extend(["P_MANTISSA", "P_EXPONENT"])
+        if not (set(to_fill) & _P_DECOMP_TARGETS):
+            columns_to_remove.extend(["P_MANTISSA", "P_EXPONENT"])
         return True, columns_to_remove
     
     # If failed and P doesn't exist, try to create P first
@@ -374,7 +422,8 @@ Returns
         
         # Drop P_MANTISSA and P_EXPONENT if MLOG10P was filled successfully
         if status == 1:
-            columns_to_remove.extend(["P_MANTISSA", "P_EXPONENT"])
+            if not (set(to_fill) & _P_DECOMP_TARGETS):
+                columns_to_remove.extend(["P_MANTISSA", "P_EXPONENT"])
         
         return status == 1, columns_to_remove
     
@@ -428,6 +477,16 @@ Parameters
                 # Special handling for MLOG10P (always uses extreme methods)
                 success, cols_to_remove = _try_fill_mlog10p(sumstats, remaining, df, log, verbose)
                 columns_to_remove.extend(cols_to_remove)
+
+            elif col in _P_DECOMP_TARGETS:
+                if col not in remaining:
+                    continue
+                status, _ = fill_p_mantissa_exponent(
+                    sumstats, log, df=df, verbose=verbose, filled_count=0,
+                )
+                if status == 1:
+                    remaining -= _P_DECOMP_TARGETS
+                    round_filled.extend(["P_MANTISSA", "P_EXPONENT"])
                     
             elif col in fill_functions:
                 # Standard column filling

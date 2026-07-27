@@ -3,6 +3,10 @@ import re
 import pandas as pd
 import numpy as np
 
+_LDSC_VALUE_RE = re.compile(r'[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA')
+_LDSC_VALUE_RE_NO_NA = re.compile(r'[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+')
+_SFILE_RE = re.compile(r'--sfile1 ([^\s]+) --sfile2 ([^\s]+)[ /n]')
+
 def read_ldsc(filelist: Optional[List[str]] = None, mode: str = "h2") -> pd.DataFrame:
     """Read LDSC output files and parse heritability or genetic correlation results.
     
@@ -41,21 +45,21 @@ pd.DataFrame
                         
                 try:
                     ## first line h2 se
-                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(line)
+                    objects = _LDSC_VALUE_RE.findall(line)
                     row["h2_obs"]=objects[1]
                     row["h2_se"]=objects[2]
 
                     ##next line lambda gc
 
-                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                    objects = _LDSC_VALUE_RE.findall(file.readline())
                     row["Lambda_gc"] = objects[1]
                     ##next line Mean_chi2
 
-                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                    objects = _LDSC_VALUE_RE.findall(file.readline())
                     row["Mean_chi2"]=objects[1]
                     ##next line Intercept
 
-                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                    objects = _LDSC_VALUE_RE.findall(file.readline())
                     row["Intercept"]=objects[1]
                     row["Intercept_se"]=objects[2]
                     ##next line Ratio
@@ -68,7 +72,7 @@ pd.DataFrame
                         row["Ratio"]="Ratio < 0"
                         row["Ratio_se"]="NA"
                     else:
-                        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+').findall(lastline)
+                        objects = _LDSC_VALUE_RE_NO_NA.findall(lastline)
                         row["Ratio"]=objects[1]
                         row["Ratio_se"]=objects[2]
                 except:
@@ -165,7 +169,7 @@ pd.DataFrame
 
 
                         ## first line h2 se
-                objects = re.compile('--sfile1 ([^\s]+) --sfile2 ([^\s]+)[ /n]').findall(line)
+                objects = _SFILE_RE.findall(line)
                 row["sfile1"]=objects[0][0]
                 row["sfile2"]=objects[0][1]
 
@@ -177,7 +181,7 @@ pd.DataFrame
                     line = file.readline()
                     if not line: break
 
-                #objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                #objects = _LDSC_VALUE_RE.findall(file.readline())
                 objects = file.readline().split()
                 row["h1^2"] = objects[1]
                 row["h1^2_se"] = objects[2]
@@ -223,7 +227,7 @@ def read_greml(filelist: List[str] = []) -> pd.DataFrame:
                 while not re.compile(r'Pval').findall(line.strip()):
                     line = file.readline()
                     if not line: break
-                #objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                #objects = _LDSC_VALUE_RE.findall(file.readline())
                 
                 objects = line.split()
                 row["Pval"] = objects[1]
@@ -232,7 +236,7 @@ def read_greml(filelist: List[str] = []) -> pd.DataFrame:
                 while not re.compile(r'^n').findall(line.strip()):
                     line = file.readline()
                     if not line: break
-                #objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                #objects = _LDSC_VALUE_RE.findall(file.readline())
                 objects = line.split()
                 row["n"] = objects[1]            
                 print(row["n"])
@@ -255,7 +259,7 @@ def parse_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
     row={}
     
     try:
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[0])
+        objects = _LDSC_VALUE_RE.findall(lines[0])
         row["h2_obs"]=objects[1]
         row["h2_se"]=objects[2]
 
@@ -268,15 +272,15 @@ def parse_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
             row["Catagories"] = "NA"
 
         ##next line lambda gc
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[1])
+        objects = _LDSC_VALUE_RE.findall(lines[1])
         row["Lambda_gc"] = objects[1]
         ##next line Mean_chi2
 
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[2])
+        objects = _LDSC_VALUE_RE.findall(lines[2])
         row["Mean_chi2"]=objects[1]
         ##next line Intercept
 
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[3])
+        objects = _LDSC_VALUE_RE.findall(lines[3])
         row["Intercept"]=objects[1]
         row["Intercept_se"]=objects[2]
         ##next line Ratio
@@ -288,7 +292,7 @@ def parse_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
             row["Ratio"]="Ratio < 0"
             row["Ratio_se"]="NA"
         else:
-            objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+').findall(lines[4])
+            objects = _LDSC_VALUE_RE_NO_NA.findall(lines[4])
             row["Ratio"]=objects[1]
             row["Ratio_se"]=objects[2]
     except:
@@ -319,22 +323,22 @@ def parse_partitioned_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
     lines = ldsc_summary.split("\n")
     row={}
     try:
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[0])
+        objects = _LDSC_VALUE_RE.findall(lines[0])
         row["h2_obs"]=objects[1]
         row["h2_se"]=objects[2]
 
         ##next line lambda gc
         row["Categories"] = lines[1].replace("-Categories: ", "")
 
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[2])
+        objects = _LDSC_VALUE_RE.findall(lines[2])
         row["Lambda_gc"] = objects[1]
         ##next line Mean_chi2
 
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[3])
+        objects = _LDSC_VALUE_RE.findall(lines[3])
         row["Mean_chi2"]=objects[1]
         ##next line Intercept
 
-        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[4])
+        objects = _LDSC_VALUE_RE.findall(lines[4])
         row["Intercept"]=objects[1]
         row["Intercept_se"]=objects[2]
         ##next line Ratio
@@ -346,7 +350,7 @@ def parse_partitioned_ldsc_summary(ldsc_summary: str) -> pd.DataFrame:
             row["Ratio"]="Ratio < 0"
             row["Ratio_se"]="NA"
         else:
-            objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+').findall(lines[5])
+            objects = _LDSC_VALUE_RE_NO_NA.findall(lines[5])
             row["Ratio"]=objects[1]
             row["Ratio_se"]=objects[2]
     except:

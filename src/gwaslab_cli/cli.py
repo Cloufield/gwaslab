@@ -475,7 +475,7 @@ Examples:
         help=(
             "Derive missing stat columns via fill_data() "
             "(e.g. P from MLOG10P, MAF from EAF). "
-            "Valid: OR, OR_95L, OR_95U, BETA, SE, P, Z, CHISQ, MLOG10P, MAF, SIG"
+            "Valid: OR, OR_95L, OR_95U, BETA, SE, P, Z, CHISQ, MLOG10P, MAF, SIG, P_MANTISSA, P_EXPONENT"
         ),
     )
     parser.add_argument(

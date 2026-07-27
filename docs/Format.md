@@ -32,11 +32,11 @@ mysumstats.to_format(
 | `xymt_number`          | `boolean`         | If True, output sex chromosomes as numeric codes (23, 24, 25 for X, Y, MT).                                                                                                                                                         | `False`          |
 | `xymt`                 | `list`            | 3-element list of sex chromosome notations. If `None`, automatically derived from Sumstats object's species (species-aware). Default: `None` (auto-detect from species)                                                           | `None`           |
 | `chr_prefix`           | `string`          | Add a prefix to chromosomes. For example, 6 -> chr6.                                                                                                                                                                                 | `""`             |
-| `gzip`                 | `boolean`         | If True, gzip compress the output file.                                                                                                                                                                                              | `True`           |
+| `gzip`                 | `boolean`         | If True, gzip-compress tabular output at **level 6** (same default as the `gzip` command). See [Gzip compression and MD5 checksums](#gzip-compression-and-md5-checksums) below.                                                      | `True`           |
 | `bgzip`                | `boolean`         | If True, bgzip the output file. Only works for bed and vcf format.                                                                                                                                                                   | `False`          |
 | `tabix`                | `boolean`         | If True, use tabix to index the bgzipped output file. Only works for bed and vcf format. Requires `bgzip=True`.                                                                                                                       | `False`          |
 | `tabix_indexargs`      | `dict`            | extra parameters for pysam.tabix_index()                                                                                                                                                                                             | `{}`             |
-| `md5sum`               | `boolean`         | If True, calculate and output the file MD5 hashes                                                                                                                                                                                    | `False`          |
+| `md5sum`               | `boolean`         | If True, write MD5 of the **compressed** output file (``.gz``). Not the same as `md5sum` after manual `gzip` on the same TSV; see [Gzip compression and MD5 checksums](#gzip-compression-and-md5-checksums).                         | `False`          |
 | `to_csvargs`           | `dict`            | extra parameters for pd.to_csv()                                                                                                                                                                                                     | `None`           |
 | `to_tabular_kwargs`    | `dict`            | extra parameters for tabular format output (tsv, csv, parquet)                                                                                                                                                                        | `None`           |
 | `float_formats`        | `dict`            | a dictionary to specify the float format for each column.                                                                                                                                                                            | `None`           |
@@ -44,6 +44,36 @@ mysumstats.to_format(
 | `verbose`              | `boolean`         | If True, print logs.                                                                                                                                                                                                                 | `True`           |
 | `output_log`           | `boolean`         | If True, save the log to a file.                                                                                                                                                                                                     | `True`           |
 | `ssfmeta`              | `boolean`         | If True, output a gwas-ssf-style meta file.                                                                                                                                                                                          | `False`          |
+
+## Gzip compression and MD5 checksums
+
+Tabular export with `gzip=True` (default) writes `.tsv.gz` or `.csv.gz` using gzip **compression level 6** — the same default as the GNU **`gzip`** command. Previously, pandas inferred compression from the `.gz` extension and used Python's default **level 9**, which was slower (~2×) with only marginally smaller files.
+
+**Compression level vs. CLI `gzip`**
+
+- **Level:** gwaslab level **6** matches `gzip -6` / default `gzip` compression strength.
+- **Decompressed content:** identical to compressing the same plain TSV with `gzip -6` (same variant rows and columns).
+- **Compressed `.gz` file bytes:** usually **not byte-identical** to CLI `gzip`, because Python and GNU gzip embed different metadata in the gzip header (original filename, modification time, OS flag). File sizes differ by ~1% or less at level 6.
+
+**MD5 checksums (`md5sum=True` or SSF `data_file_md5sum`)**
+
+- GWASLab hashes the **compressed `.gz` file on disk**, not decompressed sumstats.
+- The digest verifies the exported artifact GWASLab wrote; it is **not** expected to equal `md5sum` on the same TSV after you run `gzip` manually, even at level 6.
+- To compare integrity, compare decompressed content (or hash the plain TSV before compression).
+
+**Override**
+
+Pass `to_csvargs` to change compression, for example:
+
+```python
+mysumstats.to_format(
+    "output",
+    fmt="ldsc",
+    to_csvargs={"compression": {"method": "gzip", "compresslevel": 3}},
+)
+```
+
+If `compression` is already set in `to_csvargs`, gwaslab does not override it.
 
 ## Format dictionary
 
@@ -53,6 +83,8 @@ Using `float_formats`, you can specify the formats for numbers.
     ```python
     {'EAF': '{:.4g}', 'BETA': '{:.4f}', 'Z': '{:.4f}','CHISQ': '{:.4f}','SE': '{:.4f}','OR': '{:.4f}','OR_95U': '{:.4f}','OR_95L': '{:.4f}','INFO': '{:.4f}','P': '{:.4e}','MLOG10P': '{:.4f}','DAF': '{:.4f}'}
     ```
+
+    When **P** underflows to `0.0` in float64 but **MLOG10P** (or **P_MANTISSA** / **P_EXPONENT**) is available, tabular export (TSV/CSV) recovers a scientific-notation **P** string from those columns instead of writing `0.0000e+00`. This is export-only formatting; the in-memory **P** column is unchanged. For values beyond float64 range, prefer storing **MLOG10P** or **P_MANTISSA**/**P_EXPONENT** — see [Statistics conversion](Conversion.md).
 
 ## Output File Naming
 

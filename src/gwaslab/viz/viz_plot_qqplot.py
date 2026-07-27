@@ -121,8 +121,8 @@ matplotlib.axes.Axes
 
     qq_x = max(skip, expected_min_mlog10p)
     ax2.plot([qq_x,-np.log10(minit)],[qq_x,-np.log10(minit)],linestyle="--",color=qq_line_color)
-    ax2.set_xlabel("Expected $\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
-    ax2.set_ylabel("Observed $\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
+    ax2.set_xlabel(r"Expected $\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
+    ax2.set_ylabel(r"Observed $\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
     ax2.spines["top"].set_visible(False)
     ax2.spines["right"].set_visible(False)
     ax2.spines["left"].set_visible(True)
@@ -147,7 +147,7 @@ matplotlib.axes.Axes
                             verbose=verbose)
         
         # annotate lambda gc to qq plot
-        ax2.text(0.10, 1.03,"$\mathregular{\\lambda_{GC}}$ = "+"{:.4f}".format(lambdagc),
+        ax2.text(0.10, 1.03, r"$\mathregular{\lambda_{GC}}$ = " + "{:.4f}".format(lambdagc),
                     horizontalalignment='left',
                     verticalalignment='top',
                     transform=ax2.transAxes,

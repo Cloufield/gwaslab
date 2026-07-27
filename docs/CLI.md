@@ -309,13 +309,16 @@ gwaslab --input sumstats.tsv --fill MLOG10P --fill-extreme --out out.tsv --to-fm
 
 # Overwrite existing P values
 gwaslab --input sumstats.tsv --fill P --fill-overwrite --out out.tsv
+
+# MLOG10P → P_MANTISSA/P_EXPONENT (no float64 underflow when MLOG10P > ~308)
+gwaslab --input sumstats.tsv --fill P_MANTISSA P_EXPONENT --out out.tsv --to-fmt gwaslab
 ```
 
 **Fill options:**
 
 | Option | Description |
 |--------|-------------|
-| `--fill COL [COL ...]` | Target column(s) to derive. Valid: `OR`, `OR_95L`, `OR_95U`, `BETA`, `SE`, `P`, `Z`, `CHISQ`, `MLOG10P`, `MAF`, `SIG` (case-insensitive) |
+| `--fill COL [COL ...]` | Target column(s) to derive. Valid: `OR`, `OR_95L`, `OR_95U`, `BETA`, `SE`, `P`, `Z`, `CHISQ`, `MLOG10P`, `MAF`, `SIG`, `P_MANTISSA`, `P_EXPONENT` (case-insensitive). Requesting either mantissa or exponent fills both. |
 | `--fill-overwrite` | Overwrite existing values in target columns (default: skip columns that already exist) |
 | `--fill-extreme` | Use log-space MLOG10P calculation for extreme P values |
 | `--fill-only-sig` | Only fill significant variants (uses `--sig-level`) |
@@ -609,7 +612,7 @@ gwaslab --input sumstats.tsv --fmt gwaslab --out output --to-fmt gwaslab --n 100
 |--------|-------------|---------|
 | `--to-fmt` | Output format | `gwaslab` |
 | `--tab-fmt` | Tabular format (`tsv`, `csv`, `parquet`) | `tsv` |
-| `--no-gzip` | Disable gzip compression | False (gzip enabled) |
+| `--no-gzip` | Disable gzip compression | False (gzip enabled; tabular output uses gzip **level 6**, same default as the `gzip` command) |
 | `--bgzip` | Use bgzip compression | False |
 | `--tabix` | Create tabix index (requires bgzip) | False |
 | `--hapmap3` | Extract HapMap3 variants only | False |
@@ -619,6 +622,8 @@ gwaslab --input sumstats.tsv --fmt gwaslab --out output --to-fmt gwaslab --n 100
 | `--n` | Add N column with specified value | None |
 | `--chr-prefix` | Prefix for chromosome column | `""` |
 | `--xymt-number` | Use numeric notation for X, Y, MT | False |
+
+**Gzip and MD5:** With gzip enabled (default), tabular exports use compression level **6**. SSF metadata and `--md5sum` (when used) record the MD5 of the compressed `.gz` file GWASLab writes; that digest is not expected to match `md5sum` on the same data compressed manually with the `gzip` command, because gzip header metadata differs between Python and GNU gzip. Decompressed sumstats content is equivalent to `gzip -6` on the same plain TSV. See [Format.md — Gzip compression and MD5 checksums](Format.md#gzip-compression-and-md5-checksums).
 
 For complete workflow examples, see [CLI Workflow Examples](CLIWorkflowExamples.md).
 

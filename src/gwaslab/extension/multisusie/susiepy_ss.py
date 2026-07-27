@@ -79,7 +79,7 @@ def multisusie_rss(
     maf_list = None,
     variant_ids = None
     ):
-    """Top-level function for running MultiSuSiE with summary statistics
+    r"""Top-level function for running MultiSuSiE with summary statistics
 
     This function takes takes standard GWAS summary statistics, converts
     them to sufficient statistics, and runs MultiSuSiE on them.
@@ -515,7 +515,7 @@ def susie_multi_ss(
     recover_R = False,
     variant_ids = None
     ):
-    """Run MultiSuSiE on sufficient statistics
+    r"""Run MultiSuSiE on sufficient statistics
 
     This function runs MultiSuSiE on sufficient statistics. It is designed to 
     be run from the top-level function multisusie_rss, but can be run directly.

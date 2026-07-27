@@ -14,6 +14,7 @@ from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
 from gwaslab.info.g_Log import Log
+from gwaslab.io.io_compress import PANDAS_GZIP_COMPRESSION
 from shutil import which
 
 if TYPE_CHECKING:
@@ -342,7 +343,12 @@ tuple
         # Export matched sumstats
         sumstats_export_path = os.path.join(export_path, "{}_sumstats.tsv.gz".format(prefix))
         log.write(" -Exporting matched sumstats to: {}".format(sumstats_export_path), verbose=verbose)
-        matched_sumstats.to_csv(sumstats_export_path, sep="\t", index=False, compression="gzip")
+        matched_sumstats.to_csv(
+            sumstats_export_path,
+            sep="\t",
+            index=False,
+            compression=PANDAS_GZIP_COMPRESSION,
+        )
         
         # Export LD matrix
         ld_matrix_export_path = os.path.join(export_path, "{}_ldmatrix.npy".format(prefix))

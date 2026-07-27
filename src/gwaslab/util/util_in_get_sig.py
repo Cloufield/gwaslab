@@ -1153,7 +1153,7 @@ Notes
         if "SNPID" not in knownsig.columns:
             knownsig["SNPID"] =knownsig["CHR"].astype("string") + ":" + knownsig["POS"].astype("string")
     elif type(known) is str:
-        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig_2 = pd.read_csv(known,sep=r"\s+",dtype={"CHR":"Int64","POS":"Int64"})
         knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
@@ -1349,7 +1349,7 @@ def _check_cis(
         knownsig["START"] = knownsig["START"].astype("Int64")
         knownsig["END"] = knownsig["END"].astype("Int64")
     elif type(known) is str:
-        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig_2 = pd.read_csv(known,sep=r"\s+",dtype={"CHR":"Int64","POS":"Int64"})
         knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["START"] = knownsig["START"].astype("Int64")
@@ -1581,7 +1581,7 @@ def _check_novel_set(insumstats_or_dataframe,
         knownsig[snpset] = knownsig[snpset].astype("string")
         knownsig[group_key] = knownsig[group_key].astype("string")
     elif type(known) is str:
-        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig_2 = pd.read_csv(known,sep=r"\s+",dtype={"CHR":"Int64","POS":"Int64"})
         knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
         knownsig[snpid] = knownsig[snpid].astype("string")
         knownsig[snpset] = knownsig[snpset].astype("string")

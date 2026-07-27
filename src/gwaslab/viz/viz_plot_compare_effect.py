@@ -85,7 +85,7 @@ def compare_effect(path1,
     if legend_title == r'$\mathregular{ P < 5 x 10^{-8}}$ in:' and sig_level != 5e-8:
         exponent = math.floor(math.log10(sig_level))
         mantissa = sig_level / 10 ** exponent
-        legend_title = '$\mathregular{{ P < {} x 10^{{{}}} }}$ in:'.format(mantissa, exponent)
+        legend_title = rf'$\mathregular{{ P < {mantissa} x 10^{{{exponent}}} }}$ in:'
 
     # Enable heterogeneity flag when using multiple correction
     if is_q_mc in {"fdr", "bon"}:
@@ -1054,9 +1054,9 @@ def configure_regression_line(is_reg,
                 p12="0"
                 pe="0"
             if p > 1e-300:
-                p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
+                p_text = rf"$\mathregular{{p = {p12} \times  10^{{{pe}}}}}$"
             else:
-                p_text="$\mathregular{p < 1 \\times 10^{-300}}$"
+                p_text = r"$\mathregular{p < 1 \times 10^{-300}}$"
             p_latex= f'{p_text}'
 
             if reg_text=="full":
@@ -1069,7 +1069,7 @@ def configure_regression_line(is_reg,
                 ax.text(0.98,0.02,
                         reg_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             elif reg_text=="r2":
-                reg_string = "$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2)
+                reg_string = r"$\mathregular{r^{2}} = " + "{:.2f}".format(reg[2]**2)
                 ax.text(0.98,0.02,
                         reg_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
         elif np.isfinite(reg[0]):
@@ -1085,9 +1085,9 @@ def configure_regression_line(is_reg,
                 pe="0"
 
             if p > 1e-300:
-                p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
+                p_text = rf"$\mathregular{{p = {p12} \times  10^{{{pe}}}}}$"
             else:
-                p_text="$\mathregular{p < 1 \\times 10^{-300}}$"
+                p_text = r"$\mathregular{p < 1 \times 10^{-300}}$"
             p_latex= f'{p_text}'
 
             if reg_text=="full":
@@ -1100,7 +1100,7 @@ def configure_regression_line(is_reg,
                         va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             elif reg_text=="r2":
                 ax.text(0.98,0.02,
-                        "$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2), 
+                        r"$\mathregular{r^{2}} = " + "{:.2f}".format(reg[2]**2),
                         va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             
         if mode=="beta" or mode=="BETA" or mode=="Beta":
