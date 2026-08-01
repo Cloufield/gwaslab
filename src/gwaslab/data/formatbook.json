@@ -4156,6 +4156,40 @@
             "SNP": "SNPID"
         }
     },
+    "ldak": {
+        "meta_data": {
+            "format_name": "ldak",
+            "format_source": "https://dougspeed.com/summary-statistics/",
+            "format_version": "20260801",
+            "format_cite_name": "LDAK/SumHer",
+            "format_description": "LDAK/SumHer summary statistics with Predictor, A1, A2, n, and either Z or BETA plus SE; A1Freq is recommended.",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": true,
+            "format_col_order": [
+                "Predictor",
+                "A1",
+                "A2",
+                "Z",
+                "BETA",
+                "SE",
+                "n",
+                "A1Freq"
+            ],
+            "last_check_date": "20260801"
+        },
+        "format_dict": {
+            "Predictor": "SNPID",
+            "A1": "EA",
+            "A2": "NEA",
+            "Z": "Z",
+            "BETA": "BETA",
+            "SE": "SE",
+            "n": "N",
+            "A1Freq": "EAF"
+        }
+    },
     "plink_fam": {
         "meta_data": {
             "format_name": ".fam",

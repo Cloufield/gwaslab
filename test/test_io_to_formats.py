@@ -267,6 +267,96 @@ class TestIOToFormats(unittest.TestCase):
             pd.DataFrame.to_csv = old_to_csv
 
 
+class TestLDAKFormat(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp(prefix="tmp_io_ldak_")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def _export(self, name, statistics):
+        data = {
+            "SNPID": ["variant_1", "variant_2"],
+            "CHR": [1, 2],
+            "POS": [100, 200],
+            "EA": ["G", "T"],
+            "NEA": ["A", "C"],
+            "N": [1000, 900],
+        }
+        data.update(statistics)
+        column_args = {
+            "snpid": "SNPID",
+            "chrom": "CHR",
+            "pos": "POS",
+            "ea": "EA",
+            "nea": "NEA",
+            "n": "N",
+        }
+        for column, argument in {
+            "Z": "z",
+            "BETA": "beta",
+            "SE": "se",
+            "EAF": "eaf",
+        }.items():
+            if column in data:
+                column_args[argument] = column
+        sumstats = Sumstats(sumstats=pd.DataFrame(data), verbose=False, **column_args)
+        prefix = os.path.join(self.tmpdir, name)
+        sumstats.to_format(prefix, fmt="ldak", gzip=False, verbose=False)
+        return prefix + ".ldak.tsv"
+
+    def test_ldak_export_z_header_order_and_a1freq(self):
+        out_path = self._export(
+            "z",
+            {
+                "Z": [2.5, -1.5],
+                "EAF": [0.25, 0.4],
+            },
+        )
+
+        exported = pd.read_csv(out_path, sep="\t")
+        self.assertListEqual(
+            exported.columns.tolist(),
+            ["Predictor", "A1", "A2", "Z", "n", "A1Freq"],
+        )
+        self.assertListEqual(exported["Predictor"].tolist(), ["variant_1", "variant_2"])
+
+    def test_ldak_export_beta_se_header_order_without_a1freq(self):
+        out_path = self._export(
+            "beta_se",
+            {
+                "BETA": [0.1, -0.2],
+                "SE": [0.01, 0.02],
+            },
+        )
+
+        exported = pd.read_csv(out_path, sep="\t")
+        self.assertListEqual(
+            exported.columns.tolist(),
+            ["Predictor", "A1", "A2", "BETA", "SE", "n"],
+        )
+        self.assertNotIn("A1Freq", exported.columns)
+
+    def test_ldak_roundtrip_preserves_generic_predictor_as_snpid(self):
+        out_path = self._export(
+            "roundtrip",
+            {
+                "Z": [2.5, -1.5],
+                "EAF": [0.25, 0.4],
+            },
+        )
+
+        imported = Sumstats(sumstats=out_path, fmt="ldak", verbose=False)
+        expected_columns = {"SNPID", "EA", "NEA", "Z", "N", "EAF"}
+        self.assertTrue(expected_columns.issubset(imported.data.columns))
+        self.assertNotIn("rsID", imported.data.columns)
+        self.assertListEqual(
+            imported.data["SNPID"].astype(str).tolist(),
+            ["variant_1", "variant_2"],
+        )
+        self.assertListEqual(imported.data["N"].tolist(), [1000, 900])
+
+
 class TestPExportUnderflow(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="tmp_io_p_underflow_")
