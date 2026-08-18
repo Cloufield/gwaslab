@@ -1,17 +1,16 @@
 name: Documentation
 
-# Auto-deploy disabled temporarily. Restore the push block below to re-enable.
 on:
   workflow_dispatch:
-#  push:
-#    branches:
-#      - main
-#    paths:
-#      - 'docs/**'
-#      - 'mkdocs.yml'
-#      - 'src/gwaslab/**'
-#      - 'pyproject.toml'
-#      - '.github/workflows/deploy-docs.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'src/gwaslab/**'
+      - 'pyproject.toml'
+      - '.github/workflows/deploy-docs.yml'
 
 permissions:
   contents: read
