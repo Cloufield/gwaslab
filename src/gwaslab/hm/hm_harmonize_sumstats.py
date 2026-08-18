@@ -1169,6 +1169,23 @@ def chrposref_rsid(
                 return record.id
     return pd.NA
 
+def _apply_assigned_rsid(
+    sumstats: pd.DataFrame,
+    assigned_rsid: pd.Series,
+    rsid: str = "rsID",
+) -> pd.DataFrame:
+    """Write worker rsID values back by index, not by row position.
+
+    Parallel VCF chunks may finish out of order. Assigning with
+    ``.values`` onto ``loc[to_assign]`` permutes rsIDs across variants
+    (GitHub issue #225, gwaslab 4.2.0–4.2.1).
+    """
+    if assigned_rsid is None or len(assigned_rsid) == 0:
+        return sumstats
+    sumstats.loc[assigned_rsid.index, rsid] = assigned_rsid
+    return sumstats
+
+
 def assign_rsid_single(
     sumstats: pd.DataFrame,
     path: str,
@@ -1370,12 +1387,12 @@ Notes
             else:
                 with Pool(threads) as pool:
                     chunks_out = []
-                    for result in pool.imap_unordered(map_func, df_split):
+                    for result in pool.imap(map_func, df_split):
                         chunks_out.append(result)
                         progress.update("worker")
                         progress.log_progress(log, verbose=verbose)
                 assigned_rsid = pd.concat(chunks_out)
-            sumstats.loc[to_assign,rsid] = assigned_rsid.values
+            sumstats = _apply_assigned_rsid(sumstats, assigned_rsid, rsid=rsid)
         gc.collect()
         ##################################################################################################################
 

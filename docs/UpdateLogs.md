@@ -1,5 +1,10 @@
 # Update Logs
 
+# v4.2.2 20260818
+
+- **`assign_rsid()` VCF path (issue [#225](https://github.com/Cloufield/gwaslab/issues/225)):** 4.2.0–4.2.1 wrote parallel VCF rsIDs back with `.values` after `imap_unordered`, which could attach another variant’s rsID when `threads>1` and ≥10,000 rsIDs were still missing after TSV. Assignment is now index-aligned; workers use ordered `imap`. Warnings on the [home page](index.md) and [AssignrsID.md](AssignrsID.md). Re-run rsID assignment on affected 4.2.0/4.2.1 outputs.
+- **Tests:** `test/test_assign_rsid_parallel_align.py` — reversed-worker concat + `.values` reproduces the scramble; index-aligned write does not.
+
 # v4.2.1 20260727
 
 - **`to_format()` tabular gzip:** explicit gzip **compression level 6** in `_write_tabular` (matches GNU `gzip` default; ~2× faster than previous pandas `.gz` infer / level 9). Override via `to_csvargs={"compression": ...}`.

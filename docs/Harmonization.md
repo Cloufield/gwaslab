@@ -90,6 +90,9 @@ Check Reference Alignment
 
 See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.io/gwaslab/AssignrsID/)
 
+!!! warning "gwaslab 4.2.0–4.2.1"
+    `.assign_rsid(ref_rsid_vcf=..., threads>1)` could permute rsIDs across variants (issue [#225](https://github.com/Cloufield/gwaslab/issues/225)). Re-run assignment on affected outputs. Details: [AssignrsID.md](AssignrsID.md).
+
 !!! example
     ```python
     mysumstats.assign_rsid(ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"), 

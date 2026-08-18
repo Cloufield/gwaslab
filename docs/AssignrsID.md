@@ -103,8 +103,12 @@ GWASLab provides two methods for assigning rsIDs:
     - Lower memory usage
     - Works with both TSV and VCF/BCF files
 
+!!! warning "gwaslab 4.2.0–4.2.1: VCF `assign_rsid` could attach the wrong rsID"
+    In **4.2.0 and 4.2.1**, `.assign_rsid(ref_rsid_vcf=..., threads>1)` could write VCF-derived rsIDs onto the **wrong variants** when at least 10,000 rsIDs were still missing after the TSV step (GitHub [#225](https://github.com/Cloufield/gwaslab/issues/225)). Chromosome and position in the sumstats stayed correct; only the `rsID` column was permuted. TSV-only annotation and `.assign_rsid2()` were not affected. **Re-run rsID assignment** on any 4.2.0/4.2.1 outputs produced with `ref_rsid_vcf` and `threads>1`.
+
 !!! warning "Prerequisites"
     - Always run `.basic_check()` first to ensure proper standardization and normalization
+    - After `infer_strand()` / `flip_allele_stats()`, rebuild **SNPID** with `fix_id(fixid=True, overwrite=True)` before TSV `.assign_rsid()` (or use `.harmonize()`, which does this). TSV matching is by **SNPID** (`CHR:POS:NEA:EA`), not by checking that the rsID’s chromosome matches the row.
     - For sweep mode (`.assign_rsid2()`), **bcftools** must be installed and in your PATH
     - For VCF files, tabix/csi indexing is recommended for optimal performance
 
@@ -366,6 +370,7 @@ mysumstats.assign_rsid2(
 ## Important Notes
 
 - Always run `.basic_check()` before assigning rsIDs to ensure proper standardization and normalization
+- Rebuild **SNPID** after allele flips if you use `ref_rsid_tsv` (see warning above)
 - Both functions only assign rsIDs to variants with proper STATUS codes (standardized and normalized)
 - For VCF files, tabix/csi indexing is highly recommended for performance
 - The TSV file approach is much faster and should be used first for common variants

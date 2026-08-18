@@ -20,8 +20,8 @@ def gwaslab_info() -> Dict[str, str]:
     """Return version meta information.
 """
     dic: Dict[str, str] = {
-       "version":"4.2.1",
-       "release_date":"20260723"
+       "version":"4.2.2",
+       "release_date":"20260818"
     }
     return dic   
 

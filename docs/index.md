@@ -23,6 +23,9 @@
     - **API Consistency**: Standardized parameter names across functions
     - **Enhanced Documentation**: Comprehensive documentation and tutorials
 
+!!! warning "gwaslab 4.2.0–4.2.1: `assign_rsid` VCF path could attach the wrong rsID"
+    In **4.2.0 and 4.2.1**, `.assign_rsid(ref_rsid_vcf=..., threads>1)` could write another variant’s rsID onto a row when ≥10,000 rsIDs were still missing after the TSV step ([issue #225](https://github.com/Cloufield/gwaslab/issues/225)). CHR/POS stayed correct; only `rsID` was permuted. TSV-only annotation and `.assign_rsid2()` were not affected. **Re-run rsID assignment** on those outputs. Details: [Assign rsID](AssignrsID.md).
+
 ## Installation
 
 ### Install via pip
