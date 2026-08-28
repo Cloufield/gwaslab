@@ -46,7 +46,7 @@ This document summarizes the licenses of all third-party packages and extensions
 | Package | License | Compatibility with GPL-3.0 | Notes |
 |---------|---------|---------------------------|-------|
 | **pandas** (>=1.3, !=1.5) | BSD-3-Clause | ✅ Compatible | Permissive license, can be used with GPL |
-| **numpy** (>=1.21.2, <2) | BSD-3-Clause | ✅ Compatible | Permissive license, can be used with GPL |
+| **numpy** (>=1.21.2) | BSD-3-Clause | ✅ Compatible | Permissive license, can be used with GPL |
 | **matplotlib** (>=3.8, <3.9) | PSF-based (Python Software Foundation License) | ✅ Compatible | PSF license is GPL-compatible |
 | **seaborn** (>=0.12) | BSD-3-Clause | ✅ Compatible | Permissive license, can be used with GPL |
 | **scipy** (>=1.12) | BSD-3-Clause | ✅ Compatible | Permissive license, can be used with GPL |

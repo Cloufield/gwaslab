@@ -104,6 +104,28 @@ class TestRemoveDup(unittest.TestCase):
         after = len(gl.data)
         self.assertLess(after, before)
 
+    def test_remove_dup_keeps_input_order_for_equal_p_ties(self):
+        """Numpy 2 quicksort can reorder equal-P rows when other P values exist.
+
+        Five-row mixed-P toy: three chr1:1 dups at 4.71e-9 plus two loci at 4.70e-9.
+        keep='first' after a stable sort must retain the first input SNPID (numpy 1 behavior).
+        """
+        df = pd.DataFrame({
+            "SNPID": ["1:1_G_A", "1:1_A_G", "1:1_A_G", "1:10", "1:11"],
+            "CHR": [1, 1, 1, 1, 1],
+            "POS": [1, 1, 1, 10, 11],
+            "EA": ["A"] * 5,
+            "NEA": ["G"] * 5,
+            "EAF": [0.004, 0.996, 0.996, 0.5, 0.5],
+            "P": [4.71e-9, 4.71e-9, 4.71e-9, 4.70e-9, 4.70e-9],
+        })
+        gl = Sumstats(sumstats=df, fmt="gwaslab", verbose=False)
+        gl.remove_dup(mode="m", keep="first", verbose=False)
+        pos1 = gl.data.loc[gl.data["POS"] == 1]
+        self.assertEqual(len(pos1), 1)
+        self.assertEqual(pos1["SNPID"].iloc[0], "1:1_G_A")
+        self.assertAlmostEqual(float(pos1["EAF"].iloc[0]), 0.004)
+
 
 class TestHarmonization(unittest.TestCase):
     def test_harmonize_on_to_harmonize(self):

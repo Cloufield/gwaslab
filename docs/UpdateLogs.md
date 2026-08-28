@@ -1,5 +1,12 @@
 # Update Logs
 
+# v4.2.3 20260828
+
+- **LDSC numpy 2.4 (issue [#227](https://github.com/Cloufield/gwaslab/issues/227)):** `float()` on size-1 arrays (`rg_jknife` / `rg_se` / `rg_ratio`, and LD-score `M` in h² / gencov weights) now uses `.item()` via `_as_python_float`. Numpy 2.4 raises `TypeError` for `float(arr)` when `ndim > 0`.
+- **Dependency:** allow numpy 2.x (`numpy>=1.21.2`; dropped `<2` cap in `pyproject.toml` and `environment.yml`).
+- **Tests:** `test/test_ldsc_numpy_scalar.py` — `_as_python_float` on 0-d / `(1,)` / `(1, 1)`, `RatioJackknife` scalars, and `Hsq.weights` with `(1, 1)` `M`.
+- **`remove_dup()` numpy 2 sort:** `sort_values(keep_col)` now uses `kind="mergesort"` so equal-P ties keep input order (numpy 2 quicksort could keep a later duplicate; golden QC SNPID `1:1_G_A`). Test: 5-row mixed-P toy in `test_qc_and_harmonize.py`.
+
 # v4.2.2 20260818
 
 - **`assign_rsid()` VCF path (issue [#225](https://github.com/Cloufield/gwaslab/issues/225)):** 4.2.0–4.2.1 wrote parallel VCF rsIDs back with `.values` after `imap_unordered`, which could attach another variant’s rsID when `threads>1` and ≥10,000 rsIDs were still missing after TSV. Assignment is now index-aligned; workers use ordered `imap`. Warnings on the [home page](index.md) and [AssignrsID.md](AssignrsID.md). Re-run rsID assignment on affected 4.2.0/4.2.1 outputs.

@@ -575,7 +575,7 @@ pandas.DataFrame
     if keep_col is not None : 
         if keep_col in sumstats.columns:
             log.log_operation_start("sort the sumstats using {}".format(keep_col), verbose=verbose)
-            sumstats = sumstats.sort_values(by=keep_col,ascending=keep_ascend)
+            sumstats = sumstats.sort_values(by=keep_col, ascending=keep_ascend, kind="mergesort")
         else:
             log.write("Column" + keep_col +" was not detected... skipping... ", verbose=verbose)
     total_number = len(sumstats)  
