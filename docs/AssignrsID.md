@@ -106,6 +106,14 @@ GWASLab provides two methods for assigning rsIDs:
 !!! warning "gwaslab 4.2.0–4.2.1: VCF `assign_rsid` could attach the wrong rsID"
     In **4.2.0 and 4.2.1**, `.assign_rsid(ref_rsid_vcf=..., threads>1)` could write VCF-derived rsIDs onto the **wrong variants** when at least 10,000 rsIDs were still missing after the TSV step (GitHub [#225](https://github.com/Cloufield/gwaslab/issues/225)). Chromosome and position in the sumstats stayed correct; only the `rsID` column was permuted. TSV-only annotation and `.assign_rsid2()` were not affected. **Re-run rsID assignment** on any 4.2.0/4.2.1 outputs produced with `ref_rsid_vcf` and `threads>1`.
 
+!!! warning "VCF tabix/CSI indexes can silently skip variants"
+    A `.tbi` or `.csi` not built from the local VCF/BCF can skip variants. Rebuild with `bcftools index -t -f ref.vcf.gz`.
+
+    GWASLab queries `-r CHR:minPOS-maxPOS` and warns when:
+
+    - a chromosome lookup (`n_targets > 0`) returns **no records**, or the first returned POS is after the smallest target POS and **> 5%** of that chromosome’s targets sit before it
+    - after VCF/sweep fill, among chromosomes with **≥ 500** eligible variants (need **≥ 5** such chromosomes), a chromosome’s fill rate is **≥ 0.15** below the median
+
 !!! warning "Prerequisites"
     - Always run `.basic_check()` first to ensure proper standardization and normalization
     - After `infer_strand()` / `flip_allele_stats()`, rebuild **SNPID** with `fix_id(fixid=True, overwrite=True)` before TSV `.assign_rsid()` (or use `.harmonize()`, which does this). TSV matching is by **SNPID** (`CHR:POS:NEA:EA`), not by checking that the rsID’s chromosome matches the row.
@@ -202,11 +210,15 @@ These functions map chromosome numbers (1-25) to RefSeq chromosome names, but Ch
 
 ## Overwrite Modes
 
-The `overwrite` parameter controls which existing **rsID** values should be replaced:
+The `overwrite` parameter controls which **rsID** values **already on the object** may be replaced. Only STATUS-eligible variants are considered (digit 4 = 0, digit 5 = 0–4).
 
 - **`"empty"`** (default): Only assign **rsID** for variants with missing/NA **rsID** values. This is the safest option and preserves existing **rsID** assignments.
 - **`"invalid"`**: Assign **rsID** for variants with invalid **rsID** format (not matching the pattern `rs[0-9]+`). Useful for fixing incorrectly formatted **rsID**s.
-- **`"all"`**: Overwrite all **rsID**s for eligible variants, regardless of existing values. Use with caution as this will replace all existing **rsID** assignments.
+- **`"all"`**: Clear eligible **rsID**s first, then fill from the reference(s). Use with caution as this will replace existing **rsID** assignments.
+
+When both `ref_rsid_tsv` and `ref_rsid_vcf` are passed to `.assign_rsid()` or `.harmonize()` (including `sweep_mode=True`), overwrite is applied **once**, then assignment is always **TSV first, VCF for remaining empty eligible variants** — including `overwrite="all"`. Overlapping sites keep the TSV rsID. Omit the TSV if you want every eligible rsID from the dbSNP VCF.
+
+Standalone `.assign_rsid2(overwrite=...)` is VCF/lookup-only and still applies overwrite to that single source. After a separate TSV `.assign_rsid()` call, use `.assign_rsid2(..., overwrite="empty")` for fallback; `"all"` on the second call replaces TSV rsIDs.
 
 !!! note "STATUS Code Filtering"
     Only variants with proper **STATUS** codes (digit 4 = 0, digit 5 = 0-4) are eligible for **rsID** assignment. This ensures that only standardized and normalized variants receive **rsID** assignments. Run `.basic_check()` first to ensure proper **STATUS** codes.
@@ -259,7 +271,7 @@ mysumstats.assign_rsid(
     threads=2,
     ref_rsid_tsv=gl.get_path("1kg_dbsnp151_hg19_auto"),
     ref_rsid_vcf="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
-    overwrite="empty"  # Only fill missing rsIDs
+    overwrite="empty"  # apply to existing rsIDs, then TSV then VCF fill remaining
 )
 ```
 
@@ -362,7 +374,7 @@ mysumstats.assign_rsid2(
    - Use `.assign_rsid()` for small to medium datasets (< 1 million variants)
    - Use `.assign_rsid2()` (sweep mode) for large datasets (millions of variants) with VCF/BCF files
 3. **Parallel processing**: Increase `threads` for faster processing, especially with large VCF files. Sweep mode benefits significantly from more threads.
-4. **Indexed VCF files**: Ensure your VCF file has a `.tbi` (tabix) or `.csi` (csi) index for faster queries.
+4. **Indexed VCF files**: Ensure your VCF file has a `.tbi` (tabix) or `.csi` (csi) index built **from the same local VCF**. A mismatched or incomplete index (including some separately downloaded indexes) can skip variants; rebuild with `bcftools index -t -f <vcf>` if whole-chromosome queries start mid-chromosome.
 5. **Chunk size**: For `.assign_rsid()`, adjust `chunksize` based on available memory. Larger chunks may be faster but use more memory.
 6. **Cache lookup tables**: When using `.assign_rsid2()`, save the lookup table using `lookup_path` to reuse it in subsequent runs.
 7. **BCF format**: For very large VCF files, consider using `convert_to_bcf=True` to convert to BCF format, which is more efficient.

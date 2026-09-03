@@ -65,11 +65,10 @@ def _infer_strand_with_annotation(
     **STATUS Code Updates:**
     - Non-palindromic SNPs: STATUS 7th digit = `0`
     - Palindromic SNPs (forward): STATUS 7th digit = `1`
-    - Palindromic SNPs (reverse): STATUS 7th digit = `2`
+    - Palindromic SNPs (reverse, needs flip): STATUS 7th digit = `5` (`_flip_allele_stats` converts 5→2)
     - Indels (forward): STATUS 7th digit = `3`
-    - Indels (ambiguous): STATUS 7th digit = `4`
-    - Indels (reverse): STATUS 7th digit = `6`
-    - Palindromic SNPs (MAF > threshold): STATUS 7th digit = `7`
+    - Indels (reverse, needs flip): STATUS 7th digit = `6` (`_flip_allele_stats` converts 6→4)
+    - Indistinguishable (palindrome MAF > threshold, or indel DAF-ambiguous): STATUS 7th digit = `7`
     - Variants not found in reference: STATUS 7th digit = `8`
     - Variants not checked: STATUS 7th digit = `9`
     
@@ -134,7 +133,7 @@ daf_tolerance : float, default 0.20
     Difference in allele frequency tolerance for indels. For indels, the function compares
     |EAF - RAF| (forward) and |EAF - (1 - RAF)| (reverse). If the difference is within
     `daf_tolerance`, the strand is assigned. If both differences are within tolerance or
-    both exceed tolerance, the indel is marked as ambiguous (STATUS 7th digit = `4`).
+    both exceed tolerance, the indel is marked as indistinguishable (STATUS 7th digit = `7`).
 verbose : bool, default True
     If True, print progress messages and warnings.
 log : Log, default Log()
@@ -309,7 +308,7 @@ def _infer_strand(
        - Filters by MAF threshold: Only processes if MAF(EAF) ≤ maf_threshold AND MAF(RAF) ≤ ref_maf_threshold.
        - Compares |EAF - RAF| (forward) vs |EAF - (1 - RAF)| (reverse).
        - Assigns forward strand (`+`) if forward difference ≤ reverse difference, else reverse (`-`).
-       - STATUS codes: `1` (forward), `2` (reverse), `7` (MAF > threshold), `8` (not found in reference).
+       - STATUS codes: `1` (forward), `5` (reverse, needs flip), `7` (MAF > threshold), `8` (not found in reference).
     
     3. **Indels**: Variants with alleles longer than 1 character.
        - Only processes variants with STATUS digit 6 = 6 AND digit 7 = 8,9 (unknown indel strand).
@@ -317,16 +316,17 @@ def _infer_strand(
        - Compares |EAF - RAF| (forward) vs |EAF - (1 - RAF)| (reverse) with `daf_tolerance`.
        - Assigns forward strand (`+`) if |EAF - RAF| ≤ daf_tolerance, else checks reverse.
        - Assigns reverse strand (`-`) if |EAF - (1 - RAF)| ≤ daf_tolerance AND forward not within tolerance.
-       - STATUS codes: `3` (forward), `4` (ambiguous), `6` (reverse), `8` (not found/MAF exceeded).
+       - STATUS codes: `3` (forward), `6` (reverse, needs flip), `7` (indistinguishable / DAF-ambiguous), `8` (not found/MAF exceeded).
     
     **STATUS Code Updates (7th digit):**
     - `0`: Non-palindromic SNP (strand unambiguous)
     - `1`: Palindromic SNP, forward strand
-    - `2`: Palindromic SNP, reverse strand (flipped)
+    - `2`: Palindromic SNP, reverse strand (after `_flip_allele_stats` converts 5→2)
     - `3`: Indel, forward strand
-    - `4`: Indel, ambiguous (both DAF differences > tolerance)
-    - `6`: Indel, reverse strand
-    - `7`: Palindromic SNP, MAF > threshold (cannot infer)
+    - `4`: Indel flipped and fixed (after `_flip_allele_stats` converts 6→4)
+    - `5`: Palindromic SNP, reverse strand (needs flip)
+    - `6`: Indel, reverse strand (needs flip)
+    - `7`: Indistinguishable (palindrome MAF > threshold, or indel DAF-ambiguous)
     - `8`: Variant not found in reference or MAF exceeded
     - `9`: Variant not checked (no EAF or RAF available)
     
@@ -368,8 +368,8 @@ ref_maf_threshold : float, default 0.40
 daf_tolerance : float, default 0.20
     Difference in allele frequency tolerance for indels. For indels, compares |EAF - RAF|
     (forward) and |EAF - (1 - RAF)| (reverse). If the difference is within `daf_tolerance`,
-    the strand is assigned. If both differences are within tolerance or both exceed tolerance,
-    the indel is marked as ambiguous (STATUS 7th digit = `4`).
+    the strand is assigned. If both differences exceed tolerance,
+    the indel is marked as indistinguishable (STATUS 7th digit = `7`).
 verbose : bool, default True
     If True, print progress messages and warnings about missing data.
 log : Log, default Log()
@@ -555,14 +555,14 @@ Notes
                     ["1"] * 10
                 )
             
-            # Assign reverse strand: STATUS 7th digit = '2'
+            # Assign reverse strand: STATUS 7th digit = '5' (needs flip; _flip_allele_stats converts 5 -> 2)
             if reverse_mask.any():
                 sumstats.loc[reverse_mask, strand_col] = "-"
                 sumstats.loc[reverse_mask, status_col] = vchange_status(
                     sumstats.loc[reverse_mask, status_col],
                     7,
                     [str(i) for i in range(10)],
-                    ["2"] * 10
+                    ["5"] * 10
                 )
         
         # Step 4: Handle remaining palindromic SNPs that couldn't be processed
@@ -712,7 +712,7 @@ Notes
             if 'valid_indel_with_af_mask' in locals() and valid_indel_with_af_mask.any():
                 indel_maf_exceed_mask = indel_maf_exceed_mask & ~valid_indel_with_af_mask
             
-            # Category 3: Ambiguous indels (both forward and reverse differences > tolerance) -> STATUS 4
+            # Category 3: Ambiguous indels (both forward and reverse differences > tolerance) -> STATUS 7
             # These are indels with valid AF that passed MAF check but couldn't be assigned to either strand
             if 'ambiguous_indel_mask_full' in locals() and ambiguous_indel_mask_full.any():
                 indel_ambiguous_mask = ambiguous_indel_mask_full & valid_indel_mask
@@ -730,14 +730,14 @@ Notes
                     ["8"] * 10
                 )
             
-            # Assign STATUS 4 for ambiguous indels (both DAF differences exceed tolerance)
+            # Assign STATUS 7 for indistinguishable indels (both DAF differences exceed tolerance)
             if indel_ambiguous_mask.any():
                 sumstats.loc[indel_ambiguous_mask, strand_col] = "?"
                 sumstats.loc[indel_ambiguous_mask, status_col] = vchange_status(
                     sumstats.loc[indel_ambiguous_mask, status_col],
                     7,
                     [str(i) for i in range(10)],
-                    ["4"] * 10
+                    ["7"] * 10
                 )
     
     # Note: strand_col is kept in the output for user reference

@@ -44,6 +44,207 @@ from gwaslab.util.util_in_reference_run import (
     RunProgressTracker,
 )
 
+# Incomplete NCBI/tabix indexes can silently skip the start of a chromosome on
+# whole-chromosome ``-r CHR`` queries. Interval queries and these checks catch that.
+_TBI_COVERAGE_FRAC_THRESHOLD = 0.05
+_CHR_ASSIGN_MIN_N = 500
+_CHR_ASSIGN_MIN_CHRS = 5
+_CHR_ASSIGN_RATE_GAP = 0.15
+_TBI_REBUILD_HINT = "Rebuild the index from the local VCF: bcftools index -t -f {}"
+
+
+def _bcf_chr_region(chr_val, positions) -> str:
+    """Build a bcftools ``-r`` interval ``CHR:minPOS-maxPOS`` from target positions.
+
+Parameters
+----------
+chr_val : hashable
+    Chromosome name in reference (VCF) notation.
+positions : array-like
+    Target POS values on that chromosome.
+
+Returns
+-------
+str
+    Region string such as ``14:100-500``.
+"""
+    pos = pd.Series(positions)
+    min_pos = int(pos.min())
+    max_pos = int(pos.max())
+    if min_pos > max_pos:
+        min_pos, max_pos = max_pos, min_pos
+    return f"{chr_val}:{min_pos}-{max_pos}"
+
+
+def _first_lookup_pos(lookup_path: str) -> int | None:
+    """Return the first POS in a bcftools-query TSV (VCF order), or None if empty."""
+    try:
+        with open(lookup_path, "r") as inf:
+            for line in inf:
+                line = line.strip("\n\r")
+                if not line:
+                    continue
+                parts = line.split("\t")
+                if len(parts) < 2:
+                    continue
+                try:
+                    return int(parts[1])
+                except (TypeError, ValueError):
+                    return None
+    except OSError:
+        return None
+    return None
+
+
+def _chr_lookup_coverage_issue(
+    chr_label,
+    n_targets,
+    min_target_pos,
+    min_lookup_pos,
+    n_targets_before,
+    vcf_path=None,
+    frac_threshold: float = _TBI_COVERAGE_FRAC_THRESHOLD,
+) -> str | None:
+    """Return a warning if a chromosome lookup stream skipped early targets.
+
+    Empty lookup (no records) is treated as every target skipped. A POS gap
+    warns when more than ``frac_threshold`` of targets sit before the first
+    returned record — the signature of an incomplete whole-chromosome TBI.
+"""
+    if n_targets is None or int(n_targets) <= 0:
+        return None
+    n_targets = int(n_targets)
+    vcf = vcf_path if vcf_path else "<vcf>"
+    hint = _TBI_REBUILD_HINT.format(vcf)
+
+    if min_lookup_pos is None:
+        return (
+            f"Chromosome {chr_label}: bcftools returned no records for "
+            f"{n_targets:,} target positions (min POS {int(min_target_pos):,}). "
+            f"This can happen when a tabix/CSI index is incomplete rather than "
+            f"variants being absent from dbSNP. {hint}"
+        )
+
+    min_lookup_pos = int(min_lookup_pos)
+    min_target_pos = int(min_target_pos)
+    if min_lookup_pos <= min_target_pos:
+        return None
+    skipped = int(n_targets_before) if n_targets_before is not None else 0
+    frac = skipped / n_targets
+    if frac <= frac_threshold:
+        return None
+    return (
+        f"Chromosome {chr_label}: lookup stream starts at POS {min_lookup_pos:,} but "
+        f"{skipped:,}/{n_targets:,} ({frac:.1%}) targets are before that "
+        f"(min target POS {min_target_pos:,}). Possible incomplete VCF index "
+        f"rather than variants missing from dbSNP. {hint}"
+    )
+
+
+def _warn_chr_lookup_coverage(
+    chr_label,
+    n_targets,
+    min_target_pos,
+    min_lookup_pos,
+    n_targets_before,
+    vcf_path,
+    log,
+    verbose: bool = True,
+    frac_threshold: float = _TBI_COVERAGE_FRAC_THRESHOLD,
+) -> str | None:
+    """Log a coverage warning for one chromosome extract; return the message or None."""
+    msg = _chr_lookup_coverage_issue(
+        chr_label,
+        n_targets,
+        min_target_pos,
+        min_lookup_pos,
+        n_targets_before,
+        vcf_path=vcf_path,
+        frac_threshold=frac_threshold,
+    )
+    if msg:
+        log.warning(msg, verbose=verbose)
+    return msg
+
+
+def _chr_assignment_rate_outliers(
+    n_eligible: pd.Series,
+    n_filled: pd.Series,
+    min_n: int = _CHR_ASSIGN_MIN_N,
+    min_chrs: int = _CHR_ASSIGN_MIN_CHRS,
+    gap: float = _CHR_ASSIGN_RATE_GAP,
+) -> list:
+    """Return chromosomes whose rsID fill rate is far below the median.
+
+    Only chromosomes with at least ``min_n`` eligible variants are compared.
+    Requires at least ``min_chrs`` such chromosomes. A chromosome is an
+    outlier when ``median_rate - rate >= gap``.
+"""
+    eligible = n_eligible[n_eligible >= min_n]
+    if len(eligible) < min_chrs:
+        return []
+    filled = n_filled.reindex(eligible.index).fillna(0).astype("int64")
+    rates = filled.astype("float64") / eligible.astype("float64")
+    median_rate = float(rates.median())
+    outliers = []
+    for chr_val in rates.index:
+        rate = float(rates.loc[chr_val])
+        if (median_rate - rate) >= gap:
+            outliers.append(
+                {
+                    "chr": chr_val,
+                    "rate": rate,
+                    "median_rate": median_rate,
+                    "n_eligible": int(eligible.loc[chr_val]),
+                    "n_filled": int(filled.loc[chr_val]),
+                }
+            )
+    return outliers
+
+
+def _warn_chr_assignment_outliers(
+    sumstats: pd.DataFrame,
+    rsid: str = "rsID",
+    chrom: str = "CHR",
+    to_assign_mask=None,
+    log: "Log" = None,
+    verbose: bool = True,
+    vcf_path=None,
+    min_n: int = _CHR_ASSIGN_MIN_N,
+    min_chrs: int = _CHR_ASSIGN_MIN_CHRS,
+    gap: float = _CHR_ASSIGN_RATE_GAP,
+) -> list:
+    """Warn when one chromosome's rsID assignment rate is an extreme outlier."""
+    if log is None:
+        log = Log()
+    if to_assign_mask is None:
+        return []
+    if not getattr(to_assign_mask, "any", lambda: False)():
+        return []
+    eligible = sumstats.loc[to_assign_mask]
+    if eligible.empty or chrom not in eligible.columns or rsid not in eligible.columns:
+        return []
+    n_eligible = eligible.groupby(chrom, sort=False).size()
+    n_filled = (
+        eligible[rsid].notna().groupby(eligible[chrom], sort=False).sum().astype("int64")
+    )
+    outliers = _chr_assignment_rate_outliers(
+        n_eligible, n_filled, min_n=min_n, min_chrs=min_chrs, gap=gap
+    )
+    vcf = vcf_path if vcf_path else "<vcf>"
+    hint = _TBI_REBUILD_HINT.format(vcf)
+    for row in outliers:
+        log.warning(
+            f"Chromosome {row['chr']}: rsID assignment rate {row['rate']:.1%} "
+            f"({row['n_filled']:,}/{row['n_eligible']:,}) is "
+            f"{row['median_rate'] - row['rate']:.1%} below the median "
+            f"{row['median_rate']:.1%} across chromosomes. This can indicate an "
+            f"incomplete VCF index rather than variants missing from dbSNP. {hint}",
+            verbose=verbose,
+        )
+    return outliers
+
+
 @with_logging(
     start_to_msg="assign rsID from reference",
     finished_msg="assigning rsID from reference",
@@ -217,6 +418,8 @@ Notes
     else:
         raise ValueError("overwrite must be 'all', 'invalid', or 'empty'")
 
+    need_assign_mask = to_assign_mask & sumstats[rsid].isna()
+
     # Early exit if no variants need assignment
     if variants_to_assign == 0:
         log.write(" -No variants need rsID assignment, skipping lookup...", verbose=verbose)
@@ -342,6 +545,16 @@ Notes
 
     log.write(" -Filled {} rsIDs...".format(filled), verbose=verbose)
     log.write(" -rsID count: {} → {} / {}...".format(had_rsid_before, had_rsid_after, total_before), verbose=verbose)
+    if ref_mode == "vcf/bcf":
+        _warn_chr_assignment_outliers(
+            sumstats,
+            rsid=rsid,
+            chrom=chrom,
+            to_assign_mask=need_assign_mask,
+            log=log,
+            verbose=verbose,
+            vcf_path=path_to_use,
+        )
     log.write(" -Finished assigning rsID from reference.", verbose=verbose)
 
     # Update harmonization status only if called with Sumstats object
@@ -812,6 +1025,12 @@ def _lookup_table_header(id_col, info_tags):
 
 def _worker_bcf_lookup(args):
     """Run bcftools query for one chromosome; write TSV to a temp file (no in-memory buffer).
+
+    Returns
+    -------
+    tuple
+        ``(lookup_path, orig_chr, n_targets, min_target_pos, min_lookup_pos, n_targets_before)``.
+        ``lookup_path`` and ``min_lookup_pos`` are ``None`` when the query returned no rows.
 """
     if len(args) >= 7:
         chr_val, df_chr, vcf_path, fmt, split_by_chr, mapper, bcf_threads = args
@@ -821,6 +1040,8 @@ def _worker_bcf_lookup(args):
     bcf_threads = max(1, int(bcf_threads))
 
     orig_chr = mapper.reference_to_sumstats(chr_val, reference_file=vcf_path)
+    n_targets = int(len(df_chr))
+    min_target_pos = int(df_chr["POS"].min()) if n_targets else 0
 
     tmp_targets = tempfile.NamedTemporaryFile(
         delete=False, suffix=f".{orig_chr}.targets.txt"
@@ -834,14 +1055,18 @@ def _worker_bcf_lookup(args):
     lookup_path = tmp_lookup.name
     tmp_lookup.close()
 
+    def _empty_result():
+        return None, str(orig_chr), n_targets, min_target_pos, None, n_targets
+
     try:
         df_chr[["CHR", "POS"]].sort_values(["CHR", "POS"]).to_csv(
             targets_path, sep="\t", header=False, index=False
         )
 
         if split_by_chr:
+            region = _bcf_chr_region(chr_val, df_chr["POS"])
             cmd = (
-                f"bcftools view --threads {bcf_threads} -r {shlex.quote(str(chr_val))} "
+                f"bcftools view --threads {bcf_threads} -r {shlex.quote(region)} "
                 f"-T {shlex.quote(targets_path)} -Ou {shlex.quote(vcf_path)} | "
                 f"bcftools query -f {shlex.quote(fmt)}"
             )
@@ -860,9 +1085,21 @@ def _worker_bcf_lookup(args):
 
         if os.path.getsize(lookup_path) == 0:
             os.remove(lookup_path)
-            return None, str(orig_chr)
+            return _empty_result()
 
-        return lookup_path, str(orig_chr)
+        min_lookup_pos = _first_lookup_pos(lookup_path)
+        if min_lookup_pos is None:
+            n_before = n_targets
+        else:
+            n_before = int((df_chr["POS"] < min_lookup_pos).sum())
+        return (
+            lookup_path,
+            str(orig_chr),
+            n_targets,
+            min_target_pos,
+            min_lookup_pos,
+            n_before,
+        )
     finally:
         try:
             os.remove(targets_path)
@@ -900,6 +1137,38 @@ def _consume_chr_lookup_file(out_f, lookup_path, mapper, vcf_path):
             os.remove(lookup_path)
         except OSError:
             pass
+
+
+def _handle_chr_lookup_worker_result(
+    result, out_f, mapper, vcf_path, log, verbose: bool = True
+):
+    """Apply TBI coverage warning and append one chromosome lookup file.
+
+    Returns
+    -------
+    tuple
+        ``(n_rows, chr_label)``
+"""
+    (
+        lookup_path,
+        chr_label,
+        n_targets,
+        min_target_pos,
+        min_lookup_pos,
+        n_targets_before,
+    ) = result
+    _warn_chr_lookup_coverage(
+        chr_label,
+        n_targets,
+        min_target_pos,
+        min_lookup_pos,
+        n_targets_before,
+        vcf_path,
+        log,
+        verbose=verbose,
+    )
+    n_rows = _consume_chr_lookup_file(out_f, lookup_path, mapper, vcf_path)
+    return n_rows, chr_label
 
 
 def _lookup_output_kind(path: str) -> str:
@@ -1142,7 +1411,7 @@ def _extract_lookup_table_from_vcf_bcf(
     
     if split_by_chr:
         log.write(" -Calling: "
-                  "bcftools view -r <CHR> -T <TARGETS> -Ou <VCF>| "
+                  "bcftools view -r <CHR>:<MIN>-<MAX> -T <TARGETS> -Ou <VCF>| "
                   "bcftools query -f '<FMT>'", verbose=verbose)
     else:
         log.write(" -Calling: bcftools view -T <TARGETS> -Ou <VCF> | "
@@ -1158,20 +1427,31 @@ def _extract_lookup_table_from_vcf_bcf(
         out_f.write(header_line)
         if extract_threads <= 1:
             for task in tasks:
-                lookup_path, chr_label = _worker_bcf_lookup(task)
-                total_rows += _consume_chr_lookup_file(
-                    out_f, lookup_path, mapper, vcf_path
+                n_rows, chr_label = _handle_chr_lookup_worker_result(
+                    _worker_bcf_lookup(task),
+                    out_f,
+                    mapper,
+                    vcf_path,
+                    log,
+                    verbose=verbose,
                 )
+                total_rows += n_rows
                 progress.update(chr_label)
                 progress.log_progress(log, verbose=verbose)
         else:
             with Pool(extract_threads, maxtasksperchild=1) as pool:
-                for lookup_path, chr_label in pool.imap_unordered(
+                for result in pool.imap_unordered(
                     _worker_bcf_lookup, tasks
                 ):
-                    total_rows += _consume_chr_lookup_file(
-                        out_f, lookup_path, mapper, vcf_path
+                    n_rows, chr_label = _handle_chr_lookup_worker_result(
+                        result,
+                        out_f,
+                        mapper,
+                        vcf_path,
+                        log,
+                        verbose=verbose,
                     )
+                    total_rows += n_rows
                     progress.update(chr_label)
                     progress.log_progress(log, verbose=verbose)
 

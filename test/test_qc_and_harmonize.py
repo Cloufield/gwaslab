@@ -684,15 +684,15 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             ("1:42000_A_AT", 1, 42000, "AT", "A", 0.7, 0.1, 0.01, 1e-5),  # EAF=0.7, RAF=0.1, |0.7-0.9|=0.2 = 0.20 -> NOT reverse (strict <)
             
             # Ambiguous cases (both differences > tolerance)
-            ("1:43000_A_AT", 1, 43000, "AT", "A", 0.5, 0.1, 0.01, 1e-5),  # EAF=0.5, RAF=0.1, forward_diff=0.4, reverse_diff=0.4, both > 0.20 -> ambiguous (status 4)
-            ("1:44000_A_AT", 1, 44000, "AT", "A", 0.6, 0.1, 0.01, 1e-5),  # EAF=0.6, RAF=0.1, forward_diff=0.5, reverse_diff=0.3, both > 0.20 -> ambiguous
-            ("1:45000_A_AT", 1, 45000, "AT", "A", 0.4, 0.1, 0.01, 1e-5),  # EAF=0.4, RAF=0.1, forward_diff=0.3, reverse_diff=0.5, both > 0.20 -> ambiguous
+            ("1:43000_A_AT", 1, 43000, "AT", "A", 0.5, 0.1, 0.01, 1e-5),  # EAF=0.5, RAF=0.1, forward_diff=0.4, reverse_diff=0.4, both > 0.20 -> indistinguishable (status 7)
+            ("1:44000_A_AT", 1, 44000, "AT", "A", 0.6, 0.1, 0.01, 1e-5),  # EAF=0.6, RAF=0.1, forward_diff=0.5, reverse_diff=0.3, both > 0.20 -> indistinguishable (status 7)
+            ("1:45000_A_AT", 1, 45000, "AT", "A", 0.4, 0.1, 0.01, 1e-5),  # EAF=0.4, RAF=0.1, forward_diff=0.3, reverse_diff=0.5, both > 0.20 -> indistinguishable (status 7)
             
             # Edge cases at tolerance boundary
             ("1:46000_A_AT", 1, 46000, "AT", "A", 0.199, 0.1, 0.01, 1e-5),  # EAF=0.199, RAF=0.1, diff=0.099 < 0.20 -> forward
             ("1:47000_A_AT", 1, 47000, "AT", "A", 0.201, 0.1, 0.01, 1e-5),  # EAF=0.201, RAF=0.1, diff=0.101 < 0.20 -> forward (still within)
             ("1:48000_A_AT", 1, 48000, "AT", "A", 0.299, 0.1, 0.01, 1e-5),  # EAF=0.299, RAF=0.1, diff=0.199 < 0.20 -> forward (just below)
-            ("1:49000_A_AT", 1, 49000, "AT", "A", 0.301, 0.1, 0.01, 1e-5),  # EAF=0.301, RAF=0.1, diff=0.201 > 0.20 -> ambiguous
+            ("1:49000_A_AT", 1, 49000, "AT", "A", 0.301, 0.1, 0.01, 1e-5),  # EAF=0.301, RAF=0.1, diff=0.201 > 0.20 -> indistinguishable (status 7)
             
             # MAF threshold edge cases for indels
             ("1:50000_A_AT", 1, 50000, "AT", "A", 0.1, 0.1, 0.01, 1e-5),  # EAF=0.1, RAF=0.41, MAF(RAF)=0.41 > ref_maf_threshold -> status 8
@@ -734,9 +734,113 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
         
         # Compare results
         self._compare_results(result1, result2, status1, status2, vcf_path_gz)
-    
-    
-    def _create_test_files(self, temp_dir, variants):
+
+    def test_sweep_mode_flips_reverse_palindrome_stats(self):
+        """Reverse palindromes flip BETA/EAF in both sweep and non-sweep modes.
+
+        Both backends write STATUS digit 7=5 (Palindromic-strand). `_flip_allele_stats`
+        then converts 5→2 and flips BETA/EAF so the final digit is 2.
+        """
+        temp_dir = os.path.join(ROOT, "test", "output", "sweep_pal_rev")
+        os.makedirs(temp_dir, exist_ok=True)
+        variants = [
+            ("control", 1, 1000, "G", "A", 0.1, 0.25, 0.05, 1e-5),
+            ("pal_fwd", 1, 2000, "T", "A", 0.1, 0.25, 0.05, 1e-5),
+            # EAF=0.9 → VCF AF ≈ 0.12 via _create_test_files, so reverse strand
+            ("pal_rev", 1, 12000, "T", "A", 0.9, 0.25, 0.05, 1e-5),
+        ]
+        sumstats_path, vcf_path_gz, fasta_path_gz = self._create_test_files(temp_dir, variants)
+        result_false, _ = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, 0.40, 0.40, sweep_mode=False
+        )
+        result_true, _ = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, 0.40, 0.40, sweep_mode=True
+        )
+        for label, df in (("False", result_false), ("True", result_true)):
+            row = df.loc[df["POS"] == 12000].iloc[0]
+            digit7 = int(str(int(row["STATUS"]))[-1])
+            self.assertEqual(digit7, 2, f"sweep_mode={label} pal_rev digit7={digit7}")
+            self.assertAlmostEqual(
+                float(row["BETA"]), -0.25, places=5,
+                msg=f"sweep_mode={label} pal_rev BETA={row['BETA']} (expect -0.25 after strand flip)",
+            )
+            self.assertAlmostEqual(
+                float(row["EAF"]), 0.1, places=5,
+                msg=f"sweep_mode={label} pal_rev EAF={row['EAF']} (expect 0.1 after strand flip)",
+            )
+            fwd = df.loc[df["POS"] == 2000].iloc[0]
+            self.assertAlmostEqual(float(fwd["BETA"]), 0.25, places=5, msg=f"sweep_mode={label} pal_fwd BETA")
+            self.assertAlmostEqual(float(fwd["EAF"]), 0.1, places=5, msg=f"sweep_mode={label} pal_fwd EAF")
+
+    def test_sweep_mode_respects_maf_threshold(self):
+        """harmonize(sweep_mode=True) must honor maf_threshold / ref_maf_threshold (not default 0.40).
+
+        pal_mid MAF(EAF)=0.20 is above 0.10 and below 0.40, so both backends should leave digit 7=7.
+        """
+        temp_dir = os.path.join(ROOT, "test", "output", "sweep_maf_threshold")
+        os.makedirs(temp_dir, exist_ok=True)
+        variants = [
+            ("pal_mid", 1, 4000, "T", "A", 0.20, 0.25, 0.05, 1e-5),
+        ]
+        sumstats_path, vcf_path_gz, fasta_path_gz = self._create_test_files(temp_dir, variants)
+        result_false, _ = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, 0.10, 0.10, sweep_mode=False
+        )
+        result_true, _ = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, 0.10, 0.10, sweep_mode=True
+        )
+        for label, df in (("False", result_false), ("True", result_true)):
+            row = df.iloc[0]
+            digit7 = int(str(int(row["STATUS"]))[-1])
+            self.assertEqual(
+                digit7, 7,
+                f"sweep_mode={label} pal_mid digit7={digit7} with maf_threshold=0.10 (expect 7 indistinguishable)",
+            )
+
+    def test_ambiguous_indel_status_7(self):
+        """DAF-ambiguous indels must use STATUS digit 7=7 (Indistinguishable), not 4.
+
+        Digit 4 is Indel_flipped_fixed after _flip_allele_stats converts 6→4.
+        Both |EAF-RAF| and |EAF-(1-RAF)| exceed daf_tolerance=0.20, so strand cannot
+        be inferred. Stats must not be flipped.
+        """
+        temp_dir = os.path.join(ROOT, "test", "output", "ambiguous_indel_status_7")
+        os.makedirs(temp_dir, exist_ok=True)
+        variants = [
+            # POS 43000: VCF AF=0.1. EAF=0.35 keeps MAF(EAF)≤0.40 so sweep does not
+            # emit 8, while both DAF diffs (0.25 and 0.55) exceed daf_tolerance=0.20.
+            ("indel_amb", 1, 43000, "AT", "A", 0.35, 0.25, 0.05, 1e-5),
+        ]
+        sumstats_path, vcf_path_gz, fasta_path_gz = self._create_test_files(
+            temp_dir, variants, place_longer_allele_on_fasta=True
+        )
+        result_false, _ = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, 0.40, 0.40, sweep_mode=False
+        )
+        result_true, _ = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, 0.40, 0.40, sweep_mode=True
+        )
+        for label, df in (("False", result_false), ("True", result_true)):
+            row = df.iloc[0]
+            digit7 = int(str(int(row["STATUS"]))[-1])
+            self.assertEqual(
+                digit7, 7,
+                f"sweep_mode={label} ambiguous indel digit7={digit7} (expect 7 Indistinguishable, not 4)",
+            )
+            self.assertNotEqual(
+                digit7, 4,
+                f"sweep_mode={label} must not write digit 7=4 (reserved for Indel_flipped_fixed)",
+            )
+            self.assertAlmostEqual(
+                float(row["BETA"]), 0.25, places=5,
+                msg=f"sweep_mode={label} ambiguous indel BETA={row['BETA']} (expect unflipped 0.25)",
+            )
+            self.assertAlmostEqual(
+                float(row["EAF"]), 0.35, places=5,
+                msg=f"sweep_mode={label} ambiguous indel EAF={row['EAF']} (expect unflipped 0.35)",
+            )
+
+    def _create_test_files(self, temp_dir, variants, place_longer_allele_on_fasta=False):
         """Create sumstats, VCF, and FASTA files for testing"""
         import gzip
         
@@ -872,8 +976,14 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
         sequence = ['N'] * seq_length
         
         for _, row in df.iterrows():
-            pos, nea = row['POS'], row['NEA']
-            if 0 < pos <= seq_length:
+            pos, nea, ea = row['POS'], row['NEA'], row['EA']
+            if place_longer_allele_on_fasta:
+                seq = nea if len(str(nea)) >= len(str(ea)) else ea
+                for offset, base in enumerate(str(seq)):
+                    idx = pos - 1 + offset
+                    if 0 <= idx < seq_length:
+                        sequence[idx] = base
+            elif 0 < pos <= seq_length:
                 sequence[pos - 1] = nea[0] if len(nea) > 0 else 'A'
         
         bases = ['A', 'T', 'G', 'C']
@@ -944,7 +1054,7 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             sumstats=sumstats_path,
             tab_fmt="tsv",
             chrom="CHR", pos="POS", ea="EA", nea="NEA", p="P",
-            snpid="SNPID", eaf="EAF", verbose=False
+            snpid="SNPID", eaf="EAF", beta="BETA", se="SE", verbose=False
         )
         gl.basic_check(verbose=False)
         gl.harmonize(
@@ -1052,6 +1162,30 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             # Assert 100% consistency for variants found by both methods
             self.assertGreaterEqual(match_rate, 1.0,
                                  f"Strand inference STATUS codes should be consistent for variants found by both methods (match rate: {match_rate:.2%})")
+
+            # Digit 7=2 is written both after a real flip (non-sweep) and without flipping (sweep).
+            # Compare EAF/BETA so STATUS agreement cannot hide unflipped reverse palindromes.
+            stat_mismatches = []
+            for idx in result1.index[valid_mask]:
+                row1, row2 = result1.loc[idx], result2.loc[idx]
+                pos = int(row1["POS"])
+                if "EAF" in result1.columns and "EAF" in result2.columns:
+                    if pd.notna(row1["EAF"]) and pd.notna(row2["EAF"]):
+                        if not np.isclose(float(row1["EAF"]), float(row2["EAF"]), atol=1e-5):
+                            stat_mismatches.append(
+                                f"POS={pos} EAF old={row1['EAF']} new={row2['EAF']}"
+                            )
+                if "BETA" in result1.columns and "BETA" in result2.columns:
+                    if pd.notna(row1["BETA"]) and pd.notna(row2["BETA"]):
+                        if not np.isclose(float(row1["BETA"]), float(row2["BETA"]), atol=1e-5):
+                            stat_mismatches.append(
+                                f"POS={pos} BETA old={row1['BETA']} new={row2['BETA']}"
+                            )
+            self.assertEqual(
+                stat_mismatches, [],
+                "sweep_mode True/False must also match EAF/BETA (STATUS digit 7=2 is not enough): "
+                + "; ".join(stat_mismatches[:12]),
+            )
         else:
             checked_old = (~status9_mask1).sum()
             checked_new = (~status9_mask2).sum()

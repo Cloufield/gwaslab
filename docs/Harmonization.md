@@ -101,7 +101,8 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
     ```
 
 - For TSV file, variants will be matched using **SNPID** (**CHR**:**POS**:**NEA**:**EA**) for quick assigning.
-- For VCF file, GWASLab will first extract all variants in the reference file with matching **CHR** and **POS**. And then compare **EA**/**NEA** in sumstats with **REF**/**ALT** in reference vcf. When matching, it will annotate the variant in sumstats with the matching **rsID** in reference vcf.  
+- For VCF file, GWASLab will first extract all variants in the reference file with matching **CHR** and **POS**. And then compare **EA**/**NEA** in sumstats with **REF**/**ALT** in reference vcf. When matching, it will annotate the variant in sumstats with the matching **rsID** in reference vcf.
+- `overwrite` applies to rsIDs already on the object. With both TSV and VCF references, assignment is TSV first then VCF for remaining missing eligible variants (including `overwrite="all"`). See [Assign rsID](AssignrsID.md#overwrite-modes).  
 
 ## Check palindromic SNPs or indistinguishable Indels
 
@@ -109,7 +110,7 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 
 - Infer the strand for palindromic SNPs (A/T, T/A, G/C, C/G) with **MAF** ≤ `maf_threshold`. 
 - Check the alignment status of indels with the **REF** allele in a reference VCF/BCF file and verify if the allele frequencies are consistent (**DAF** ≤ `daf_tolerance`).
-- Update **STATUS** code 7th digit to reflect strand inference results (0=non-palindromic, 1=forward, 2=reverse, 3=indel forward, 4=ambiguous indel, 6=indel reverse, 7=**MAF** too high, 8=not found, 9=unchecked).
+- Update **STATUS** code 7th digit to reflect strand inference results (0=non-palindromic, 1=forward palindrome, 5=reverse palindrome needs flip then 2 after `flip_allele_stats`, 3=indel match, 6=indel reverse needs flip then 4 after `flip_allele_stats`, 7=indistinguishable / **MAF** too high or indel DAF-ambiguous, 8=not found, 9=unchecked).
 
 !!! info "DAF in GWASLab"
     **DAF** in GWASLab: Difference between effect allele frequency (**EAF**) in sumstats and **ALT** frequency in reference VCF/BCF file

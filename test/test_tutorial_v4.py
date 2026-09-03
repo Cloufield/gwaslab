@@ -179,27 +179,30 @@ class TestTutorialV4Workflow(unittest.TestCase):
     def test_07_assign_rsid_tsv(self):
         """Test assigning rsID using TSV reference."""
         mysumstats = self._load_sumstats()
+        mysumstats.basic_check(verbose=False)
         mysumstats.fix_id(fixsep=True, verbose=False)
-        
+
         # Assign rsID using TSV
         mysumstats.assign_rsid(ref_rsid_tsv=self.rsid_tsv_path, verbose=False)
-        
+
         # Check that rsID column exists
         self.assertIn("rsID", mysumstats.data.columns)
-        
+
         # Check that some rsIDs were assigned
         rsid_count = mysumstats.data["rsID"].notna().sum()
         self.assertGreater(rsid_count, 0)
-    
+
     def test_08_assign_rsid_vcf(self):
         """Test assigning rsID using VCF reference."""
         mysumstats = self._load_sumstats()
+        mysumstats.basic_check(verbose=False)
         mysumstats.fix_id(fixsep=True, verbose=False)
         mysumstats.assign_rsid(ref_rsid_tsv=self.rsid_tsv_path, verbose=False)
-        
+
         # Get initial rsID count
         initial_rsid_count = mysumstats.data["rsID"].notna().sum()
-        
+        self.assertGreater(initial_rsid_count, 0)
+
         # Assign rsID using VCF (for remaining variants)
         # Note: chr_dict is no longer needed - ChromosomeMapper handles chromosome conversion automatically
         mysumstats.assign_rsid(
@@ -207,10 +210,10 @@ class TestTutorialV4Workflow(unittest.TestCase):
             ref_rsid_vcf=self.rsid_vcf_path,
             verbose=False
         )
-        
-        # Check that more rsIDs were assigned
+
+        # VCF should fill TSV leftovers (b157_2564 covers SNPID-mismatch sites)
         final_rsid_count = mysumstats.data["rsID"].notna().sum()
-        self.assertGreaterEqual(final_rsid_count, initial_rsid_count)
+        self.assertGreater(final_rsid_count, initial_rsid_count)
     
     def test_09_harmonize(self):
         """Test harmonization workflow."""

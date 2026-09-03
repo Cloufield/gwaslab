@@ -108,7 +108,7 @@ Each status code is a 7-digit integer where:
 | `4` | Indel_flipped_fixed |
 | `5` | Palindromic-strand |
 | `6` | Indel_flipped |
-| `7` | Indistinguishable |
+| `7` | Indistinguishable (MAF too high, or indel DAF-ambiguous) |
 | `8` | No_matching_or_no_info |
 | `9` | Unchecked |
 

@@ -19,3 +19,10 @@
 
 -  3.4.43 <= gwaslab <= 3.5.7 : If the coordinates in sumstats are not unsorted, the alignment may fail. 
 - Solution: Update to new version of gwaslab.
+
+## Incomplete VCF tabix/CSI index can silently miss rsIDs
+
+- A `.tbi` or `.csi` that was not built from the local VCF can be inconsistent with it. `bcftools view -r 14` may start mid-chromosome (for example around 50 Mb) even though a direct interval query such as `14:30000400` still returns the variant. Sweep-mode `.assign_rsid2()` used whole-chromosome `-r CHR` with `-T` targets, so those prefix variants looked absent from the reference VCF. Downloaded dbSNP v151 VCF/index pairs are one known example.
+- This is not a GWASLab bug in the VCF itself. Rebuild the index from the local VCF (`bcftools index -t -f <vcf>`), then re-run assignment. Current GWASLab queries `-r CHR:minPOS-maxPOS` and warns under these conditions (see [Assigning rsID](AssignrsID.md) and [Download reference data](Download.md)):
+    - **Lookup stream** (sweep extract, `n_targets > 0`): no records returned for that chromosome, **or** first returned POS is after the smallest target POS and **> 5%** of that chromosome’s targets sit before the first returned record.
+    - **Assignment-rate outlier** (after VCF/sweep fill): among chromosomes with **≥ 500** eligible variants (need **≥ 5** such chromosomes), fill rate is **≥ 0.15** below the median (`median_rate − rate ≥ 0.15`).

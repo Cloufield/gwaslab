@@ -74,6 +74,67 @@ pd.Series
     power = 10 ** (7 - digit)
     return (status_int // power) % 10
 
+
+def _rsid_assignment_eligible(status_series: pd.Series) -> pd.Series:
+    """STATUS rows eligible for rsID assignment: digit 4 = 0, digit 5 in 0–4."""
+    digit_4 = _extract_status_digit(status_series, 4)
+    digit_5 = _extract_status_digit(status_series, 5)
+    return (digit_4 == 0) & (digit_5.isin([0, 1, 2, 3, 4]))
+
+
+def _rsid_invalid_mask(rsid_series: pd.Series) -> pd.Series:
+    """True where rsID is missing or not ``rs[0-9]+`` (NA counts as invalid)."""
+    return ~rsid_series.astype("string").str.match(r"^rs[0-9]+$", na=False)
+
+
+def _prepare_rsid_overwrite(
+    sumstats: pd.DataFrame,
+    overwrite: str = "empty",
+    rsid: str = "rsID",
+    status: str = "STATUS",
+    log: Log = Log(),
+    verbose: bool = True,
+) -> pd.DataFrame:
+    """Apply overwrite once to existing rsIDs before TSV/VCF fill-empty cascade.
+
+    Eligible rows use STATUS digit 4 = 0 and digit 5 in 0–4. ``overwrite``
+    decides which of those existing rsIDs may be replaced:
+
+    - ``"empty"``: leave existing values; later steps fill NA only
+    - ``"invalid"``: clear non-``rs[0-9]+`` values (including NA) on eligible rows
+    - ``"all"``: clear all eligible rsIDs
+    """
+    if rsid not in sumstats.columns:
+        sumstats[rsid] = pd.Series(pd.NA, index=sumstats.index, dtype="string")
+    else:
+        sumstats[rsid] = sumstats[rsid].astype("string")
+
+    if status not in sumstats.columns:
+        log.write(" -STATUS column not found; skip rsID overwrite preparation...", verbose=verbose)
+        return sumstats
+
+    eligible = _rsid_assignment_eligible(sumstats[status])
+    if overwrite == "empty":
+        log.write(" -rsID overwrite mode: empty (fill missing eligible rsIDs only)...", verbose=verbose)
+    elif overwrite == "invalid":
+        clear_mask = eligible & _rsid_invalid_mask(sumstats[rsid])
+        n_clear = int(clear_mask.sum())
+        sumstats.loc[clear_mask, rsid] = pd.NA
+        log.write(
+            " -rsID overwrite mode: invalid (cleared {} eligible non-rsID values)...".format(n_clear),
+            verbose=verbose,
+        )
+    elif overwrite == "all":
+        n_clear = int(eligible.sum())
+        sumstats.loc[eligible, rsid] = pd.NA
+        log.write(
+            " -rsID overwrite mode: all (cleared {} eligible rsIDs)...".format(n_clear),
+            verbose=verbose,
+        )
+    else:
+        raise ValueError("overwrite must be 'all', 'invalid', or 'empty'")
+    return sumstats
+
 PADDING_VALUE = 100
 
 # chr(0) should not be used in the mapping dict because it's a reserved value.
@@ -1276,10 +1337,13 @@ ref_snpid : str, default "SNPID"
 ref_rsid : str, default "rsID"
     Column name for rsIDs in the reference TSV file.
 overwrite : str, default "empty"
-    Overwrite mode for rsID assignment:
-    - "all": overwrite rsID for all available rsID
+    Overwrite mode for rsID assignment (STATUS-eligible variants only):
+    - "all": overwrite rsID for all eligible variants
     - "invalid": only assign rsID for variants with invalid rsID
     - "empty": only assign rsID for variants with NA rsID
+    ``Sumstats.assign_rsid`` and ``harmonize`` apply this once to existing
+    rsIDs, then run TSV then VCF as fill-empty so dual-reference assignment
+    is always a cascade.
 verbose : bool, default True
     If True, print progress messages.
 log : gwaslab.g_Log.Log, default Log()
@@ -1345,14 +1409,11 @@ Notes
         pre_number = (~sumstats[rsid].isna()).sum()
 
         ##################################################################################################################
-        # Match: digit 4 is 0 and digit 5 is 0-4 - Optimized: extract digits once
-        digit_4 = _extract_status_digit(sumstats[status], 4)
-        digit_5 = _extract_status_digit(sumstats[status], 5)
-        standardized_normalized = (digit_4 == 0) & (digit_5.isin([0,1,2,3,4]))
+        standardized_normalized = _rsid_assignment_eligible(sumstats[status])
         if overwrite=="all":
             to_assign = standardized_normalized
         if overwrite=="invalid":
-            to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
+            to_assign = _rsid_invalid_mask(sumstats[rsid]) & standardized_normalized
         if overwrite=="empty":
             to_assign = sumstats[rsid].isna()& standardized_normalized
         ##################################################################################################################
@@ -1399,22 +1460,33 @@ Notes
         after_number = (~sumstats[rsid].isna()).sum()
         log.write(" -rsID annotation for "+str(total_number - after_number) +" variants need to be fixed!",verbose=verbose)
         log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!",verbose=verbose)
+        from gwaslab.hm.hm_assign_rsid import _warn_chr_assignment_outliers
+        _warn_chr_assignment_outliers(
+            sumstats,
+            rsid=rsid,
+            chrom=chr,
+            to_assign_mask=to_assign,
+            log=log,
+            verbose=verbose,
+            vcf_path=path,
+        )
     
     ##################################################################################################################
     elif ref_mode=="tsv":
         
-        #standardized_normalized = sumstats[status].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
-        standardized_normalized = sumstats[status] == sumstats[status]
+        standardized_normalized = _rsid_assignment_eligible(sumstats[status])
 
         if rsid not in sumstats.columns:
-            sumstats[rsid]=pd.Series(dtype="string")
+            sumstats[rsid]=pd.Series(pd.NA, index=sumstats.index, dtype="string")
+        else:
+            sumstats[rsid]=sumstats[rsid].astype("string")
             
         if overwrite == "empty":
             to_assign = sumstats[rsid].isna() & standardized_normalized
         if overwrite=="all":
             to_assign = standardized_normalized
         if overwrite=="invalid":
-            to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
+            to_assign = _rsid_invalid_mask(sumstats[rsid]) & standardized_normalized
             
         total_number= len(sumstats)
         pre_number = (~sumstats[rsid].isna()).sum()
@@ -1430,7 +1502,6 @@ Notes
                     storage_profile_override=storage_profile,
                 )
                 log.log_run_plan(plan, verbose=verbose)
-            sumstats = sumstats.set_index(snpid)  
             dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_snpid,ref_rsid],
                               chunksize=chunksize,index_col=ref_snpid,
                               dtype={ref_snpid:"string",ref_rsid:"string"})
@@ -1439,17 +1510,17 @@ Notes
             est_blocks = max(1, int(ref_bytes / max(chunksize, 1)) + 1)
             block_progress = RunProgressTracker(total=est_blocks, label="TSV blocks")
             log.write(" -Setting block size: ",chunksize,verbose=verbose)
+            snpid_key = categorical_safe_str(sumstats[snpid])
             for i,dic in enumerate(dic_chuncks):
                 gc.collect()
                 block_progress.update(f"block {i}")
                 block_progress.log_progress(log, verbose=verbose)
-                dic = dic.rename(index={ref_snpid:snpid})
-                dic = dic.rename(columns={ref_rsid:rsid})  
+                dic = dic.rename(columns={ref_rsid:rsid})
                 dic = dic.loc[~dic.index.duplicated(keep=False),:]
-                sumstats.update(dic,overwrite=True)
-
-            sumstats = sumstats.reset_index()
-            sumstats = sumstats.rename(columns = {'index':snpid})
+                mapped = snpid_key.map(dic[rsid])
+                fill = to_assign & mapped.notna()
+                if fill.any():
+                    sumstats.loc[fill, rsid] = mapped.loc[fill]
 
             after_number = (~sumstats[rsid].isna()).sum()
             log.write(" -rsID annotation for "+str(total_number - after_number) +" variants needed to be fixed!",verbose=verbose)
@@ -1604,13 +1675,15 @@ def check_unkonwn_indel(
     daf_tolerance: float = 0.2
 ) -> Union[int, str]:
     ### input : unknown indel, both on genome (xx1[45]x)
-    ### 3 no flip
-    ### 4 unknown indel,fixed   (6->5)
-    ### 6 flip
+    ### 3 match (no flip)
+    ### 6 reverse (needs flip; _flip_allele_stats converts 6→4)
+    ### 7 indistinguishable (matching record, DAF outside tolerance)
+    ### 8 not found / MAF too high
     
     if mapper is not None:
         # Convert sumstats chr to reference format for VCF lookup
-        chr = mapper.sumstats_to_reference(chr, reference_file=None)
+        # as_string=True for VCF compatibility (pysam requires string)
+        chr = mapper.sumstats_to_reference(chr, reference_file=None, as_string=True)
     # Convert status to integer
     status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
     
@@ -1619,18 +1692,21 @@ def check_unkonwn_indel(
     except:
         return set_status_digit(status_val, 7, 8)
 
+    found_but_unresolved = False
     for record in chr_seq:
         if min(record.info[alt_freq][0], 1- record.info[alt_freq][0]) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
                 return set_status_digit(status_val, 7, 8)
         if record.pos==end and record.ref==ref and (alt in record.alts):
             if  abs(record.info[alt_freq][0] - eaf)<daf_tolerance:
                 return set_status_digit(status_val, 7, 3)
+            found_but_unresolved = True
    
         elif record.pos==end and record.ref==alt and (ref in record.alts):
             if  abs(record.info[alt_freq][0] - (1 - eaf))<daf_tolerance:
                 return set_status_digit(status_val, 7, 6)
+            found_but_unresolved = True
 
-    return set_status_digit(status_val, 7, 8)
+    return set_status_digit(status_val, 7, 7 if found_but_unresolved else 8)
 
 
 def check_unkonwn_indel_cache(
@@ -1687,6 +1763,8 @@ def check_unkonwn_indel_cache(
                     return set_status_digit(status_val, 7, 8)
                 if  abs(record - eaf)<daf_tolerance:
                     new_status = set_status_digit(status_val, 7, 3)
+                else:
+                    new_status = set_status_digit(status_val, 7, 7)
 
         elif cache_key_alt_ref in cache:
             in_cache += 1
@@ -1698,6 +1776,8 @@ def check_unkonwn_indel_cache(
                     return set_status_digit(status_val, 7, 8)
                 if  abs(record - (1 - eaf))<daf_tolerance:
                     new_status = set_status_digit(status_val, 7, 6)
+                else:
+                    new_status = set_status_digit(status_val, 7, 7)
 
         else:
             if not trust_cache:

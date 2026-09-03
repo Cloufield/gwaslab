@@ -55,6 +55,7 @@ from gwaslab.hm.hm_harmonize_sumstats import (
     _parallelize_infer_af,
     _parallelize_infer_strand,
     _parallelize_assign_rsid,
+    _prepare_rsid_overwrite,
     _parallelize_rsid_to_chrpos,
     _parallele_infer_af_with_maf,
 )
@@ -528,6 +529,19 @@ chrom_col : str, default "CHR"
             user_keys=user_keys,
         )
 
+    def _fill_build(self, params: Dict[str, Any], build: Optional[str] = None) -> Dict[str, Any]:
+        """Prefer call-time build= over viz-params, then object build.
+
+        self.build is read only when neither the named argument nor params
+        provide a value, so plot_mqq(build="19") does not warn when the
+        object build is still unknown.
+        """
+        if build is not None:
+            params["build"] = build
+        elif params.get("build") is None:
+            params["build"] = self.build
+        return params
+
     def __getitem__(self, index: Any) -> Any:
         return self.data[index]
         
@@ -870,6 +884,8 @@ Examples
                                                         assign_cols = ref_alt_freq, 
                                                         threads=threads,
                                                         extract_threads=_inf_extract,
+                                                        maf_threshold=maf_threshold,
+                                                        ref_maf_threshold=ref_maf_threshold,
                                                         log=self.log,
                                                         verbose=verbose,
                                                         **infer_strand_kwargs)
@@ -894,23 +910,32 @@ Examples
         
         #####################################################
         
+        if ref_rsid_tsv is not None or ref_rsid_vcf is not None:
+            assign_rsid_step_kwargs = {**assign_rsid_kwargs, "overwrite": "empty"}
+            self.data = _prepare_rsid_overwrite(
+                self.data,
+                overwrite=assign_rsid_kwargs.get("overwrite", "empty"),
+                log=self.log,
+                verbose=verbose,
+            )
+        
         if ref_rsid_tsv is not None:
-            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose","log_run_plan","cpu_tier","storage_profile"})
+            assign_rsid_step_kwargs = remove_overlapping_kwargs(assign_rsid_step_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose","log_run_plan","cpu_tier","storage_profile"})
             self.data = _parallelize_assign_rsid(self,path=ref_rsid_tsv,ref_mode="tsv",
-                                                 threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)
+                                                 threads=threads,log=self.log,verbose=verbose,**assign_rsid_step_kwargs)
 
             # Metadata and harmonization status are already set by _parallelize_assign_rsid
             gc.collect()
 
         if ref_rsid_vcf is not None:
-            _rsid_extract = assign_rsid_kwargs.get("extract_threads", extract_threads)
-            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose","log_run_plan","cpu_tier","storage_profile"})
+            _rsid_extract = assign_rsid_step_kwargs.get("extract_threads", extract_threads)
+            assign_rsid_step_kwargs = remove_overlapping_kwargs(assign_rsid_step_kwargs,{"ref_mode","path","threads","extract_threads","log","verbose","log_run_plan","cpu_tier","storage_profile"})
 
             if sweep_mode:
-                self.data = _assign_rsid(self, path = ref_rsid_vcf, threads=threads, extract_threads=_rsid_extract, log=self.log,verbose=verbose,**assign_rsid_kwargs)
+                self.data = _assign_rsid(self, path = ref_rsid_vcf, threads=threads, extract_threads=_rsid_extract, log=self.log,verbose=verbose,**assign_rsid_step_kwargs)
             else:
                 self.data = _parallelize_assign_rsid(self,path=ref_rsid_vcf,ref_mode="vcf",
-                                                     threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)   
+                                                     threads=threads,log=self.log,verbose=verbose,**assign_rsid_step_kwargs)   
 
             # Metadata and harmonization status are already set by _assign_rsid or _parallelize_assign_rsid
             gc.collect()
@@ -1064,6 +1089,15 @@ Examples
                     ref_rsid_vcf=None,
                     **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"ref_mode","path","log"})
+        if ref_rsid_tsv is not None or ref_rsid_vcf is not None:
+            overwrite = kwargs.get("overwrite", "empty")
+            self.data = _prepare_rsid_overwrite(
+                self.data,
+                overwrite=overwrite,
+                log=self.log,
+                verbose=kwargs.get("verbose", True),
+            )
+            kwargs = {**kwargs, "overwrite": "empty"}
         if ref_rsid_tsv is not None:
             self.data = _parallelize_assign_rsid(self,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**kwargs)
             # Metadata and harmonization status are already set by _parallelize_assign_rsid
@@ -1074,7 +1108,7 @@ Examples
     @add_doc(_parallelize_rsid_to_chrpos)
     def rsid_to_chrpos(self,**kwargs):
         warnings.warn(
-            "Sumstats.rsid_to_chrpos is deprecated since 4.3.0. Use Sumstats.rsid_to_chrpos2 instead.",
+            "Sumstats.rsid_to_chrpos is deprecated since 4.2.3. Use Sumstats.rsid_to_chrpos2 instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -1369,37 +1403,36 @@ Examples
     @suppress_display
     def plot_mqq(self, build: Optional[str] = None, **kwargs: Any) -> Any:
         mode = kwargs.get("mode", None)
-        params = self._apply_viz_params(_mqqplot, kwargs, key="plot_mqq", mode=mode)
-        if "build" not in params:
-            params["build"] = self.build
+        params = self._fill_build(self._apply_viz_params(_mqqplot, kwargs, key="plot_mqq", mode=mode), build)
         plot, log = _mqqplot(self, **params)
         return plot
     
     @add_viz_doc(_mqqplot, "plot_manhattan", None, summary="Genome-wide Manhattan plot (``mode='m'``).")
     @suppress_display
     def plot_manhattan(self, build: Optional[str] = None, **kwargs: Any) -> Any:
-        params = self._apply_viz_params(_mqqplot, kwargs, key="plot_manhattan")
-        if "build" not in params:
-            params["build"] = self.build
+        params = self._fill_build(self._apply_viz_params(_mqqplot, kwargs, key="plot_manhattan"), build)
         plot, log = _mqqplot(self, **params)
         return plot
     
     @add_viz_doc(_mqqplot, "plot_snp_density", "b", summary="Brisbane-style SNP density plot.")
     @suppress_display
     def plot_snp_density(self, build: Optional[str] = None, **kwargs: Any) -> Any:
-        plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
+        params = self._fill_build(self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), build)
+        plot, log = _mqqplot(self, **{**params, "mode": "b"})
         return plot
     
     @add_viz_doc(_mqqplot, "plot_qq", "qq", summary="Quantile–quantile plot.")
     @suppress_display
     def plot_qq(self, build: Optional[str] = None, **kwargs: Any) -> Any:
-        plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
+        params = self._fill_build(self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), build)
+        plot, log = _mqqplot(self, **{**params, "mode": "qq"})
         return plot
     
     @add_viz_doc(_mqqplot, "plot_region", "r", summary="Regional association plot with optional LD, recombination, and gene tracks.")
     @suppress_display
     def plot_region(self, build: Optional[str] = None, **kwargs: Any) -> Any:
-        plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
+        params = self._fill_build(self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), build)
+        plot, log = _mqqplot(self, **{**params, "mode": "r"})
         return plot
 
     @add_viz_doc(
@@ -1410,19 +1443,18 @@ Examples
     )
     @suppress_display
     def plot_trumpet(self, build: Optional[str] = None, **kwargs: Any) -> Any:
-        fig = _plot_trumpet(
-            self,
-            **{**self._apply_viz_params(_plot_trumpet, kwargs, key="plot_trumpet", mode=("b" if kwargs.get("mode") == "b" else "q")),
-               "build": kwargs.get("build", self.build)}
+        trumpet_mode = "b" if kwargs.get("mode") == "b" else "q"
+        params = self._fill_build(
+            self._apply_viz_params(_plot_trumpet, kwargs, key="plot_trumpet", mode=trumpet_mode),
+            build,
         )
+        fig = _plot_trumpet(self, **params)
         return fig
 
     @add_viz_doc(_plot_phenogram, "plot_phenogram", None)
     @suppress_display
     def plot_phenogram(self, build: Optional[str] = None, **kwargs: Any) -> Any:
-        params = self._apply_viz_params(_plot_phenogram, kwargs, key="plot_phenogram")
-        if "build" not in params:
-            params["build"] = self.build
+        params = self._fill_build(self._apply_viz_params(_plot_phenogram, kwargs, key="plot_phenogram"), build)
         fig = _plot_phenogram(self, **params)
         return fig
 
@@ -1474,7 +1506,7 @@ Examples
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
         output = _get_sig(self,
                         log=self.log,
-                        build=self.build,
+                        build=build if build is not None else self.build,
                         **kwargs)
         
         # return sumstats object    
@@ -1490,7 +1522,7 @@ Examples
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
         output = _get_top(self,
                         log=self.log,
-                        build=self.build,
+                        build=build if build is not None else self.build,
                         **kwargs)
         if gls == True:
             new_Sumstats_object = copy.deepcopy(self)

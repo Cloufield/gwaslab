@@ -1,7 +1,15 @@
 # Update Logs
 
-# v4.2.3 20260828
-
+# v4.2.3 (underdevelopment)
+- **Regional gene track (issue [#226](https://github.com/Cloufield/gwaslab/issues/226)):** `plot_mqq` / `plot_region` (and sibling plot wrappers) now honor call-time `build=` instead of always using the object build. `build="37"` maps to `"19"` and loads the Ensembl/RefSeq GTF; unknown object build (`"99"`) no longer silently draws an empty gene track when `build=` is passed. `process_gtf` warns when build is still `"99"`. Tests: `test/test_plot_mqq_build.py`.
+- **`assign_rsid` dual-reference `overwrite`:** `.assign_rsid()` and `.harmonize()` apply `overwrite` once to existing rsIDs, then TSV then VCF always fill remaining eligible missing values. With both references and `overwrite="all"`, overlapping sites keep the TSV rsID (previously the VCF step replaced them). Standalone `.assign_rsid2()` is unchanged. TSV writes now honor the eligibility mask (no `DataFrame.update(overwrite=True)` leak) and use the same STATUS digit 4/5 filter as VCF. Docs: [AssignrsID.md](AssignrsID.md), [Harmonization.md](Harmonization.md). Tests: `test/test_assign_rsid_overwrite.py`.
+- **VCF tabix/CSI coverage:** chromosome-split extract uses `bcftools view -r CHR:minPOS-maxPOS` instead of whole-chromosome `-r CHR`, so a mismatched `.tbi`/`.csi` is less likely to skip the start of a chromosome. Warns when a chromosome lookup (`n_targets > 0`) returns no records, or the first returned POS is after the smallest target POS and **> 5%** of that chromosome’s targets sit before it; after VCF/sweep fill, warns when among chromosomes with **≥ 500** eligible variants (**≥ 5** such chromosomes) a chromosome’s fill rate is **≥ 0.15** below the median. Docs: [AssignrsID.md](AssignrsID.md).
+- **Tests:** `test/test_assign_rsid_tbi_coverage.py` — region string, POS-coverage warning, per-chromosome assignment-rate outliers.
+- **`harmonize(sweep_mode=True)` reverse palindromes:** `_infer_strand()` now writes STATUS digit 7 = **5** (`Palindromic-strand`, needs flip) instead of **2**. `_flip_allele_stats` then flips BETA/Z/EAF/OR and converts 5→2, matching non-sweep `infer_strand()`.
+- **`harmonize(sweep_mode=True)` MAF kwargs:** `maf_threshold` and `ref_maf_threshold` are passed into `_infer_strand_with_annotation` (previously dropped, so sweep always used 0.40).
+- **STATUS digit 7 for DAF-ambiguous indels:** both sweep and non-sweep write **7** (`Indistinguishable`) when AF is present but both `|EAF-RAF|` and `|EAF-(1-RAF)|` exceed `daf_tolerance`. Digit **4** remains `Indel_flipped_fixed` after 6→4. Non-sweep `check_unkonwn_indel` uses `as_string=True` for pysam VCF fetch (same as palindrome inference).
+- **Docs:** [Harmonization.md](Harmonization.md) and [StatusCode.md](StatusCode.md) digit-7 list aligned with `status_dic_7`.
+- **Tests:** `test_qc_and_harmonize.py` — reverse-palindrome BETA/EAF flip, `maf_threshold` on sweep, DAF-ambiguous indel digit 7=7 in both modes.
 - **LDSC numpy 2.4 (issue [#227](https://github.com/Cloufield/gwaslab/issues/227)):** `float()` on size-1 arrays (`rg_jknife` / `rg_se` / `rg_ratio`, and LD-score `M` in h² / gencov weights) now uses `.item()` via `_as_python_float`. Numpy 2.4 raises `TypeError` for `float(arr)` when `ndim > 0`.
 - **Dependency:** allow numpy 2.x (`numpy>=1.21.2`; dropped `<2` cap in `pyproject.toml` and `environment.yml`).
 - **Tests:** `test/test_ldsc_numpy_scalar.py` — `_as_python_float` on 0-d / `(1,)` / `(1, 1)`, `RatioJackknife` scalars, and `Hsq.weights` with `(1, 1)` `M`.

@@ -1394,6 +1394,13 @@ def process_gtf(gtf_path,
     to_query_chrom = gtf_chr_dict[region[0]]
 
     # loading gtf data
+    if gtf_path in ("default", "ensembl", "refseq"):
+        if build is None or str(build) == "99":
+            log.warning(
+                "Genome build is unknown (build=99). Default Ensembl/RefSeq gene tracks require build '19' or '38'. "
+                "Call .infer_build() or .set_build(), or pass build= to plot_mqq/plot_region.",
+                verbose=verbose,
+            )
     if gtf_path =="default" or gtf_path =="ensembl":
         log.write(f"  -Loading Ensembl GTF for chromosome {to_query_chrom}, build {build}", verbose=verbose)
         gtf, actual_gtf_path = get_gtf(chrom=to_query_chrom, build=build, source="ensembl", if_return_path=True)
