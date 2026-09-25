@@ -408,14 +408,14 @@ chrom_col : str, default "CHR"
     # ============================================================================
     
     @property
-    def ldsc_h2(self) -> Optional[float]:
-        """LDSC heritability estimate (backward compatibility).
+    def ldsc_h2(self) -> Optional[pd.DataFrame]:
+        """LDSC heritability summary DataFrame (backward compatibility).
 """
         return self.downstream.ldsc_h2
     
     @ldsc_h2.setter
-    def ldsc_h2(self, value: Optional[float]) -> None:
-        """Set LDSC heritability estimate (backward compatibility).
+    def ldsc_h2(self, value: Optional[pd.DataFrame]) -> None:
+        """Set LDSC heritability summary DataFrame (backward compatibility).
 """
         self.downstream.ldsc_h2 = value
     

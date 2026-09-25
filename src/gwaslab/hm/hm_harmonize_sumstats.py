@@ -51,6 +51,116 @@ from gwaslab.io.io_vcf import check_vcf_chr_prefix, check_vcf_chr_NC
 # Used to handle floating point precision issues when comparing MAF values at threshold
 FREQ_COMPARISON_EPSILON = 1e-6
 
+# Temporary column: ALT AF of the allele-swapped VCF record (REF=EA, ALT=NEA).
+# Filled only during infer_strand2 when both records exist; dropped before return.
+INDEL_SWAPPED_AF_COL = "_INDEL_SWAPPED_AF"
+
+
+def _maf_within_ref_threshold(af: float, ref_maf_threshold: float) -> bool:
+    return min(af, 1.0 - af) <= ref_maf_threshold + FREQ_COMPARISON_EPSILON
+
+
+def _record_alt_af(record: Any, alt_allele: str, alt_freq: str) -> Optional[float]:
+    """ALT-indexed AF from a VCF INFO Number=A (or scalar) field."""
+    alts = record.alts
+    if alts is None:
+        return None
+    try:
+        idx = list(alts).index(alt_allele)
+    except ValueError:
+        return None
+    try:
+        info = record.info[alt_freq]
+    except (KeyError, TypeError):
+        return None
+    if isinstance(info, (tuple, list, np.ndarray)):
+        if len(info) == 0:
+            return None
+        value = info[idx] if idx < len(info) else info[0]
+    else:
+        value = info
+    if value is None:
+        return None
+    return float(value)
+
+
+def _indel_digit7_from_two_records_vec(
+    af_direct: np.ndarray,
+    af_swapped: np.ndarray,
+    eaf: np.ndarray,
+    daf_tolerance: float,
+    ref_maf_threshold: float,
+) -> np.ndarray:
+    """STATUS digit 7 when both a direct and a swapped-allele VCF record exist.
+
+    Independent DAFs (not 1-AF of the other record). Tie keeps alleles (3).
+    Returns 3 (direct), 6 (rewrite to swapped record), 7 (DAF too large), or 8 (both fail MAF).
+    """
+    af_direct = np.asarray(af_direct, dtype=float)
+    af_swapped = np.asarray(af_swapped, dtype=float)
+    eaf = np.asarray(eaf, dtype=float)
+    ok_direct = np.minimum(af_direct, 1.0 - af_direct) <= ref_maf_threshold + FREQ_COMPARISON_EPSILON
+    ok_swapped = np.minimum(af_swapped, 1.0 - af_swapped) <= ref_maf_threshold + FREQ_COMPARISON_EPSILON
+    daf_direct = np.where(ok_direct, np.abs(af_direct - eaf), np.inf)
+    daf_swapped = np.where(ok_swapped, np.abs(af_swapped - (1.0 - eaf)), np.inf)
+    both_fail_maf = ~ok_direct & ~ok_swapped
+    direct_wins_or_tie = daf_direct <= daf_swapped
+    best = np.where(direct_wins_or_tie, daf_direct, daf_swapped)
+    digit = np.where(
+        both_fail_maf,
+        8,
+        np.where(
+            best >= daf_tolerance,
+            7,
+            np.where(direct_wins_or_tie, 3, 6),
+        ),
+    )
+    return digit.astype(np.int64)
+
+
+def _indel_digit7_from_two_records(
+    af_direct: float,
+    af_swapped: float,
+    eaf: float,
+    daf_tolerance: float,
+    ref_maf_threshold: float,
+) -> int:
+    return int(
+        _indel_digit7_from_two_records_vec(
+            np.asarray([af_direct], dtype=float),
+            np.asarray([af_swapped], dtype=float),
+            np.asarray([eaf], dtype=float),
+            daf_tolerance,
+            ref_maf_threshold,
+        )[0]
+    )
+
+
+def _indel_digit7_one_direct(
+    af: float,
+    eaf: float,
+    daf_tolerance: float,
+    ref_maf_threshold: float,
+) -> int:
+    if not _maf_within_ref_threshold(af, ref_maf_threshold):
+        return 8
+    if abs(af - eaf) < daf_tolerance:
+        return 3
+    return 7
+
+
+def _indel_digit7_one_swapped(
+    af: float,
+    eaf: float,
+    daf_tolerance: float,
+    ref_maf_threshold: float,
+) -> int:
+    if not _maf_within_ref_threshold(af, ref_maf_threshold):
+        return 8
+    if abs(af - (1.0 - eaf)) < daf_tolerance:
+        return 6
+    return 7
+
 ### HELPER FUNCTIONS FOR STATUS OPTIMIZATION ###
 def _extract_status_digit(status_series: pd.Series, digit: int) -> pd.Series:
     """Extract a specific digit from status codes (optimized version).
@@ -1675,8 +1785,8 @@ def check_unkonwn_indel(
     daf_tolerance: float = 0.2
 ) -> Union[int, str]:
     ### input : unknown indel, both on genome (xx1[45]x)
-    ### 3 match (no flip)
-    ### 6 reverse (needs flip; _flip_allele_stats converts 6→4)
+    ### Two VCF records (direct REF=NEA/ALT=EA and swapped REF=EA/ALT=NEA): assign by min independent DAF.
+    ### One record: 3 match (no flip) / 6 rewrite to swapped record (_flip_allele_stats converts 6→4)
     ### 7 indistinguishable (matching record, DAF outside tolerance)
     ### 8 not found / MAF too high
     
@@ -1692,21 +1802,45 @@ def check_unkonwn_indel(
     except:
         return set_status_digit(status_val, 7, 8)
 
-    found_but_unresolved = False
+    af_direct = None
+    daf_direct_best = None
+    af_swapped = None
+    daf_swapped_best = None
     for record in chr_seq:
-        if min(record.info[alt_freq][0], 1- record.info[alt_freq][0]) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
-                return set_status_digit(status_val, 7, 8)
-        if record.pos==end and record.ref==ref and (alt in record.alts):
-            if  abs(record.info[alt_freq][0] - eaf)<daf_tolerance:
-                return set_status_digit(status_val, 7, 3)
-            found_but_unresolved = True
-   
-        elif record.pos==end and record.ref==alt and (ref in record.alts):
-            if  abs(record.info[alt_freq][0] - (1 - eaf))<daf_tolerance:
-                return set_status_digit(status_val, 7, 6)
-            found_but_unresolved = True
+        if record.pos != end:
+            continue
+        alts = record.alts or ()
+        if record.ref == ref and (alt in alts):
+            af = _record_alt_af(record, alt, alt_freq)
+            if af is None:
+                continue
+            daf = abs(af - eaf)
+            if daf_direct_best is None or daf < daf_direct_best:
+                af_direct = af
+                daf_direct_best = daf
+        elif record.ref == alt and (ref in alts):
+            af = _record_alt_af(record, ref, alt_freq)
+            if af is None:
+                continue
+            daf = abs(af - (1.0 - eaf))
+            if daf_swapped_best is None or daf < daf_swapped_best:
+                af_swapped = af
+                daf_swapped_best = daf
 
-    return set_status_digit(status_val, 7, 7 if found_but_unresolved else 8)
+    if af_direct is not None and af_swapped is not None:
+        digit = _indel_digit7_from_two_records(
+            af_direct, af_swapped, eaf, daf_tolerance, ref_maf_threshold
+        )
+        return set_status_digit(status_val, 7, digit)
+    if af_direct is not None:
+        return set_status_digit(
+            status_val, 7, _indel_digit7_one_direct(af_direct, eaf, daf_tolerance, ref_maf_threshold)
+        )
+    if af_swapped is not None:
+        return set_status_digit(
+            status_val, 7, _indel_digit7_one_swapped(af_swapped, eaf, daf_tolerance, ref_maf_threshold)
+        )
+    return set_status_digit(status_val, 7, 8)
 
 
 def check_unkonwn_indel_cache(
@@ -1752,33 +1886,46 @@ def check_unkonwn_indel_cache(
         cache_key_ref_alt = f"{chrom}:{pos}:{ref}:{alt}"
         cache_key_alt_ref = f"{chrom}:{pos}:{alt}:{ref}"
 
-        if cache_key_ref_alt in cache:
+        direct_in = cache_key_ref_alt in cache
+        swapped_in = cache_key_alt_ref in cache
+        if direct_in:
             in_cache += 1
-            record = cache[cache_key_ref_alt]
+        if swapped_in:
+            in_cache += 1
 
-            if record is None:
+        af_direct = cache[cache_key_ref_alt] if direct_in else None
+        af_swapped = cache[cache_key_alt_ref] if swapped_in else None
+
+        if direct_in and swapped_in:
+            if af_direct is not None and af_swapped is not None:
+                digit = _indel_digit7_from_two_records(
+                    af_direct, af_swapped, eaf, daf_tolerance, ref_maf_threshold
+                )
+                new_status = set_status_digit(status_val, 7, digit)
+            elif af_direct is not None:
+                new_status = set_status_digit(
+                    status_val, 7, _indel_digit7_one_direct(af_direct, eaf, daf_tolerance, ref_maf_threshold)
+                )
+            elif af_swapped is not None:
+                new_status = set_status_digit(
+                    status_val, 7, _indel_digit7_one_swapped(af_swapped, eaf, daf_tolerance, ref_maf_threshold)
+                )
+            else:
+                new_status = set_status_digit(status_val, 7, 8)
+        elif direct_in:
+            if af_direct is None:
                 new_status = set_status_digit(status_val, 7, 8)
             else:
-                if min(record, 1- record) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
-                    return set_status_digit(status_val, 7, 8)
-                if  abs(record - eaf)<daf_tolerance:
-                    new_status = set_status_digit(status_val, 7, 3)
-                else:
-                    new_status = set_status_digit(status_val, 7, 7)
-
-        elif cache_key_alt_ref in cache:
-            in_cache += 1
-            record = cache[cache_key_alt_ref]
-            if record is None:
+                new_status = set_status_digit(
+                    status_val, 7, _indel_digit7_one_direct(af_direct, eaf, daf_tolerance, ref_maf_threshold)
+                )
+        elif swapped_in:
+            if af_swapped is None:
                 new_status = set_status_digit(status_val, 7, 8)
             else:
-                if min(record, 1- record) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
-                    return set_status_digit(status_val, 7, 8)
-                if  abs(record - (1 - eaf))<daf_tolerance:
-                    new_status = set_status_digit(status_val, 7, 6)
-                else:
-                    new_status = set_status_digit(status_val, 7, 7)
-
+                new_status = set_status_digit(
+                    status_val, 7, _indel_digit7_one_swapped(af_swapped, eaf, daf_tolerance, ref_maf_threshold)
+                )
         else:
             if not trust_cache:
                 # If we don't trust the cache as a not complete cache, we should perform the check reading from the VCF file

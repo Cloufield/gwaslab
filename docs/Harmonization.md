@@ -109,8 +109,9 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 `.infer_strand()` and `.infer_strand2()`:
 
 - Infer the strand for palindromic SNPs (A/T, T/A, G/C, C/G) with **MAF** ≤ `maf_threshold`. 
-- Check the alignment status of indels with the **REF** allele in a reference VCF/BCF file and verify if the allele frequencies are consistent (**DAF** ≤ `daf_tolerance`).
-- Update **STATUS** code 7th digit to reflect strand inference results (0=non-palindromic, 1=forward palindrome, 5=reverse palindrome needs flip then 2 after `flip_allele_stats`, 3=indel match, 6=indel reverse needs flip then 4 after `flip_allele_stats`, 7=indistinguishable / **MAF** too high or indel DAF-ambiguous, 8=not found, 9=unchecked).
+- Check the alignment status of indels with the **REF** allele in a reference VCF/BCF file and verify if the allele frequencies are consistent (**DAF** < `daf_tolerance`).
+- When both a direct (`REF`=**NEA**, `ALT`=**EA**) and a swapped-allele (`REF`=**EA**, `ALT`=**NEA**) VCF record exist at the same site (typical after `split_norm`), assign the sumstats row to the record with the smaller independent DAF. Digit 7 = `3` keeps alleles; `6` rewrites EA/NEA to the other record’s allele order (`flip_allele_stats` then `6`→`4`). This is record assignment, not strand.
+- Update **STATUS** code 7th digit to reflect strand inference results (0=non-palindromic, 1=forward palindrome, 5=reverse palindrome needs flip then 2 after `flip_allele_stats`, 3=indel aligned to this VCF record, 6=indel alleles rewritten to the other record then 4 after `flip_allele_stats`, 7=indistinguishable / **MAF** too high or indel DAF-ambiguous, 8=not found, 9=unchecked).
 
 !!! info "DAF in GWASLab"
     **DAF** in GWASLab: Difference between effect allele frequency (**EAF**) in sumstats and **ALT** frequency in reference VCF/BCF file
@@ -124,7 +125,7 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 | `ref_alt_freq`            | `string`          | the field for alternative allele frequency in VCF INFO (e.g., "AF", "AF_popmax", "gnomAD_AF"). If None, auto-detection is attempted.                                                                          |                          |
 | `maf_threshold`           | `float`          | maximum minor allele frequency threshold. Only palindromic SNPs with **MAF** ≤ `maf_threshold` will be inferred                                                          | `0.4`                    |
 | `ref_maf_threshold`       | `float`          | maximum minor allele frequency threshold for reference **RAF**. Used as additional filter for both palindromic SNPs and indels. | `0.4`                    |
-| `daf_tolerance`           | `float`          | difference in allele frequency tolerance for indels. Only indels with |**EAF** - **RAF**| or |**EAF** - (1-**RAF**)| ≤ `daf_tolerance` will be inferred                       | `0.2`                    |
+| `daf_tolerance`           | `float`          | difference in allele frequency tolerance for indels. One VCF record: \|**EAF** - **RAF**\| or \|**EAF** - (1-**RAF**)\| < `daf_tolerance`. Two records (direct and swapped REF/ALT at the same site): assign by the smaller independent DAF, not first tabix hit. | `0.2`                    |
 | `remove_snp`              | ` `, `7` or `8`   | `7` remove palindromic SNPs with **MAF** unable to infer. `8`: remove palindromic SNPs with No information in reference VCF/BCF | ``                       |
 | `remove_indel`            | ` ` or `8`        | `8`: indistinguishable indels with No information in reference VCF/BCF                                                      | ``                       |
 | `mode`                    | `p`, `i`, or `pi` | `p`: infer palindromic SNPs only. `i`: infer indels only. `pi`: infer both (default).                                                                            | `pi`                     |
@@ -137,7 +138,7 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 | `assign_cols`              | `tuple` or `str`  | column names to extract from reference (default: ("AF",)). First column will be renamed to RAF.                            | `("AF",)`                |
 | `maf_threshold`           | `float`          | maximum minor allele frequency threshold for sumstats EAF                                                          | `0.4`                    |
 | `ref_maf_threshold`       | `float`          | maximum minor allele frequency threshold for reference RAF                                 | `0.4`                    |
-| `daf_tolerance`           | `float`          | difference in allele frequency tolerance for indels                       | `0.2`                    |
+| `daf_tolerance`           | `float`          | same as `.infer_strand()`: one-record DAF vs RAF; two records at one site assigned by smaller independent DAF | `0.2`                    |
 | `threads`                 | `int`             | number of CPU threads for processing                                                                                                | `6`                      |
 | `reuse_lookup`            | `bool`            | if True, reuse existing lookup table TSV file if found                                                                     | `True`                   |
 | `convert_to_bcf`          | `bool`            | if True, convert VCF to BCF format for faster processing                                                                   | `False`                  |

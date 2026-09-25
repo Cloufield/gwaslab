@@ -3,7 +3,7 @@
 - In this tutorial, we provide a brief overview of the core functions in GWASLab for summary statistics quality control (QC), standardization, and harmonization.
 - We also demonstrate visualization features, including Manhattan plots, Q–Q plots, and regional plots.
 - The Jupyter notebook for this tutorial can be downloaded from https://github.com/Cloufield/gwaslab/blob/main/docs/tutorial_v4.ipynb
-- Please note that the sample data and reference files are available on GitHub, while the full processed reference datasets are currently hosted on Dropbox.
+- Please note that the sample data and reference files are available on GitHub, while the full processed reference datasets are hosted on Hugging Face ([Cloufield/gwaslab-reference](https://huggingface.co/datasets/Cloufield/gwaslab-reference)).
 
 
 ## Download sample data

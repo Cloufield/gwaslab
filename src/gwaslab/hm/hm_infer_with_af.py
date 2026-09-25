@@ -4,6 +4,8 @@ from gwaslab.info.g_Log import Log
 from gwaslab.info.g_vchange_status import vchange_status
 from gwaslab.info.g_vchange_status import ensure_status_int
 from .hm_assign_rsid import _annotate_sumstats
+from gwaslab.hm.hm_harmonize_sumstats import INDEL_SWAPPED_AF_COL
+from gwaslab.hm.hm_harmonize_sumstats import _indel_digit7_from_two_records_vec
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 from gwaslab.qc.qc_check_datatype import categorical_str_len
@@ -220,6 +222,7 @@ Notes
         verbose=verbose,
         log=log,
         log_run_plan=log_run_plan,
+        swapped_af_col=INDEL_SWAPPED_AF_COL,
     )
     
     # Rename annotated column to RAF (if different from source column name)
@@ -246,6 +249,7 @@ Notes
         maf_threshold=maf_threshold,
         ref_maf_threshold=ref_maf_threshold,
         daf_tolerance=daf_tolerance,
+        raf_swapped_col=INDEL_SWAPPED_AF_COL,
         log=log,
         verbose=verbose,
     )
@@ -253,6 +257,8 @@ Notes
     # Remove temporary ALLELE_FLIPPED column (used internally for strand inference)
     if "ALLELE_FLIPPED" in result.columns:
         result = result.drop(columns=["ALLELE_FLIPPED"])
+    if INDEL_SWAPPED_AF_COL in result.columns:
+        result = result.drop(columns=[INDEL_SWAPPED_AF_COL])
     
     # Update metadata and harmonization status if input was a Sumstats object
     if not is_dataframe:
@@ -290,6 +296,7 @@ def _infer_strand(
     maf_threshold: float = 0.40,
     ref_maf_threshold: float = 0.40,
     daf_tolerance: float = 0.20,
+    raf_swapped_col: str | None = None,
     verbose: bool = True
 ) -> pd.DataFrame:
     """Infer strand orientation for palindromic SNPs and indels using allele frequencies.
@@ -652,12 +659,39 @@ Notes
 
             # Track ambiguous indels (both forward and reverse differences exceed tolerance)
             ambiguous_indel_mask_full = pd.Series(False, index=sumstats.index)
+            two_record_mask = pd.Series(False, index=sumstats.index)
+            if raf_swapped_col is not None and raf_swapped_col in sumstats.columns:
+                two_record_mask = valid_indel_with_af_mask & sumstats[raf_swapped_col].notna()
+            one_record_mask = valid_indel_with_af_mask & ~two_record_mask
             
-            if valid_indel_with_af_mask.any():
+            if two_record_mask.any():
+                digits = _indel_digit7_from_two_records_vec(
+                    raf_series[two_record_mask].to_numpy(dtype=float),
+                    sumstats.loc[two_record_mask, raf_swapped_col].to_numpy(dtype=float),
+                    eaf_series[two_record_mask].to_numpy(dtype=float),
+                    daf_tolerance,
+                    ref_maf_threshold,
+                )
+                digit_series = pd.Series(digits, index=sumstats.index[two_record_mask])
+                for digit, strand_value in ((3, "+"), (6, "-"), (7, "?"), (8, "?")):
+                    digit_mask = pd.Series(False, index=sumstats.index)
+                    hit = digit_series[digit_series == digit].index
+                    if len(hit) == 0:
+                        continue
+                    digit_mask.loc[hit] = True
+                    sumstats.loc[digit_mask, strand_col] = strand_value
+                    sumstats.loc[digit_mask, status_col] = vchange_status(
+                        sumstats.loc[digit_mask, status_col],
+                        7,
+                        [str(i) for i in range(10)],
+                        [str(digit)] * 10
+                    )
+            
+            if one_record_mask.any():
                 # Compare EAF with RAF using tolerance-based approach
                 # For indels, we use daf_tolerance instead of exact matching
-                eaf_subset = eaf_series[valid_indel_with_af_mask]
-                raf_subset = raf_series[valid_indel_with_af_mask]
+                eaf_subset = eaf_series[one_record_mask]
+                raf_subset = raf_series[one_record_mask]
                 af_diff_forward = np.abs(eaf_subset - raf_subset)
                 af_diff_reverse = np.abs(eaf_subset - (1 - raf_subset))
                 
@@ -670,17 +704,17 @@ Notes
                 
                 # Track ambiguous cases (both differences exceed tolerance)
                 ambiguous_indel_mask_local = (~forward_within_tolerance) & (~reverse_within_tolerance)
-                ambiguous_indel_mask_full.loc[valid_indel_with_af_mask] = ambiguous_indel_mask_local.values
+                ambiguous_indel_mask_full.loc[one_record_mask] = ambiguous_indel_mask_local.values
                 
                 # Map results back to full index
                 forward_within_tolerance_full = pd.Series(False, index=sumstats.index)
-                forward_within_tolerance_full.loc[valid_indel_with_af_mask] = forward_within_tolerance.values
-                forward_indel_mask = valid_indel_with_af_mask & forward_within_tolerance_full
+                forward_within_tolerance_full.loc[one_record_mask] = forward_within_tolerance.values
+                forward_indel_mask = one_record_mask & forward_within_tolerance_full
                 
                 # Reverse strand only if forward is not within tolerance (forward takes precedence)
                 reverse_within_tolerance_full = pd.Series(False, index=sumstats.index)
-                reverse_within_tolerance_full.loc[valid_indel_with_af_mask] = reverse_within_tolerance.values
-                reverse_indel_mask = valid_indel_with_af_mask & reverse_within_tolerance_full & ~forward_within_tolerance_full
+                reverse_within_tolerance_full.loc[one_record_mask] = reverse_within_tolerance.values
+                reverse_indel_mask = one_record_mask & reverse_within_tolerance_full & ~forward_within_tolerance_full
         
                 # Assign forward strand: STATUS 7th digit = '3'
                 if forward_indel_mask.any():

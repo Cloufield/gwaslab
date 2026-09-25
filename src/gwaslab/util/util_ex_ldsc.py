@@ -315,7 +315,7 @@ def _estimate_h2_by_ldsc(
     munge: bool = False, 
     munge_kwargs: Optional[Dict[str, Any]] = None, 
     **raw_kwargs: Any
-) -> Tuple[float, Optional[pd.DataFrame]]:
+) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
     """Estimate SNP heritability using LD score regression.
 
 Parameters
@@ -335,8 +335,9 @@ pop_prev : float, optional
     Population prevalence for case–control traits.
 Returns
 -------
-tuple
-    Heritability estimate and coefficient table; stored on ``Sumstats.ldsc_h2`` and ``ldsc_h2_results``.
+tuple of (pd.DataFrame, pd.DataFrame or None)
+    Parsed LDSC summary table (h2, intercept, ratio, and related statistics) and
+    optional coefficient table; stored on ``Sumstats.ldsc_h2`` and ``ldsc_h2_results``.
 
 Notes
 -----

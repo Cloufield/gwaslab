@@ -49,7 +49,7 @@ Registry entries include **`kind`**: `ref` (catalog/local genomic refs) or `sums
 
 ## Check available reference data
 
-Processed files are hosted on Dropbox. Other files will be downloaded from their original source.
+Processed 1KG VCF, rsID tables, HapMap3 EAF, and recombination maps are hosted on Hugging Face ([Cloufield/gwaslab-reference](https://huggingface.co/datasets/Cloufield/gwaslab-reference)). Other files (dbSNP, UCSC FASTA, Ensembl/RefSeq GTF, liftOver chains) are downloaded from their original source.
 
 The catalog is nested JSON in `reference.json` (one keyword per entry with `url`, `description`, `suggested_use`, optional `tbi`, `md5sum`).
 
@@ -69,10 +69,10 @@ Each keyword maps to metadata such as:
 
 ```json
 {
-  "url": "https://…/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1",
+  "url": "https://huggingface.co/datasets/Cloufield/gwaslab-reference/resolve/main/1kg/hg19/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz",
   "description": "1000 Genomes Project East Asian (1KG EAS) VCF on hg19 …",
   "suggested_use": "LD reference panel for region plot; infer strand for EAS",
-  "tbi": {"url": "https://…/EAS.….vcf.gz.tbi?dl=1"},
+  "tbi": {"url": "https://huggingface.co/datasets/Cloufield/gwaslab-reference/resolve/main/1kg/hg19/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi"},
   "md5sum": "6162a93cb80935168c0bfa519748b054"
 }
 ```

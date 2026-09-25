@@ -23,8 +23,8 @@ class DownstreamResultManager:
     
 Attributes
 ----------
-    ldsc_h2 : Optional[Any]
-        LDSC heritability estimate (scalar value).
+    ldsc_h2 : Optional[pd.DataFrame]
+        LDSC heritability summary DataFrame (h2, intercept, ratio, and related statistics).
     ldsc_h2_results : Optional[pd.DataFrame]
         Detailed LDSC heritability results.
     ldsc_rg : pd.DataFrame
@@ -45,9 +45,10 @@ Attributes
 Examples
 --------
     >>> manager = DownstreamResultManager()
-    >>> manager.set_ldsc_h2(0.5)
-    >>> manager.get_ldsc_h2()
-    0.5
+    >>> manager.ldsc_h2 = pd.DataFrame({"h2_obs": [0.5]})
+    >>> manager.ldsc_h2
+       h2_obs
+    0     0.5
     >>> manager.has_ldsc_h2()
     True
     >>> manager.clear_ldsc()
@@ -78,14 +79,14 @@ Examples
     # ============================================================================
     
     @property
-    def ldsc_h2(self) -> Optional[Any]:
-        """LDSC heritability estimate.
+    def ldsc_h2(self) -> Optional[pd.DataFrame]:
+        """LDSC heritability summary DataFrame.
 """
         return self._ldsc_h2
     
     @ldsc_h2.setter
-    def ldsc_h2(self, value: Optional[Any]):
-        """Set LDSC heritability estimate.
+    def ldsc_h2(self, value: Optional[pd.DataFrame]):
+        """Set LDSC heritability summary DataFrame.
 """
         self._ldsc_h2 = value
     

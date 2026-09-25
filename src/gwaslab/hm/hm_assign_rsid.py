@@ -601,6 +601,7 @@ def _annotate_sumstats(
     verbose=True,
     log=Log(),
     log_run_plan: bool = True,
+    swapped_af_col: str | None = None,
 ):
     """Annotate GWAS summary statistics by assigning fields (e.g., rsID, AF)
     from a lookup table extracted from a VCF/BCF.
@@ -675,6 +676,8 @@ tsv_path : str
     if "ALLELE_FLIPPED" not in sumstats.columns:
         sumstats["ALLELE_FLIPPED"] = False
         log.write(f" -Initialized ALLELE_FLIPPED column (early initialization)", verbose=verbose)
+    if swapped_af_col is not None and swapped_af_col not in sumstats.columns:
+        sumstats[swapped_af_col] = pd.NA
     
     # ----------------------------------------------
     # Early check: determine which columns need annotation
@@ -805,6 +808,7 @@ tsv_path : str
         rm_tmp_lookup=rm_tmp_lookup,
         mapper       = mapper,
         reference_file=ref_for_lookup,
+        swapped_af_col=swapped_af_col,
     )
 
     # Update only if called with Sumstats object
@@ -1539,6 +1543,7 @@ def _assign_from_lookup(
     mapper: ChromosomeMapper | None = None,
     reference_file: str | None = None,
     log_run_plan: bool = False,
+    swapped_af_col: str | None = None,
 ):
     """Assign annotation values from a lookup table to sumstats by matching CHR:POS:EA:NEA.
     
@@ -1581,6 +1586,8 @@ def _assign_from_lookup(
     if "ALLELE_FLIPPED" not in sumstats.columns:
         sumstats["ALLELE_FLIPPED"] = False
         log.write(" -Initialized ALLELE_FLIPPED column", verbose=verbose)
+    if swapped_af_col is not None and swapped_af_col not in sumstats.columns:
+        sumstats[swapped_af_col] = pd.NA
     
     # ============================================================================
     # Step 4: Check if lookup table has any data
@@ -1862,6 +1869,9 @@ def _assign_from_lookup(
         # vals_rev: annotation values when alleles match in reverse order (flipped)
         vals_fwd = lookup.reindex(key_fwd).to_numpy()
         vals_rev = lookup.reindex(key_rev).to_numpy()
+        if swapped_af_col is not None:
+            rev_af = vals_rev[:, 0] if getattr(vals_rev, "ndim", 1) == 2 else vals_rev
+            sumstats.loc[pos_idx, swapped_af_col] = rev_af
 
         # ========================================================================
         # Step 14h: Determine which variants had allele flips
