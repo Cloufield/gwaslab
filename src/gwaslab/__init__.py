@@ -144,8 +144,8 @@ def load_pickle(path: str) -> Any:
 load_pickle.__doc__ = _load_pickle.__doc__
 
 
-def download_sumstats(accession: str, **kwargs: Any) -> Optional[str]:
-    return _download_sumstats(accession, **kwargs)
+def download_sumstats(**kwargs: Any) -> Optional[str]:
+    return _download_sumstats(**kwargs)
 
 
 download_sumstats.__doc__ = _download_sumstats.__doc__
