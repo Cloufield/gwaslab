@@ -47,7 +47,7 @@ References
     p = p[np.isfinite(p)]
     if p.size == 0:
         return float("nan")
-    observed = float(stats.chi2.isf(np.nanmedian(p), df=1))
+    observed = float(stats.chi2.isf(np.quantile(p, 1.0 - quantile), df=1))
     expected = _expected_chi2(quantile)
     return observed / expected
 
@@ -108,7 +108,7 @@ References
     z = z[np.isfinite(z)]
     if z.size == 0:
         return float("nan")
-    observed = float(np.median(z ** 2))
+    observed = float(np.quantile(z ** 2, quantile))
     expected = _expected_chi2(quantile)
     return observed / expected
 
@@ -139,6 +139,6 @@ References
     chisq = chisq[np.isfinite(chisq)]
     if chisq.size == 0:
         return float("nan")
-    observed = float(np.median(chisq))
+    observed = float(np.quantile(chisq, quantile))
     expected = _expected_chi2(quantile)
     return observed / expected
